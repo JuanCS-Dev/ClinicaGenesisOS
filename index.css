@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/* Custom Theme Variables */
+@theme {
+  --color-genesis-blue: #007AFF;
+  --color-genesis-dark: #111827;
+  --color-genesis-soft: #F5F5F7;
+  --color-genesis-surface: #FFFFFF;
+  --color-genesis-medium: #86868B;
+  --color-genesis-border: #E5E5EA;
+
+  --color-specialty-medicina: #007AFF;
+  --color-specialty-nutri: #34C759;
+  --color-specialty-psico: #FF2D92;
+  --color-specialty-odonto: #30B0C7;
+  --color-specialty-fisio: #AF52DE;
+  --color-specialty-estetica: #FF9500;
+
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'San Francisco', 'Segoe UI', 'Roboto', sans-serif;
+  --font-family-mono: 'JetBrains Mono', monospace;
+
+  --shadow-soft: 0 2px 8px -2px rgba(0, 0, 0, 0.05);
+  --shadow-glow: 0 4px 20px -4px rgba(0, 122, 255, 0.15);
+  --shadow-float: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+
+  --animate-enter: enter 0.4s ease-out forwards;
+  --animate-fade-in: fadeIn 0.3s ease-out forwards;
+  --animate-slide-up: slideUp 0.4s ease-out forwards;
+
+  @keyframes enter {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* Base Styles */
+body {
+  font-family: var(--font-family-sans);
+  background-color: var(--color-genesis-soft);
+  color: var(--color-genesis-dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D1D1D6;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8E8E93;
+}

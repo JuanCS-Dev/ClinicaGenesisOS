@@ -1,0 +1,55 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: Check if user owns the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Helper: Check if user belongs to clinic
+    function belongsToClinic(clinicId) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/clinics/$(clinicId)/members/$(request.auth.uid));
+    }
+
+    // Clinics collection
+    match /clinics/{clinicId} {
+      allow read: if belongsToClinic(clinicId);
+      allow create: if isAuthenticated();
+      allow update, delete: if belongsToClinic(clinicId);
+
+      // Clinic members subcollection
+      match /members/{memberId} {
+        allow read, write: if belongsToClinic(clinicId);
+      }
+    }
+
+    // Patients collection (clinic-scoped)
+    match /clinics/{clinicId}/patients/{patientId} {
+      allow read, write: if belongsToClinic(clinicId);
+    }
+
+    // Appointments collection (clinic-scoped)
+    match /clinics/{clinicId}/appointments/{appointmentId} {
+      allow read, write: if belongsToClinic(clinicId);
+    }
+
+    // Medical records collection (clinic-scoped)
+    match /clinics/{clinicId}/records/{recordId} {
+      allow read, write: if belongsToClinic(clinicId);
+    }
+
+    // User profiles (user-scoped)
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+  }
+}

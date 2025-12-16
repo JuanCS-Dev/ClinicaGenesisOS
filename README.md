@@ -1,20 +1,88 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# ClinicaGenesisOS
 
-# Run and deploy your AI Studio app
+Sistema de gestao para clinicas e consultorios multi-especialidade.
 
-This contains everything you need to run your app locally.
+## Stack Tecnologica
 
-View your app in AI Studio: https://ai.studio/apps/drive/1CMHVXChZiJSkUnpUe6VSt3oLkDfhhDTf
+- **Frontend**: React 19 + TypeScript
+- **Styling**: Tailwind CSS v4
+- **State**: Zustand
+- **Routing**: React Router v7
+- **Charts**: Recharts
+- **Build**: Vite 6
+- **Testing**: Vitest + Testing Library
+- **Linting**: ESLint + Prettier
 
-## Run Locally
+## Pre-requisitos
 
-**Prerequisites:**  Node.js
+- Node.js >= 18
+- npm >= 9
 
+## Instalacao
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+```bash
+# Clone o repositorio
+git clone https://github.com/seu-usuario/ClinicaGenesisOS.git
+cd ClinicaGenesisOS
+
+# Instale as dependencias
+npm install
+```
+
+## Scripts Disponiveis
+
+```bash
+# Desenvolvimento
+npm run dev          # Inicia servidor de desenvolvimento
+
+# Build
+npm run build        # Build para producao
+npm run preview      # Preview do build
+
+# Qualidade de Codigo
+npm run lint         # Verifica erros de lint
+npm run lint:fix     # Corrige erros de lint automaticamente
+npm run format       # Formata codigo com Prettier
+npm run format:check # Verifica formatacao
+npm run typecheck    # Verifica tipos TypeScript
+
+# Testes
+npm test             # Roda testes em watch mode
+npm run test:ui      # Roda testes com interface grafica
+npm run test:coverage # Roda testes com cobertura
+```
+
+## Estrutura do Projeto
+
+```
+ClinicaGenesisOS/
+├── __tests__/          # Testes
+├── components/         # Componentes React
+│   ├── layout/         # Sidebar, Header
+│   ├── patient/        # Timeline, etc
+│   └── plugins/        # Plugins de especialidades
+├── docs/               # Documentacao
+├── pages/              # Paginas da aplicacao
+├── plugins/            # Sistema de plugins
+├── store/              # Zustand store
+├── App.tsx             # Router principal
+├── constants.ts        # Dados mock
+├── index.css           # Estilos Tailwind
+├── index.html          # HTML entry
+├── index.tsx           # React entry
+└── types.ts            # TypeScript types
+```
+
+## Especialidades Suportadas
+
+- Medicina Geral
+- Nutricao
+- Psicologia
+
+## Roadmap
+
+Consulte [docs/PLANO_MVP.md](docs/PLANO_MVP.md) para o plano completo de desenvolvimento.
+
+## Licenca
+
+Proprietario - Todos os direitos reservados.

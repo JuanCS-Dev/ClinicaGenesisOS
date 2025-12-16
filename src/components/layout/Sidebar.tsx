@@ -1,6 +1,7 @@
 import React from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/useStore';
+import { useAuthContext } from '../../contexts/AuthContext';
 import { SpecialtyType } from '../../types';
 import { 
   LayoutDashboard, 
@@ -87,6 +88,28 @@ const PluginButton = ({
 };
 
 export const Sidebar: React.FC = () => {
+  const { user, logout } = useAuthContext();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch {
+      // Error is handled by useAuth
+    }
+  };
+
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
     <aside className="w-64 h-screen flex flex-col fixed left-0 top-0 z-20 bg-[#F9FAFB] border-r border-gray-200/60 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)]">
       {/* Logo Area */}
@@ -150,18 +173,29 @@ export const Sidebar: React.FC = () => {
       <div className="p-4 space-y-1 bg-white border-t border-gray-100">
         <NavItem to="/settings" icon={Settings} label="Configurações" />
         <NavItem to="/help" icon={HelpCircle} label="Ajuda & Suporte" />
-        <Link to="/" className="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium text-red-500 hover:bg-red-50 transition-colors">
-            <LogOut className="w-4 h-4" />
-            <span>Sair</span>
-        </Link>
-        
+        <button
+          onClick={handleLogout}
+          className="w-full group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium text-red-500 hover:bg-red-50 transition-colors"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Sair</span>
+        </button>
+
         <div className="pt-3 mt-2 border-t border-gray-50 px-2 flex items-center gap-3">
-           <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-             DA
-           </div>
+           {user?.photoURL ? (
+             <img
+               src={user.photoURL}
+               alt={user.displayName || 'User'}
+               className="w-8 h-8 rounded-full border border-gray-200"
+             />
+           ) : (
+             <div className="w-8 h-8 rounded-full bg-genesis-blue/10 border border-genesis-blue/20 flex items-center justify-center text-xs font-bold text-genesis-blue">
+               {getInitials(user?.displayName)}
+             </div>
+           )}
            <div className="overflow-hidden">
-             <p className="text-xs font-bold text-gray-900 truncate">Dr. André</p>
-             <p className="text-[10px] text-gray-500 truncate">Admin</p>
+             <p className="text-xs font-bold text-gray-900 truncate">{user?.displayName || 'Usuário'}</p>
+             <p className="text-[10px] text-gray-500 truncate">{user?.email}</p>
            </div>
         </div>
       </div>
