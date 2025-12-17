@@ -30,7 +30,7 @@ import {
 import { ptBR } from 'date-fns/locale';
 import { useAppointments } from '../hooks/useAppointments';
 import { Status, type SpecialtyType } from '@/types';
-import { STATUS_COLORS, SPECIALTY_COLORS, DayView, WeekView, MonthView } from '../components/agenda';
+import { STATUS_COLORS, SPECIALTY_COLORS, DraggableDayView, WeekView, MonthView } from '../components/agenda';
 
 /** Client-side filters for appointments. */
 interface LocalFilters {
@@ -76,7 +76,7 @@ export function Agenda() {
   const shouldFilterByDate = viewMode === 'day';
 
   // Get appointments
-  const { appointments, loading, setFilters } = useAppointments(
+  const { appointments, loading, setFilters, updateAppointment } = useAppointments(
     shouldFilterByDate ? { date: toDateString(selectedDate) } : {}
   );
 
@@ -232,6 +232,16 @@ export function Agenda() {
     setViewMode('day');
     setFilters({ date: toDateString(date) });
   }, [setFilters]);
+
+  /**
+   * Handle drag-and-drop reschedule of an appointment.
+   */
+  const handleReschedule = useCallback(
+    async (appointmentId: string, newDate: Date): Promise<void> => {
+      await updateAppointment(appointmentId, { date: newDate.toISOString() });
+    },
+    [updateAppointment]
+  );
 
   /**
    * Formatted date display based on view mode.
@@ -440,10 +450,11 @@ export function Agenda() {
 
       {/* Calendar Body - Conditional Day/Week View */}
       {viewMode === 'day' && (
-        <DayView
+        <DraggableDayView
           date={selectedDate}
           appointments={filteredAppointments}
           hours={hours}
+          onReschedule={handleReschedule}
         />
       )}
 
