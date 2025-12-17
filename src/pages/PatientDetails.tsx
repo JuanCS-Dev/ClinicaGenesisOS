@@ -1,23 +1,26 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useStore } from '../store/useStore';
+import { usePatient } from '../hooks/usePatient';
+import { useRecords } from '../hooks/useRecords';
+import { usePatientAppointments } from '../hooks/useAppointments';
+import { useClinicContext } from '../contexts/ClinicContext';
 import { PLUGINS, MedicineEditor, NutritionEditor, PsychologyEditor } from '../plugins/registry';
 import { Timeline } from '../components/patient/Timeline';
-import { 
-  Phone, 
-  Calendar, 
-  FileText, 
+import {
+  Calendar,
+  FileText,
   History,
   Edit2,
   Stethoscope,
   Pill,
   Activity,
   Brain,
-  FlaskConical
+  FlaskConical,
+  Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { SpecialtyType, RecordType, TimelineEvent, TimelineEventType } from '../types';
+import { SpecialtyType, RecordType, TimelineEvent, TimelineEventType, CreateRecordInput } from '../types';
 
 const TabButton = ({ active, onClick, icon: Icon, label, colorClass = 'text-genesis-blue' }: any) => (
   <button
@@ -46,18 +49,20 @@ const HistoryItem = ({ record, active }: any) => {
       content = (record as any).subjective || 'Sem detalhes subjetivos.';
       Icon = Stethoscope;
       break;
-    case RecordType.PRESCRIPTION:
+    case RecordType.PRESCRIPTION: {
       title = 'Prescrição Médica';
       const medsCount = (record as any).medications?.length || 0;
       content = `${medsCount} medicamentos prescritos: ${(record as any).medications.map((m: any) => m.name).join(', ')}`;
       Icon = Pill;
       break;
-    case RecordType.EXAM_REQUEST:
+    }
+    case RecordType.EXAM_REQUEST: {
       title = 'Solicitação de Exames';
       const examCount = (record as any).exams?.length || 0;
       content = `${examCount} exames solicitados: ${(record as any).exams.join(', ')}`;
       Icon = FlaskConical;
       break;
+    }
     case RecordType.ANTHROPOMETRY:
       title = 'Antropometria';
       content = `Peso: ${(record as any).weight}kg, IMC: ${(record as any).imc}`;
@@ -96,27 +101,46 @@ const HistoryItem = ({ record, active }: any) => {
 
 export const PatientDetails: React.FC = () => {
   const { id } = useParams();
-  const { patients, getPatientRecords, getPatientAppointments, addRecord, currentUser } = useStore();
-  
-  const patient = patients.find(p => p.id === id);
-  const records = id ? getPatientRecords(id) : [];
-  const appointments = id ? getPatientAppointments(id) : [];
+  const { userProfile } = useClinicContext();
+  const { patient, loading: patientLoading } = usePatient(id);
+  const { records, addRecord } = useRecords(id);
+  const { appointments } = usePatientAppointments(id);
 
   const [activeTab, setActiveTab] = useState<'prontuario' | 'dados' | 'timeline'>('prontuario');
-  
-  // Plugin State
-  const [activePluginId, setActivePluginId] = useState<SpecialtyType>(currentUser.specialty);
+
+  // Plugin State - default to user's specialty or medicina
+  const [activePluginId, setActivePluginId] = useState<SpecialtyType>(
+    userProfile?.specialty || 'medicina'
+  );
   const activePlugin = PLUGINS[activePluginId];
 
-  if (!patient) return <div>Paciente não encontrado.</div>;
+  if (patientLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 text-genesis-blue animate-spin" />
+      </div>
+    );
+  }
 
-  const handleSaveRecord = (data: any) => {
+  if (!patient) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-genesis-medium">Paciente não encontrado.</p>
+      </div>
+    );
+  }
+
+  const handleSaveRecord = async (data: Omit<CreateRecordInput, 'patientId'>) => {
     if (!id) return;
-    addRecord({
+    try {
+      await addRecord({
         patientId: id,
         specialty: activePluginId,
         ...data
-    });
+      } as CreateRecordInput);
+    } catch (error) {
+      console.error('Error saving record:', error);
+    }
   };
 
   // --- GENERATE TIMELINE EVENTS FROM STORE DATA ---

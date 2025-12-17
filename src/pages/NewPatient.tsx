@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Save, User, Phone, ShieldCheck, ChevronRight } from 'lucide-react';
-import { useStore } from '../store/useStore';
+import { Camera, Save, User, Phone, ShieldCheck, ChevronRight, Loader2 } from 'lucide-react';
+import { usePatients } from '../hooks/usePatients';
 
 const InputGroup = ({ label, icon: Icon, children }: any) => (
   <div className="space-y-1.5 group">
@@ -34,8 +34,9 @@ const StyledSelect = (props: any) => (
 
 export const NewPatient: React.FC = () => {
   const navigate = useNavigate();
-  const { addPatient } = useStore();
-  
+  const { addPatient } = usePatients();
+  const [saving, setSaving] = useState(false);
+
   // Form State
   const [formData, setFormData] = useState({
     name: '',
@@ -46,18 +47,21 @@ export const NewPatient: React.FC = () => {
     insurance: 'Particular'
   });
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Basic validation
     if (!formData.name || !formData.phone) {
-        alert("Preencha os campos obrigatórios.");
-        return;
+      alert('Preencha os campos obrigatórios.');
+      return;
     }
 
-    addPatient({
+    setSaving(true);
+
+    try {
+      await addPatient({
         name: formData.name,
         birthDate: formData.birthDate || '2000-01-01',
         phone: formData.phone,
@@ -65,10 +69,15 @@ export const NewPatient: React.FC = () => {
         gender: formData.gender,
         insurance: formData.insurance,
         tags: ['Novo'],
-        avatar: `https://ui-avatars.com/api/?name=${formData.name}&background=random`
-    });
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name)}&background=random`
+      });
 
-    navigate('/patients');
+      navigate('/patients');
+    } catch (error) {
+      console.error('Error creating patient:', error);
+      alert('Erro ao cadastrar paciente. Tente novamente.');
+      setSaving(false);
+    }
   };
 
   return (
@@ -85,11 +94,20 @@ export const NewPatient: React.FC = () => {
           >
             Cancelar
           </button>
-          <button 
+          <button
             onClick={handleSave}
-            className="flex items-center gap-2 px-6 py-2.5 bg-genesis-blue text-white rounded-xl text-sm font-bold hover:bg-blue-600 shadow-lg shadow-blue-200 transition-all hover:-translate-y-0.5"
+            disabled={saving}
+            className="flex items-center gap-2 px-6 py-2.5 bg-genesis-blue text-white rounded-xl text-sm font-bold hover:bg-blue-600 shadow-lg shadow-blue-200 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Save className="w-4 h-4" /> Salvar Cadastro
+            {saving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Salvando...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" /> Salvar Cadastro
+              </>
+            )}
           </button>
         </div>
       </div>

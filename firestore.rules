@@ -3,53 +3,115 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper: Check if user is authenticated
+    // ========================================
+    // HELPER FUNCTIONS
+    // ========================================
+
+    /**
+     * Check if the request is from an authenticated user.
+     */
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Helper: Check if user owns the document
+    /**
+     * Check if the authenticated user owns the document.
+     */
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Helper: Check if user belongs to clinic
-    function belongsToClinic(clinicId) {
-      return isAuthenticated() &&
-        exists(/databases/$(database)/documents/clinics/$(clinicId)/members/$(request.auth.uid));
+    /**
+     * Get the user profile document for the authenticated user.
+     */
+    function getUserProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    // Clinics collection
+    /**
+     * Check if the authenticated user belongs to the specified clinic.
+     * Reads the user's profile to get their clinicId.
+     */
+    function belongsToClinic(clinicId) {
+      return isAuthenticated() && getUserProfile().clinicId == clinicId;
+    }
+
+    /**
+     * Check if the authenticated user is the owner of the specified clinic.
+     */
+    function isClinicOwner(clinicId) {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/clinics/$(clinicId)).data.ownerId == request.auth.uid;
+    }
+
+    // ========================================
+    // USER PROFILES
+    // ========================================
+
+    /**
+     * User profiles are stored in /users/{userId}
+     * Each user can only read/write their own profile.
+     * Other authenticated users can read profiles (for clinic collaboration).
+     */
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    // ========================================
+    // CLINICS
+    // ========================================
+
+    /**
+     * Clinics are stored in /clinics/{clinicId}
+     * - Any authenticated user can create a clinic (becomes owner)
+     * - Only clinic members can read clinic data
+     * - Only clinic owner can update/delete
+     */
     match /clinics/{clinicId} {
       allow read: if belongsToClinic(clinicId);
       allow create: if isAuthenticated();
-      allow update, delete: if belongsToClinic(clinicId);
+      allow update: if isClinicOwner(clinicId);
+      allow delete: if isClinicOwner(clinicId);
 
-      // Clinic members subcollection
-      match /members/{memberId} {
+      // ========================================
+      // PATIENTS (Clinic Subcollection)
+      // ========================================
+
+      /**
+       * Patients are stored in /clinics/{clinicId}/patients/{patientId}
+       * Only clinic members can access patient data.
+       */
+      match /patients/{patientId} {
         allow read, write: if belongsToClinic(clinicId);
       }
-    }
 
-    // Patients collection (clinic-scoped)
-    match /clinics/{clinicId}/patients/{patientId} {
-      allow read, write: if belongsToClinic(clinicId);
-    }
+      // ========================================
+      // APPOINTMENTS (Clinic Subcollection)
+      // ========================================
 
-    // Appointments collection (clinic-scoped)
-    match /clinics/{clinicId}/appointments/{appointmentId} {
-      allow read, write: if belongsToClinic(clinicId);
-    }
+      /**
+       * Appointments are stored in /clinics/{clinicId}/appointments/{appointmentId}
+       * Only clinic members can access appointment data.
+       */
+      match /appointments/{appointmentId} {
+        allow read, write: if belongsToClinic(clinicId);
+      }
 
-    // Medical records collection (clinic-scoped)
-    match /clinics/{clinicId}/records/{recordId} {
-      allow read, write: if belongsToClinic(clinicId);
-    }
+      // ========================================
+      // MEDICAL RECORDS (Clinic Subcollection)
+      // ========================================
 
-    // User profiles (user-scoped)
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId);
+      /**
+       * Medical records are stored in /clinics/{clinicId}/records/{recordId}
+       * Only clinic members can access medical records.
+       * Note: Records are polymorphic (SOAP, Prescription, etc.)
+       */
+      match /records/{recordId} {
+        allow read, write: if belongsToClinic(clinicId);
+      }
     }
   }
 }

@@ -1,0 +1,24 @@
+/**
+ * Firestore Services
+ *
+ * Re-exports all Firestore service modules for convenient importing.
+ *
+ * @example
+ * import { userService, clinicService, patientService } from '@/services/firestore';
+ */
+
+export { userService } from './user.service';
+export type {
+  CreateUserProfileInput,
+  UpdateUserProfileInput,
+} from './user.service';
+
+export { clinicService } from './clinic.service';
+
+export { patientService } from './patient.service';
+
+export { appointmentService } from './appointment.service';
+
+export { recordService } from './record.service';
+
+export { seedClinicData, removeDemoData } from './seed.service';

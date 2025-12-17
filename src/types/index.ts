@@ -150,3 +150,92 @@ export interface PluginDefinition {
   icon: any; // Lucide Icon
   features: string[];
 }
+
+// --- CLINIC & USER TYPES (Multi-tenancy) ---
+
+/**
+ * Pricing plan types for clinics.
+ */
+export type ClinicPlan = 'solo' | 'clinica' | 'black';
+
+/**
+ * User roles within a clinic.
+ */
+export type UserRole = 'owner' | 'admin' | 'professional' | 'receptionist';
+
+/**
+ * Clinic settings configuration.
+ */
+export interface ClinicSettings {
+  workingHours: {
+    start: string; // HH:mm format
+    end: string;
+  };
+  defaultAppointmentDuration: number; // in minutes
+  specialties: SpecialtyType[];
+  timezone: string;
+}
+
+/**
+ * Clinic entity representing a medical practice.
+ * Root document in Firestore: /clinics/{clinicId}
+ */
+export interface Clinic {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  logo?: string;
+  ownerId: string;
+  plan: ClinicPlan;
+  settings: ClinicSettings;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * User profile stored in Firestore: /users/{userId}
+ * Links Firebase Auth user to a clinic.
+ */
+export interface UserProfile {
+  id: string;
+  email: string;
+  displayName: string;
+  clinicId: string | null; // null if not yet associated with a clinic
+  role: UserRole;
+  specialty: SpecialtyType;
+  avatar?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Input type for creating a new clinic (without auto-generated fields).
+ */
+export type CreateClinicInput = Omit<Clinic, 'id' | 'createdAt' | 'updatedAt' | 'ownerId'>;
+
+/**
+ * Input type for creating a new patient (without auto-generated fields).
+ */
+export type CreatePatientInput = Omit<Patient, 'id' | 'createdAt' | 'age'>;
+
+/**
+ * Input type for creating a new appointment (without auto-generated fields).
+ */
+export type CreateAppointmentInput = Omit<Appointment, 'id'>;
+
+/**
+ * Input type for creating a new medical record (without auto-generated fields).
+ */
+export type CreateRecordInput = Omit<MedicalRecord, 'id' | 'date' | 'professional'>;
+
+/**
+ * Specific input types for each record type (for better type inference).
+ */
+export type CreateSoapRecordInput = Omit<SoapRecord, 'id' | 'date' | 'professional'>;
+export type CreateTextRecordInput = Omit<TextRecord, 'id' | 'date' | 'professional'>;
+export type CreatePrescriptionRecordInput = Omit<PrescriptionRecord, 'id' | 'date' | 'professional'>;
+export type CreateExamRequestRecordInput = Omit<ExamRequestRecord, 'id' | 'date' | 'professional'>;
+export type CreatePsychoSessionRecordInput = Omit<PsychoSessionRecord, 'id' | 'date' | 'professional'>;
+export type CreateAnthropometryRecordInput = Omit<AnthropometryRecord, 'id' | 'date' | 'professional'>;

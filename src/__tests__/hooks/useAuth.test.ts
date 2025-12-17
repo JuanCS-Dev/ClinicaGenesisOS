@@ -1,14 +1,11 @@
 /**
- * useAuth Hook Tests
- *
- * Tests for Firebase authentication hook.
+ * useAuth Hook Tests - Firebase authentication hook.
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useAuth } from '../../hooks/useAuth';
 import * as firebaseAuth from 'firebase/auth';
 
-// Mock user object
 const mockUser = {
   uid: 'test-uid-123',
   email: 'test@example.com',
@@ -17,10 +14,26 @@ const mockUser = {
   emailVerified: true,
 };
 
+/** Helper: Create error with code */
+const createAuthError = (code: string, message = '') => {
+  const error = new Error(message);
+  (error as { code?: string }).code = code;
+  return error;
+};
+
+/** Helper: Wait for hook to finish loading */
+const waitForLoaded = async (result: { current: { loading: boolean } }) => {
+  await waitFor(() => expect(result.current.loading).toBe(false));
+};
+
+/** Helper: Execute action and catch expected error */
+const safeAct = async (action: () => Promise<void>) => {
+  await act(async () => { try { await action(); } catch { /* expected */ } });
+};
+
 describe('useAuth', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset onAuthStateChanged to default behavior
     vi.mocked(firebaseAuth.onAuthStateChanged).mockImplementation((auth, callback) => {
       setTimeout(() => (callback as (user: null) => void)(null), 0);
       return vi.fn();
@@ -30,7 +43,6 @@ describe('useAuth', () => {
   describe('initial state', () => {
     it('should start with loading true and no user', () => {
       const { result } = renderHook(() => useAuth());
-
       expect(result.current.loading).toBe(true);
       expect(result.current.user).toBe(null);
       expect(result.current.error).toBe(null);
@@ -38,165 +50,80 @@ describe('useAuth', () => {
 
     it('should set loading to false after auth state is determined', async () => {
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
+      await waitForLoaded(result);
     });
   });
 
   describe('signIn', () => {
-    it('should sign in successfully with email and password', async () => {
+    it('should sign in successfully', async () => {
       vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockResolvedValueOnce({
         user: mockUser,
       } as firebaseAuth.UserCredential);
-
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        await result.current.signIn('test@example.com', 'password123');
-      });
-
+      await waitForLoaded(result);
+      await act(async () => { await result.current.signIn('test@example.com', 'password123'); });
       expect(firebaseAuth.signInWithEmailAndPassword).toHaveBeenCalledWith(
-        expect.anything(),
-        'test@example.com',
-        'password123'
+        expect.anything(), 'test@example.com', 'password123'
       );
     });
 
     it('should handle invalid email error', async () => {
-      const error = new Error('Invalid email');
-      (error as { code?: string }).code = 'auth/invalid-email';
-      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(error);
-
+      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(
+        createAuthError('auth/invalid-email')
+      );
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        try {
-          await result.current.signIn('invalid', 'password');
-        } catch {
-          // Expected
-        }
-      });
-
+      await waitForLoaded(result);
+      await safeAct(() => result.current.signIn('invalid', 'password'));
       expect(result.current.error).toBe('Email inválido.');
     });
 
     it('should handle user not found error', async () => {
-      const error = new Error('User not found');
-      (error as { code?: string }).code = 'auth/user-not-found';
-      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(error);
-
+      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(
+        createAuthError('auth/user-not-found')
+      );
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        try {
-          await result.current.signIn('notfound@example.com', 'password');
-        } catch {
-          // Expected
-        }
-      });
-
+      await waitForLoaded(result);
+      await safeAct(() => result.current.signIn('notfound@example.com', 'password'));
       expect(result.current.error).toBe('Usuário não encontrado.');
     });
 
     it('should handle wrong password error', async () => {
-      const error = new Error('Wrong password');
-      (error as { code?: string }).code = 'auth/wrong-password';
-      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(error);
-
+      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(
+        createAuthError('auth/wrong-password')
+      );
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        try {
-          await result.current.signIn('test@example.com', 'wrongpassword');
-        } catch {
-          // Expected
-        }
-      });
-
+      await waitForLoaded(result);
+      await safeAct(() => result.current.signIn('test@example.com', 'wrongpassword'));
       expect(result.current.error).toBe('Senha incorreta.');
     });
 
     it('should handle invalid credential error', async () => {
-      const error = new Error('Invalid credential');
-      (error as { code?: string }).code = 'auth/invalid-credential';
-      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(error);
-
+      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(
+        createAuthError('auth/invalid-credential')
+      );
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        try {
-          await result.current.signIn('test@example.com', 'invalid');
-        } catch {
-          // Expected
-        }
-      });
-
+      await waitForLoaded(result);
+      await safeAct(() => result.current.signIn('test@example.com', 'invalid'));
       expect(result.current.error).toBe('Credenciais inválidas.');
     });
 
     it('should handle too many requests error', async () => {
-      const error = new Error('Too many requests');
-      (error as { code?: string }).code = 'auth/too-many-requests';
-      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(error);
-
+      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(
+        createAuthError('auth/too-many-requests')
+      );
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        try {
-          await result.current.signIn('test@example.com', 'password');
-        } catch {
-          // Expected
-        }
-      });
-
+      await waitForLoaded(result);
+      await safeAct(() => result.current.signIn('test@example.com', 'password'));
       expect(result.current.error).toBe('Muitas tentativas. Tente novamente mais tarde.');
     });
 
     it('should handle user disabled error', async () => {
-      const error = new Error('User disabled');
-      (error as { code?: string }).code = 'auth/user-disabled';
-      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(error);
-
+      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(
+        createAuthError('auth/user-disabled')
+      );
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        try {
-          await result.current.signIn('disabled@example.com', 'password');
-        } catch {
-          // Expected
-        }
-      });
-
+      await waitForLoaded(result);
+      await safeAct(() => result.current.signIn('disabled@example.com', 'password'));
       expect(result.current.error).toBe('Esta conta foi desativada.');
     });
   });
@@ -207,66 +134,32 @@ describe('useAuth', () => {
         user: mockUser,
       } as firebaseAuth.UserCredential);
       vi.mocked(firebaseAuth.updateProfile).mockResolvedValueOnce();
-
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        await result.current.signUp('new@example.com', 'password123', 'New User');
-      });
-
+      await waitForLoaded(result);
+      await act(async () => { await result.current.signUp('new@example.com', 'password123', 'New User'); });
       expect(firebaseAuth.createUserWithEmailAndPassword).toHaveBeenCalledWith(
-        expect.anything(),
-        'new@example.com',
-        'password123'
+        expect.anything(), 'new@example.com', 'password123'
       );
       expect(firebaseAuth.updateProfile).toHaveBeenCalledWith(mockUser, { displayName: 'New User' });
     });
 
     it('should handle email already in use error', async () => {
-      const error = new Error('Email already in use');
-      (error as { code?: string }).code = 'auth/email-already-in-use';
-      vi.mocked(firebaseAuth.createUserWithEmailAndPassword).mockRejectedValueOnce(error);
-
+      vi.mocked(firebaseAuth.createUserWithEmailAndPassword).mockRejectedValueOnce(
+        createAuthError('auth/email-already-in-use')
+      );
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        try {
-          await result.current.signUp('existing@example.com', 'password123', 'User');
-        } catch {
-          // Expected
-        }
-      });
-
+      await waitForLoaded(result);
+      await safeAct(() => result.current.signUp('existing@example.com', 'password123', 'User'));
       expect(result.current.error).toBe('Este email já está em uso.');
     });
 
     it('should handle weak password error', async () => {
-      const error = new Error('Weak password');
-      (error as { code?: string }).code = 'auth/weak-password';
-      vi.mocked(firebaseAuth.createUserWithEmailAndPassword).mockRejectedValueOnce(error);
-
+      vi.mocked(firebaseAuth.createUserWithEmailAndPassword).mockRejectedValueOnce(
+        createAuthError('auth/weak-password')
+      );
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        try {
-          await result.current.signUp('test@example.com', '123', 'User');
-        } catch {
-          // Expected
-        }
-      });
-
+      await waitForLoaded(result);
+      await safeAct(() => result.current.signUp('test@example.com', '123', 'User'));
       expect(result.current.error).toBe('A senha deve ter pelo menos 6 caracteres.');
     });
   });
@@ -276,86 +169,46 @@ describe('useAuth', () => {
       vi.mocked(firebaseAuth.signInWithPopup).mockResolvedValueOnce({
         user: mockUser,
       } as firebaseAuth.UserCredential);
-
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        await result.current.signInWithGoogle();
-      });
-
+      await waitForLoaded(result);
+      await act(async () => { await result.current.signInWithGoogle(); });
       expect(firebaseAuth.signInWithPopup).toHaveBeenCalled();
     });
 
     it('should handle popup closed by user error', async () => {
-      const error = new Error('Popup closed');
-      (error as { code?: string }).code = 'auth/popup-closed-by-user';
-      vi.mocked(firebaseAuth.signInWithPopup).mockRejectedValueOnce(error);
-
+      vi.mocked(firebaseAuth.signInWithPopup).mockRejectedValueOnce(
+        createAuthError('auth/popup-closed-by-user')
+      );
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        try {
-          await result.current.signInWithGoogle();
-        } catch {
-          // Expected
-        }
-      });
-
+      await waitForLoaded(result);
+      await safeAct(() => result.current.signInWithGoogle());
       expect(result.current.error).toBe('Login cancelado.');
     });
   });
 
   describe('logout', () => {
-    it('should sign out successfully', async () => {
-      vi.mocked(firebaseAuth.signOut).mockResolvedValueOnce();
+    const setupLoggedInUser = () => {
       vi.mocked(firebaseAuth.onAuthStateChanged).mockImplementation((auth, callback) => {
-        setTimeout(() => (callback as (user: typeof mockUser) => void)(mockUser as any), 0);
+        setTimeout(() => (callback as (user: typeof mockUser) => void)(mockUser), 0);
         return vi.fn();
       });
+    };
 
+    it('should sign out successfully', async () => {
+      vi.mocked(firebaseAuth.signOut).mockResolvedValueOnce();
+      setupLoggedInUser();
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        await result.current.logout();
-      });
-
+      await waitForLoaded(result);
+      await act(async () => { await result.current.logout(); });
       expect(firebaseAuth.signOut).toHaveBeenCalled();
     });
 
     it('should handle logout error', async () => {
-      const error = new Error('Logout failed');
-      vi.mocked(firebaseAuth.signOut).mockRejectedValueOnce(error);
-      vi.mocked(firebaseAuth.onAuthStateChanged).mockImplementation((auth, callback) => {
-        setTimeout(() => (callback as (user: typeof mockUser) => void)(mockUser as any), 0);
-        return vi.fn();
-      });
-
+      vi.mocked(firebaseAuth.signOut).mockRejectedValueOnce(new Error('Logout failed'));
+      setupLoggedInUser();
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        try {
-          await result.current.logout();
-        } catch {
-          // Expected
-        }
-      });
-
+      await waitForLoaded(result);
+      await safeAct(() => result.current.logout());
       expect(result.current.error).toBe('Logout failed');
     });
   });
@@ -363,72 +216,33 @@ describe('useAuth', () => {
   describe('resetPassword', () => {
     it('should send password reset email successfully', async () => {
       vi.mocked(firebaseAuth.sendPasswordResetEmail).mockResolvedValueOnce();
-
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        await result.current.resetPassword('test@example.com');
-      });
-
-      expect(firebaseAuth.sendPasswordResetEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        'test@example.com'
-      );
+      await waitForLoaded(result);
+      await act(async () => { await result.current.resetPassword('test@example.com'); });
+      expect(firebaseAuth.sendPasswordResetEmail).toHaveBeenCalledWith(expect.anything(), 'test@example.com');
     });
 
     it('should handle reset password error', async () => {
-      const error = new Error('User not found');
-      (error as { code?: string }).code = 'auth/user-not-found';
-      vi.mocked(firebaseAuth.sendPasswordResetEmail).mockRejectedValueOnce(error);
-
+      vi.mocked(firebaseAuth.sendPasswordResetEmail).mockRejectedValueOnce(
+        createAuthError('auth/user-not-found')
+      );
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        try {
-          await result.current.resetPassword('notfound@example.com');
-        } catch {
-          // Expected
-        }
-      });
-
+      await waitForLoaded(result);
+      await safeAct(() => result.current.resetPassword('notfound@example.com'));
       expect(result.current.error).toBe('Usuário não encontrado.');
     });
   });
 
   describe('clearError', () => {
     it('should clear error state', async () => {
-      const error = new Error('Test error');
-      (error as { code?: string }).code = 'auth/invalid-email';
-      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(error);
-
+      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(
+        createAuthError('auth/invalid-email')
+      );
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        try {
-          await result.current.signIn('invalid', 'password');
-        } catch {
-          // Expected
-        }
-      });
-
+      await waitForLoaded(result);
+      await safeAct(() => result.current.signIn('invalid', 'password'));
       expect(result.current.error).toBe('Email inválido.');
-
-      act(() => {
-        result.current.clearError();
-      });
-
+      act(() => { result.current.clearError(); });
       expect(result.current.error).toBe(null);
     });
   });
@@ -441,87 +255,40 @@ describe('useAuth', () => {
         setTimeout(() => (callback as (user: null) => void)(null), 0);
         return vi.fn();
       });
-
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
+      await waitForLoaded(result);
       expect(result.current.user).toBe(null);
-
-      // Simulate user signing in
-      act(() => {
-        if (authCallback) {
-          authCallback(mockUser as any);
-        }
-      });
-
+      act(() => { if (authCallback) authCallback(mockUser); });
       expect(result.current.user).toEqual(mockUser);
     });
   });
 
   describe('unknown error handling', () => {
     it('should handle unknown code with empty message', async () => {
-      const error = new Error('');
-      (error as { code?: string }).code = 'auth/unknown-code';
-      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(error);
-
+      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(
+        createAuthError('auth/unknown-code', '')
+      );
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        try {
-          await result.current.signIn('test@example.com', 'password');
-        } catch {
-          // Expected
-        }
-      });
-
+      await waitForLoaded(result);
+      await safeAct(() => result.current.signIn('test@example.com', 'password'));
       expect(result.current.error).toBe('Erro desconhecido.');
     });
 
     it('should handle unknown error with message', async () => {
-      const error = new Error('Unknown error occurred');
-      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(error);
-
+      vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce(
+        new Error('Unknown error occurred')
+      );
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        try {
-          await result.current.signIn('test@example.com', 'password');
-        } catch {
-          // Expected
-        }
-      });
-
+      await waitForLoaded(result);
+      await safeAct(() => result.current.signIn('test@example.com', 'password'));
       expect(result.current.error).toBe('Unknown error occurred');
     });
 
     it('should handle non-Error objects', async () => {
       vi.mocked(firebaseAuth.signInWithEmailAndPassword).mockRejectedValueOnce('string error');
-
       const { result } = renderHook(() => useAuth());
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
-
-      await act(async () => {
-        try {
-          await result.current.signIn('test@example.com', 'password');
-        } catch {
-          // Expected
-        }
-      });
-
+      await waitForLoaded(result);
+      await safeAct(() => result.current.signIn('test@example.com', 'password'));
       expect(result.current.error).toBe('Erro desconhecido.');
     });
   });

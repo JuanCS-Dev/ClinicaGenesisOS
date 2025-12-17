@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { useStore } from '../../store/useStore';
 import { useAuthContext } from '../../contexts/AuthContext';
+import { useClinicContext } from '../../contexts/ClinicContext';
 import { SpecialtyType } from '../../types';
 import { 
   LayoutDashboard, 
@@ -39,27 +39,31 @@ const NavItem = ({ to, icon: Icon, label }: { to: string, icon: any, label: stri
   </NavLink>
 );
 
-const PluginButton = ({ 
-  id, 
-  icon: Icon, 
-  label, 
-  activeColorClass, 
+const PluginButton = ({
+  id,
+  icon: Icon,
+  label,
+  activeColorClass,
   activeBgClass,
-  activeBorderClass 
-}: { 
-  id: SpecialtyType, 
-  icon: any, 
+  activeBorderClass
+}: {
+  id: SpecialtyType,
+  icon: any,
   label: string,
   activeColorClass: string,
   activeBgClass: string,
   activeBorderClass: string
 }) => {
-  const { currentUser, setSpecialty } = useStore();
-  const isActive = currentUser.specialty === id;
+  const { userProfile, updateUserProfile } = useClinicContext();
+  const isActive = userProfile?.specialty === id;
+
+  const handleSetSpecialty = () => {
+    updateUserProfile({ specialty: id }).catch(console.error);
+  };
 
   return (
-    <button 
-      onClick={() => setSpecialty(id)}
+    <button
+      onClick={handleSetSpecialty}
       className={`
         w-full flex items-center gap-3 px-3 py-3 rounded-xl text-[13px] transition-all duration-300 group relative overflow-hidden
         ${isActive 
