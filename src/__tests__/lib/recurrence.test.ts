@@ -388,4 +388,60 @@ describe('recurrence utility', () => {
       expect(getParentId(appointment)).toBe('my-id');
     });
   });
+
+  describe('edge cases', () => {
+    it('handles weekly recurrence without daysOfWeek specified', () => {
+      const appointment = createTestAppointment({
+        date: createUTCDate('2024-01-15'), // Monday
+        recurrence: {
+          frequency: 'weekly',
+          endDate: null,
+          // Note: no daysOfWeek specified
+        },
+      });
+      const rangeStart = new Date('2024-01-15T00:00:00Z');
+      const rangeEnd = new Date('2024-01-31T23:59:59Z');
+
+      const result = expandRecurringAppointment(appointment, rangeStart, rangeEnd);
+
+      // Without daysOfWeek, should create instances on all days of range (weekly step)
+      // Jan 15, 22, 29 = 3 instances
+      expect(result).toHaveLength(3);
+    });
+
+    it('handles weekly recurrence with empty daysOfWeek array', () => {
+      const appointment = createTestAppointment({
+        date: createUTCDate('2024-01-15'), // Monday
+        recurrence: {
+          frequency: 'weekly',
+          endDate: null,
+          daysOfWeek: [], // Empty array
+        },
+      });
+      const rangeStart = new Date('2024-01-15T00:00:00Z');
+      const rangeEnd = new Date('2024-01-31T23:59:59Z');
+
+      const result = expandRecurringAppointment(appointment, rangeStart, rangeEnd);
+
+      // With empty daysOfWeek, should still generate instances (all days allowed)
+      expect(result).toHaveLength(3);
+    });
+
+    it('handles unknown frequency type gracefully', () => {
+      const appointment = createTestAppointment({
+        date: createUTCDate('2024-01-15'),
+        recurrence: {
+          frequency: 'unknown' as 'daily', // Cast to bypass TypeScript
+          endDate: null,
+        },
+      });
+      const rangeStart = new Date('2024-01-15T00:00:00Z');
+      const rangeEnd = new Date('2024-01-17T23:59:59Z');
+
+      const result = expandRecurringAppointment(appointment, rangeStart, rangeEnd);
+
+      // Unknown frequency defaults to daily behavior
+      expect(result).toHaveLength(3);
+    });
+  });
 });

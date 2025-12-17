@@ -229,8 +229,10 @@ export interface UserProfile {
 
 /**
  * Input type for creating a new clinic (without auto-generated fields).
+ * plan and settings are optional as the service provides defaults.
  */
-export type CreateClinicInput = Omit<Clinic, 'id' | 'createdAt' | 'updatedAt' | 'ownerId'>;
+export type CreateClinicInput = Pick<Clinic, 'name'> &
+  Partial<Omit<Clinic, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'name'>>;
 
 /**
  * Input type for creating a new patient (without auto-generated fields).

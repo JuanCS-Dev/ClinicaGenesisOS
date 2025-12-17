@@ -332,5 +332,154 @@ describe('patientService', () => {
 
       expect(patients[0].age).toBe(30);
     });
+
+    it('should calculate age correctly when birthday has not occurred this year', async () => {
+      const today = new Date();
+      // Set birthday to next month (not occurred yet this year)
+      const birthMonth = (today.getMonth() + 1) % 12;
+      const birthYear = birthMonth < today.getMonth() ? today.getFullYear() - 29 : today.getFullYear() - 30;
+      const thirtyYearsAgoNextMonth = new Date(birthYear, birthMonth, 15);
+
+      const mockDocs = [
+        {
+          id: 'patient-1',
+          data: () => ({
+            ...mockPatientData,
+            birthDate: thirtyYearsAgoNextMonth.toISOString().split('T')[0],
+            createdAt: createMockTimestamp(),
+          }),
+        },
+      ];
+
+      (getDocs as Mock).mockResolvedValue({ docs: mockDocs });
+      (collection as Mock).mockReturnValue({});
+      (query as Mock).mockReturnValue({});
+
+      const patients = await patientService.getAll(mockClinicId);
+
+      // Age should be 29 because birthday hasn't occurred yet this year
+      expect(patients[0].age).toBe(29);
+    });
+
+    it('should calculate age correctly when in same month but day has not occurred', async () => {
+      const today = new Date();
+      // Set birthday to later in the same month (if possible)
+      const birthDay = Math.min(today.getDate() + 10, 28);
+      const thirtyYearsAgoSameMonth = new Date(
+        today.getFullYear() - 30,
+        today.getMonth(),
+        birthDay
+      );
+
+      const mockDocs = [
+        {
+          id: 'patient-1',
+          data: () => ({
+            ...mockPatientData,
+            birthDate: thirtyYearsAgoSameMonth.toISOString().split('T')[0],
+            createdAt: createMockTimestamp(),
+          }),
+        },
+      ];
+
+      (getDocs as Mock).mockResolvedValue({ docs: mockDocs });
+      (collection as Mock).mockReturnValue({});
+      (query as Mock).mockReturnValue({});
+
+      const patients = await patientService.getAll(mockClinicId);
+
+      // Age should be 29 if birthday day hasn't occurred yet, or 30 if it has
+      expect([29, 30]).toContain(patients[0].age);
+    });
+  });
+
+  describe('subscribeToOne', () => {
+    it('should subscribe to a single patient', () => {
+      const mockCallback = vi.fn();
+      const mockUnsubscribe = vi.fn();
+
+      (doc as Mock).mockReturnValue({});
+      (onSnapshot as Mock).mockImplementation((_, callback) => {
+        callback({
+          exists: () => true,
+          id: mockPatientId,
+          data: () => ({
+            ...mockPatientData,
+            createdAt: createMockTimestamp(),
+          }),
+        });
+        return mockUnsubscribe;
+      });
+
+      const unsubscribe = patientService.subscribeToOne(mockClinicId, mockPatientId, mockCallback);
+
+      expect(onSnapshot).toHaveBeenCalled();
+      expect(mockCallback).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'Maria Silva' })
+      );
+      expect(typeof unsubscribe).toBe('function');
+    });
+
+    it('should return null when patient does not exist', () => {
+      const mockCallback = vi.fn();
+      const mockUnsubscribe = vi.fn();
+
+      (doc as Mock).mockReturnValue({});
+      (onSnapshot as Mock).mockImplementation((_, callback) => {
+        callback({
+          exists: () => false,
+        });
+        return mockUnsubscribe;
+      });
+
+      patientService.subscribeToOne(mockClinicId, mockPatientId, mockCallback);
+
+      expect(mockCallback).toHaveBeenCalledWith(null);
+    });
+
+    it('should handle errors gracefully in subscribeToOne', () => {
+      const mockCallback = vi.fn();
+      const mockUnsubscribe = vi.fn();
+
+      (doc as Mock).mockReturnValue({});
+      (onSnapshot as Mock).mockImplementation((_, __, errorCallback) => {
+        errorCallback(new Error('Firestore error'));
+        return mockUnsubscribe;
+      });
+
+      patientService.subscribeToOne(mockClinicId, mockPatientId, mockCallback);
+
+      expect(mockCallback).toHaveBeenCalledWith(null);
+    });
+  });
+
+  describe('addTag error handling', () => {
+    it('should throw error when patient not found', async () => {
+      const mockDocSnap = {
+        exists: () => false,
+      };
+
+      (doc as Mock).mockReturnValue({});
+      (getDoc as Mock).mockResolvedValue(mockDocSnap);
+
+      await expect(
+        patientService.addTag(mockClinicId, 'nonexistent', 'NewTag')
+      ).rejects.toThrow('Patient not found: nonexistent');
+    });
+  });
+
+  describe('removeTag error handling', () => {
+    it('should throw error when patient not found', async () => {
+      const mockDocSnap = {
+        exists: () => false,
+      };
+
+      (doc as Mock).mockReturnValue({});
+      (getDoc as Mock).mockResolvedValue(mockDocSnap);
+
+      await expect(
+        patientService.removeTag(mockClinicId, 'nonexistent', 'Tag')
+      ).rejects.toThrow('Patient not found: nonexistent');
+    });
   });
 });

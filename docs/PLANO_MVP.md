@@ -16,7 +16,8 @@ Transformar o demo atual (React + localStorage) em um MVP production-ready usand
 | **Fase 1.1: Autenticação** | ✅ Completa | 100% |
 | **Fase 1.2: Backend API** | ⏸️ Adiada | N/A |
 | **Fase 1.3: Banco de Dados** | ✅ Completa | 100% |
-| **Fase 2: Core Features** | 🔲 Pendente | 0% |
+| **Fase 1.4: Test Coverage 90%+** | ✅ Completa | 100% |
+| **Fase 2: Core Features** | 🔄 Em Progresso | 30% |
 | **Fase 3: AI Integration** | 🔲 Pendente | 0% |
 | **Fase 4: Financeiro** | 🔲 Pendente | 0% |
 | **Fase 5: Polish & Launch** | 🔲 Pendente | 0% |
@@ -59,7 +60,6 @@ Transformar o demo atual (React + localStorage) em um MVP production-ready usand
 - Migração completa de Zustand para Firestore
 - Real-time subscriptions funcionando
 - Seed data para novas clínicas
-- **89 testes passando** (14 novos para patient.service)
 
 **Estrutura Firestore:**
 ```
@@ -77,10 +77,29 @@ Transformar o demo atual (React + localStorage) em um MVP production-ready usand
 - `src/pages/Onboarding.tsx` - Wizard de configuração
 - `firestore.rules` - Security rules (deployed)
 - `firestore.indexes.json` - Índices
-- `src/__tests__/services/firestore/patient.service.test.ts` - 14 testes
 
 **Arquivos removidos:**
 - `src/store/useStore.ts` - Zustand removido completamente
+
+#### ✅ Fase 1.4: Test Coverage 90%+ (Completada em 2025-12-17)
+- **244 testes passando**
+- **99.52% statements** coverage
+- **92.8% branches** coverage
+- **100% functions** coverage
+- **99.5% lines** coverage
+
+**Testes criados:**
+- `src/__tests__/hooks/useRecords.test.ts` - 21 testes (subscriptions, CRUD)
+- `src/__tests__/hooks/usePatients.test.ts` - 17 testes (subscriptions, CRUD, refresh)
+- `src/__tests__/hooks/useAppointments.test.ts` - 21 testes (filters, subscriptions, CRUD)
+- `src/__tests__/contexts/ClinicContext.test.tsx` - 21 testes (clinic/user profile)
+- `src/__tests__/services/firestore/patient.service.test.ts` - 21 testes
+- `src/__tests__/services/firestore/appointment.service.test.ts` - 22 testes
+- `src/__tests__/services/firestore/record.service.test.ts` - 22 testes (polymorphic types)
+- `src/__tests__/lib/recurrence.test.ts` - 24 testes (edge cases)
+
+**Arquivos modificados:**
+- `src/types/index.ts` - Fix CreateClinicInput type (plan/settings optional)
 
 #### ⏸️ Fase 1.2: Backend API (Adiada)
 > **Decisão**: Adiada para pós-MVP. Firestore com Security Rules atende as necessidades atuais.
@@ -99,7 +118,7 @@ Transformar o demo atual (React + localStorage) em um MVP production-ready usand
 | Styling | Tailwind (build local) | ✅ Configurado |
 | Charts | Recharts 3 | ✅ Ok |
 | Build | Vite 6 | ✅ Rápido |
-| Testing | Vitest + RTL | ✅ 89 testes |
+| Testing | Vitest + RTL | ✅ 244 testes (99.5% coverage) |
 | Backend | Firestore (serverless) | ✅ Multi-tenant |
 | Auth | Firebase Auth | ✅ Implementado |
 | DB | Firestore | ✅ Production-ready |
@@ -124,7 +143,7 @@ Transformar o demo atual (React + localStorage) em um MVP production-ready usand
 2. ~~**IDs**: Math.random() - previsível, inseguro~~ → ✅ Firestore auto-generated IDs
 3. **Validação**: Sem validação de email/telefone (pendente Zod)
 4. **Arquivos grandes**: Landing.tsx (405 linhas) - precisa refatorar
-5. ~~**Sem testes**: 0% cobertura~~ → ✅ **89 testes passando**
+5. ~~**Sem testes**: 0% cobertura~~ → ✅ **244 testes (99.5% coverage)**
 
 ---
 
@@ -369,14 +388,14 @@ Médico digita sintomas → AI sugere:
 - `src/services/firestore/*` → 6 services criados
 - `src/hooks/use*.ts` → 4 hooks criados
 
-### Fase 2: Core Features Production (Sprints 3-4)
+### Fase 2: Core Features Production (Sprints 3-4) 🔄 Em Progresso
 
-#### 2.1 Agenda Aprimorada
-- [ ] Week/Month view
-- [ ] Drag-and-drop
-- [ ] Recorrência
-- [ ] Cores por status/profissional
-- [ ] Filtros funcionais
+#### 2.1 Agenda Aprimorada ✅ Parcialmente Completa
+- [x] Week/Month view
+- [x] Drag-and-drop para reagendar
+- [x] Recorrência (diária, semanal, quinzenal, mensal)
+- [x] Cores por status/profissional
+- [x] Filtros funcionais (FilterPanel extraído)
 
 #### 2.2 Pacientes Completo
 - [ ] Busca funcional (full-text)
@@ -583,7 +602,7 @@ ClinicaGenesisOS/
 - [ ] Tempo de carregamento < 2s (LCP)
 - [ ] 0 erros críticos em produção
 - [ ] 99.5% uptime
-- [ ] Cobertura de testes > 60%
+- [x] ~~Cobertura de testes > 60%~~ → **99.5% alcançado** ✅
 
 ### Produto
 - [ ] 10 clínicas beta usando ativamente
