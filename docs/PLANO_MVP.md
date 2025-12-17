@@ -8,14 +8,14 @@ Transformar o demo atual (React + localStorage) em um MVP production-ready usand
 
 ## 📊 STATUS DE IMPLEMENTAÇÃO
 
-> Última atualização: 2025-12-16
+> Última atualização: 2025-12-17
 
 | Fase | Status | Progresso |
 |------|--------|-----------|
 | **Fase 0: Preparação** | ✅ Completa | 100% |
 | **Fase 1.1: Autenticação** | ✅ Completa | 100% |
-| **Fase 1.2: Backend API** | 🔲 Pendente | 0% |
-| **Fase 1.3: Banco de Dados** | 🔲 Pendente | 0% |
+| **Fase 1.2: Backend API** | ⏸️ Adiada | N/A |
+| **Fase 1.3: Banco de Dados** | ✅ Completa | 100% |
 | **Fase 2: Core Features** | 🔲 Pendente | 0% |
 | **Fase 3: AI Integration** | 🔲 Pendente | 0% |
 | **Fase 4: Financeiro** | 🔲 Pendente | 0% |
@@ -37,6 +37,7 @@ Transformar o demo atual (React + localStorage) em um MVP production-ready usand
 - Contexto de autenticação (`AuthContext`)
 - Hook `useAuth` com todas operações
 - Páginas Login e Register com UI premium
+- Multi-tenancy implementado (clinicId em todos os docs)
 - **100% de cobertura de testes** (75 testes passando)
 
 **Arquivos criados:**
@@ -51,6 +52,40 @@ Transformar o demo atual (React + localStorage) em um MVP production-ready usand
 - `src/__tests__/pages/auth/Login.test.tsx` - 17 testes
 - `src/__tests__/pages/auth/Register.test.tsx` - 21 testes
 
+#### ✅ Fase 1.3: Banco de Dados (Completada em 2025-12-17)
+- Schema Firestore com subcollections multi-tenant
+- Security Rules deployed em produção
+- Índices configurados para queries
+- Migração completa de Zustand para Firestore
+- Real-time subscriptions funcionando
+- Seed data para novas clínicas
+- **89 testes passando** (14 novos para patient.service)
+
+**Estrutura Firestore:**
+```
+/clinics/{clinicId}
+  /patients/{patientId}
+  /appointments/{appointmentId}
+  /records/{recordId}
+/users/{userId}
+```
+
+**Arquivos criados:**
+- `src/services/firestore/` - 6 services (clinic, patient, appointment, record, user, seed)
+- `src/hooks/usePatients.ts`, `usePatient.ts`, `useAppointments.ts`, `useRecords.ts`
+- `src/contexts/ClinicContext.tsx` - Multi-tenancy provider
+- `src/pages/Onboarding.tsx` - Wizard de configuração
+- `firestore.rules` - Security rules (deployed)
+- `firestore.indexes.json` - Índices
+- `src/__tests__/services/firestore/patient.service.test.ts` - 14 testes
+
+**Arquivos removidos:**
+- `src/store/useStore.ts` - Zustand removido completamente
+
+#### ⏸️ Fase 1.2: Backend API (Adiada)
+> **Decisão**: Adiada para pós-MVP. Firestore com Security Rules atende as necessidades atuais.
+> Será implementada quando precisarmos de: webhooks complexos, integrações externas (WhatsApp API), ou lógica de negócio server-side.
+
 ---
 
 ## PARTE 1: AUDITORIA DO PROJETO ATUAL
@@ -60,35 +95,36 @@ Transformar o demo atual (React + localStorage) em um MVP production-ready usand
 |------------|------------|--------|
 | Frontend | React 19 + TypeScript | ✅ Sólido |
 | Routing | React Router 7 | ✅ Moderno |
-| State | Zustand 5 + localStorage | ⚠️ Apenas local |
+| State | Firestore + React Hooks | ✅ Real-time sync |
 | Styling | Tailwind (build local) | ✅ Configurado |
 | Charts | Recharts 3 | ✅ Ok |
 | Build | Vite 6 | ✅ Rápido |
-| Testing | Vitest + RTL | ✅ 100% auth coverage |
-| Backend | Nenhum | ❌ Crítico |
+| Testing | Vitest + RTL | ✅ 89 testes |
+| Backend | Firestore (serverless) | ✅ Multi-tenant |
 | Auth | Firebase Auth | ✅ Implementado |
-| DB | localStorage | ❌ Não produção |
+| DB | Firestore | ✅ Production-ready |
 
 ### Funcionalidades Implementadas
 - ✅ Landing page premium (marketing)
 - ✅ Dashboard com KPIs
 - ✅ Agenda visual (day view)
-- ✅ CRUD de pacientes
+- ✅ CRUD de pacientes (Firestore)
 - ✅ Prontuário eletrônico (SOAP, prescrição, exames)
 - ✅ Plugin system (Medicina/Nutrição/Psicologia)
 - ✅ Timeline de eventos
 - ⚠️ Financeiro (mock data)
 - ⚠️ Relatórios (mock data)
 - ✅ Autenticação real (Firebase Auth)
-- ❌ Multi-tenancy
+- ✅ Multi-tenancy (clinicId em todas as collections)
+- ✅ Onboarding para novas clínicas
 - ❌ Integrações externas
 
 ### Débitos Técnicos Críticos
-1. **Segurança**: Dados sensíveis em localStorage sem criptografia
-2. **IDs**: Math.random() - previsível, inseguro
-3. **Validação**: Sem validação de email/telefone
-4. **Arquivos grandes**: PatientDetails.tsx (315 linhas), Landing.tsx (405 linhas)
-5. ~~**Sem testes**: 0% cobertura~~ → ✅ **100% cobertura nos módulos de auth** (75 testes)
+1. ~~**Segurança**: Dados sensíveis em localStorage sem criptografia~~ → ✅ Firestore com Security Rules
+2. ~~**IDs**: Math.random() - previsível, inseguro~~ → ✅ Firestore auto-generated IDs
+3. **Validação**: Sem validação de email/telefone (pendente Zod)
+4. **Arquivos grandes**: Landing.tsx (405 linhas) - precisa refatorar
+5. ~~**Sem testes**: 0% cobertura~~ → ✅ **89 testes passando**
 
 ---
 
@@ -313,24 +349,25 @@ Médico digita sintomas → AI sugere:
 - [x] Firebase Auth (email/senha + Google)
 - [x] Proteção de rotas
 - [x] Contexto de usuário
-- [ ] Multi-tenancy (clinicId em todos os docs)
+- [x] Multi-tenancy (clinicId em todos os docs)
 
-#### 1.2 Backend API
-- [ ] Criar projeto Cloud Run
-- [ ] API REST: /patients, /appointments, /records
-- [ ] Middleware de autenticação
-- [ ] Validação com Zod
+#### 1.2 Backend API ⏸️ (Adiada)
+- [ ] ~~Criar projeto Cloud Run~~ → Adiado
+- [ ] ~~API REST~~ → Usando Firestore direto
+- [ ] ~~Middleware de autenticação~~ → Security Rules
+- [ ] Validação com Zod (mover para Fase 2)
 
-#### 1.3 Banco de Dados
-- [ ] Schema Firestore definitivo
-- [ ] Security Rules
-- [ ] Índices para queries
-- [ ] Migrar dados mock para Firestore
+#### 1.3 Banco de Dados ✅
+- [x] Schema Firestore definitivo
+- [x] Security Rules (deployed)
+- [x] Índices para queries
+- [x] Migrar dados mock para Firestore
 
-**Arquivos a modificar:**
-- `store/useStore.ts` → migrar para Firestore hooks
-- `App.tsx` → adicionar AuthProvider
-- Criar `/api/*` routes
+**Arquivos modificados/criados:**
+- ~~`store/useStore.ts`~~ → Removido, migrado para Firestore hooks
+- `App.tsx` → ClinicProvider adicionado
+- `src/services/firestore/*` → 6 services criados
+- `src/hooks/use*.ts` → 4 hooks criados
 
 ### Fase 2: Core Features Production (Sprints 3-4)
 
@@ -567,9 +604,13 @@ ClinicaGenesisOS/
 2. ~~**Setup inicial**: Firebase project, ambiente dev~~ ✅
 3. ~~**Começar Fase 0**: Preparação e limpeza do código~~ ✅
 4. ~~**Implementar auth**: Firebase Auth + proteção de rotas~~ ✅
-5. **Migrar para Firestore**: Dados persistentes reais ← **PRÓXIMO**
-6. **Implementar multi-tenancy**: clinicId em todos os documentos
-7. **Backend API**: Cloud Run com endpoints REST
+5. ~~**Migrar para Firestore**: Dados persistentes reais~~ ✅
+6. ~~**Implementar multi-tenancy**: clinicId em todos os documentos~~ ✅
+7. ~~**Backend API**: Cloud Run com endpoints REST~~ ⏸️ Adiado
+8. **Fase 2: Core Features** ← **PRÓXIMO**
+   - Agenda Aprimorada (week/month view, drag-drop)
+   - Pacientes Completo (busca, edição, upload foto)
+   - Prontuário melhorado (templates, anexos)
 
 ---
 
