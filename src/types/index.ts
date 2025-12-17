@@ -26,6 +26,19 @@ export interface Patient {
   nextAppointment?: string;
 }
 
+/** Recurrence frequency options. */
+export type RecurrenceFrequency = 'daily' | 'weekly' | 'biweekly' | 'monthly';
+
+/** Recurrence pattern for appointments. */
+export interface RecurrencePattern {
+  /** Frequency of recurrence */
+  frequency: RecurrenceFrequency;
+  /** End date for recurrence (ISO date) - null means no end */
+  endDate: string | null;
+  /** Days of week for weekly recurrence (0=Sunday, 1=Monday, etc.) */
+  daysOfWeek?: number[];
+}
+
 export interface Appointment {
   id: string;
   patientId: string;
@@ -37,6 +50,10 @@ export interface Appointment {
   professional: string;
   specialty: SpecialtyType;
   notes?: string;
+  /** Recurrence pattern (if recurring) */
+  recurrence?: RecurrencePattern;
+  /** Parent appointment ID (for expanded recurring instances) */
+  recurrenceParentId?: string;
 }
 
 // --- TIMELINE TYPES ---

@@ -6,7 +6,9 @@
  */
 
 import React from 'react';
+import { Repeat } from 'lucide-react';
 import { Status, type Appointment, type SpecialtyType } from '@/types';
+import { isRecurringInstance, isRecurringParent } from '@/lib/recurrence';
 
 /**
  * Status colors configuration.
@@ -58,6 +60,7 @@ export function AppointmentCard({ appointment: app, compact = false }: Appointme
   const isCanceled = app.status === Status.CANCELED;
   const isFinished = app.status === Status.FINISHED;
   const isDimmed = isCanceled || isFinished;
+  const isRecurring = isRecurringInstance(app) || isRecurringParent(app);
 
   if (compact) {
     return (
@@ -70,9 +73,14 @@ export function AppointmentCard({ appointment: app, compact = false }: Appointme
         `}
       >
         <div className="flex items-center justify-between gap-1">
-          <span className={`text-xs font-bold truncate ${isDimmed ? 'text-gray-500' : 'text-genesis-dark'} ${isCanceled ? 'line-through' : ''}`}>
-            {app.patientName}
-          </span>
+          <div className="flex items-center gap-1 min-w-0">
+            {isRecurring && (
+              <Repeat className="w-3 h-3 text-genesis-blue shrink-0" />
+            )}
+            <span className={`text-xs font-bold truncate ${isDimmed ? 'text-gray-500' : 'text-genesis-dark'} ${isCanceled ? 'line-through' : ''}`}>
+              {app.patientName}
+            </span>
+          </div>
           <span className={`w-2 h-2 rounded-full shrink-0 ${statusColors.dot}`} />
         </div>
         <p className="text-[10px] text-genesis-medium truncate mt-0.5">{app.procedure}</p>
@@ -91,9 +99,14 @@ export function AppointmentCard({ appointment: app, compact = false }: Appointme
     >
       {/* Header: Patient name + Status badge */}
       <div className="flex justify-between items-start mb-2">
-        <span className={`font-bold text-sm tracking-tight ${isDimmed ? 'text-gray-500' : 'text-genesis-dark'} ${isCanceled ? 'line-through' : ''}`}>
-          {app.patientName}
-        </span>
+        <div className="flex items-center gap-2">
+          {isRecurring && (
+            <Repeat className="w-4 h-4 text-genesis-blue shrink-0" title="Consulta recorrente" />
+          )}
+          <span className={`font-bold text-sm tracking-tight ${isDimmed ? 'text-gray-500' : 'text-genesis-dark'} ${isCanceled ? 'line-through' : ''}`}>
+            {app.patientName}
+          </span>
+        </div>
         <div className="flex items-center gap-1.5">
           {/* Status Badge */}
           <span className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${statusColors.bg} ${statusColors.text}`}>

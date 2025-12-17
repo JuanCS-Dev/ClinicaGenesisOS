@@ -25,12 +25,16 @@ import {
   addMonths,
   subMonths,
   startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
   isToday,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useAppointments } from '../hooks/useAppointments';
 import { Status, type SpecialtyType } from '@/types';
 import { STATUS_COLORS, SPECIALTY_COLORS, DraggableDayView, WeekView, MonthView } from '../components/agenda';
+import { expandRecurringAppointments } from '@/lib/recurrence';
 
 /** Client-side filters for appointments. */
 interface LocalFilters {
@@ -99,6 +103,32 @@ export function Agenda() {
     return `${format(start, "d 'de' MMM", { locale: ptBR })} - ${format(end, "d 'de' MMM", { locale: ptBR })}`;
   }, [weekDates]);
 
+  // Calculate the date range for the current view (for recurring expansion)
+  const viewDateRange = useMemo(() => {
+    switch (viewMode) {
+      case 'month': {
+        // For month view, we need the full calendar grid (may include days from adjacent months)
+        const monthStart = startOfMonth(selectedDate);
+        const monthEnd = endOfMonth(selectedDate);
+        return {
+          start: startOfWeek(monthStart, { weekStartsOn: 0 }),
+          end: endOfWeek(monthEnd, { weekStartsOn: 0 }),
+        };
+      }
+      case 'week':
+        return {
+          start: weekDates[0],
+          end: weekDates[6],
+        };
+      default:
+        // Day view: just the selected day
+        return {
+          start: selectedDate,
+          end: selectedDate,
+        };
+    }
+  }, [viewMode, selectedDate, weekDates]);
+
   // Close filter panel when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -149,10 +179,18 @@ export function Agenda() {
   const hasActiveFilters = localFilters.statuses.length > 0 || localFilters.specialties.length > 0;
 
   /**
-   * Filter appointments client-side based on local filters.
+   * Expand recurring appointments and filter based on local filters.
    */
   const filteredAppointments = useMemo(() => {
-    return appointments.filter((app) => {
+    // First, expand recurring appointments within the view date range
+    const expanded = expandRecurringAppointments(
+      appointments,
+      viewDateRange.start,
+      viewDateRange.end
+    );
+
+    // Then apply local filters
+    return expanded.filter((app) => {
       // Status filter
       if (localFilters.statuses.length > 0 && !localFilters.statuses.includes(app.status)) {
         return false;
@@ -163,7 +201,7 @@ export function Agenda() {
       }
       return true;
     });
-  }, [appointments, localFilters]);
+  }, [appointments, localFilters, viewDateRange]);
 
   /**
    * Navigate to previous period (day, week, or month based on view mode).
