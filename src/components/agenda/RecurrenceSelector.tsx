@@ -5,7 +5,7 @@
  * Allows users to set frequency, end date, and days of week.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { Repeat, Calendar, X } from 'lucide-react';
 import { format, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -243,7 +243,7 @@ export function RecurrenceSelector({
 /**
  * Generate a human-readable summary of the recurrence pattern.
  */
-function getRecurrenceSummary(pattern: RecurrencePattern, startDate?: Date): string {
+function getRecurrenceSummary(pattern: RecurrencePattern, _startDate?: Date): string {
   const frequencyText: Record<RecurrenceFrequency, string> = {
     daily: 'Todos os dias',
     weekly: 'Toda semana',

@@ -16,7 +16,6 @@ import {
   isToday,
   isSameDay,
 } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import type { Appointment } from '@/types';
 import { SPECIALTY_COLORS } from './AppointmentCard';
 

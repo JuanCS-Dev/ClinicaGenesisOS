@@ -10,3 +10,4 @@ export { DraggableDayView } from './DraggableDayView';
 export { WeekView } from './WeekView';
 export { MonthView } from './MonthView';
 export { RecurrenceSelector } from './RecurrenceSelector';
+export { FilterPanel, type LocalFilters } from './FilterPanel';

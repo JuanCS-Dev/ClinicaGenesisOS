@@ -6,8 +6,7 @@
  */
 
 import React from 'react';
-import { format, isToday, isSameDay, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { format, isToday, parseISO } from 'date-fns';
 import { AppointmentCard } from './AppointmentCard';
 import type { Appointment } from '@/types';
 
