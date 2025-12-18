@@ -193,7 +193,7 @@ describe('useRecords', () => {
       ).rejects.toThrow('No patient selected');
     });
 
-    it('updateRecord updates record', async () => {
+    it('updateRecord updates record with versioning', async () => {
       vi.mocked(recordService.update).mockResolvedValue();
 
       const { result } = renderHook(() => useRecords('patient-1'));
@@ -202,9 +202,32 @@ describe('useRecords', () => {
         await result.current.updateRecord('record-1', { plan: 'Updated plan' });
       });
 
-      expect(recordService.update).toHaveBeenCalledWith(mockClinicId, 'record-1', {
-        plan: 'Updated plan',
+      // Should pass updatedBy (from userProfile) and changeReason (undefined)
+      expect(recordService.update).toHaveBeenCalledWith(
+        mockClinicId,
+        'record-1',
+        { plan: 'Updated plan' },
+        'Dr. Test', // updatedBy from mock userProfile
+        undefined   // changeReason
+      );
+    });
+
+    it('updateRecord passes changeReason for audit trail', async () => {
+      vi.mocked(recordService.update).mockResolvedValue();
+
+      const { result } = renderHook(() => useRecords('patient-1'));
+
+      await act(async () => {
+        await result.current.updateRecord('record-1', { plan: 'Corrected plan' }, 'Correção de erro de digitação');
       });
+
+      expect(recordService.update).toHaveBeenCalledWith(
+        mockClinicId,
+        'record-1',
+        { plan: 'Corrected plan' },
+        'Dr. Test',
+        'Correção de erro de digitação'
+      );
     });
 
     it('updateRecord throws when no clinic', async () => {

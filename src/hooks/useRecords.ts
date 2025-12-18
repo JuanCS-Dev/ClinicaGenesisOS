@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useClinicContext } from '../contexts/ClinicContext';
 import { recordService } from '../services/firestore';
-import type { MedicalRecord, CreateRecordInput } from '@/types';
+import type { MedicalRecord, CreateRecordInput, RecordVersion } from '@/types';
 
 /**
  * Return type for useRecords hook.
@@ -22,10 +22,14 @@ export interface UseRecordsReturn {
   error: Error | null;
   /** Create a new medical record */
   addRecord: (data: CreateRecordInput) => Promise<string>;
-  /** Update an existing record */
-  updateRecord: (id: string, data: Partial<MedicalRecord>) => Promise<void>;
+  /** Update an existing record with optional change reason for audit trail */
+  updateRecord: (id: string, data: Partial<MedicalRecord>, changeReason?: string) => Promise<void>;
   /** Delete a record */
   deleteRecord: (id: string) => Promise<void>;
+  /** Get version history for a record */
+  getVersionHistory: (recordId: string) => Promise<RecordVersion[]>;
+  /** Restore a record to a previous version */
+  restoreVersion: (recordId: string, versionNumber: number) => Promise<number>;
 }
 
 /**
@@ -108,16 +112,17 @@ export function useRecords(patientId: string | undefined): UseRecordsReturn {
   );
 
   /**
-   * Update an existing record.
+   * Update an existing record with versioning.
    */
   const updateRecord = useCallback(
-    async (id: string, data: Partial<MedicalRecord>): Promise<void> => {
+    async (id: string, data: Partial<MedicalRecord>, changeReason?: string): Promise<void> => {
       if (!clinicId) {
         throw new Error('No clinic selected');
       }
-      await recordService.update(clinicId, id, data);
+      const updatedBy = userProfile?.displayName || 'Profissional';
+      await recordService.update(clinicId, id, data, updatedBy, changeReason);
     },
-    [clinicId]
+    [clinicId, userProfile?.displayName]
   );
 
   /**
@@ -133,6 +138,33 @@ export function useRecords(patientId: string | undefined): UseRecordsReturn {
     [clinicId]
   );
 
+  /**
+   * Get version history for a record.
+   */
+  const getVersionHistory = useCallback(
+    async (recordId: string): Promise<RecordVersion[]> => {
+      if (!clinicId) {
+        throw new Error('No clinic selected');
+      }
+      return recordService.getVersionHistory(clinicId, recordId);
+    },
+    [clinicId]
+  );
+
+  /**
+   * Restore a record to a previous version.
+   */
+  const restoreVersion = useCallback(
+    async (recordId: string, versionNumber: number): Promise<number> => {
+      if (!clinicId) {
+        throw new Error('No clinic selected');
+      }
+      const restoredBy = userProfile?.displayName || 'Profissional';
+      return recordService.restoreVersion(clinicId, recordId, versionNumber, restoredBy);
+    },
+    [clinicId, userProfile?.displayName]
+  );
+
   return {
     records: effectiveRecords,
     loading: effectiveLoading,
@@ -140,6 +172,8 @@ export function useRecords(patientId: string | undefined): UseRecordsReturn {
     addRecord,
     updateRecord,
     deleteRecord,
+    getVersionHistory,
+    restoreVersion,
   };
 }
 
@@ -203,16 +237,17 @@ export function useAllRecords(): UseRecordsReturn {
   );
 
   /**
-   * Update an existing record.
+   * Update an existing record with versioning.
    */
   const updateRecord = useCallback(
-    async (id: string, data: Partial<MedicalRecord>): Promise<void> => {
+    async (id: string, data: Partial<MedicalRecord>, changeReason?: string): Promise<void> => {
       if (!clinicId) {
         throw new Error('No clinic selected');
       }
-      await recordService.update(clinicId, id, data);
+      const updatedBy = userProfile?.displayName || 'Profissional';
+      await recordService.update(clinicId, id, data, updatedBy, changeReason);
     },
-    [clinicId]
+    [clinicId, userProfile?.displayName]
   );
 
   /**
@@ -228,6 +263,33 @@ export function useAllRecords(): UseRecordsReturn {
     [clinicId]
   );
 
+  /**
+   * Get version history for a record.
+   */
+  const getVersionHistory = useCallback(
+    async (recordId: string): Promise<RecordVersion[]> => {
+      if (!clinicId) {
+        throw new Error('No clinic selected');
+      }
+      return recordService.getVersionHistory(clinicId, recordId);
+    },
+    [clinicId]
+  );
+
+  /**
+   * Restore a record to a previous version.
+   */
+  const restoreVersion = useCallback(
+    async (recordId: string, versionNumber: number): Promise<number> => {
+      if (!clinicId) {
+        throw new Error('No clinic selected');
+      }
+      const restoredBy = userProfile?.displayName || 'Profissional';
+      return recordService.restoreVersion(clinicId, recordId, versionNumber, restoredBy);
+    },
+    [clinicId, userProfile?.displayName]
+  );
+
   return {
     records: effectiveAllRecords,
     loading: effectiveAllLoading,
@@ -235,5 +297,7 @@ export function useAllRecords(): UseRecordsReturn {
     addRecord,
     updateRecord,
     deleteRecord,
+    getVersionHistory,
+    restoreVersion,
   };
 }

@@ -35,6 +35,8 @@ import type {
   ExamRequestRecord,
   PsychoSessionRecord,
   AnthropometryRecord,
+  RecordVersion,
+  RecordAttachment,
 } from '@/types';
 
 /**
@@ -45,8 +47,15 @@ function getRecordsCollection(clinicId: string) {
 }
 
 /**
+ * Get the versions subcollection reference for a record.
+ */
+function getVersionsCollection(clinicId: string, recordId: string) {
+  return collection(db, 'clinics', clinicId, 'records', recordId, 'versions');
+}
+
+/**
  * Converts Firestore document data to MedicalRecord type.
- * Handles polymorphic record types.
+ * Handles polymorphic record types and versioning fields.
  */
 function toRecord(id: string, data: Record<string, unknown>): MedicalRecord {
   const baseRecord = {
@@ -59,6 +68,14 @@ function toRecord(id: string, data: Record<string, unknown>): MedicalRecord {
     professional: data.professional as string,
     type: data.type as RecordType,
     specialty: data.specialty as SpecialtyType,
+    // Versioning fields
+    version: (data.version as number) || 1,
+    updatedAt: data.updatedAt instanceof Timestamp
+      ? data.updatedAt.toDate().toISOString()
+      : (data.updatedAt as string | undefined),
+    updatedBy: data.updatedBy as string | undefined,
+    // Attachments
+    attachments: data.attachments as RecordAttachment[] | undefined,
   };
 
   switch (data.type as RecordType) {
@@ -199,6 +216,7 @@ export const recordService = {
       ...data,
       professional,
       date: serverTimestamp(),
+      version: 1, // Initial version
     };
 
     const docRef = await addDoc(recordsRef, recordData);
@@ -207,19 +225,45 @@ export const recordService = {
   },
 
   /**
-   * Update an existing record.
+   * Update an existing record with versioning.
+   * Saves current state to versions subcollection before applying changes.
    *
    * @param clinicId - The clinic ID
    * @param recordId - The record ID
    * @param data - The fields to update
+   * @param updatedBy - Name of the professional making the update
+   * @param changeReason - Optional reason for the change (for audit trail)
    */
   async update(
     clinicId: string,
     recordId: string,
-    data: Partial<Omit<MedicalRecord, 'id' | 'date' | 'professional'>>
+    data: Partial<Omit<MedicalRecord, 'id' | 'date' | 'professional'>>,
+    updatedBy?: string,
+    changeReason?: string
   ): Promise<void> {
     const docRef = doc(db, 'clinics', clinicId, 'records', recordId);
 
+    // Get current record state before update
+    const currentDoc = await getDoc(docRef);
+    if (!currentDoc.exists()) {
+      throw new Error('Record not found');
+    }
+
+    const currentData = currentDoc.data();
+    const currentVersion = (currentData.version as number) || 1;
+
+    // Save current state to versions subcollection
+    const versionsRef = getVersionsCollection(clinicId, recordId);
+    const versionData = {
+      version: currentVersion,
+      data: currentData,
+      savedAt: serverTimestamp(),
+      savedBy: updatedBy || currentData.professional,
+      changeReason,
+    };
+    await addDoc(versionsRef, versionData);
+
+    // Prepare update data
     const updateData: Record<string, unknown> = { ...data };
 
     // Remove undefined values
@@ -228,6 +272,13 @@ export const recordService = {
         delete updateData[key];
       }
     });
+
+    // Add versioning metadata
+    updateData.version = currentVersion + 1;
+    updateData.updatedAt = serverTimestamp();
+    if (updatedBy) {
+      updateData.updatedBy = updatedBy;
+    }
 
     await updateDoc(docRef, updateData);
   },
@@ -327,5 +378,172 @@ export const recordService = {
     const querySnapshot = await getDocs(q);
 
     return querySnapshot.docs.map((docSnap) => toRecord(docSnap.id, docSnap.data()));
+  },
+
+  // --- ATTACHMENT METHODS ---
+
+  /**
+   * Add an attachment to a record.
+   *
+   * @param clinicId - The clinic ID
+   * @param recordId - The record ID
+   * @param attachment - The attachment metadata
+   */
+  async addAttachment(
+    clinicId: string,
+    recordId: string,
+    attachment: RecordAttachment
+  ): Promise<void> {
+    const docRef = doc(db, 'clinics', clinicId, 'records', recordId);
+    const docSnap = await getDoc(docRef);
+
+    if (!docSnap.exists()) {
+      throw new Error('Record not found');
+    }
+
+    const currentData = docSnap.data();
+    const currentAttachments = (currentData.attachments as RecordAttachment[]) || [];
+
+    await updateDoc(docRef, {
+      attachments: [...currentAttachments, attachment],
+    });
+  },
+
+  /**
+   * Remove an attachment from a record.
+   *
+   * @param clinicId - The clinic ID
+   * @param recordId - The record ID
+   * @param attachmentId - The attachment ID to remove
+   */
+  async removeAttachment(
+    clinicId: string,
+    recordId: string,
+    attachmentId: string
+  ): Promise<void> {
+    const docRef = doc(db, 'clinics', clinicId, 'records', recordId);
+    const docSnap = await getDoc(docRef);
+
+    if (!docSnap.exists()) {
+      throw new Error('Record not found');
+    }
+
+    const currentData = docSnap.data();
+    const currentAttachments = (currentData.attachments as RecordAttachment[]) || [];
+    const updatedAttachments = currentAttachments.filter((a) => a.id !== attachmentId);
+
+    await updateDoc(docRef, {
+      attachments: updatedAttachments,
+    });
+  },
+
+  // --- VERSION HISTORY METHODS ---
+
+  /**
+   * Get version history for a record.
+   *
+   * @param clinicId - The clinic ID
+   * @param recordId - The record ID
+   * @returns Array of versions sorted by version number (descending)
+   */
+  async getVersionHistory(
+    clinicId: string,
+    recordId: string
+  ): Promise<RecordVersion[]> {
+    const versionsRef = getVersionsCollection(clinicId, recordId);
+    const q = query(versionsRef, orderBy('version', 'desc'));
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs.map((docSnap) => {
+      const data = docSnap.data();
+      return {
+        id: docSnap.id,
+        version: data.version as number,
+        data: data.data as Omit<MedicalRecord, 'id'>,
+        savedAt:
+          data.savedAt instanceof Timestamp
+            ? data.savedAt.toDate().toISOString()
+            : (data.savedAt as string),
+        savedBy: data.savedBy as string,
+        changeReason: data.changeReason as string | undefined,
+      };
+    });
+  },
+
+  /**
+   * Get a specific version of a record.
+   *
+   * @param clinicId - The clinic ID
+   * @param recordId - The record ID
+   * @param versionNumber - The version number to retrieve
+   * @returns The version data or null if not found
+   */
+  async getVersion(
+    clinicId: string,
+    recordId: string,
+    versionNumber: number
+  ): Promise<RecordVersion | null> {
+    const versionsRef = getVersionsCollection(clinicId, recordId);
+    const q = query(versionsRef, where('version', '==', versionNumber));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      return null;
+    }
+
+    const docSnap = querySnapshot.docs[0];
+    const data = docSnap.data();
+
+    return {
+      id: docSnap.id,
+      version: data.version as number,
+      data: data.data as Omit<MedicalRecord, 'id'>,
+      savedAt:
+        data.savedAt instanceof Timestamp
+          ? data.savedAt.toDate().toISOString()
+          : (data.savedAt as string),
+      savedBy: data.savedBy as string,
+      changeReason: data.changeReason as string | undefined,
+    };
+  },
+
+  /**
+   * Restore a record to a previous version.
+   *
+   * @param clinicId - The clinic ID
+   * @param recordId - The record ID
+   * @param versionNumber - The version number to restore
+   * @param restoredBy - Name of the professional restoring the version
+   * @returns The new version number
+   */
+  async restoreVersion(
+    clinicId: string,
+    recordId: string,
+    versionNumber: number,
+    restoredBy: string
+  ): Promise<number> {
+    // Get the version to restore
+    const versionToRestore = await this.getVersion(clinicId, recordId, versionNumber);
+    if (!versionToRestore) {
+      throw new Error(`Version ${versionNumber} not found`);
+    }
+
+    // Get current record to save as new version
+    const currentRecord = await this.getById(clinicId, recordId);
+    if (!currentRecord) {
+      throw new Error('Record not found');
+    }
+
+    // Update record with restored data (this will save current state to versions)
+    const { id: _id, ...restoreData } = versionToRestore.data as MedicalRecord;
+    await this.update(
+      clinicId,
+      recordId,
+      restoreData,
+      restoredBy,
+      `Restaurado da versão ${versionNumber}`
+    );
+
+    return currentRecord.version + 1;
   },
 };

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Save, User, Phone, ShieldCheck, ChevronRight, Loader2 } from 'lucide-react';
+import { Save, User, Phone, ShieldCheck, ChevronRight, Loader2 } from 'lucide-react';
 import { usePatients } from '../hooks/usePatients';
+import { AvatarUpload } from '../components/ui/AvatarUpload';
 
 const InputGroup = ({ label, icon: Icon, children }: any) => (
   <div className="space-y-1.5 group">
@@ -44,7 +45,8 @@ export const NewPatient: React.FC = () => {
     phone: '',
     email: '',
     gender: 'Selecione...',
-    insurance: 'Particular'
+    insurance: 'Particular',
+    avatar: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -61,6 +63,12 @@ export const NewPatient: React.FC = () => {
     setSaving(true);
 
     try {
+      // For new patients, use generated avatar if no valid URL uploaded
+      // Blob URLs (from preview) won't persist, so use fallback
+      const avatarUrl = formData.avatar && !formData.avatar.startsWith('blob:')
+        ? formData.avatar
+        : `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name)}&background=random`;
+
       await addPatient({
         name: formData.name,
         birthDate: formData.birthDate || '2000-01-01',
@@ -69,7 +77,7 @@ export const NewPatient: React.FC = () => {
         gender: formData.gender,
         insurance: formData.insurance,
         tags: ['Novo'],
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name)}&background=random`
+        avatar: avatarUrl,
       });
 
       navigate('/patients');
@@ -113,19 +121,16 @@ export const NewPatient: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Photo & Quick Status */}
+        {/* Left Column: Photo */}
         <div className="space-y-6">
-           <div className="bg-white p-8 rounded-3xl border border-white shadow-soft flex flex-col items-center text-center">
-              <div className="relative group cursor-pointer mb-4">
-                 <div className="w-32 h-32 rounded-full bg-gray-100 flex items-center justify-center border-4 border-white shadow-md overflow-hidden group-hover:ring-4 group-hover:ring-genesis-blue/10 transition-all">
-                    <User className="w-12 h-12 text-gray-300" />
-                 </div>
-                 <div className="absolute bottom-0 right-0 p-2 bg-genesis-dark rounded-full text-white shadow-lg group-hover:scale-110 transition-transform">
-                   <Camera className="w-4 h-4" />
-                 </div>
-              </div>
-              <p className="text-sm font-semibold text-genesis-blue">Adicionar Foto</p>
-           </div>
+          <div className="bg-white p-8 rounded-3xl border border-white shadow-soft flex flex-col items-center text-center">
+            <AvatarUpload
+              currentAvatar={formData.avatar}
+              patientName={formData.name}
+              onAvatarChange={(url) => setFormData({ ...formData, avatar: url })}
+              disabled={saving}
+            />
+          </div>
         </div>
 
         {/* Right Column: The Form */}

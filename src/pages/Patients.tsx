@@ -4,7 +4,7 @@
  * Displays list of all patients in the clinic.
  */
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, MoreVertical, Plus, ChevronRight, Loader2 } from 'lucide-react';
 import { usePatients } from '../hooks/usePatients';
@@ -12,6 +12,27 @@ import { usePatients } from '../hooks/usePatients';
 export function Patients() {
   const navigate = useNavigate();
   const { patients, loading } = usePatients();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Filter patients by name, email, phone, insurance, or tags
+  const filteredPatients = useMemo(() => {
+    if (!searchTerm.trim()) return patients;
+
+    const term = searchTerm.toLowerCase().trim();
+    return patients.filter((patient) => {
+      const searchableFields = [
+        patient.name,
+        patient.email,
+        patient.phone,
+        patient.insurance,
+        ...patient.tags,
+      ].filter(Boolean);
+
+      return searchableFields.some((field) =>
+        field?.toLowerCase().includes(term)
+      );
+    });
+  }, [patients, searchTerm]);
 
   if (loading) {
     return (
@@ -45,10 +66,17 @@ export function Patients() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-genesis-medium group-focus-within:text-genesis-blue transition-colors" />
             <input
               type="text"
-              placeholder="Buscar por nome, CPF ou telefone..."
+              placeholder="Buscar por nome, telefone ou convênio..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border-none rounded-xl text-sm font-medium text-genesis-dark focus:ring-2 focus:ring-genesis-blue/20 focus:bg-white transition-all placeholder-gray-400 shadow-inner"
             />
           </div>
+          {searchTerm && (
+            <span className="text-xs text-genesis-medium self-center">
+              {filteredPatients.length} de {patients.length} pacientes
+            </span>
+          )}
         </div>
 
         {/* Table */}
@@ -62,6 +90,18 @@ export function Patients() {
               className="text-genesis-blue font-semibold text-sm hover:underline"
             >
               Cadastrar primeiro paciente
+            </button>
+          </div>
+        ) : filteredPatients.length === 0 ? (
+          <div className="p-12 text-center">
+            <p className="text-genesis-medium text-sm mb-2">
+              Nenhum paciente encontrado para "{searchTerm}"
+            </p>
+            <button
+              onClick={() => setSearchTerm('')}
+              className="text-genesis-blue font-semibold text-sm hover:underline"
+            >
+              Limpar busca
             </button>
           </div>
         ) : (
@@ -84,7 +124,7 @@ export function Patients() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {patients.map((patient) => (
+              {filteredPatients.map((patient) => (
                 <tr
                   key={patient.id}
                   className="hover:bg-gray-50/80 transition-all cursor-pointer group"

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { usePatient } from '../hooks/usePatient';
 import { useRecords } from '../hooks/useRecords';
 import { usePatientAppointments } from '../hooks/useAppointments';
 import { useClinicContext } from '../contexts/ClinicContext';
 import { PLUGINS, MedicineEditor, NutritionEditor, PsychologyEditor } from '../plugins';
 import { Timeline } from '../components/patient/Timeline';
+import { AttachmentList } from '../components/records/AttachmentUpload';
 import {
   Calendar,
   FileText,
@@ -16,7 +17,8 @@ import {
   Activity,
   Brain,
   FlaskConical,
-  Loader2
+  Loader2,
+  Paperclip
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -78,12 +80,22 @@ const HistoryItem = ({ record, active }: any) => {
       content = 'Detalhes do registro...';
   }
 
+  const hasAttachments = record.attachments && record.attachments.length > 0;
+
   return (
     <div className={`p-4 rounded-xl cursor-pointer transition-all duration-200 group border ${active ? 'bg-white shadow-soft border-gray-100 ring-1 ring-black/5' : 'border-transparent hover:bg-white/50 hover:border-gray-100'}`}>
       <div className="flex justify-between items-start mb-1.5">
-        <span className="text-[10px] font-bold text-genesis-medium uppercase tracking-wider bg-gray-50 px-2 py-0.5 rounded-md">
-          {format(new Date(record.date), 'dd MMM yy', {locale: ptBR})}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-bold text-genesis-medium uppercase tracking-wider bg-gray-50 px-2 py-0.5 rounded-md">
+            {format(new Date(record.date), 'dd MMM yy', {locale: ptBR})}
+          </span>
+          {hasAttachments && (
+            <span className="flex items-center gap-0.5 text-[10px] text-gray-400">
+              <Paperclip className="w-3 h-3" />
+              {record.attachments.length}
+            </span>
+          )}
+        </div>
         {active && <div className="w-1.5 h-1.5 rounded-full bg-genesis-blue shadow-[0_0_8px_rgba(0,122,255,0.5)]" />}
       </div>
       <div className="flex items-center gap-2 mb-1">
@@ -95,12 +107,18 @@ const HistoryItem = ({ record, active }: any) => {
       <p className="text-[11px] text-genesis-medium line-clamp-2 leading-relaxed opacity-90 pl-5.5">
          {content}
       </p>
+      {hasAttachments && active && (
+        <div className="mt-2 pl-5.5">
+          <AttachmentList attachments={record.attachments} />
+        </div>
+      )}
     </div>
   );
 };
 
 export const PatientDetails: React.FC = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { userProfile } = useClinicContext();
   const { patient, loading: patientLoading } = usePatient(id);
   const { records, addRecord } = useRecords(id);
@@ -207,8 +225,11 @@ export const PatientDetails: React.FC = () => {
         <div className="h-40 bg-gradient-to-r from-slate-50 via-gray-50 to-zinc-50 border-b border-gray-100 relative overflow-hidden">
            <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px] opacity-60"></div>
            <div className="absolute top-6 right-8 flex gap-3 z-20">
-             <button className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-md border border-gray-200/50 rounded-xl text-xs font-bold text-genesis-dark hover:bg-white hover:shadow-sm transition-all">
-                <Edit2 className="w-3.5 h-3.5" /> Editar
+             <button
+              onClick={() => navigate(`/patients/${id}/edit`)}
+              className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-md border border-gray-200/50 rounded-xl text-xs font-bold text-genesis-dark hover:bg-white hover:shadow-sm transition-all"
+            >
+              <Edit2 className="w-3.5 h-3.5" /> Editar
             </button>
             <button className="flex items-center gap-2 px-4 py-2 bg-genesis-dark text-white rounded-xl text-xs font-bold hover:bg-black transition-all shadow-lg shadow-gray-200/50 hover:-translate-y-0.5">
                 <Calendar className="w-3.5 h-3.5" /> Agendar

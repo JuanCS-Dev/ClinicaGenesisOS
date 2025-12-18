@@ -155,20 +155,39 @@ describe('recordService', () => {
   });
 
   describe('update', () => {
-    it('should update record fields', async () => {
+    it('should update record fields with versioning', async () => {
+      // Mock getDoc to return existing record
+      (getDoc as Mock).mockResolvedValue({
+        exists: () => true,
+        data: () => ({ ...mockSoapData, version: 1 }),
+      });
       (doc as Mock).mockReturnValue({});
+      (collection as Mock).mockReturnValue({});
+      (addDoc as Mock).mockResolvedValue({ id: 'version-1' });
       (updateDoc as Mock).mockResolvedValue(undefined);
 
       await recordService.update(mockClinicId, mockRecordId, {
         specialty: 'nutricao',
       });
 
-      expect(doc).toHaveBeenCalled();
+      expect(getDoc).toHaveBeenCalled();
+      expect(addDoc).toHaveBeenCalled(); // Version saved
       expect(updateDoc).toHaveBeenCalled();
+
+      // Verify version increment
+      const updateDocCall = (updateDoc as Mock).mock.calls[0];
+      expect(updateDocCall[1]).toHaveProperty('version', 2);
     });
 
     it('should remove undefined values before update', async () => {
+      // Mock getDoc to return existing record
+      (getDoc as Mock).mockResolvedValue({
+        exists: () => true,
+        data: () => ({ ...mockSoapData, version: 1 }),
+      });
       (doc as Mock).mockReturnValue({});
+      (collection as Mock).mockReturnValue({});
+      (addDoc as Mock).mockResolvedValue({ id: 'version-1' });
       (updateDoc as Mock).mockResolvedValue(undefined);
 
       await recordService.update(mockClinicId, mockRecordId, {
@@ -179,6 +198,17 @@ describe('recordService', () => {
       const updateDocCall = (updateDoc as Mock).mock.calls[0];
       expect(updateDocCall[1]).not.toHaveProperty('patientId');
       expect(updateDocCall[1]).toHaveProperty('specialty');
+    });
+
+    it('should throw error if record not found', async () => {
+      (getDoc as Mock).mockResolvedValue({
+        exists: () => false,
+      });
+      (doc as Mock).mockReturnValue({});
+
+      await expect(
+        recordService.update(mockClinicId, mockRecordId, { specialty: 'nutricao' })
+      ).rejects.toThrow('Record not found');
     });
   });
 

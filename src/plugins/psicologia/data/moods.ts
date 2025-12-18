@@ -17,6 +17,7 @@ export const MOODS: MoodOption[] = [
   { id: 'neutral', label: 'Neutro', icon: '😐' },
   { id: 'anxious', label: 'Ansioso', icon: '😰' },
   { id: 'sad', label: 'Triste', icon: '😢' },
+  { id: 'angry', label: 'Irritado', icon: '😠' },
 ] as const;
 
 export type MoodId = (typeof MOODS)[number]['id'];
