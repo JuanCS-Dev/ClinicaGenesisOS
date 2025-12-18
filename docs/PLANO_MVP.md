@@ -8,7 +8,7 @@ Transformar o demo atual (React + localStorage) em um MVP production-ready usand
 
 ## 📊 STATUS DE IMPLEMENTAÇÃO
 
-> Última atualização: 2025-12-17
+> Última atualização: 2025-12-18
 
 | Fase | Status | Progresso |
 |------|--------|-----------|
@@ -17,7 +17,7 @@ Transformar o demo atual (React + localStorage) em um MVP production-ready usand
 | **Fase 1.2: Backend API** | ⏸️ Adiada | N/A |
 | **Fase 1.3: Banco de Dados** | ✅ Completa | 100% |
 | **Fase 1.4: Test Coverage 90%+** | ✅ Completa | 100% |
-| **Fase 2: Core Features** | 🔄 Em Progresso | 30% |
+| **Fase 2: Core Features** | 🔄 Em Progresso | 50% |
 | **Fase 3: AI Integration** | 🔲 Pendente | 0% |
 | **Fase 4: Financeiro** | 🔲 Pendente | 0% |
 | **Fase 5: Polish & Launch** | 🔲 Pendente | 0% |
@@ -142,7 +142,7 @@ Transformar o demo atual (React + localStorage) em um MVP production-ready usand
 1. ~~**Segurança**: Dados sensíveis em localStorage sem criptografia~~ → ✅ Firestore com Security Rules
 2. ~~**IDs**: Math.random() - previsível, inseguro~~ → ✅ Firestore auto-generated IDs
 3. **Validação**: Sem validação de email/telefone (pendente Zod)
-4. **Arquivos grandes**: Landing.tsx (405 linhas) - precisa refatorar
+4. **Arquivos grandes**: ~~registry.tsx (485 linhas)~~ ✅ → Landing.tsx (405), Onboarding.tsx (459) pendentes
 5. ~~**Sem testes**: 0% cobertura~~ → ✅ **244 testes (99.5% coverage)**
 
 ---
@@ -388,32 +388,38 @@ Médico digita sintomas → AI sugere:
 - `src/services/firestore/*` → 6 services criados
 - `src/hooks/use*.ts` → 4 hooks criados
 
-### Fase 2: Core Features Production (Sprints 3-4) 🔄 Em Progresso
+### Fase 2: Core Features Production (Sprints 3-4) 🔄 Em Progresso (50%)
 
-#### 2.1 Agenda Aprimorada ✅ Parcialmente Completa
+#### 2.1 Agenda Aprimorada ✅ Completa
 - [x] Week/Month view
 - [x] Drag-and-drop para reagendar
 - [x] Recorrência (diária, semanal, quinzenal, mensal)
 - [x] Cores por status/profissional
 - [x] Filtros funcionais (FilterPanel extraído)
 
-#### 2.2 Pacientes Completo
-- [ ] Busca funcional (full-text)
+#### 2.2 Pacientes 🔄 Em Progresso
+- [ ] Busca funcional (full-text) ← UI existe, falta lógica
 - [ ] Edição de paciente
 - [ ] Foto de perfil (upload)
-- [ ] Histórico completo
+- [x] Histórico completo (Timeline funcionando)
 
-#### 2.3 Prontuário Eletrônico
-- [ ] Salvar em Firestore
+#### 2.3 Prontuário Eletrônico 🔄 Em Progresso
+- [x] Salvar em Firestore (SOAP, Prescrição, Exames, Antropometria, Sessão Psico)
 - [ ] Versionamento de registros
 - [ ] Templates por especialidade
 - [ ] Anexos (PDFs, imagens)
 
+#### 2.4 Refatoração CODE_CONSTITUTION ✅ Completa (2025-12-18)
+- [x] `plugins/registry.tsx` (485 linhas) → modularizado em 13 arquivos
+- [x] Arquitetura semântica por domínio (medicina/, nutricao/, psicologia/)
+- [x] Todos arquivos < 170 linhas (limite: 400)
+- [x] Tipo `EditorRecordData` criado para type-safety
+
 **Arquivos a modificar:**
-- `pages/Agenda.tsx`
-- `pages/Patients.tsx`
-- `pages/PatientDetails.tsx`
-- `plugins/registry.tsx` → refatorar em arquivos separados
+- ~~`pages/Agenda.tsx`~~ ✅
+- `pages/Patients.tsx` ← próximo
+- ~~`pages/PatientDetails.tsx`~~ ✅
+- ~~`plugins/registry.tsx`~~ ✅ refatorado
 
 ### Fase 3: AI Integration (Sprints 5-6)
 
@@ -626,10 +632,11 @@ ClinicaGenesisOS/
 5. ~~**Migrar para Firestore**: Dados persistentes reais~~ ✅
 6. ~~**Implementar multi-tenancy**: clinicId em todos os documentos~~ ✅
 7. ~~**Backend API**: Cloud Run com endpoints REST~~ ⏸️ Adiado
-8. **Fase 2: Core Features** ← **PRÓXIMO**
-   - Agenda Aprimorada (week/month view, drag-drop)
-   - Pacientes Completo (busca, edição, upload foto)
-   - Prontuário melhorado (templates, anexos)
+8. **Fase 2: Core Features** ← **EM PROGRESSO (50%)**
+   - ~~Agenda Aprimorada (week/month view, drag-drop, recorrência)~~ ✅
+   - ~~Prontuário salvando no Firestore~~ ✅
+   - ~~Refatoração plugins/ (CODE_CONSTITUTION)~~ ✅
+   - **Pacientes** ← **PRÓXIMO** (busca, edição, upload foto)
 
 ---
 

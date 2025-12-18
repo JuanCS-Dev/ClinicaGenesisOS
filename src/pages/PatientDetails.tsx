@@ -4,7 +4,7 @@ import { usePatient } from '../hooks/usePatient';
 import { useRecords } from '../hooks/useRecords';
 import { usePatientAppointments } from '../hooks/useAppointments';
 import { useClinicContext } from '../contexts/ClinicContext';
-import { PLUGINS, MedicineEditor, NutritionEditor, PsychologyEditor } from '../plugins/registry';
+import { PLUGINS, MedicineEditor, NutritionEditor, PsychologyEditor } from '../plugins';
 import { Timeline } from '../components/patient/Timeline';
 import {
   Calendar,
@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { SpecialtyType, RecordType, TimelineEvent, TimelineEventType, CreateRecordInput } from '../types';
+import { SpecialtyType, RecordType, TimelineEvent, TimelineEventType, CreateRecordInput, EditorRecordData } from '../types';
 
 const TabButton = ({ active, onClick, icon: Icon, label, colorClass = 'text-genesis-blue' }: any) => (
   <button
@@ -130,13 +130,13 @@ export const PatientDetails: React.FC = () => {
     );
   }
 
-  const handleSaveRecord = async (data: Omit<CreateRecordInput, 'patientId'>) => {
+  const handleSaveRecord = async (data: EditorRecordData) => {
     if (!id) return;
     try {
       await addRecord({
         patientId: id,
         specialty: activePluginId,
-        ...data
+        ...data,
       } as CreateRecordInput);
     } catch (error) {
       console.error('Error saving record:', error);

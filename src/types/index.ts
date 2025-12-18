@@ -258,3 +258,14 @@ export type CreatePrescriptionRecordInput = Omit<PrescriptionRecord, 'id' | 'dat
 export type CreateExamRequestRecordInput = Omit<ExamRequestRecord, 'id' | 'date' | 'professional'>;
 export type CreatePsychoSessionRecordInput = Omit<PsychoSessionRecord, 'id' | 'date' | 'professional'>;
 export type CreateAnthropometryRecordInput = Omit<AnthropometryRecord, 'id' | 'date' | 'professional'>;
+
+/**
+ * Data returned by record editors.
+ * Does not include patientId/specialty (added by context).
+ */
+export type EditorRecordData =
+  | Omit<CreateSoapRecordInput, 'patientId' | 'specialty'>
+  | Omit<CreatePrescriptionRecordInput, 'patientId' | 'specialty'>
+  | Omit<CreateExamRequestRecordInput, 'patientId' | 'specialty'>
+  | Omit<CreateAnthropometryRecordInput, 'patientId' | 'specialty'>
+  | Omit<CreatePsychoSessionRecordInput, 'patientId' | 'specialty'>;
