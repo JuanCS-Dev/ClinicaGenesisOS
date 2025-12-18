@@ -214,10 +214,10 @@ Transformar o demo atual (React + localStorage) em um MVP production-ready usand
 | 🔴 **Crítica** | AI Scribe Básico | 100% health systems adotando, -14min/dia | 3.2 |
 | 🟠 **Alta** | UI Premium (já temos) | 72% médicos querem, diferencial vs concorrentes | ✅ |
 | 🟠 **Alta** | Plataforma Unificada | 60% clínicas falham por gestão fragmentada | ✅ |
+| 🟠 **Alta** | AI Diagnostic Helper (Lablens) | Diferencial competitivo, Medicina Funcional | 3.3 |
 | 🟡 **Média** | Financeiro Real | 52% têm como desafio principal | 4 |
 | 🟡 **Média** | LGPD Compliance | 58% têm dificuldade | 5 |
 | 🟢 **Futura** | Gestão Convênios/Glosas | R$16bi em perdas, complexo | Pós-MVP |
-| 🟢 **Futura** | Clinical Decision Support | Após estabilizar AI Scribe | Pós-MVP |
 
 ---
 
@@ -607,7 +607,46 @@ Médico digita sintomas → AI sugere:
 - `functions/src/ai/transcribe.ts`
 - `functions/src/ai/generate-soap.ts`
 
-#### 3.3 WhatsApp Bot Avançado (Fase 3.5 - Opcional)
+#### 3.3 AI Diagnostic Helper (Integração Lablens) 🔴
+> **Apenas para área do médico** - Ferramenta de apoio à decisão clínica
+
+**Conceito**: Integrar o motor de análise do Lablens ao Genesis para auxiliar diagnósticos.
+
+**Fluxo**:
+```
+Anamnese (SOAP.Subjetivo) + Exames (upload/anexo) →
+  Gemini 2.5 Flash analisa com protocolo Medicina Funcional →
+    Gera possibilidades diagnósticas + correlações →
+      Médico revisa e decide
+```
+
+**Funcionalidades planejadas**:
+- [ ] Upload de exames laboratoriais (imagem/PDF)
+- [ ] Extração automática de biomarcadores (OCR + AI)
+- [ ] Análise com Functional Optimal Ranges (não apenas lab ranges)
+- [ ] Triangulação de sintomas com resultados (Bayesian inference)
+- [ ] Sugestões de causa-raiz e perguntas investigativas
+- [ ] Indicador visual "AI Assisted" no prontuário
+- [ ] Revisão médica OBRIGATÓRIA antes de qualquer registro
+
+**Tecnologia base**:
+- Código existente em `/media/juan/DATA/42em7/Day02/Lablens`
+- Gemini 2.5 Flash com schema estruturado
+- Protocolo de Deep Phenotyping
+
+**Cuidados éticos/legais**:
+- Ferramenta de APOIO, não substitui julgamento médico
+- Disclaimer claro em toda interface
+- Log de auditoria para cada sugestão gerada
+- Pesquisar regulamentação CFM sobre AI diagnóstica
+
+**Arquivos a criar**:
+- `src/components/ai/DiagnosticHelper.tsx`
+- `src/components/ai/BiomarkerAnalysis.tsx`
+- `src/services/lablens.service.ts`
+- `functions/src/ai/diagnostic-analysis.ts`
+
+#### 3.4 WhatsApp Bot Avançado (Opcional)
 > Implementar apenas se 3.1 tiver sucesso comprovado
 
 - [ ] Agendamento via conversa natural
@@ -817,7 +856,8 @@ ClinicaGenesisOS/
    **Ordem de implementação:**
    1. **WhatsApp Lembretes** - ROI imediato, menor complexidade técnica
    2. **AI Scribe MVP** - Diferencial competitivo, timing de mercado perfeito
-   3. WhatsApp Bot Avançado - Apenas se 1 e 2 provarem valor
+   3. **AI Diagnostic Helper (Lablens)** - Análise de exames + anamnese → possibilidades diagnósticas (apenas médico)
+   4. WhatsApp Bot Avançado - Apenas se 1, 2 e 3 provarem valor
 
 ---
 
