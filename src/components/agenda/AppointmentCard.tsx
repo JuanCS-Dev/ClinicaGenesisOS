@@ -20,6 +20,7 @@ export const STATUS_COLORS: Record<Status, { bg: string; text: string; dot: stri
   [Status.IN_PROGRESS]: { bg: 'bg-violet-50', text: 'text-violet-700', dot: 'bg-violet-500' },
   [Status.FINISHED]: { bg: 'bg-gray-100', text: 'text-gray-500', dot: 'bg-gray-400' },
   [Status.CANCELED]: { bg: 'bg-red-50', text: 'text-red-600', dot: 'bg-red-400' },
+  [Status.NO_SHOW]: { bg: 'bg-orange-50', text: 'text-orange-600', dot: 'bg-orange-500' },
 };
 
 /**

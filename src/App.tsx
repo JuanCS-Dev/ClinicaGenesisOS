@@ -16,6 +16,7 @@ import { Patients } from './pages/Patients';
 import { PatientDetails } from './pages/PatientDetails';
 import { Finance } from './pages/Finance';
 import { Reports } from './pages/Reports';
+import { WhatsAppMetrics } from './pages/WhatsAppMetrics';
 import { NewPatient } from './pages/NewPatient';
 import { EditPatient } from './pages/EditPatient';
 import { Loader2 } from 'lucide-react';
@@ -132,6 +133,7 @@ function App() {
               <Route path="/patients/:id/edit" element={<EditPatient />} />
               <Route path="/finance" element={<Finance />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/whatsapp" element={<WhatsAppMetrics />} />
               <Route
                 path="/settings"
                 element={

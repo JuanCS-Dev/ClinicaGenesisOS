@@ -4,7 +4,8 @@ export enum Status {
   ARRIVED = 'Chegou',
   IN_PROGRESS = 'Atendendo',
   FINISHED = 'Finalizado',
-  CANCELED = 'Cancelado'
+  CANCELED = 'Cancelado',
+  NO_SHOW = 'Faltou'
 }
 
 export type SpecialtyType = 'medicina' | 'nutricao' | 'psicologia';

@@ -3,13 +3,14 @@ import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useClinicContext } from '../../contexts/ClinicContext';
 import { SpecialtyType } from '../../types';
-import { 
-  LayoutDashboard, 
-  Calendar, 
-  Users, 
-  Wallet, 
-  BarChart3, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Calendar,
+  Users,
+  Wallet,
+  BarChart3,
+  MessageCircle,
+  Settings,
   HelpCircle,
   Apple,
   Activity,
@@ -135,6 +136,7 @@ export const Sidebar: React.FC = () => {
           <NavItem to="/patients" icon={Users} label="Pacientes" />
           <NavItem to="/finance" icon={Wallet} label="Financeiro" />
           <NavItem to="/reports" icon={BarChart3} label="Relatórios" />
+          <NavItem to="/whatsapp" icon={MessageCircle} label="WhatsApp" />
         </div>
 
         {/* Plugins Section - Now Functional */}
