@@ -1252,6 +1252,18 @@ ClinicaGenesisOS/
    - ✅ **Latência: 8.7s** para transcrição + SOAP generation
    - ✅ **TESTADO E FUNCIONANDO EM PRODUÇÃO**
 
+   **🎯 PRÓXIMA SESSÃO - Hero Visual Upgrade:**
+   > Referência: https://maxcomerce.netlify.app/
+
+   - [ ] **Overlap intencional**: Texto do hero invade seção de baixo
+   - [ ] **Glassmorphism**: Painéis translúcidos com backdrop-blur
+   - [ ] **Sombras dramáticas**: box-shadow com glow sutil
+   - [ ] **Gradientes em camadas**: Transições angulares premium
+   - [ ] **Profundidade**: Elementos com z-index estratégico
+   - [ ] **Animações enter-spring**: Movimento vertical + escala
+
+   > "O pitch melhorou, mas a apresentação está parecendo a de um Jr. E eu não sou Jr."
+
    **Completado em 19/12/2025 (Landing Page Rewrite):**
    - ✅ Hero reescrito com copy direto e profissional
    - ✅ Métricas reais no hero (8.7s, -30% no-shows, 2h/dia)
