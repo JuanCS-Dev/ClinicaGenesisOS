@@ -4,7 +4,7 @@
  * Form for editing existing patient data.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save, User, Phone, ShieldCheck, ChevronRight, Loader2, ArrowLeft } from 'lucide-react';
 import { usePatients } from '../hooks/usePatients';
@@ -62,6 +62,7 @@ export function EditPatient() {
   const { patient, loading: loadingPatient } = usePatient(id || '');
   const { updatePatient } = usePatients();
   const [saving, setSaving] = useState(false);
+  const initializedRef = useRef(false);
   const [formData, setFormData] = useState<FormData>({
     name: '',
     birthDate: '',
@@ -72,9 +73,10 @@ export function EditPatient() {
     avatar: '',
   });
 
-  // Load patient data into form
+  // Load patient data into form when patient loads (only once)
   useEffect(() => {
-    if (patient) {
+    if (patient && !initializedRef.current) {
+      initializedRef.current = true;
       setFormData({
         name: patient.name || '',
         birthDate: patient.birthDate || '',

@@ -54,3 +54,4 @@ pubsub-debug.log
 # Misc
 *.tsbuildinfo
 .eslintcache
+functions/.env

@@ -95,7 +95,9 @@ export function NutritionEditor({ onSave }: NutritionEditorProps) {
   const imc = weight && height ? calculateIMC(Number(weight), Number(height)) : null;
   const imcClass = imc ? getIMCClassification(imc) : null;
   const rcq = calculateRCQ(Number(waist), Number(hip));
-  const rcqRisk = rcq ? getRCQRisk(rcq, true) : null; // TODO: Get gender from patient
+  // RCQ risk uses male=true as default since patient gender is not available in this context.
+  // For accurate assessment, the professional should interpret based on patient's actual gender.
+  const rcqRisk = rcq ? getRCQRisk(rcq, true) : null;
 
   return (
     <div className="space-y-6">

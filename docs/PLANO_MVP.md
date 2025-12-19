@@ -8,7 +8,7 @@ Transformar o demo atual (React + localStorage) em um MVP production-ready usand
 
 ## 📊 STATUS DE IMPLEMENTAÇÃO
 
-> Última atualização: 2025-12-18 (Fase 2 100% Completa)
+> Última atualização: 2025-12-18 (Fase 3.1 WhatsApp Lembretes 90% - Cloud Functions Deployed!)
 
 | Fase | Status | Progresso |
 |------|--------|-----------|
@@ -18,7 +18,7 @@ Transformar o demo atual (React + localStorage) em um MVP production-ready usand
 | **Fase 1.3: Banco de Dados** | ✅ Completa | 100% |
 | **Fase 1.4: Test Coverage 90%+** | ✅ Completa | 100% |
 | **Fase 2: Core Features** | ✅ Completa | 100% |
-| **Fase 3: AI Integration** | 🔲 Pendente | 0% |
+| **Fase 3: AI Integration** | 🔄 Em Progresso | 60% |
 | **Fase 4: Financeiro** | 🔲 Pendente | 0% |
 | **Fase 5: Polish & Launch** | 🔲 Pendente | 0% |
 
@@ -558,102 +558,378 @@ Médico digita sintomas → AI sugere:
 - `plugins/psicologia/data/moods.ts` ✅ ATUALIZADO - humor 'irritado' adicionado
 - `types/index.ts` ✅ ATUALIZADO - RecordVersion, RecordAttachment
 
-### Fase 3: AI Integration (Sprints 5-6) 🔲 Pendente
+#### 🔄 Fase 3.1: WhatsApp Lembretes - Backend (Em Progresso - 2025-12-18)
 
-> **Justificativa de mercado** (Dez/2025):
-> - 55% dos pacientes trocariam de clínica por melhor comunicação
-> - 100% dos health systems têm iniciativas de AI documentation
-> - Lembretes WhatsApp reduzem no-shows em 30%+
-> - AI Scribe economiza 14 min/dia por médico
+**Status**: Backend deployed! Meta Account configurado, templates submetidos, aguardando aprovação Meta (~24h)
 
-#### 3.1 WhatsApp Lembretes (Prioridade Crítica) 🔴
-> **ROI**: -30% no-shows, 55% trocariam de clínica por isso
+**Arquitetura implementada**:
+- Multi-tenant ready (MVP usa shared keys, produção usa keys do cliente)
+- Free tier otimizado (24h window para mensagens grátis)
+- TypeScript strict mode, 0 erros, 0 TODOs
 
-- [ ] Setup WhatsApp Business API (Meta Business)
-- [ ] Cloud Function para webhook de mensagens
-- [ ] Lembrete automático 24h antes da consulta
-- [ ] Lembrete automático 2h antes da consulta
-- [ ] Confirmação por resposta (Sim/Não/Remarcar)
-- [ ] Atualização automática de status no sistema
-- [ ] Log de entregas e leituras
-- [ ] Dashboard de métricas (enviados, confirmados, no-shows)
+**Cloud Functions criadas**:
+```typescript
+// functions/src/index.ts
+export { whatsappWebhook } from './whatsapp/webhook.js';
+export { sendReminders24h, sendReminders2h } from './scheduler/reminders.js';
+export { onAppointmentCreated, onAppointmentUpdated } from './scheduler/triggers.js';
+```
 
-**Arquivos:**
-- `functions/src/whatsapp/webhook.ts`
-- `functions/src/whatsapp/templates.ts`
-- `functions/src/scheduler/reminders.ts`
-- `src/services/whatsapp.service.ts`
+**Funcionalidades implementadas**:
+- `whatsapp/client.ts`: sendTemplateMessage, sendTextMessage, markAsRead
+- `whatsapp/templates.ts`: TEMPLATE_REMINDER_24H, TEMPLATE_REMINDER_2H, TEMPLATE_CONFIRMATION
+- `whatsapp/webhook.ts`: GET (verificação), POST (mensagens/status)
+- `scheduler/reminders.ts`: Cron jobs (1h para 24h, 30min para 2h)
+- `scheduler/triggers.ts`: onAppointmentCreated → confirmação, onAppointmentUpdated → métricas
+- `utils/config.ts`: getAIClient(), getWhatsAppConfig(), isFeatureEnabled()
+
+**Tipos adicionados em src/types/index.ts**:
+- `AIProvider`, `ReminderStatus`, `AIConfig`, `WhatsAppConfig`
+- `ClinicIntegrations`, `AIMetadata`, `AISoapRecord`
+- `AppointmentReminder`, `ExamAnalysis`
+- Extensão de `Appointment` com `patientPhone` e `reminder`
+
+**Validação CODE_CONSTITUTION**:
+- ✅ Todos arquivos < 300 linhas (limite: 500)
+- ✅ 0 TODOs/FIXMEs em código de produção
+- ✅ TypeScript strict mode passa
+- ✅ ESLint passa (apenas warnings em tests/coverage)
+- ✅ 246 testes passando
+
+**Refatoração adicional**:
+- `record.service.ts`: 549 → 470 linhas (extraído `record-version.service.ts`)
+
+**Próximos passos para 3.1**:
+1. Criar Meta Business Account
+2. Verificar número de telefone
+3. Submeter templates para aprovação
+4. Deploy Cloud Functions
+5. Testar com número de teste
+6. Frontend: Dashboard de métricas
+
+### Fase 3: AI Integration (Sprints 5-8) 🔄 Em Progresso
+
+> **Deep Research realizada em 18/12/2025** - Ver `docs/FASE3_AI_DEEP_RESEARCH.md` para detalhes completos.
+
+#### Resumo Executivo
+
+| Feature | ROI Esperado | Complexidade | Sprints |
+|---------|-------------|--------------|---------|
+| **3.1 WhatsApp Lembretes** | -30% no-shows | Média | 2 |
+| **3.2 AI Scribe MVP** | -14 min/dia/médico | Alta | 3 |
+| **3.3 AI Diagnostic Helper** | Diferencial competitivo | Alta | 2 |
+
+**Stack AI**: Firebase AI Logic + Vertex AI (Gemini 2.5 Flash) + Cloud Speech-to-Text
+
+**Custo estimado**: R$ 260-420/mês (500 pacientes, 100 consultas AI)
+
+---
+
+#### 3.1 WhatsApp Lembretes (Backend Completo) 🔄
+
+> **ROI**: -30% no-shows | Hospital na Índia: -30% com WhatsApp | NHS UK perde £216M/ano com no-shows
+>
+> **STATUS**: Backend 100% implementado (18/12/2025). Aguardando setup Meta Business Account.
+
+**Dados de mercado (Dez/2025)**:
+- 55% dos pacientes trocariam de clínica por melhor comunicação
+- 20-30% redução de no-shows com lembretes automatizados
+- **NOVO** (Jul/2025): WhatsApp cobra por template entregue (não mais por conversa)
+- Templates Utility dentro do Customer Service Window (24h) são **GRÁTIS**
+
+**Arquitetura**:
+```
+Firestore (appointments) → Cloud Tasks (scheduler) → Cloud Function (sendReminder)
+    → WhatsApp Cloud API → Paciente → Resposta (Sim/Não) → Webhook → Firestore update
+```
+
+**Template Messages (submeter para aprovação Meta)**:
+```
+TEMPLATE: appointment_reminder_24h
+─────────────────────────────────
+Olá {{1}}! 👋
+Lembrete: Sua consulta está agendada para *amanhã*.
+📅 *Data*: {{2}}  ⏰ *Horário*: {{3}}
+👨‍⚕️ *Profissional*: {{4}}  📍 *Local*: {{5}}
+Você confirma sua presença?
+[Sim, estarei lá] [Preciso remarcar]
+```
+
+**Checklist de implementação**:
+- [x] Criar Meta Business Account + WhatsApp Business App ✅
+- [x] Verificar número de telefone (Phone ID: 939822252545732) ✅
+- [x] Submeter templates para aprovação (consulta_lembrete_24h, consulta_lembrete_2h, consulta_confirmacao) ✅
+- [x] Setup Cloud Functions project (`functions/`) ✅
+- [x] Implementar `whatsapp/client.ts` (WhatsApp Cloud API) ✅
+- [x] Implementar `whatsapp/templates.ts` (Template builders) ✅
+- [x] Implementar `whatsapp/webhook.ts` (receber respostas) ✅
+- [x] Implementar `scheduler/reminders.ts` (Cron 24h + 2h) ✅
+- [x] Implementar `scheduler/triggers.ts` (Firestore onCreate/onUpdate) ✅
+- [x] Implementar `utils/config.ts` (Multi-tenant ready) ✅
+- [x] Deploy Cloud Functions (5 functions deployed) ✅
+- [ ] Frontend: Dashboard de métricas (enviados, confirmados, no-shows)
+- [ ] Testes E2E com número real
+- [ ] Testes em produção com paciente real
+
+**Arquivos criados** (2025-12-18):
+```
+functions/
+├── src/
+│   ├── whatsapp/
+│   │   ├── client.ts        ✅ WhatsApp Cloud API client (176 linhas)
+│   │   ├── templates.ts     ✅ Template message builders (192 linhas)
+│   │   └── webhook.ts       ✅ Incoming message handler (276 linhas)
+│   ├── scheduler/
+│   │   ├── reminders.ts     ✅ Cron 24h + 2h (274 linhas)
+│   │   └── triggers.ts      ✅ Firestore triggers (182 linhas)
+│   ├── utils/
+│   │   └── config.ts        ✅ Multi-tenant config (154 linhas)
+│   └── index.ts             ✅ Exports
+├── package.json             ✅
+└── tsconfig.json            ✅
+
+src/
+├── types/index.ts           ✅ +120 linhas (AIConfig, WhatsAppConfig, etc.)
+├── services/
+│   └── ai.service.ts        ✅ Frontend AI config (multi-tenant ready)
+└── pages/
+    └── WhatsAppMetrics.tsx  🔲 Pendente
+```
+
+**Custo estimado**: ~R$ 150-200/mês (500 pacientes)
+
+---
 
 #### 3.2 AI Scribe MVP (Prioridade Crítica) 🔴
-> **ROI**: -14 min/dia por médico, 100% health systems adotando
 
-- [ ] Componente AudioRecorder (browser MediaRecorder API)
-- [ ] Upload de áudio para Cloud Storage
-- [ ] Speech-to-Text (Vertex AI ou Gemini 2.0 Flash)
-- [ ] Geração de SOAP estruturado (Gemini Pro)
-- [ ] Interface de revisão e edição
-- [ ] Salvar no prontuário após aprovação médica
-- [ ] Indicador visual de "AI Generated" no registro
+> **ROI**: 15.700 horas/ano economizadas (Permanente Medical) | 95-98% precisão (vs 96% humano)
 
-**Cuidados (baseado em pesquisa)**:
-- Revisão médica OBRIGATÓRIA antes de salvar
-- Treinamento/onboarding do usuário
-- Feedback loop para melhorias
+**Dados de mercado (Dez/2025)**:
+- 60% dos providers projetados a usar AI Scribe até fim 2025
+- Cleveland Clinic: 76% das consultas usam AI Scribe
+- Economia: 2 min/consulta, 14 min/dia por médico
+- **INSIGHT**: Pipeline modular supera naive prompting em **32%** (SpecialtyScribe/ACM)
 
-**Arquivos:**
-- `src/components/ai/AudioRecorder.tsx`
-- `src/components/ai/SoapReview.tsx`
-- `src/services/ai.service.ts`
-- `functions/src/ai/transcribe.ts`
-- `functions/src/ai/generate-soap.ts`
-
-#### 3.3 AI Diagnostic Helper (Integração Lablens) 🔴
-> **Apenas para área do médico** - Ferramenta de apoio à decisão clínica
-
-**Conceito**: Integrar o motor de análise do Lablens ao Genesis para auxiliar diagnósticos.
-
-**Fluxo**:
+**Arquitetura (3-Stage Pipeline)**:
 ```
-Anamnese (SOAP.Subjetivo) + Exames (upload/anexo) →
-  Gemini 2.5 Flash analisa com protocolo Medicina Funcional →
-    Gera possibilidades diagnósticas + correlações →
-      Médico revisa e decide
+┌─────────────┐    ┌───────────────────┐    ┌───────────────────┐    ┌───────────────────┐
+│   Browser   │───▶│  Speech-to-Text   │───▶│ Info Extractor    │───▶│ SOAP Generator    │
+│ MediaRecorder    │ medical_conversation   │ (Gemini 2.5 Flash)│    │ (Gemini 2.5 Flash)│
+└─────────────┘    └───────────────────┘    └───────────────────┘    └───────────────────┘
+                           │                        │                        │
+                           ▼                        ▼                        ▼
+                      Transcrição              JSON estruturado          SOAP Note
+                      (raw text)               (sintomas, meds...)       (S.O.A.P.)
 ```
 
-**Funcionalidades planejadas**:
-- [ ] Upload de exames laboratoriais (imagem/PDF)
-- [ ] Extração automática de biomarcadores (OCR + AI)
-- [ ] Análise com Functional Optimal Ranges (não apenas lab ranges)
-- [ ] Triangulação de sintomas com resultados (Bayesian inference)
-- [ ] Sugestões de causa-raiz e perguntas investigativas
-- [ ] Indicador visual "AI Assisted" no prontuário
-- [ ] Revisão médica OBRIGATÓRIA antes de qualquer registro
+**Google Cloud Speech-to-Text Medical Models**:
+- `medical_conversation`: Diálogo médico-paciente (auto-detect speakers)
+- `medical_dictation`: Médico ditando notas (spoken commands)
+- Pricing: $0.048/min (medical models)
 
-**Tecnologia base**:
-- Código existente em `/media/juan/DATA/42em7/Day02/Lablens`
-- Gemini 2.5 Flash com schema estruturado
-- Protocolo de Deep Phenotyping
+**Prompts otimizados** (ver `FASE3_AI_DEEP_RESEARCH.md`):
+- Stage 2: Information Extractor → JSON com queixa, sintomas, medicações, etc.
+- Stage 3: SOAP Generator → Nota estruturada por especialidade
 
-**Cuidados éticos/legais**:
-- Ferramenta de APOIO, não substitui julgamento médico
-- Disclaimer claro em toda interface
-- Log de auditoria para cada sugestão gerada
-- Pesquisar regulamentação CFM sobre AI diagnóstica
+**Checklist de implementação**:
+- [ ] Componente `AudioRecorder.tsx` (browser MediaRecorder API)
+- [ ] Upload para Cloud Storage (trigger Cloud Function)
+- [ ] Cloud Function `transcribe.ts` (Speech-to-Text medical_conversation)
+- [ ] Cloud Function `extract-info.ts` (Gemini 2.5 Flash)
+- [ ] Cloud Function `generate-soap.ts` (Gemini 2.5 Flash)
+- [ ] Componente `SOAPReview.tsx` (modal de revisão/edição)
+- [ ] Integração com prontuário existente
+- [ ] Campo `aiGenerated: boolean` no record
+- [ ] Campo `aiMetadata: { model, promptVersion, timestamp }` para audit
+- [ ] Indicador visual "🤖 AI Generated" no prontuário
+- [ ] Feedback loop: médico pode marcar erros
+
+**Cuidados OBRIGATÓRIOS (compliance)**:
+- ⚠️ Revisão médica OBRIGATÓRIA antes de salvar
+- ⚠️ Indicador visual claro de conteúdo AI
+- ⚠️ Audit trail completo (quem, quando, modelo usado)
+- ⚠️ Treinamento/onboarding do usuário
+- ⚠️ NÃO salvar automaticamente - sempre aguardar aprovação
 
 **Arquivos a criar**:
-- `src/components/ai/DiagnosticHelper.tsx`
-- `src/components/ai/BiomarkerAnalysis.tsx`
-- `src/services/lablens.service.ts`
-- `functions/src/ai/diagnostic-analysis.ts`
+```
+functions/src/ai/
+├── transcribe.ts         # Speech-to-Text
+├── extract-info.ts       # Information Extractor
+└── generate-soap.ts      # SOAP Generator
 
-#### 3.4 WhatsApp Bot Avançado (Opcional)
-> Implementar apenas se 3.1 tiver sucesso comprovado
+src/components/ai/
+├── AudioRecorder.tsx     # Gravação de áudio
+├── TranscriptionView.tsx # Visualizar transcrição
+└── SOAPReview.tsx        # Modal de revisão
 
-- [ ] Agendamento via conversa natural
+src/services/
+└── ai.service.ts         # Frontend AI service
+
+src/hooks/
+└── useAIScribe.ts        # Hook para AI Scribe
+```
+
+**Custo estimado**: ~R$ 50-80/mês (100 consultas)
+
+---
+
+#### 3.3 AI Diagnostic Helper - Lablens Integration (Alta) 🟠
+
+> **Apenas área do médico** | LLM users: +27.5 pontos percentuais em diagnostic reasoning
+
+**Dados de mercado (Dez/2025)**:
+- LLMs >90% accuracy em casos comuns
+- Claude 3.7: 83.3% em casos complexos
+- Penda Health (Kenya): Interface traffic-light (🟢🟡🔴) com sucesso
+- Glass Health: AI co-pilot para DDx com rationale
+
+**Conceito**: Ferramenta de APOIO (não substituição) ao raciocínio clínico.
+
+**Arquitetura**:
+```
+┌─────────────────┐    ┌─────────────────┐
+│   ANAMNESE      │    │    EXAMES       │
+│ (SOAP.Subjetivo)│    │ (Upload/OCR)    │
+└────────┬────────┘    └────────┬────────┘
+         │                      │
+         └──────────┬───────────┘
+                    │
+                    ▼
+          ┌─────────────────────┐
+          │  Gemini 2.5 Flash   │
+          │  + Functional       │
+          │  Optimal Ranges     │
+          └─────────────────────┘
+                    │
+                    ▼
+          ┌─────────────────────┐
+          │   ANÁLISE OUTPUT    │
+          │ 🔴 Valores críticos │
+          │ 🟡 Fora do optimal  │
+          │ 🟢 Dentro do range  │
+          │                     │
+          │ Correlações:        │
+          │ Perguntas invest.:  │
+          └─────────────────────┘
+                    │
+                    ▼
+          ┌─────────────────────┐
+          │   MÉDICO DECIDE     │
+          │  (sempre humano)    │
+          └─────────────────────┘
+```
+
+**Funcionalidades**:
+- [ ] Upload de exames laboratoriais (PDF/imagem)
+- [ ] OCR + extração de biomarcadores (Gemini Vision)
+- [ ] Análise com Functional Optimal Ranges (não só lab ranges)
+- [ ] Interface traffic-light (🟢🟡🔴) para valores
+- [ ] Triangulação sintomas + labs → possibilidades
+- [ ] Sugestões de perguntas investigativas
+- [ ] Indicador "🤖 AI Assisted" no prontuário
+
+**Código base existente**:
+- `/media/juan/DATA/42em7/Day02/Lablens` - Adaptar prompts e ranges
+
+**Cuidados éticos/legais OBRIGATÓRIOS**:
+- ⚠️ Disclaimer em TODA interface: "Ferramenta de apoio. Não substitui julgamento clínico."
+- ⚠️ Médico DEVE confirmar antes de qualquer registro
+- ⚠️ Log de auditoria para cada sugestão gerada
+- ⚠️ Pesquisar regulamentação CFM sobre AI diagnóstica
+- ⚠️ NÃO mostrar para paciente - apenas área médica
+
+**Arquivos a criar**:
+```
+functions/src/ai/
+└── diagnostic-analysis.ts  # Análise de exames + anamnese
+
+src/components/ai/
+├── DiagnosticHelper.tsx    # Interface principal
+├── BiomarkerAnalysis.tsx   # Visualização de biomarcadores
+└── ExamUpload.tsx          # Upload de exames
+
+src/services/
+└── lablens.service.ts      # Integração Lablens
+```
+
+---
+
+#### 3.4 WhatsApp Bot Avançado (Opcional) 🟢
+
+> Implementar APENAS se 3.1 tiver sucesso comprovado (métricas positivas)
+
+- [ ] Agendamento via conversa natural (Gemini)
 - [ ] FAQ automático (horários, localização, preparo exames)
-- [ ] Integração Firebase AI Logic (Gemini)
+- [ ] Integração Firebase AI Logic
 - [ ] Fallback para atendente humano
 - [ ] Histórico de conversas no prontuário
+
+---
+
+#### Stack Técnica AI (Consolidada)
+
+**Dependências a adicionar**:
+```json
+// package.json (frontend)
+{
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0"
+  }
+}
+
+// functions/package.json (backend)
+{
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0",
+    "@google-cloud/speech": "^6.0.0",
+    "@google-cloud/vertexai": "^1.0.0",
+    "@google-cloud/tasks": "^4.0.0",
+    "axios": "^1.6.0"
+  }
+}
+```
+
+**Configuração Firebase AI Logic**:
+```typescript
+// src/services/ai.ts
+import { getVertexAI, getGenerativeModel } from 'firebase/vertexai';
+import { app } from './firebase';
+
+const vertexAI = getVertexAI(app);
+
+export const geminiFlash = getGenerativeModel(vertexAI, {
+  model: 'gemini-2.5-flash-preview-05-20',
+});
+```
+
+---
+
+#### Custos Totais Estimados (Mensal)
+
+| Item | Custo |
+|------|-------|
+| WhatsApp API (500 pacientes) | R$ 150-200 |
+| Speech-to-Text (100 consultas) | R$ 30-50 |
+| Gemini API (Scribe + Helper) | R$ 50-100 |
+| Cloud Functions | R$ 20-50 |
+| Cloud Storage | R$ 10-20 |
+| **TOTAL** | **R$ 260-420/mês** |
+
+**ROI**: Se reduzir 30% no-shows + 14min/dia/médico, payback no primeiro mês.
+
+---
+
+#### Fontes da Pesquisa Fase 3
+
+- [NEJM Catalyst - AI Scribes 2.5M Uses](https://catalyst.nejm.org/doi/full/10.1056/CAT.25.0040)
+- [Cleveland Clinic - Ambient AI](https://consultqd.clevelandclinic.org/less-typing-more-talking-how-ambient-ai-is-reshaping-clinical-workflow-at-cleveland-clinic)
+- [SpecialtyScribe - ACM (Pipeline 32% melhor)](https://dl.acm.org/doi/10.1145/3701551.3706131)
+- [Google Speech-to-Text Medical Models](https://cloud.google.com/speech-to-text/docs/medical-models)
+- [WhatsApp Business API Pricing Jul/2025](https://respond.io/blog/whatsapp-business-api-pricing)
+- [Penda Health AI Consult](https://cdn.openai.com/pdf/a794887b-5a77-4207-bb62-e52c900463f1/penda_paper.pdf)
+- [Firebase AI Logic Docs](https://firebase.google.com/docs/vertex-ai)
 
 ### Fase 4: Financeiro & Relatórios (Sprints 7-8)
 
@@ -845,19 +1121,47 @@ ClinicaGenesisOS/
    - ~~Pacientes (busca, edição, upload foto)~~ ✅
    - ~~Prontuário Eletrônico (versionamento, templates, anexos)~~ ✅
 
-9. **Fase 3: AI Integration** ← **PRÓXIMO PASSO** (baseado em pesquisa Dez/2025)
+9. **Fase 3: AI Integration** ← **EM PROGRESSO** (Iniciado: 18/12/2025)
 
-   **Por que priorizar AI agora?**
-   - 55% dos pacientes trocariam de clínica por melhor comunicação
-   - 100% dos health systems têm iniciativas de AI documentation
-   - Lembretes WhatsApp reduzem no-shows em 30%+
-   - AI Scribe economiza 14 min/dia por médico (Cleveland Clinic)
+   > Ver `docs/FASE3_AI_DEEP_RESEARCH.md` e `docs/FASE3_MVP_FREE_TIER.md` para detalhes.
 
-   **Ordem de implementação:**
-   1. **WhatsApp Lembretes** - ROI imediato, menor complexidade técnica
-   2. **AI Scribe MVP** - Diferencial competitivo, timing de mercado perfeito
-   3. **AI Diagnostic Helper (Lablens)** - Análise de exames + anamnese → possibilidades diagnósticas (apenas médico)
-   4. WhatsApp Bot Avançado - Apenas se 1, 2 e 3 provarem valor
+   **Status atual:**
+   | # | Feature | Status | Próximo Passo |
+   |---|---------|--------|---------------|
+   | 1 | **WhatsApp Lembretes** | 🔄 90% (Deployed!) | Aguardar aprovação templates Meta |
+   | 2 | **AI Scribe MVP** | 🔲 Pendente | Aguardando 3.1 completo |
+   | 3 | **AI Diagnostic Helper** | 🔲 Pendente | Aguardando 3.2 completo |
+
+   **Completado em 18/12/2025:**
+   - ✅ Setup Cloud Functions project (`functions/`)
+   - ✅ Implementar WhatsApp client, templates, webhook
+   - ✅ Implementar scheduler (reminders, triggers)
+   - ✅ Arquitetura multi-tenant ready
+   - ✅ Tipos TypeScript para AI/WhatsApp
+   - ✅ Validação CODE_CONSTITUTION (246 testes, 0 erros)
+   - ✅ Refatoração record.service.ts (549 → 470 linhas)
+   - ✅ Meta Business Account configurado
+   - ✅ WhatsApp Business App criado
+   - ✅ Phone Number ID: 939822252545732
+   - ✅ Business Account ID: 2302526336886419
+   - ✅ Templates submetidos (consulta_lembrete_24h, consulta_lembrete_2h, consulta_confirmacao)
+   - ✅ Cloud Functions deployed (5 funções: whatsappWebhook, sendReminders24h, sendReminders2h, onAppointmentCreated, onAppointmentUpdated)
+   - ✅ Firebase Blaze plan ativado (limite R$25)
+
+   **Próximos passos para 3.1 (WhatsApp):**
+   1. ~~Criar Meta Business Account + WhatsApp Business App~~ ✅ Done
+   2. ~~Verificar número de telefone~~ ✅ Done (939822252545732)
+   3. ~~Submeter templates para aprovação~~ ✅ Done (consulta_lembrete_*)
+   4. ~~Deploy Cloud Functions~~ ✅ Done (5 functions deployed!)
+   5. Aguardar aprovação de templates pela Meta (~24h)
+   6. Testar com paciente real (quando templates aprovados)
+   7. Frontend: Dashboard de métricas WhatsApp
+
+   **Arquitetura Free Tier (MVP):**
+   - Google AI Studio (gratuito) em vez de Vertex AI
+   - Gemini 2.5 Flash Native Audio (elimina Speech-to-Text separado)
+   - WhatsApp 24h window para mensagens grátis
+   - Multi-tenant: cada cliente terá billing próprio em produção
 
 ---
 

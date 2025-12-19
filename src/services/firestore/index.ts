@@ -20,5 +20,6 @@ export { patientService } from './patient.service';
 export { appointmentService } from './appointment.service';
 
 export { recordService } from './record.service';
+export { recordVersionService } from './record-version.service';
 
 export { seedClinicData, removeDemoData } from './seed.service';

@@ -43,6 +43,7 @@ export interface Appointment {
   id: string;
   patientId: string;
   patientName: string; // Denormalized for performance
+  patientPhone?: string; // For WhatsApp reminders
   date: string; // ISO Date
   durationMin: number;
   procedure: string;
@@ -54,6 +55,32 @@ export interface Appointment {
   recurrence?: RecurrencePattern;
   /** Parent appointment ID (for expanded recurring instances) */
   recurrenceParentId?: string;
+  /** WhatsApp reminder tracking */
+  reminder?: {
+    confirmation?: {
+      status: ReminderStatus;
+      sentAt?: string;
+      messageId?: string;
+    };
+    reminder24h?: {
+      status: ReminderStatus;
+      sentAt?: string;
+      messageId?: string;
+    };
+    reminder2h?: {
+      status: ReminderStatus;
+      sentAt?: string;
+      messageId?: string;
+      usedTemplate?: boolean;
+    };
+    lastInteraction?: string;
+    patientResponse?: {
+      confirmed?: boolean;
+      respondedAt: string;
+      message?: string;
+      needsReschedule?: boolean;
+    };
+  };
 }
 
 // --- TIMELINE TYPES ---
@@ -308,3 +335,122 @@ export type EditorRecordData =
   | Omit<CreateExamRequestRecordInput, 'patientId' | 'specialty'>
   | Omit<CreateAnthropometryRecordInput, 'patientId' | 'specialty'>
   | Omit<CreatePsychoSessionRecordInput, 'patientId' | 'specialty'>;
+
+// --- AI & INTEGRATIONS TYPES (Multi-tenant ready) ---
+
+/**
+ * AI provider options.
+ * MVP uses google-ai-studio (free), production uses client's vertex-ai.
+ */
+export type AIProvider = 'google-ai-studio' | 'vertex-ai';
+
+/**
+ * WhatsApp reminder status for appointments.
+ */
+export type ReminderStatus = 'pending' | 'sent' | 'delivered' | 'read' | 'failed';
+
+/**
+ * WhatsApp integration config per clinic.
+ * Stored in /clinics/{clinicId}/settings/integrations
+ */
+export interface WhatsAppConfig {
+  enabled: boolean;
+  phoneNumberId: string;
+  accessToken: string; // Encrypted in Firestore
+  businessAccountId: string;
+  verifyToken: string; // For webhook verification
+}
+
+/**
+ * AI integration config per clinic.
+ * Stored in /clinics/{clinicId}/settings/integrations
+ */
+export interface AIConfig {
+  enabled: boolean;
+  provider: AIProvider;
+  apiKey?: string; // Encrypted, only if client provides own key
+  useSharedKey: boolean; // MVP: true (uses our key)
+  features: {
+    scribe: boolean;
+    diagnosticHelper: boolean;
+  };
+}
+
+/**
+ * All integrations for a clinic.
+ * Stored in /clinics/{clinicId}/settings/integrations
+ */
+export interface ClinicIntegrations {
+  whatsapp?: WhatsAppConfig;
+  ai?: AIConfig;
+  updatedAt: string;
+  updatedBy: string;
+}
+
+/**
+ * AI-generated content metadata for audit trail.
+ */
+export interface AIMetadata {
+  generated: boolean;
+  provider: AIProvider;
+  model: string;
+  promptVersion: string;
+  generatedAt: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+}
+
+/**
+ * Extended SOAP record with AI generation support.
+ */
+export interface AISoapRecord extends SoapRecord {
+  aiMetadata?: AIMetadata;
+  transcription?: string; // Original audio transcription
+}
+
+/**
+ * WhatsApp reminder tracking for appointments.
+ */
+export interface AppointmentReminder {
+  appointmentId: string;
+  patientPhone: string;
+  reminder24h: {
+    status: ReminderStatus;
+    sentAt?: string;
+    messageId?: string;
+  };
+  reminder2h: {
+    status: ReminderStatus;
+    sentAt?: string;
+    messageId?: string;
+  };
+  patientResponse?: {
+    confirmed: boolean;
+    respondedAt: string;
+    message?: string;
+  };
+}
+
+/**
+ * Exam analysis result from AI Diagnostic Helper.
+ */
+export interface ExamAnalysis {
+  id: string;
+  patientId: string;
+  examType: string;
+  analyzedAt: string;
+  analyzedBy: string; // userId who requested
+  aiMetadata: AIMetadata;
+  values: Array<{
+    name: string;
+    value: string;
+    unit: string;
+    referenceRange: string;
+    status: 'normal' | 'altered' | 'critical';
+    note?: string;
+  }>;
+  summary: string;
+  attentionPoints: string[];
+  suggestedQuestions: string[];
+  attachmentId?: string; // Reference to uploaded exam image/PDF
+}

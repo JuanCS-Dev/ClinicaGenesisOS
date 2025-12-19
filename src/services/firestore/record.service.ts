@@ -24,6 +24,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from '../firebase';
+import { recordVersionService } from './record-version.service';
 import type {
   MedicalRecord,
   RecordType,
@@ -44,13 +45,6 @@ import type {
  */
 function getRecordsCollection(clinicId: string) {
   return collection(db, 'clinics', clinicId, 'records');
-}
-
-/**
- * Get the versions subcollection reference for a record.
- */
-function getVersionsCollection(clinicId: string, recordId: string) {
-  return collection(db, 'clinics', clinicId, 'records', recordId, 'versions');
 }
 
 /**
@@ -253,15 +247,14 @@ export const recordService = {
     const currentVersion = (currentData.version as number) || 1;
 
     // Save current state to versions subcollection
-    const versionsRef = getVersionsCollection(clinicId, recordId);
-    const versionData = {
-      version: currentVersion,
-      data: currentData,
-      savedAt: serverTimestamp(),
-      savedBy: updatedBy || currentData.professional,
-      changeReason,
-    };
-    await addDoc(versionsRef, versionData);
+    await recordVersionService.saveVersion(
+      clinicId,
+      recordId,
+      currentData,
+      currentVersion,
+      updatedBy || (currentData.professional as string),
+      changeReason
+    );
 
     // Prepare update data
     const updateData: Record<string, unknown> = { ...data };
@@ -437,84 +430,34 @@ export const recordService = {
     });
   },
 
-  // --- VERSION HISTORY METHODS ---
+  // --- VERSION HISTORY METHODS (delegated to recordVersionService) ---
 
   /**
    * Get version history for a record.
-   *
-   * @param clinicId - The clinic ID
-   * @param recordId - The record ID
-   * @returns Array of versions sorted by version number (descending)
+   * @see recordVersionService.getHistory
    */
   async getVersionHistory(
     clinicId: string,
     recordId: string
   ): Promise<RecordVersion[]> {
-    const versionsRef = getVersionsCollection(clinicId, recordId);
-    const q = query(versionsRef, orderBy('version', 'desc'));
-    const querySnapshot = await getDocs(q);
-
-    return querySnapshot.docs.map((docSnap) => {
-      const data = docSnap.data();
-      return {
-        id: docSnap.id,
-        version: data.version as number,
-        data: data.data as Omit<MedicalRecord, 'id'>,
-        savedAt:
-          data.savedAt instanceof Timestamp
-            ? data.savedAt.toDate().toISOString()
-            : (data.savedAt as string),
-        savedBy: data.savedBy as string,
-        changeReason: data.changeReason as string | undefined,
-      };
-    });
+    return recordVersionService.getHistory(clinicId, recordId);
   },
 
   /**
    * Get a specific version of a record.
-   *
-   * @param clinicId - The clinic ID
-   * @param recordId - The record ID
-   * @param versionNumber - The version number to retrieve
-   * @returns The version data or null if not found
+   * @see recordVersionService.getVersion
    */
   async getVersion(
     clinicId: string,
     recordId: string,
     versionNumber: number
   ): Promise<RecordVersion | null> {
-    const versionsRef = getVersionsCollection(clinicId, recordId);
-    const q = query(versionsRef, where('version', '==', versionNumber));
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      return null;
-    }
-
-    const docSnap = querySnapshot.docs[0];
-    const data = docSnap.data();
-
-    return {
-      id: docSnap.id,
-      version: data.version as number,
-      data: data.data as Omit<MedicalRecord, 'id'>,
-      savedAt:
-        data.savedAt instanceof Timestamp
-          ? data.savedAt.toDate().toISOString()
-          : (data.savedAt as string),
-      savedBy: data.savedBy as string,
-      changeReason: data.changeReason as string | undefined,
-    };
+    return recordVersionService.getVersion(clinicId, recordId, versionNumber);
   },
 
   /**
    * Restore a record to a previous version.
-   *
-   * @param clinicId - The clinic ID
-   * @param recordId - The record ID
-   * @param versionNumber - The version number to restore
-   * @param restoredBy - Name of the professional restoring the version
-   * @returns The new version number
+   * @see recordVersionService.restore
    */
   async restoreVersion(
     clinicId: string,
@@ -522,28 +465,6 @@ export const recordService = {
     versionNumber: number,
     restoredBy: string
   ): Promise<number> {
-    // Get the version to restore
-    const versionToRestore = await this.getVersion(clinicId, recordId, versionNumber);
-    if (!versionToRestore) {
-      throw new Error(`Version ${versionNumber} not found`);
-    }
-
-    // Get current record to save as new version
-    const currentRecord = await this.getById(clinicId, recordId);
-    if (!currentRecord) {
-      throw new Error('Record not found');
-    }
-
-    // Update record with restored data (this will save current state to versions)
-    const { id: _id, ...restoreData } = versionToRestore.data as MedicalRecord;
-    await this.update(
-      clinicId,
-      recordId,
-      restoreData,
-      restoredBy,
-      `Restaurado da versão ${versionNumber}`
-    );
-
-    return currentRecord.version + 1;
+    return recordVersionService.restore(clinicId, recordId, versionNumber, restoredBy);
   },
 };
