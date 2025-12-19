@@ -8,7 +8,7 @@ Transformar o demo atual (React + localStorage) em um MVP production-ready usand
 
 ## 📊 STATUS DE IMPLEMENTAÇÃO
 
-> Última atualização: 2025-12-18 (Fase 3.1 WhatsApp Lembretes 90% - Cloud Functions Deployed!)
+> Última atualização: 2025-12-18 (Fase 3.1 WhatsApp Lembretes 100% - Backend + Frontend Complete!)
 
 | Fase | Status | Progresso |
 |------|--------|-----------|
@@ -18,7 +18,7 @@ Transformar o demo atual (React + localStorage) em um MVP production-ready usand
 | **Fase 1.3: Banco de Dados** | ✅ Completa | 100% |
 | **Fase 1.4: Test Coverage 90%+** | ✅ Completa | 100% |
 | **Fase 2: Core Features** | ✅ Completa | 100% |
-| **Fase 3: AI Integration** | 🔄 Em Progresso | 60% |
+| **Fase 3: AI Integration** | 🔄 Em Progresso | 70% |
 | **Fase 4: Financeiro** | 🔲 Pendente | 0% |
 | **Fase 5: Polish & Launch** | 🔲 Pendente | 0% |
 
@@ -558,9 +558,9 @@ Médico digita sintomas → AI sugere:
 - `plugins/psicologia/data/moods.ts` ✅ ATUALIZADO - humor 'irritado' adicionado
 - `types/index.ts` ✅ ATUALIZADO - RecordVersion, RecordAttachment
 
-#### 🔄 Fase 3.1: WhatsApp Lembretes - Backend (Em Progresso - 2025-12-18)
+#### ✅ Fase 3.1: WhatsApp Lembretes (Completa - 2025-12-18)
 
-**Status**: Backend deployed! Meta Account configurado, templates submetidos, aguardando aprovação Meta (~24h)
+**Status**: Backend + Frontend 100% implementados! Aguardando aprovação de templates Meta (~24h)
 
 **Arquitetura implementada**:
 - Multi-tenant ready (MVP usa shared keys, produção usa keys do cliente)
@@ -667,8 +667,8 @@ Você confirma sua presença?
 - [x] Implementar `scheduler/triggers.ts` (Firestore onCreate/onUpdate) ✅
 - [x] Implementar `utils/config.ts` (Multi-tenant ready) ✅
 - [x] Deploy Cloud Functions (5 functions deployed) ✅
-- [ ] Frontend: Dashboard de métricas (enviados, confirmados, no-shows)
-- [ ] Testes E2E com número real
+- [x] Frontend: Dashboard de métricas (enviados, confirmados, no-shows) ✅
+- [ ] Testes E2E com número real (aguardando aprovação templates)
 - [ ] Testes em produção com paciente real
 
 **Arquivos criados** (2025-12-18):
@@ -691,9 +691,17 @@ functions/
 src/
 ├── types/index.ts           ✅ +120 linhas (AIConfig, WhatsAppConfig, etc.)
 ├── services/
-│   └── ai.service.ts        ✅ Frontend AI config (multi-tenant ready)
+│   ├── ai.service.ts        ✅ Frontend AI config (multi-tenant ready)
+│   └── whatsapp-metrics.service.ts ✅ Agregação de métricas (212 linhas)
+├── hooks/
+│   └── useWhatsAppMetrics.ts ✅ Hook real-time com memoização (69 linhas)
+├── components/whatsapp/
+│   ├── index.ts             ✅ Barrel exports
+│   ├── MetricCard.tsx       ✅ KPI cards memoizados (81 linhas)
+│   ├── StatusBreakdown.tsx  ✅ Progress bars por status (67 linhas)
+│   └── LazyCharts.tsx       ✅ Code-split Recharts (55 linhas)
 └── pages/
-    └── WhatsAppMetrics.tsx  🔲 Pendente
+    └── WhatsAppMetrics.tsx  ✅ Dashboard completo (261 linhas)
 ```
 
 **Custo estimado**: ~R$ 150-200/mês (500 pacientes)
@@ -1128,8 +1136,8 @@ ClinicaGenesisOS/
    **Status atual:**
    | # | Feature | Status | Próximo Passo |
    |---|---------|--------|---------------|
-   | 1 | **WhatsApp Lembretes** | 🔄 90% (Deployed!) | Aguardar aprovação templates Meta |
-   | 2 | **AI Scribe MVP** | 🔲 Pendente | Aguardando 3.1 completo |
+   | 1 | **WhatsApp Lembretes** | ✅ 100% Completo | Testar com paciente real |
+   | 2 | **AI Scribe MVP** | 🔲 Pendente | Iniciar implementação |
    | 3 | **AI Diagnostic Helper** | 🔲 Pendente | Aguardando 3.2 completo |
 
    **Completado em 18/12/2025:**
@@ -1155,7 +1163,7 @@ ClinicaGenesisOS/
    4. ~~Deploy Cloud Functions~~ ✅ Done (5 functions deployed!)
    5. Aguardar aprovação de templates pela Meta (~24h)
    6. Testar com paciente real (quando templates aprovados)
-   7. Frontend: Dashboard de métricas WhatsApp
+   7. ~~Frontend: Dashboard de métricas WhatsApp~~ ✅ Done
 
    **Arquitetura Free Tier (MVP):**
    - Google AI Studio (gratuito) em vez de Vertex AI
