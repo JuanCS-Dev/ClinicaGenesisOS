@@ -1,23 +1,24 @@
 /**
  * Multi-tenant configuration utilities
  *
- * MVP: Uses shared keys from environment
- * Production: Fetches clinic-specific keys from Firestore
+ * IMPORTANTE: Usamos SOMENTE Vertex AI para inferência Gemini.
+ * Não usamos Google AI Studio nem API keys separadas.
+ * O Vertex AI usa ADC (Application Default Credentials) automaticamente.
  */
 
 import { getFirestore } from 'firebase-admin/firestore';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const MVP_MODE = process.env.MVP_MODE === 'true';
-const SHARED_AI_KEY = process.env.GOOGLE_AI_API_KEY;
 const SHARED_WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
 const SHARED_WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID;
 
+// Vertex AI configuration
+const VERTEX_PROJECT = process.env.GOOGLE_CLOUD_PROJECT || 'clinica-genesis-os-e689e';
+// Gemini 2.5 Flash only available in us-central1 (not southamerica-east1)
+const VERTEX_LOCATION = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
+
 interface AIConfig {
   enabled: boolean;
-  provider: 'google-ai-studio' | 'vertex-ai';
-  apiKey?: string;
-  useSharedKey: boolean;
   features?: {
     scribe: boolean;
     diagnosticHelper: boolean;
@@ -53,38 +54,25 @@ async function getClinicIntegrations(
   return doc.exists ? (doc.data() as ClinicIntegrations) : null;
 }
 
+// Lazy-loaded Vertex AI client
+let vertexAIClient: import('@google/genai').GoogleGenAI | null = null;
+
 /**
- * Get AI client for a clinic.
- * MVP: Uses shared key
- * Production: Uses clinic's own key if configured
+ * Get Vertex AI client (lazy initialization).
+ *
+ * Usa ADC (Application Default Credentials) - não precisa de API key.
+ * No Cloud Functions, as credenciais são automáticas.
  */
-export async function getAIClient(
-  clinicId?: string
-): Promise<GoogleGenerativeAI> {
-  // MVP: Always use shared key
-  if (MVP_MODE || !clinicId) {
-    if (!SHARED_AI_KEY) {
-      throw new Error('GOOGLE_AI_API_KEY not configured');
-    }
-    return new GoogleGenerativeAI(SHARED_AI_KEY);
+export async function getVertexAIClient(): Promise<import('@google/genai').GoogleGenAI> {
+  if (!vertexAIClient) {
+    const { GoogleGenAI } = await import('@google/genai');
+    vertexAIClient = new GoogleGenAI({
+      vertexai: true,
+      project: VERTEX_PROJECT,
+      location: VERTEX_LOCATION,
+    });
   }
-
-  // Production: Check clinic config
-  const integrations = await getClinicIntegrations(clinicId);
-
-  if (!integrations?.ai?.enabled) {
-    throw new Error(`AI not enabled for clinic ${clinicId}`);
-  }
-
-  if (integrations.ai.useSharedKey || !integrations.ai.apiKey) {
-    if (!SHARED_AI_KEY) {
-      throw new Error('GOOGLE_AI_API_KEY not configured');
-    }
-    return new GoogleGenerativeAI(SHARED_AI_KEY);
-  }
-
-  // Use clinic's own key
-  return new GoogleGenerativeAI(integrations.ai.apiKey);
+  return vertexAIClient;
 }
 
 /**
@@ -127,14 +115,14 @@ export async function isFeatureEnabled(
   clinicId: string,
   feature: 'whatsapp' | 'ai-scribe' | 'ai-diagnostic'
 ): Promise<boolean> {
-  // MVP: All features enabled if env vars are set
+  // MVP: All AI features enabled (Vertex AI usa ADC, sempre disponível)
   if (MVP_MODE) {
     switch (feature) {
       case 'whatsapp':
         return !!SHARED_WHATSAPP_TOKEN;
       case 'ai-scribe':
       case 'ai-diagnostic':
-        return !!SHARED_AI_KEY;
+        return true; // Vertex AI sempre disponível via ADC
     }
   }
 

@@ -8,12 +8,18 @@
  * - Avaliação: Hipóteses diagnósticas
  * - Plano: Conduta terapêutica
  *
+ * Integração com AI Scribe para gravação de consultas.
+ *
  * @module plugins/medicina/SoapEditor
  */
 
 import { useState } from 'react';
-import { CheckCircle2 } from 'lucide-react';
-import { RecordType, EditorRecordData } from '../../types';
+import { useParams } from 'react-router-dom';
+import { CheckCircle2, Mic, Bot } from 'lucide-react';
+import { RecordType, EditorRecordData, AIScribeResult } from '../../types';
+import { RecordingControls } from '../../components/ai/RecordingControls';
+import { SOAPReview } from '../../components/ai/SOAPReview';
+import { useAIScribe } from '../../hooks/useAIScribe';
 
 interface SoapData {
   s: string;
@@ -59,7 +65,32 @@ const SoapField = ({
 );
 
 export function SoapEditor({ onSave }: SoapEditorProps) {
+  const { id: patientId } = useParams();
   const [soap, setSoap] = useState<SoapData>({ s: '', o: '', a: '', p: '' });
+  const [showAIScribe, setShowAIScribe] = useState(false);
+  const [showReview, setShowReview] = useState(false);
+  const [aiResult, setAiResult] = useState<AIScribeResult | null>(null);
+
+  const {
+    status,
+    isPaused,
+    duration,
+    startRecording,
+    stopRecording,
+    pauseRecording,
+    resumeRecording,
+    reset,
+  } = useAIScribe({
+    patientId: patientId || '',
+    onComplete: (res) => {
+      setAiResult(res);
+      setShowReview(true);
+    },
+    onError: (err) => {
+      console.error('AI Scribe error:', err);
+      alert(`Erro no AI Scribe: ${err.message}`);
+    },
+  });
 
   const handleSave = () => {
     if (!soap.s && !soap.o) {
@@ -78,8 +109,70 @@ export function SoapEditor({ onSave }: SoapEditorProps) {
     setSoap({ s: '', o: '', a: '', p: '' });
   };
 
+  const handleApproveAI = (editedSoap: AIScribeResult['soap']) => {
+    setSoap({
+      s: editedSoap.subjective,
+      o: editedSoap.objective,
+      a: editedSoap.assessment,
+      p: editedSoap.plan,
+    });
+    setShowReview(false);
+    setShowAIScribe(false);
+    reset();
+  };
+
+  const handleCancelReview = () => {
+    setShowReview(false);
+    reset();
+  };
+
+  const handleToggleAIScribe = () => {
+    if (showAIScribe) {
+      setShowAIScribe(false);
+      reset();
+    } else {
+      setShowAIScribe(true);
+    }
+  };
+
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-left-2">
+      {/* AI Scribe Toggle */}
+      <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <Bot className="w-4 h-4 text-blue-500" />
+          <span className="text-xs font-medium text-gray-600">
+            AI Scribe: Grave a consulta e gere SOAP automaticamente
+          </span>
+        </div>
+        <button
+          onClick={handleToggleAIScribe}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+            showAIScribe
+              ? 'bg-red-100 text-red-700 hover:bg-red-200'
+              : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+          }`}
+        >
+          <Mic className="w-4 h-4" />
+          {showAIScribe ? 'Fechar Gravação' : 'Gravar Consulta'}
+        </button>
+      </div>
+
+      {/* AI Scribe Recording Controls */}
+      {showAIScribe && (
+        <RecordingControls
+          status={status}
+          duration={duration}
+          isPaused={isPaused}
+          onStart={startRecording}
+          onStop={stopRecording}
+          onPause={pauseRecording}
+          onResume={resumeRecording}
+          disabled={!patientId}
+        />
+      )}
+
+      {/* Manual SOAP Fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <SoapField
           letter="S"
@@ -121,6 +214,15 @@ export function SoapEditor({ onSave }: SoapEditorProps) {
           <CheckCircle2 className="w-4 h-4" /> Salvar Evolução
         </button>
       </div>
+
+      {/* AI Review Modal */}
+      {showReview && aiResult && (
+        <SOAPReview
+          result={aiResult}
+          onApprove={handleApproveAI}
+          onCancel={handleCancelReview}
+        />
+      )}
     </div>
   );
 }

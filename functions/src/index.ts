@@ -20,9 +20,9 @@ export { sendReminders24h, sendReminders2h } from './scheduler/reminders.js';
 export { onAppointmentCreated, onAppointmentUpdated } from './scheduler/triggers.js';
 
 // ============================================
-// AI Scribe (3.2) - Coming soon
+// AI Scribe (3.2)
 // ============================================
-// export { processConsultationAudio } from './ai/scribe.js';
+export { processAudioScribe } from './ai/process-audio-scribe.js';
 
 // ============================================
 // AI Diagnostic Helper (3.3) - Coming soon

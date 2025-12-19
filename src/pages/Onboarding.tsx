@@ -139,7 +139,11 @@ export function Onboarding() {
         settings,
       };
 
-      await createClinic(clinicData, seedData);
+      const clinicId = await createClinic(clinicData, seedData);
+      console.log('Clinic created:', clinicId);
+
+      // Wait for state to propagate before navigating
+      await new Promise(resolve => setTimeout(resolve, 1000));
       navigate('/dashboard');
     } catch (err) {
       console.error('Error creating clinic:', err);

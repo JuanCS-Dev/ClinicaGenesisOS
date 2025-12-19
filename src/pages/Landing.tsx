@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dashboard } from './Dashboard';
-import { 
-  Activity, 
-  CheckCircle2, 
-  ArrowRight, 
-  ShieldCheck, 
-  Zap, 
+import {
+  Activity,
+  CheckCircle2,
+  ArrowRight,
+  ShieldCheck,
+  Zap,
   Lock,
-  Gem,
   BarChart3,
-  Cpu,
-  Dna
+  Cpu
 } from 'lucide-react';
 
 // --- MICRO COMPONENTS ---
@@ -115,95 +113,79 @@ export const Landing: React.FC = () => {
         </div>
       </nav>
 
-      {/* --- HERO SECTION: THE COMMAND CENTER --- */}
-      <section className="relative pt-48 pb-32 px-6 overflow-hidden perspective-container">
-        {/* Background Atmosphere */}
-        <div className="absolute top-0 left-0 right-0 h-[80vh] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100/40 via-[#F8F9FA] to-[#F8F9FA] -z-10" />
-        <div className="absolute top-20 right-0 w-[800px] h-[800px] bg-gradient-to-b from-purple-100/30 to-transparent rounded-full blur-[120px] -z-10 pointer-events-none" />
-        
-        <div className="max-w-5xl mx-auto text-center relative z-10 mb-24">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-gray-200 shadow-sm mb-8 animate-enter hover:shadow-md transition-shadow cursor-default">
-            <Dna className="w-3 h-3 text-genesis-dark" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-gray-600">Arquitetura Híbrida & Autônoma</span>
+      {/* --- HERO SECTION --- */}
+      <section className="relative pt-40 pb-24 px-6">
+        {/* Background - clean gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#F0F4FF] to-[#F8F9FA] -z-10" />
+
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-gray-200 shadow-sm mb-10">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+            <span className="text-xs font-medium text-gray-600">Sistema operacional para clínicas de alto padrão</span>
           </div>
-          
-          <h1 className="text-6xl md:text-8xl font-bold tracking-tighter text-genesis-dark mb-8 leading-[0.95] animate-enter" style={{animationDelay: '0.1s'}}>
-            Não é software. <br/>
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-genesis-blue via-indigo-600 to-purple-600">É extensão da sua consciência.</span>
+
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-genesis-dark mb-6 leading-[1.1]">
+            Sua consulta.<br/>
+            <span style={{background: 'linear-gradient(135deg, #007AFF 0%, #5856D6 50%, #AF52DE 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>Documentada em 9 segundos.</span>
           </h1>
-          
-          <p className="text-xl md:text-2xl text-gray-500 max-w-3xl mx-auto mb-12 leading-relaxed font-light animate-enter" style={{animationDelay: '0.2s'}}>
-            Esqueça "gestão". Falamos de personalização em nível celular. 
-            <br/>Se você quiser um <strong className="text-genesis-dark font-semibold">Daemon autônomo</strong> rodando sua triagem enquanto dorme, nós criamos.
-            <br/><span className="text-sm uppercase tracking-widest opacity-70 mt-4 block">O resto é apenas... ferramenta.</span>
+
+          <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Enquanto você conversa com seu paciente, a IA transcreve e estrutura o prontuário. Você só revisa e assina.
           </p>
-          
-          <div className="flex flex-col md:flex-row items-center justify-center gap-6 animate-enter" style={{animationDelay: '0.3s'}}>
-            <button 
+
+          {/* Metrics */}
+          <div className="flex items-center justify-center gap-12 mb-12">
+            <div className="text-center">
+              <span className="text-4xl font-bold text-genesis-dark">8.7s</span>
+              <p className="text-sm text-gray-400 mt-1">Latência média</p>
+            </div>
+            <div className="w-px h-14 bg-gray-200"></div>
+            <div className="text-center">
+              <span className="text-4xl font-bold text-genesis-dark">-30%</span>
+              <p className="text-sm text-gray-400 mt-1">No-shows</p>
+            </div>
+            <div className="w-px h-14 bg-gray-200"></div>
+            <div className="text-center">
+              <span className="text-4xl font-bold text-genesis-dark">2h</span>
+              <p className="text-sm text-gray-400 mt-1">Recuperadas/dia</p>
+            </div>
+          </div>
+
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
               onClick={handleApply}
-              className="px-10 py-5 bg-genesis-dark text-white rounded-2xl text-sm font-bold uppercase tracking-widest hover:bg-black transition-all shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] hover:-translate-y-1 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.4)] min-w-[240px]"
+              className="px-8 py-4 bg-genesis-dark text-white rounded-xl text-sm font-semibold hover:bg-black transition-all shadow-lg hover:shadow-xl min-w-[200px]"
             >
-              Aplicar para Acesso
+              Agendar Demonstração
             </button>
-            <button 
+            <button
               onClick={() => navigate('/dashboard')}
-              className="px-10 py-5 bg-white text-genesis-dark border border-gray-200 rounded-2xl text-sm font-bold uppercase tracking-widest hover:bg-gray-50 transition-all min-w-[240px] flex items-center justify-center gap-2 group"
+              className="px-8 py-4 bg-white text-genesis-dark border border-gray-200 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-all min-w-[200px] flex items-center justify-center gap-2"
             >
-              Explorar Demo <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              Ver o Sistema <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* --- 3D DASHBOARD PREVIEW --- */}
-        {/* Using CSS perspective to create a "Command Center" tilted look */}
-        <div id="tecnologia" className="relative max-w-[1300px] mx-auto animate-enter perspective-[2000px] group" style={{animationDelay: '0.5s'}}>
-           {/* Glow Effect behind dashboard */}
-           <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 blur-[100px] -z-10 rounded-[60px]" />
-           
-           <div className="transform rotate-x-[12deg] group-hover:rotate-x-[5deg] transition-transform duration-[1.5s] ease-out shadow-[0_50px_100px_-20px_rgba(50,50,93,0.25)] rounded-t-[24px] overflow-hidden bg-white border-[8px] border-white ring-1 ring-gray-900/5">
-              
-              {/* Fake OS Header */}
-              <div className="h-10 bg-gray-50/90 backdrop-blur border-b border-gray-200 flex items-center px-4 justify-between select-none">
-                 <div className="flex gap-2">
-                    <div className="w-3 h-3 rounded-full bg-gray-300"></div>
-                    <div className="w-3 h-3 rounded-full bg-gray-300"></div>
-                    <div className="w-3 h-3 rounded-full bg-gray-300"></div>
-                 </div>
-                 <div className="flex items-center gap-2 text-[10px] font-mono text-gray-400">
-                    <Cpu className="w-3 h-3" />
-                    genesis_daemon_v9.0_active
-                 </div>
-                 <div className="w-10"></div>
-              </div>
+        {/* Dashboard Preview - Clean */}
+        <div id="tecnologia" className="relative max-w-6xl mx-auto mt-20">
+          <div className="rounded-2xl overflow-hidden shadow-2xl border border-gray-200 bg-white">
+            {/* Browser Header */}
+            <div className="h-10 bg-gray-100 border-b border-gray-200 flex items-center px-4 gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-400"></div>
+              <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+              <div className="w-3 h-3 rounded-full bg-green-400"></div>
+              <span className="ml-4 text-xs text-gray-400 font-mono">app.clinicagenesis.com</span>
+            </div>
 
-              {/* The Live Dashboard Component */}
-              <div className="bg-[#F5F5F7] h-[800px] pointer-events-none select-none relative overflow-hidden">
-                 {/* Overlay to prevent interaction and add sheen */}
-                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/10 z-50"></div>
-                 
-                 {/* We mock the layout around the dashboard to ensure it looks full screen */}
-                 <div className="flex h-full">
-                    {/* Sidebar Mock */}
-                     <div className="w-64 bg-[#F9FAFB] border-r border-gray-200/60 flex flex-col p-4 z-10 hidden md:flex shrink-0">
-                         <div className="h-20 flex items-center px-2 mb-8 opacity-50 grayscale">
-                            <div className="w-9 h-9 bg-gray-800 rounded-xl flex items-center justify-center mr-3 shadow-lg">
-                               <Activity className="text-white w-5 h-5" />
-                            </div>
-                         </div>
-                         <div className="space-y-4">
-                            {[1, 2, 3, 4, 5].map(i => (
-                               <div key={i} className="h-8 bg-gray-200/50 rounded-lg w-full animate-pulse"></div>
-                            ))}
-                         </div>
-                     </div>
-                     
-                     {/* Dashboard Content */}
-                     <div className="flex-1 overflow-hidden transform scale-[0.85] origin-top -mt-4">
-                        <Dashboard />
-                     </div>
-                 </div>
+            {/* Dashboard */}
+            <div className="h-[600px] overflow-hidden pointer-events-none select-none">
+              <div className="transform scale-[0.8] origin-top-left w-[125%]">
+                <Dashboard />
               </div>
-           </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -215,44 +197,45 @@ export const Landing: React.FC = () => {
              <div className="order-2 lg:order-1">
                 <div className="grid grid-cols-2 gap-4">
                    <div className="bg-gray-50 p-8 rounded-[32px] hover:bg-gray-100 transition-colors">
-                      <Gem className="w-8 h-8 text-genesis-dark mb-4" />
-                      <h4 className="font-bold text-lg mb-2">Exclusividade</h4>
-                      <p className="text-sm text-gray-500 leading-relaxed">Arquitetura modular que se adapta ao seu DNA, não o contrário.</p>
+                      <Cpu className="w-8 h-8 text-genesis-dark mb-4" />
+                      <h4 className="font-bold text-lg mb-2">IA Scribe</h4>
+                      <p className="text-sm text-gray-500 leading-relaxed">Transcrição e SOAP automático. Você conversa, o sistema documenta.</p>
                    </div>
                    <div className="bg-genesis-dark text-white p-8 rounded-[32px] transform translate-y-8">
                       <ShieldCheck className="w-8 h-8 text-genesis-blue mb-4" />
-                      <h4 className="font-bold text-lg mb-2">Blindagem</h4>
-                      <p className="text-sm text-gray-400 leading-relaxed">Conformidade total (LGPD/HIPAA) sem burocracia visível.</p>
+                      <h4 className="font-bold text-lg mb-2">LGPD Nativo</h4>
+                      <p className="text-sm text-gray-400 leading-relaxed">Criptografia ponta-a-ponta. Dados no Brasil. Auditoria completa.</p>
                    </div>
                    <div className="bg-blue-50 p-8 rounded-[32px] transform -translate-y-8">
                       <Zap className="w-8 h-8 text-blue-600 mb-4" />
-                      <h4 className="font-bold text-lg mb-2">Velocidade</h4>
-                      <p className="text-sm text-gray-500 leading-relaxed">Fluxos desenhados para zerar cliques desnecessários.</p>
+                      <h4 className="font-bold text-lg mb-2">WhatsApp Integrado</h4>
+                      <p className="text-sm text-gray-500 leading-relaxed">Lembretes automáticos. Confirmação de consulta. Zero no-shows.</p>
                    </div>
                    <div className="bg-gray-50 p-8 rounded-[32px]">
                       <BarChart3 className="w-8 h-8 text-genesis-dark mb-4" />
-                      <h4 className="font-bold text-lg mb-2">Clareza</h4>
-                      <p className="text-sm text-gray-500 leading-relaxed">Dados financeiros e clínicos cristalinos em tempo real.</p>
+                      <h4 className="font-bold text-lg mb-2">Multi-especialidade</h4>
+                      <p className="text-sm text-gray-500 leading-relaxed">Medicina, Nutrição, Psicologia. Cada um com seu fluxo específico.</p>
                    </div>
                 </div>
              </div>
 
              <div className="order-1 lg:order-2">
-                <span className="text-genesis-blue font-bold tracking-widest uppercase text-xs mb-4 block">Manifesto Genesis</span>
+                <span className="text-genesis-blue font-bold tracking-widest uppercase text-xs mb-4 block">O Problema</span>
                 <h2 className="text-5xl font-bold text-genesis-dark mb-8 tracking-tighter leading-tight">
-                  A maioria dos softwares<br/>trata você como funcionário.
+                  Você não estudou 12 anos<br/>para preencher formulário.
                 </h2>
                 <div className="space-y-6 text-lg text-gray-500 font-light leading-relaxed">
                   <p>
-                    O mercado está cheio de ferramentas genéricas que cobram pouco e entregam ruído. 
-                    Telas poluídas. Botões inúteis. Lentidão.
+                    Médicos perdem <strong className="text-genesis-dark font-semibold">2 horas por dia</strong> em documentação.
+                    Isso são 40 horas por mês. 480 horas por ano. Tempo que poderia estar com pacientes ou com sua família.
                   </p>
                   <p>
-                    <strong className="text-genesis-dark font-semibold">Isso é um insulto à sua carreira.</strong>
+                    Os sistemas atuais foram feitos para hospitais públicos e operadoras.
+                    <strong className="text-genesis-dark font-semibold">Não para você.</strong>
                   </p>
                   <p>
-                    O Genesis foi forjado com uma única obsessão: eliminar o atrito entre sua mente clínica e a execução. 
-                    Se não é essencial, não existe. Se é essencial, é instantâneo.
+                    O Genesis foi construído por quem entende: sua consulta é sagrada.
+                    A tecnologia deve ser invisível. O prontuário deve se escrever sozinho.
                   </p>
                 </div>
              </div>
@@ -265,60 +248,60 @@ export const Landing: React.FC = () => {
       <section id="membership" className="py-32 bg-[#F8F9FA] relative">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold text-genesis-dark mb-6 tracking-tighter">Membership</h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-genesis-dark mb-6 tracking-tighter">Investimento</h2>
             <p className="text-gray-500 text-lg">
-              Não vendemos licenças. Iniciamos parcerias.
-              <br/>Escolha o nível de compromisso com a excelência da sua clínica.
+              O custo de não ter o Genesis é maior: horas perdidas, pacientes que não voltam, burnout.
+              <br/>Escolha o plano que faz sentido para sua operação.
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch max-w-6xl mx-auto">
             
             {/* Card 1: Starter */}
-            <PricingCard 
-              title="Solo Practice"
-              price="127"
-              description="Para o profissional que exige perfeição em carreira solo."
+            <PricingCard
+              title="Essencial"
+              price="497"
+              description="Para consultórios individuais que querem o melhor."
               features={[
-                "1 Profissional Titular",
-                "Plugin de Especialidade Core",
-                "Prontuário Inteligente",
-                "App do Paciente (White Label)",
-                "Suporte via Chat"
+                "1 Profissional",
+                "Prontuário completo (SOAP, prescrição)",
+                "Agenda com confirmação automática",
+                "WhatsApp: lembretes de consulta",
+                "Suporte em horário comercial"
               ]}
               isPremium={false}
               onCta={handleApply}
             />
 
             {/* Card 2: Clinic (HERO) */}
-            <PricingCard 
-              title="Genesis Black"
-              price="297"
-              description="A infraestrutura definitiva para clínicas de alto desempenho."
+            <PricingCard
+              title="Clínica"
+              price="1.497"
+              description="Para clínicas que não toleram ineficiência."
               features={[
-                "Até 5 Profissionais Titulares",
-                "Acesso Total aos Plugins (All-in)",
-                "Gestão Financeira & Conciliação",
-                "IA Scribe (Transcrição de Consulta)",
-                "Concierge de Onboarding Dedicado",
-                "SLA de Suporte < 2h"
+                "Até 5 Profissionais",
+                "Tudo do Essencial +",
+                "IA Scribe (transcrição automática)",
+                "Multi-especialidade (Medicina, Nutri, Psico)",
+                "Relatórios financeiros",
+                "Suporte prioritário < 4h"
               ]}
               isPremium={true}
               onCta={handleApply}
             />
 
             {/* Card 3: Enterprise */}
-            <PricingCard 
-              title="Enterprise"
-              price="Consultar"
-              description="Arquitetura personalizada para redes e hospitais boutique."
+            <PricingCard
+              title="Rede"
+              price="4.997"
+              description="Para redes, hospitais e operações complexas."
               features={[
-                "Profissionais Ilimitados",
-                "API Gateway & Webhooks",
-                "Integração PACS Nativa",
-                "Servidor Dedicado (Opcional)",
-                "Contrato de Confidencialidade (NDA)",
-                "Treinamento In-Company"
+                "Profissionais ilimitados",
+                "Tudo do Clínica +",
+                "API para integrações",
+                "Multi-unidades",
+                "Onboarding dedicado",
+                "SLA garantido em contrato"
               ]}
               isPremium={false}
               onCta={handleApply}
@@ -393,14 +376,6 @@ export const Landing: React.FC = () => {
         </div>
       </footer>
 
-      <style>{`
-        .perspective-container {
-          perspective: 2000px;
-        }
-        .rotate-x-12 {
-          transform: rotateX(12deg);
-        }
-      `}</style>
     </div>
   );
 };

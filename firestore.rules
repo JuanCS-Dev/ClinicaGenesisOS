@@ -112,6 +112,18 @@ service cloud.firestore {
       match /records/{recordId} {
         allow read, write: if belongsToClinic(clinicId);
       }
+
+      // ========================================
+      // AI SCRIBE SESSIONS (Clinic Subcollection)
+      // ========================================
+
+      /**
+       * AI Scribe sessions track audio processing status.
+       * Created by frontend, updated by Cloud Function.
+       */
+      match /aiScribeSessions/{sessionId} {
+        allow read, write: if belongsToClinic(clinicId);
+      }
     }
   }
 }
