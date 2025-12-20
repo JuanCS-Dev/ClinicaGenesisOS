@@ -20,7 +20,6 @@ import {
   orderBy,
   onSnapshot,
   serverTimestamp,
-  Timestamp,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import type { Appointment, Status, CreateAppointmentInput } from '@/types';

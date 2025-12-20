@@ -19,7 +19,7 @@ import {
   LogOut
 } from 'lucide-react';
 
-const NavItem = ({ to, icon: Icon, label }: { to: string, icon: any, label: string }) => (
+const NavItem = ({ to, icon: Icon, label }: { to: string, icon: React.ComponentType<{ className?: string }>, label: string }) => (
   <NavLink 
     to={to} 
     className={({ isActive }) => `
@@ -46,14 +46,12 @@ const PluginButton = ({
   label,
   activeColorClass,
   activeBgClass,
-  activeBorderClass
 }: {
   id: SpecialtyType,
-  icon: any,
+  icon: React.ComponentType<{ className?: string }>,
   label: string,
   activeColorClass: string,
   activeBgClass: string,
-  activeBorderClass: string
 }) => {
   const { userProfile, updateUserProfile } = useClinicContext();
   const isActive = userProfile?.specialty === id;
@@ -146,31 +144,28 @@ export const Sidebar: React.FC = () => {
             <span className="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded border border-gray-200">Mods</span>
           </div>
           
-          <PluginButton 
+          <PluginButton
             id="medicina"
             label="Medicina"
             icon={Stethoscope}
             activeColorClass="text-blue-600"
             activeBgClass="bg-blue-600"
-            activeBorderClass="border-blue-600"
           />
 
-          <PluginButton 
+          <PluginButton
             id="nutricao"
             label="Nutrição"
             icon={Apple}
             activeColorClass="text-green-600"
             activeBgClass="bg-green-600"
-            activeBorderClass="border-green-600"
           />
 
-          <PluginButton 
+          <PluginButton
             id="psicologia"
             label="Psicologia"
             icon={Brain}
             activeColorClass="text-pink-600"
             activeBgClass="bg-pink-600"
-            activeBorderClass="border-pink-600"
           />
         </div>
       </div>

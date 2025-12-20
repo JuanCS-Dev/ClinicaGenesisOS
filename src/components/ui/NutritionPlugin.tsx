@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { MOCK_ANTHRO_DATA } from '../../lib/constants';
-import { Scale, Ruler, Activity, Utensils, Download, ArrowRight, Flame, Droplets } from 'lucide-react';
+import { Scale, Ruler, Activity, Utensils, Download, Flame } from 'lucide-react';
 
 export const NutritionPlugin: React.FC = () => {
   const [activeSubTab, setActiveSubTab] = useState<'anthro' | 'plan'>('anthro');

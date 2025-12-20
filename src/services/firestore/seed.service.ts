@@ -35,15 +35,6 @@ function getTomorrowDate(): string {
 }
 
 /**
- * Get a date N days ago in YYYY-MM-DD format.
- */
-function getPastDate(daysAgo: number): string {
-  const date = new Date();
-  date.setDate(date.getDate() - daysAgo);
-  return date.toISOString().split('T')[0];
-}
-
-/**
  * Demo patients data.
  */
 const SEED_PATIENTS: CreatePatientInput[] = [

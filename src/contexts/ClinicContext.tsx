@@ -4,6 +4,7 @@
  * Provides clinic and user profile data to the application.
  * Handles multi-tenancy by managing the clinicId for all operations.
  */
+/* eslint-disable react-refresh/only-export-components */
 
 import React, {
   createContext,

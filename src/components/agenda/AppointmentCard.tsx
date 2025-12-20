@@ -4,6 +4,7 @@
  * Renders a single appointment card with status and specialty colors.
  * Used in both day and week views of the agenda.
  */
+/* eslint-disable react-refresh/only-export-components */
 
 import React from 'react';
 import { Repeat } from 'lucide-react';

@@ -1,19 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Activity, 
-  ArrowRight, 
-  ShieldCheck, 
-  Lock, 
-  CheckCircle2, 
+import {
+  Activity,
+  ArrowRight,
+  Lock,
+  CheckCircle2,
   Loader2,
   Building2,
-  Users
 } from 'lucide-react';
 
 export const Application: React.FC = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -25,11 +22,11 @@ export const Application: React.FC = () => {
     phone: ''
   });
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     

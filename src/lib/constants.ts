@@ -1,5 +1,5 @@
 import { Patient, Appointment, Status, TimelineEvent, TimelineEventType, AnthropometryData } from '../types';
-import { addDays, subDays, setHours, setMinutes } from 'date-fns';
+import { subDays, setHours, setMinutes } from 'date-fns';
 
 export const MOCK_PATIENTS: Patient[] = [
   {

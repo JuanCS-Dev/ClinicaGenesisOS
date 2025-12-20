@@ -1,16 +1,14 @@
 import React from 'react';
-import { 
-  Wallet, 
-  TrendingUp, 
-  TrendingDown, 
-  ArrowUpRight, 
-  ArrowDownRight, 
-  DollarSign, 
-  CreditCard, 
+import {
+  Wallet,
+  TrendingUp,
+  TrendingDown,
+  ArrowUpRight,
+  ArrowDownRight,
   Download,
   Filter
 } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const FINANCE_DATA = [
   { month: 'Jan', receita: 12500, despesa: 4200 },
@@ -29,7 +27,15 @@ const TRANSACTIONS = [
   { id: 5, desc: 'Avaliação Física - Ana Costa', date: '10 Dez', amount: 200, type: 'in', method: 'Dinheiro', status: 'paid' },
 ];
 
-const FinanceCard = ({ title, value, trend, trendValue, type }: any) => {
+interface FinanceCardProps {
+  title: string;
+  value: string;
+  trend: string;
+  trendValue: string;
+  type: 'positive' | 'neutral' | 'negative';
+}
+
+const FinanceCard = ({ title, value, trend, trendValue, type }: FinanceCardProps) => {
   const isPositive = type === 'positive';
   const isNeutral = type === 'neutral';
   

@@ -139,8 +139,7 @@ export function Onboarding() {
         settings,
       };
 
-      const clinicId = await createClinic(clinicData, seedData);
-      console.log('Clinic created:', clinicId);
+      await createClinic(clinicData, seedData);
 
       // Wait for state to propagate before navigating
       await new Promise(resolve => setTimeout(resolve, 1000));

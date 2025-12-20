@@ -8,7 +8,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useRecords, useAllRecords } from '@/hooks/useRecords';
 import { recordService } from '@/services/firestore';
-import { RecordType, type MedicalRecord, type SoapRecord, type CreateSoapRecordInput } from '@/types';
+import { RecordType, type SoapRecord, type CreateSoapRecordInput } from '@/types';
 
 // Mock the ClinicContext
 const mockClinicId = 'test-clinic-123';

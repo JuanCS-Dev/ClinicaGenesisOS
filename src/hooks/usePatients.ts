@@ -50,7 +50,6 @@ export function usePatients(): UsePatientsReturn {
   const { clinicId } = useClinicContext();
 
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   // Track subscription state

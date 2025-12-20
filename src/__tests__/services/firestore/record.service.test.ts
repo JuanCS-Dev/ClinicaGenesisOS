@@ -18,7 +18,16 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { recordService } from '../../../services/firestore/record.service';
-import { RecordType, type CreateSoapRecordInput, type SoapRecord } from '@/types';
+import {
+  RecordType,
+  type CreateSoapRecordInput,
+  type SoapRecord,
+  type TextRecord,
+  type PrescriptionRecord,
+  type ExamRequestRecord,
+  type PsychoSessionRecord,
+  type AnthropometryRecord,
+} from '@/types';
 
 describe('recordService', () => {
   const mockClinicId = 'clinic-123';
@@ -347,7 +356,7 @@ describe('recordService', () => {
       const record = await recordService.getById(mockClinicId, mockRecordId);
 
       expect(record?.type).toBe('soap');
-      expect((record as any).subjective).toBe('S');
+      expect((record as SoapRecord).subjective).toBe('S');
     });
 
     it('should convert note record correctly', async () => {
@@ -373,7 +382,7 @@ describe('recordService', () => {
       const record = await recordService.getById(mockClinicId, mockRecordId);
 
       expect(record?.type).toBe('note');
-      expect((record as any).title).toBe('Test Note');
+      expect((record as TextRecord).title).toBe('Test Note');
     });
 
     it('should convert prescription record correctly', async () => {
@@ -398,7 +407,7 @@ describe('recordService', () => {
       const record = await recordService.getById(mockClinicId, mockRecordId);
 
       expect(record?.type).toBe('prescription');
-      expect((record as any).medications).toHaveLength(1);
+      expect((record as PrescriptionRecord).medications).toHaveLength(1);
     });
 
     it('should convert exam_request record correctly', async () => {
@@ -424,7 +433,7 @@ describe('recordService', () => {
       const record = await recordService.getById(mockClinicId, mockRecordId);
 
       expect(record?.type).toBe('exam_request');
-      expect((record as any).exams).toHaveLength(2);
+      expect((record as ExamRequestRecord).exams).toHaveLength(2);
     });
 
     it('should convert psycho_session record correctly', async () => {
@@ -451,7 +460,7 @@ describe('recordService', () => {
       const record = await recordService.getById(mockClinicId, mockRecordId);
 
       expect(record?.type).toBe('psycho_session');
-      expect((record as any).mood).toBe('anxious');
+      expect((record as PsychoSessionRecord).mood).toBe('anxious');
     });
 
     it('should convert anthropometry record correctly', async () => {
@@ -480,7 +489,7 @@ describe('recordService', () => {
       const record = await recordService.getById(mockClinicId, mockRecordId);
 
       expect(record?.type).toBe('anthropometry');
-      expect((record as any).weight).toBe(70);
+      expect((record as AnthropometryRecord).weight).toBe(70);
     });
 
     it('should handle unknown record type as note', async () => {
@@ -505,7 +514,7 @@ describe('recordService', () => {
       const record = await recordService.getById(mockClinicId, mockRecordId);
 
       expect(record?.type).toBe('note');
-      expect((record as any).title).toBe('Unknown Record');
+      expect((record as TextRecord).title).toBe('Unknown Record');
     });
 
     it('should handle Timestamp date conversion', async () => {

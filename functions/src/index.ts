@@ -25,6 +25,6 @@ export { onAppointmentCreated, onAppointmentUpdated } from './scheduler/triggers
 export { processAudioScribe } from './ai/process-audio-scribe.js';
 
 // ============================================
-// AI Diagnostic Helper (3.3) - Coming soon
+// Clinical Reasoning Engine (3.3)
 // ============================================
-// export { analyzeExam } from './ai/diagnostic.js';
+export { analyzeLabResults } from './ai/analyze-lab-results.js';

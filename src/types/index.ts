@@ -1,3 +1,8 @@
+import type React from 'react';
+
+// Clinical Reasoning Engine Types (3.3)
+export * from './clinical-reasoning';
+
 export enum Status {
   CONFIRMED = 'Confirmado',
   PENDING = 'Pendente',
@@ -226,7 +231,7 @@ export interface PluginDefinition {
   id: SpecialtyType;
   name: string;
   color: string;
-  icon: any; // Lucide Icon
+  icon: React.ComponentType<{ className?: string }>;
   features: string[];
 }
 

@@ -119,7 +119,10 @@ export function useAppointments(
   }, [clinicId, filters.date, filters.patientId]);
 
   // Derive final values based on clinicId presence
-  const effectiveAppointments = clinicId ? appointments : [];
+  const effectiveAppointments = useMemo(
+    () => (clinicId ? appointments : []),
+    [clinicId, appointments]
+  );
   const effectiveLoading = clinicId ? !hasReceived : false;
 
   /**

@@ -124,6 +124,43 @@ service cloud.firestore {
       match /aiScribeSessions/{sessionId} {
         allow read, write: if belongsToClinic(clinicId);
       }
+
+      // ========================================
+      // LAB ANALYSIS SESSIONS (Clinic Subcollection)
+      // ========================================
+
+      /**
+       * Lab analysis sessions for Clinical Reasoning Engine.
+       * Created by frontend, processed by Cloud Function.
+       */
+      match /labAnalysisSessions/{sessionId} {
+        allow read, write: if belongsToClinic(clinicId);
+      }
+
+      // ========================================
+      // AI ANALYSIS LOGS (Clinic Subcollection)
+      // ========================================
+
+      /**
+       * Audit logs for AI analysis operations.
+       * Read-only for clinic members, write by Cloud Functions.
+       */
+      match /aiAnalysisLogs/{logId} {
+        allow read: if belongsToClinic(clinicId);
+        allow write: if false; // Only Cloud Functions can write
+      }
+
+      // ========================================
+      // SETTINGS (Clinic Subcollection)
+      // ========================================
+
+      /**
+       * Clinic settings and integrations configuration.
+       */
+      match /settings/{settingId} {
+        allow read: if belongsToClinic(clinicId);
+        allow write: if isClinicOwner(clinicId);
+      }
     }
   }
 }

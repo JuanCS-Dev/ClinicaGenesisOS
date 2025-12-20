@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePatient } from '../hooks/usePatient';
 import { useRecords } from '../hooks/useRecords';
@@ -7,6 +7,7 @@ import { useClinicContext } from '../contexts/ClinicContext';
 import { PLUGINS, MedicineEditor, NutritionEditor, PsychologyEditor } from '../plugins';
 import { Timeline } from '../components/patient/Timeline';
 import { AttachmentList } from '../components/records/AttachmentUpload';
+import { ClinicalReasoningPanel } from '../components/ai/clinical-reasoning';
 import {
   Calendar,
   FileText,
@@ -18,13 +19,36 @@ import {
   Brain,
   FlaskConical,
   Loader2,
-  Paperclip
+  Paperclip,
+  Sparkles
 } from 'lucide-react';
+import type { PatientContext } from '../types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { SpecialtyType, RecordType, TimelineEvent, TimelineEventType, CreateRecordInput, EditorRecordData } from '../types';
+import {
+  SpecialtyType,
+  RecordType,
+  TimelineEvent,
+  TimelineEventType,
+  CreateRecordInput,
+  EditorRecordData,
+  MedicalRecord,
+  SoapRecord,
+  PrescriptionRecord,
+  ExamRequestRecord,
+  AnthropometryRecord,
+  PsychoSessionRecord,
+} from '../types';
 
-const TabButton = ({ active, onClick, icon: Icon, label, colorClass = 'text-genesis-blue' }: any) => (
+interface TabButtonProps {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  colorClass?: string;
+}
+
+const TabButton = ({ active, onClick, icon: Icon, label, colorClass = 'text-genesis-blue' }: TabButtonProps) => (
   <button
     onClick={onClick}
     className={`
@@ -40,41 +64,54 @@ const TabButton = ({ active, onClick, icon: Icon, label, colorClass = 'text-gene
   </button>
 );
 
-const HistoryItem = ({ record, active }: any) => {
+interface HistoryItemProps {
+  record: MedicalRecord;
+  active?: boolean;
+}
+
+const HistoryItem = ({ record, active }: HistoryItemProps) => {
   let title = '';
   let content = '';
   let Icon = FileText;
 
   switch (record.type) {
-    case RecordType.SOAP:
+    case RecordType.SOAP: {
+      const soapRecord = record as SoapRecord;
       title = 'Evolução Médica';
-      content = (record as any).subjective || 'Sem detalhes subjetivos.';
+      content = soapRecord.subjective || 'Sem detalhes subjetivos.';
       Icon = Stethoscope;
       break;
+    }
     case RecordType.PRESCRIPTION: {
+      const prescRecord = record as PrescriptionRecord;
       title = 'Prescrição Médica';
-      const medsCount = (record as any).medications?.length || 0;
-      content = `${medsCount} medicamentos prescritos: ${(record as any).medications.map((m: any) => m.name).join(', ')}`;
+      const medsCount = prescRecord.medications?.length || 0;
+      content = `${medsCount} medicamentos prescritos: ${prescRecord.medications.map((m) => m.name).join(', ')}`;
       Icon = Pill;
       break;
     }
     case RecordType.EXAM_REQUEST: {
+      const examRecord = record as ExamRequestRecord;
       title = 'Solicitação de Exames';
-      const examCount = (record as any).exams?.length || 0;
-      content = `${examCount} exames solicitados: ${(record as any).exams.join(', ')}`;
+      const examCount = examRecord.exams?.length || 0;
+      content = `${examCount} exames solicitados: ${examRecord.exams.join(', ')}`;
       Icon = FlaskConical;
       break;
     }
-    case RecordType.ANTHROPOMETRY:
+    case RecordType.ANTHROPOMETRY: {
+      const anthroRecord = record as AnthropometryRecord;
       title = 'Antropometria';
-      content = `Peso: ${(record as any).weight}kg, IMC: ${(record as any).imc}`;
+      content = `Peso: ${anthroRecord.weight}kg, IMC: ${anthroRecord.imc}`;
       Icon = Activity;
       break;
-    case RecordType.PSYCHO_SESSION:
+    }
+    case RecordType.PSYCHO_SESSION: {
+      const psychoRecord = record as PsychoSessionRecord;
       title = 'Sessão de Terapia';
-      content = (record as any).summary;
+      content = psychoRecord.summary;
       Icon = Brain;
       break;
+    }
     default:
       title = 'Registro';
       content = 'Detalhes do registro...';
@@ -124,7 +161,17 @@ export const PatientDetails: React.FC = () => {
   const { records, addRecord } = useRecords(id);
   const { appointments } = usePatientAppointments(id);
 
-  const [activeTab, setActiveTab] = useState<'prontuario' | 'dados' | 'timeline'>('prontuario');
+  const [activeTab, setActiveTab] = useState<'prontuario' | 'dados' | 'timeline' | 'clinicalAI'>('prontuario');
+
+  // Build patient context for Clinical AI
+  const patientContext: PatientContext = useMemo(() => ({
+    age: patient?.age || 0,
+    sex: patient?.gender === 'Masculino' ? 'male' : 'female',
+    chiefComplaint: undefined,
+    relevantHistory: patient?.tags || [],
+    currentMedications: [],
+    allergies: [],
+  }), [patient]);
 
   // Plugin State - default to user's specialty or medicina
   const [activePluginId, setActivePluginId] = useState<SpecialtyType>(
@@ -172,22 +219,34 @@ export const PatientDetails: React.FC = () => {
         let desc = '';
 
         if (r.type === RecordType.PRESCRIPTION) {
+            const prescRecord = r as PrescriptionRecord;
             type = TimelineEventType.PRESCRIPTION;
             title = 'Receita Emitida';
-            desc = `${(r as any).medications.length} medicamentos prescritos.`;
+            desc = `${prescRecord.medications.length} medicamentos prescritos.`;
         } else if (r.type === RecordType.EXAM_REQUEST) {
+            const examRecord = r as ExamRequestRecord;
             type = TimelineEventType.EXAM;
             title = 'Exames Solicitados';
-            desc = (r as any).exams.join(', ');
+            desc = examRecord.exams.join(', ');
         } else if (r.type === RecordType.ANTHROPOMETRY) {
+            const anthroRecord = r as AnthropometryRecord;
             type = TimelineEventType.EXAM;
             title = 'Avaliação Física';
-            desc = `Peso: ${(r as any).weight}kg - IMC: ${(r as any).imc}`;
-        } else {
-            // SOAP or others
+            desc = `Peso: ${anthroRecord.weight}kg - IMC: ${anthroRecord.imc}`;
+        } else if (r.type === RecordType.SOAP) {
+            const soapRecord = r as SoapRecord;
             type = TimelineEventType.CONSULTATION;
             title = 'Evolução';
-            desc = (r as any).subjective || (r as any).summary || 'Registro de consulta.';
+            desc = soapRecord.subjective || 'Registro de consulta.';
+        } else if (r.type === RecordType.PSYCHO_SESSION) {
+            const psychoRecord = r as PsychoSessionRecord;
+            type = TimelineEventType.CONSULTATION;
+            title = 'Evolução';
+            desc = psychoRecord.summary || 'Registro de consulta.';
+        } else {
+            type = TimelineEventType.CONSULTATION;
+            title = 'Evolução';
+            desc = 'Registro de consulta.';
         }
 
         events.push({
@@ -302,6 +361,7 @@ export const PatientDetails: React.FC = () => {
         <div className="bg-gray-100/80 p-1 rounded-xl self-start inline-flex backdrop-blur-sm">
           <TabButton active={activeTab === 'prontuario'} onClick={() => setActiveTab('prontuario')} icon={FileText} label="Prontuário" />
           <TabButton active={activeTab === 'timeline'} onClick={() => setActiveTab('timeline')} icon={History} label="Histórico" />
+          <TabButton active={activeTab === 'clinicalAI'} onClick={() => setActiveTab('clinicalAI')} icon={Sparkles} label="Clinical AI" colorClass="text-indigo-500" />
         </div>
 
         <div className="flex-1">
@@ -317,7 +377,11 @@ export const PatientDetails: React.FC = () => {
                     {records.length === 0 ? (
                         <p className="text-center text-xs text-genesis-medium p-4">Nenhum registro encontrado.</p>
                     ) : (
-                        records.map(r => <HistoryItem key={r.id} record={r} />)
+                        records.map(r => (
+                          <React.Fragment key={r.id}>
+                            <HistoryItem record={r} />
+                          </React.Fragment>
+                        ))
                     )}
                  </div>
               </div>
@@ -353,6 +417,15 @@ export const PatientDetails: React.FC = () => {
                     <Timeline events={timelineEvents} />
                 )}
              </div>
+          )}
+
+          {activeTab === 'clinicalAI' && id && (
+            <div className="bg-white rounded-[32px] border border-white shadow-soft overflow-hidden animate-in fade-in zoom-in-95 h-[calc(100vh-24rem)]">
+              <ClinicalReasoningPanel
+                patientId={id}
+                patientContext={patientContext}
+              />
+            </div>
           )}
         </div>
       </div>

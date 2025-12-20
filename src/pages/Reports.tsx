@@ -1,5 +1,5 @@
 import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { Download, Share2, Info } from 'lucide-react';
 
 const DEMOGRAPHICS = [
@@ -21,7 +21,13 @@ const AGES_DATA = [
   { name: '46+', value: 15 },
 ];
 
-const InsightCard = ({ title, value, footer }: any) => (
+interface InsightCardProps {
+  title: string;
+  value: string;
+  footer?: string;
+}
+
+const InsightCard = ({ title, value, footer }: InsightCardProps) => (
   <div className="bg-white p-6 rounded-2xl border border-white shadow-soft flex flex-col justify-between">
     <div className="flex justify-between items-start">
       <h4 className="text-sm font-medium text-genesis-medium">{title}</h4>

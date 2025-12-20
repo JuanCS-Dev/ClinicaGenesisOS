@@ -4,7 +4,13 @@ import { Save, User, Phone, ShieldCheck, ChevronRight, Loader2 } from 'lucide-re
 import { usePatients } from '../hooks/usePatients';
 import { AvatarUpload } from '../components/ui/AvatarUpload';
 
-const InputGroup = ({ label, icon: Icon, children }: any) => (
+interface InputGroupProps {
+  label: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+}
+
+const InputGroup = ({ label, icon: Icon, children }: InputGroupProps) => (
   <div className="space-y-1.5 group">
     <label className="text-xs font-semibold text-genesis-medium uppercase tracking-wider ml-1 flex items-center gap-1.5 group-focus-within:text-genesis-blue transition-colors">
       {Icon && <Icon className="w-3 h-3" />}
@@ -14,14 +20,14 @@ const InputGroup = ({ label, icon: Icon, children }: any) => (
   </div>
 );
 
-const StyledInput = (props: any) => (
+const StyledInput = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input 
     {...props}
     className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-sm font-medium text-genesis-dark placeholder-gray-400 focus:ring-2 focus:ring-genesis-blue/20 focus:bg-white transition-all duration-300 outline-none shadow-sm hover:bg-gray-100"
   />
 );
 
-const StyledSelect = (props: any) => (
+const StyledSelect = (props: React.SelectHTMLAttributes<HTMLSelectElement>) => (
   <div className="relative">
      <select 
       {...props}

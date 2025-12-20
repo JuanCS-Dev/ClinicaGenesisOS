@@ -10,8 +10,9 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { ProtectedRoute } from '../../../components/auth/ProtectedRoute';
 import { AuthProvider } from '../../../contexts/AuthContext';
 import * as firebaseAuth from 'firebase/auth';
+import type { User } from 'firebase/auth';
 
-const mockUser = {
+const mockUser: Partial<User> = {
   uid: 'test-uid-123',
   email: 'test@example.com',
   displayName: 'Test User',
@@ -63,7 +64,7 @@ describe('ProtectedRoute', () => {
   describe('authenticated state', () => {
     it('should render children when user is authenticated', async () => {
       vi.mocked(firebaseAuth.onAuthStateChanged).mockImplementation((auth, callback) => {
-        setTimeout(() => (callback as (user: typeof mockUser) => void)(mockUser as any), 0);
+        setTimeout(() => (callback as (user: User | null) => void)(mockUser as User), 0);
         return vi.fn();
       });
 
@@ -160,7 +161,7 @@ describe('ProtectedRoute', () => {
   describe('nested routes', () => {
     it('should protect nested routes', async () => {
       vi.mocked(firebaseAuth.onAuthStateChanged).mockImplementation((auth, callback) => {
-        setTimeout(() => (callback as (user: typeof mockUser) => void)(mockUser as any), 0);
+        setTimeout(() => (callback as (user: User | null) => void)(mockUser as User), 0);
         return vi.fn();
       });
 

@@ -14,7 +14,16 @@ import {
 
 // --- MICRO COMPONENTS ---
 
-const PricingCard = ({ title, price, description, features, isPremium, onCta }: any) => (
+interface PricingCardProps {
+  title: string;
+  price: string;
+  description: string;
+  features: string[];
+  isPremium?: boolean;
+  onCta: () => void;
+}
+
+const PricingCard = ({ title, price, description, features, isPremium, onCta }: PricingCardProps) => (
   <div className={`relative p-10 rounded-[32px] transition-all duration-500 group flex flex-col h-full ${isPremium ? 'bg-[#0F172A] text-white shadow-[0_20px_80px_-20px_rgba(0,0,0,0.5)] ring-1 ring-white/10 scale-105 z-10' : 'bg-white text-genesis-dark border border-gray-100 shadow-xl hover:shadow-2xl hover:-translate-y-1'}`}>
     {isPremium && (
       <div className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[10px] font-bold uppercase tracking-[0.2em] pl-[calc(1.5rem+0.2em)] rounded-full shadow-[0_10px_30px_-5px_rgba(79,70,229,0.6)] border border-white/20 whitespace-nowrap z-20 flex items-center justify-center">
