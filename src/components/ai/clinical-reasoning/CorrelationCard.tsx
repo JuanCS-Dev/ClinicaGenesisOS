@@ -3,6 +3,8 @@
  * =========================
  *
  * Displays a clinical correlation pattern with involved markers and implications.
+ *
+ * Note: Uses explicit hex colors for Tailwind 4 compatibility.
  */
 
 import React from 'react';
@@ -28,14 +30,14 @@ function getConfidenceConfig(confidence: ConfidenceLevel): {
     case 'high':
       return {
         label: 'Alta',
-        bgColor: 'bg-green-100',
-        textColor: 'text-green-700',
+        bgColor: 'bg-[#DCFCE7]',
+        textColor: 'text-[#15803D]',
       };
     case 'medium':
       return {
-        label: 'M\u00e9dia',
-        bgColor: 'bg-amber-100',
-        textColor: 'text-amber-700',
+        label: 'Média',
+        bgColor: 'bg-[#FEF3C7]',
+        textColor: 'text-[#B45309]',
       };
     case 'low':
     default:
@@ -55,19 +57,19 @@ function getPatternIcon(type: string): {
   color: string;
 } {
   const patterns: Record<string, { icon: typeof AlertTriangle; color: string }> = {
-    metabolic_syndrome: { icon: AlertTriangle, color: 'text-orange-500' },
-    insulin_resistance: { icon: AlertTriangle, color: 'text-amber-500' },
-    diabetes_type2: { icon: AlertTriangle, color: 'text-red-500' },
-    cardiovascular_risk: { icon: AlertTriangle, color: 'text-red-600' },
-    hypothyroidism: { icon: Info, color: 'text-blue-500' },
-    hyperthyroidism: { icon: AlertTriangle, color: 'text-purple-500' },
-    iron_deficiency_anemia: { icon: Info, color: 'text-rose-500' },
-    b12_deficiency: { icon: Info, color: 'text-pink-500' },
-    chronic_inflammation: { icon: AlertTriangle, color: 'text-orange-500' },
-    liver_dysfunction: { icon: AlertTriangle, color: 'text-yellow-600' },
-    kidney_dysfunction: { icon: AlertTriangle, color: 'text-red-500' },
-    infection_pattern: { icon: AlertTriangle, color: 'text-red-600' },
-    autoimmune_pattern: { icon: Info, color: 'text-indigo-500' },
+    metabolic_syndrome: { icon: AlertTriangle, color: 'text-[#F97316]' },
+    insulin_resistance: { icon: AlertTriangle, color: 'text-[#F59E0B]' },
+    diabetes_type2: { icon: AlertTriangle, color: 'text-[#EF4444]' },
+    cardiovascular_risk: { icon: AlertTriangle, color: 'text-[#DC2626]' },
+    hypothyroidism: { icon: Info, color: 'text-[#3B82F6]' },
+    hyperthyroidism: { icon: AlertTriangle, color: 'text-[#A855F7]' },
+    iron_deficiency_anemia: { icon: Info, color: 'text-[#F43F5E]' },
+    b12_deficiency: { icon: Info, color: 'text-[#EC4899]' },
+    chronic_inflammation: { icon: AlertTriangle, color: 'text-[#F97316]' },
+    liver_dysfunction: { icon: AlertTriangle, color: 'text-[#CA8A04]' },
+    kidney_dysfunction: { icon: AlertTriangle, color: 'text-[#EF4444]' },
+    infection_pattern: { icon: AlertTriangle, color: 'text-[#DC2626]' },
+    autoimmune_pattern: { icon: Info, color: 'text-[#6366F1]' },
   };
 
   return patterns[type] || { icon: Link2, color: 'text-gray-500' };
@@ -106,7 +108,7 @@ export function CorrelationCard({
         <span
           className={`px-2 py-0.5 rounded-full text-xs font-medium ${confidenceConfig.bgColor} ${confidenceConfig.textColor}`}
         >
-          Confian\u00e7a {confidenceConfig.label}
+          Confiança {confidenceConfig.label}
         </span>
       </div>
 
@@ -123,7 +125,7 @@ export function CorrelationCard({
         {correlation.markers.map((markerId) => (
           <span
             key={markerId}
-            className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs font-medium"
+            className="px-2 py-0.5 bg-[#EFF6FF] text-[#1D4ED8] rounded text-xs font-medium"
           >
             {markerId}
           </span>
@@ -134,7 +136,7 @@ export function CorrelationCard({
       {correlation.evidence && correlation.evidence.length > 0 && (
         <div className="mt-3 pt-3 border-t border-gray-100">
           <h5 className="text-xs font-medium text-gray-500 uppercase mb-2">
-            Evid\u00eancia
+            Evidência
           </h5>
           <div className="space-y-1">
             {correlation.evidence.slice(0, 3).map((ev, idx) => (
@@ -142,9 +144,9 @@ export function CorrelationCard({
                 <span
                   className={`px-1.5 py-0.5 rounded ${
                     ev.source === 'lab'
-                      ? 'bg-blue-100 text-blue-600'
+                      ? 'bg-[#DBEAFE] text-[#2563EB]'
                       : ev.source === 'soap'
-                      ? 'bg-green-100 text-green-600'
+                      ? 'bg-[#DCFCE7] text-[#16A34A]'
                       : 'bg-gray-100 text-gray-600'
                   }`}
                 >
@@ -164,7 +166,7 @@ export function CorrelationCard({
       {onViewDetails && (
         <button
           onClick={onViewDetails}
-          className="mt-3 w-full flex items-center justify-center gap-1 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+          className="mt-3 w-full flex items-center justify-center gap-1 py-2 text-sm text-[#2563EB] hover:bg-[#EFF6FF] rounded-lg transition-colors"
         >
           Ver detalhes
           <ChevronRight className="w-4 h-4" />

@@ -2,8 +2,16 @@
  * ClinicalReasoningPanel Component
  * =================================
  *
- * Main panel for Clinical Reasoning Engine integration.
- * Shows upload, processing status, and analysis results.
+ * Premium Diagnóstico Assistido interface for lab analysis.
+ * Designed for 500k+/year subscription tier.
+ *
+ * Features:
+ * - Intuitive workflow-based tabs
+ * - Premium visual design with smooth animations
+ * - Multi-LLM consensus indicators
+ * - Professional medical-grade UX
+ *
+ * Note: Uses explicit hex colors for Tailwind 4 compatibility.
  */
 
 import React, { useState, useCallback } from 'react';
@@ -11,44 +19,67 @@ import {
   Brain,
   Upload,
   History,
-  AlertTriangle,
-  ChevronRight,
+  Target,
+  FlaskConical,
+  GitBranch,
+  ClipboardList,
+  Sparkles,
 } from 'lucide-react';
 import { useLabAnalysis } from '../../../hooks/useLabAnalysis';
 import { usePatientLabHistory } from '../../../hooks/usePatientLabHistory';
 import { LabUploadPanel } from './LabUploadPanel';
-import { AnalysisSummary } from './AnalysisSummary';
-import { BiomarkerCard } from './BiomarkerCard';
-import { CorrelationCard } from './CorrelationCard';
-import { ConsensusBadge, ModelComparison } from './ConsensusBadge';
+import { HistoryView } from './HistoryView';
+import { ResultsView } from './ResultsView';
 import type {
   PatientContext,
   ClinicalAnalysisTab,
   LabAnalysisResult,
-  ConsensusDiagnosis,
-  DifferentialDiagnosis,
 } from '../../../types';
 
 /**
- * Type guard to check if a diagnosis has consensus information.
+ * Tab configuration for workflow-based navigation.
  */
-function hasConsensusInfo(
-  dx: DifferentialDiagnosis | ConsensusDiagnosis
-): dx is ConsensusDiagnosis {
-  return 'consensusLevel' in dx;
-}
+const TABS = [
+  {
+    id: 'overview' as const,
+    label: 'Triagem',
+    icon: Target,
+    description: 'Urgência e red flags',
+  },
+  {
+    id: 'biomarkers' as const,
+    label: 'Resultados',
+    icon: FlaskConical,
+    description: 'Biomarcadores detalhados',
+  },
+  {
+    id: 'correlations' as const,
+    label: 'Padrões',
+    icon: GitBranch,
+    description: 'Correlações clínicas',
+  },
+  {
+    id: 'differential' as const,
+    label: 'Diagnósticos',
+    icon: Brain,
+    description: 'Diagnóstico diferencial',
+  },
+  {
+    id: 'suggestions' as const,
+    label: 'Ação',
+    icon: ClipboardList,
+    description: 'Próximos passos',
+  },
+];
 
 interface ClinicalReasoningPanelProps {
-  /** Patient ID for analysis. */
   patientId: string;
-  /** Patient context for analysis. */
   patientContext: PatientContext;
-  /** Called when analysis is complete. */
   onAnalysisComplete?: (result: LabAnalysisResult) => void;
 }
 
 /**
- * ClinicalReasoningPanel is the main interface for lab analysis.
+ * Premium Clinical Reasoning Panel.
  */
 export function ClinicalReasoningPanel({
   patientId,
@@ -59,7 +90,6 @@ export function ClinicalReasoningPanel({
   const [showHistory, setShowHistory] = useState(false);
   const [expandedMarkers, setExpandedMarkers] = useState<Set<string>>(new Set());
 
-  // Lab analysis hook
   const {
     status,
     result,
@@ -74,13 +104,11 @@ export function ClinicalReasoningPanel({
     },
   });
 
-  // History hook
   const { sessions, latestAnalysis } = usePatientLabHistory({
     patientId,
     realtime: true,
   });
 
-  // Handle file upload
   const handleFileSelect = useCallback(
     (file: File) => {
       uploadAndAnalyze(file, patientContext);
@@ -88,14 +116,12 @@ export function ClinicalReasoningPanel({
     [uploadAndAnalyze, patientContext]
   );
 
-  // Handle section click from summary
   const handleSectionClick = useCallback((section: 'triage' | 'markers' | 'correlations') => {
     if (section === 'markers') setActiveTab('biomarkers');
     else if (section === 'correlations') setActiveTab('correlations');
     else setActiveTab('overview');
   }, []);
 
-  // Toggle marker expansion
   const toggleMarker = useCallback((markerId: string) => {
     setExpandedMarkers((prev) => {
       const next = new Set(prev);
@@ -108,7 +134,6 @@ export function ClinicalReasoningPanel({
     });
   }, []);
 
-  // Handle review feedback
   const handleFeedback = useCallback(
     async (feedback: 'helpful' | 'not_helpful' | 'incorrect') => {
       await markReviewed(feedback);
@@ -116,359 +141,137 @@ export function ClinicalReasoningPanel({
     [markReviewed]
   );
 
-  // Current result to display (either new or from history)
   const displayResult = result || latestAnalysis?.result;
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-100 rounded-lg">
-              <Brain className="w-5 h-5 text-indigo-600" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                Racioc\u00ednio Cl\u00ednico
-              </h2>
-              <p className="text-sm text-gray-500">
-                An\u00e1lise de exames laboratoriais com IA
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* History toggle */}
-            <button
-              onClick={() => setShowHistory(!showHistory)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                showHistory
-                  ? 'bg-indigo-100 text-indigo-700'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <History className="w-4 h-4" />
-              Hist\u00f3rico ({sessions.length})
-            </button>
-
-            {/* New analysis */}
-            {displayResult && (
-              <button
-                onClick={reset}
-                className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition-colors"
-              >
-                <Upload className="w-4 h-4" />
-                Nova An\u00e1lise
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 overflow-auto p-6">
-        {showHistory ? (
-          // History view
-          <div className="space-y-3">
-            <h3 className="font-medium text-gray-700 mb-4">
-              An\u00e1lises Anteriores
-            </h3>
-            {sessions.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-8">
-                Nenhuma an\u00e1lise anterior encontrada
-              </p>
-            ) : (
-              sessions.map((session) => (
-                <div
-                  key={session.id}
-                  className="p-4 bg-white rounded-lg border hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => {
-                    // Could open session details
-                    setShowHistory(false);
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {new Date(session.createdAt).toLocaleDateString('pt-BR')}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {session.result
-                          ? `${session.result.markers.length} marcadores analisados`
-                          : session.status}
-                      </p>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
-                  </div>
+    <div className="h-full flex flex-col bg-gray-50/50">
+      {/* Premium Header */}
+      <div className="bg-white border-b border-gray-100 shadow-sm">
+        <div className="px-6 py-5">
+          <div className="flex items-center justify-between">
+            {/* Title Section */}
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="p-3 bg-gradient-to-br from-[#6366F1] to-[#7C3AED] rounded-xl shadow-lg shadow-[#6366F1]/20">
+                  <Brain className="w-6 h-6 text-white" />
                 </div>
-              ))
-            )}
-          </div>
-        ) : displayResult ? (
-          // Results view
-          <div className="space-y-6">
-            {/* Tabs */}
-            <div className="flex gap-1 bg-white p-1 rounded-lg border">
-              {(['overview', 'biomarkers', 'correlations', 'differential', 'suggestions'] as ClinicalAnalysisTab[]).map(
-                (tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                      activeTab === tab
-                        ? 'bg-indigo-100 text-indigo-700'
-                        : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    {tab === 'overview'
-                      ? 'Resumo'
-                      : tab === 'biomarkers'
-                      ? 'Marcadores'
-                      : tab === 'correlations'
-                      ? 'Padr\u00f5es'
-                      : tab === 'differential'
-                      ? 'Diagn\u00f3sticos'
-                      : 'Sugest\u00f5es'}
-                  </button>
-                )
-              )}
-            </div>
-
-            {/* Tab content */}
-            {activeTab === 'overview' && (
-              <AnalysisSummary
-                result={displayResult}
-                onSectionClick={handleSectionClick}
-              />
-            )}
-
-            {activeTab === 'biomarkers' && (
-              <div className="space-y-3">
-                {displayResult.markers.map((marker) => (
-                  <div key={marker.id}>
-                    <BiomarkerCard
-                      marker={marker}
-                      expanded={expandedMarkers.has(marker.id)}
-                      onToggle={() => toggleMarker(marker.id)}
-                    />
-                  </div>
-                ))}
+                <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-[#FBBF24]" />
               </div>
-            )}
-
-            {activeTab === 'correlations' && (
-              <div className="grid gap-4 md:grid-cols-2">
-                {displayResult.correlations.map((corr, idx) => (
-                  <div key={idx}>
-                    <CorrelationCard correlation={corr} />
-                  </div>
-                ))}
-                {displayResult.correlations.length === 0 && (
-                  <p className="text-gray-500 text-center py-8 col-span-2">
-                    Nenhum padr\u00e3o cl\u00ednico identificado
-                  </p>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'differential' && (
-              <div className="space-y-4">
-                {/* Consensus metrics summary */}
-                {displayResult.consensusMetrics && (
-                  <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-indigo-700 font-medium">
-                        Consenso Multi-LLM
-                      </span>
-                      <span className="text-indigo-600">
-                        {displayResult.consensusMetrics.strongConsensusRate}% consenso forte
-                      </span>
-                    </div>
-                    <p className="text-xs text-indigo-500 mt-1">
-                      Modelos: {displayResult.consensusMetrics.modelsUsed.join(', ')}
-                    </p>
-                  </div>
-                )}
-
-                {displayResult.differentialDiagnosis.map((dx, idx) => (
-                  <div
-                    key={idx}
-                    className={`p-4 bg-white rounded-lg border ${
-                      hasConsensusInfo(dx) && dx.consensusLevel === 'divergent'
-                        ? 'border-red-200 bg-red-50'
-                        : ''
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-medium text-gray-900">
-                            {idx + 1}. {dx.name}
-                          </h4>
-                          {hasConsensusInfo(dx) && (
-                            <ConsensusBadge level={dx.consensusLevel} size="sm" />
-                          )}
-                        </div>
-                        {dx.icd10 && (
-                          <p className="text-xs text-gray-400">CID-10: {dx.icd10}</p>
-                        )}
-                      </div>
-                      <span className={`px-2 py-1 rounded text-sm font-medium ${
-                        dx.confidence >= 80 ? 'bg-emerald-100 text-emerald-700' :
-                        dx.confidence >= 60 ? 'bg-blue-100 text-blue-700' :
-                        dx.confidence >= 40 ? 'bg-amber-100 text-amber-700' :
-                        'bg-gray-100 text-gray-600'
-                      }`}>
-                        {dx.confidence}%
-                      </span>
-                    </div>
-                    {dx.supportingEvidence.length > 0 && (
-                      <div className="mt-3">
-                        <p className="text-xs text-gray-500 uppercase mb-1">
-                          Evid\u00eancias de suporte
-                        </p>
-                        <ul className="text-sm text-gray-600 list-disc list-inside">
-                          {dx.supportingEvidence.map((ev, i) => (
-                            <li key={i}>{ev}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {/* Model comparison details */}
-                    {hasConsensusInfo(dx) && (
-                      <ModelComparison
-                        gemini={dx.modelDetails.gemini}
-                        gpt4o={dx.modelDetails.gpt4o}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {activeTab === 'suggestions' && (
-              <div className="space-y-6">
-                {/* Investigative questions */}
-                {displayResult.investigativeQuestions.length > 0 && (
-                  <div>
-                    <h3 className="font-medium text-gray-700 mb-3">
-                      Perguntas Investigativas
-                    </h3>
-                    <div className="space-y-2">
-                      {displayResult.investigativeQuestions.map((q, idx) => (
-                        <div
-                          key={idx}
-                          className="p-3 bg-amber-50 rounded-lg border border-amber-100"
-                        >
-                          <p className="text-gray-900">{q.question}</p>
-                          <p className="text-xs text-amber-700 mt-1">
-                            {q.rationale}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Suggested tests */}
-                {displayResult.suggestedTests.length > 0 && (
-                  <div>
-                    <h3 className="font-medium text-gray-700 mb-3">
-                      Exames Sugeridos
-                    </h3>
-                    <div className="space-y-2">
-                      {displayResult.suggestedTests.map((test, idx) => (
-                        <div
-                          key={idx}
-                          className="p-3 bg-blue-50 rounded-lg border border-blue-100"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium text-gray-900">
-                              {test.name}
-                            </span>
-                            <span
-                              className={`text-xs px-2 py-0.5 rounded ${
-                                test.urgency === 'urgent'
-                                  ? 'bg-red-100 text-red-700'
-                                  : test.urgency === 'routine'
-                                  ? 'bg-gray-100 text-gray-600'
-                                  : 'bg-blue-100 text-blue-600'
-                              }`}
-                            >
-                              {test.urgency === 'urgent'
-                                ? 'Urgente'
-                                : test.urgency === 'routine'
-                                ? 'Rotina'
-                                : 'Seguimento'}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {test.rationale}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Disclaimer */}
-            <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-              <div className="flex items-start gap-2">
-                <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-amber-800">
-                  {displayResult.disclaimer}
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 tracking-tight">
+                  Diagnóstico Assistido
+                </h2>
+                <p className="text-sm text-gray-500">
+                  Análise laboratorial com IA Multi-LLM
                 </p>
               </div>
             </div>
 
-            {/* Feedback buttons */}
-            <div className="flex items-center justify-center gap-3 pt-2">
-              <span className="text-sm text-gray-500">Esta an\u00e1lise foi \u00fatil?</span>
+            {/* Actions */}
+            <div className="flex items-center gap-3">
+              {/* History Button */}
               <button
-                onClick={() => handleFeedback('helpful')}
-                className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                onClick={() => setShowHistory(!showHistory)}
+                className={`
+                  flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium
+                  transition-all duration-200
+                  ${
+                    showHistory
+                      ? 'bg-[#EEF2FF] text-[#4338CA] shadow-sm'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }
+                `}
               >
-                Sim
+                <History className="w-4 h-4" />
+                <span>Histórico</span>
+                {sessions.length > 0 && (
+                  <span className="ml-1 px-2 py-0.5 text-xs bg-gray-200 rounded-full">
+                    {sessions.length}
+                  </span>
+                )}
               </button>
-              <button
-                onClick={() => handleFeedback('not_helpful')}
-                className="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors"
-              >
-                N\u00e3o
-              </button>
-              <button
-                onClick={() => handleFeedback('incorrect')}
-                className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
-              >
-                Incorreta
-              </button>
+
+              {/* New Analysis Button */}
+              {displayResult && (
+                <button
+                  onClick={reset}
+                  className="
+                    flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium
+                    bg-gradient-to-r from-[#4F46E5] to-[#6366F1] text-white
+                    shadow-lg shadow-[#6366F1]/25
+                    hover:shadow-xl hover:shadow-[#6366F1]/30
+                    active:scale-[0.98]
+                    transition-all duration-200
+                  "
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>Nova Análise</span>
+                </button>
+              )}
             </div>
           </div>
-        ) : (
-          // Upload view
-          <div className="max-w-xl mx-auto">
-            <LabUploadPanel
-              status={status}
-              error={error}
-              onFileSelect={handleFileSelect}
-              onCancel={reset}
-            />
+        </div>
 
-            {/* Quick tips */}
-            <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-medium text-blue-800 mb-2">Dicas</h4>
-              <ul className="text-sm text-blue-700 space-y-1">
-                <li>\u2022 Fotografe o exame com boa ilumina\u00e7\u00e3o</li>
-                <li>\u2022 Inclua todos os valores no enquadramento</li>
-                <li>\u2022 PDFs s\u00e3o processados diretamente</li>
-                <li>\u2022 A an\u00e1lise leva cerca de 15-30 segundos</li>
-              </ul>
+        {/* Tab Navigation - Only show when we have results */}
+        {displayResult && !showHistory && (
+          <div className="px-6 pb-0">
+            <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+              {TABS.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`
+                      flex items-center gap-2 px-4 py-3 rounded-t-xl text-sm font-medium
+                      border-b-2 transition-all duration-200 whitespace-nowrap
+                      ${
+                        isActive
+                          ? 'border-[#4F46E5] text-[#4338CA] bg-[#EEF2FF]/50'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      }
+                    `}
+                  >
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-[#4F46E5]' : ''}`} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-auto">
+        <div className="p-6">
+          {showHistory ? (
+            <HistoryView
+              sessions={sessions}
+              onClose={() => setShowHistory(false)}
+            />
+          ) : displayResult ? (
+            <ResultsView
+              result={displayResult}
+              activeTab={activeTab}
+              expandedMarkers={expandedMarkers}
+              onSectionClick={handleSectionClick}
+              onToggleMarker={toggleMarker}
+              onFeedback={handleFeedback}
+            />
+          ) : (
+            <div className="max-w-xl mx-auto animate-[slideUp_0.5s_cubic-bezier(0.16,1,0.3,1)_forwards]">
+              <LabUploadPanel
+                status={status}
+                error={error}
+                onFileSelect={handleFileSelect}
+                onCancel={reset}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

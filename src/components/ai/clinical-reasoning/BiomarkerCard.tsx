@@ -4,6 +4,8 @@
  *
  * Displays a single biomarker result with traffic-light status indicator.
  * Shows lab range, functional range, and interpretation.
+ *
+ * Note: Uses explicit hex colors for Tailwind 4 compatibility.
  */
 
 import React from 'react';
@@ -35,26 +37,26 @@ function getStatusConfig(status: BiomarkerStatus): {
     case 'critical':
       return {
         icon: AlertCircle,
-        bgColor: 'bg-red-50',
-        textColor: 'text-red-700',
-        borderColor: 'border-red-200',
-        label: 'Cr\u00edtico',
+        bgColor: 'bg-[#FEF2F2]',
+        textColor: 'text-[#B91C1C]',
+        borderColor: 'border-[#FECACA]',
+        label: 'Crítico',
       };
     case 'attention':
       return {
         icon: AlertTriangle,
-        bgColor: 'bg-amber-50',
-        textColor: 'text-amber-700',
-        borderColor: 'border-amber-200',
-        label: 'Aten\u00e7\u00e3o',
+        bgColor: 'bg-[#FFFBEB]',
+        textColor: 'text-[#B45309]',
+        borderColor: 'border-[#FDE68A]',
+        label: 'Atenção',
       };
     case 'normal':
     default:
       return {
         icon: CheckCircle,
-        bgColor: 'bg-green-50',
-        textColor: 'text-green-700',
-        borderColor: 'border-green-200',
+        bgColor: 'bg-[#F0FDF4]',
+        textColor: 'text-[#15803D]',
+        borderColor: 'border-[#BBF7D0]',
         label: 'Normal',
       };
   }
@@ -149,10 +151,10 @@ export function BiomarkerCard({
         <div
           className={`absolute w-3 h-3 rounded-full border-2 border-white shadow-md -top-0.5 transform -translate-x-1/2 ${
             marker.status === 'critical'
-              ? 'bg-red-500'
+              ? 'bg-[#EF4444]'
               : marker.status === 'attention'
-              ? 'bg-amber-500'
-              : 'bg-green-500'
+              ? 'bg-[#F59E0B]'
+              : 'bg-[#22C55E]'
           }`}
           style={{ left: `${valuePosition}%` }}
         />
@@ -173,7 +175,7 @@ export function BiomarkerCard({
           {/* Interpretation */}
           <div>
             <h5 className="text-xs font-medium text-gray-500 uppercase mb-1">
-              Interpreta\u00e7\u00e3o
+              Interpretação
             </h5>
             <p className="text-sm text-gray-700">{marker.interpretation}</p>
           </div>
@@ -182,14 +184,14 @@ export function BiomarkerCard({
           {showFunctionalRange && (
             <div>
               <h5 className="text-xs font-medium text-gray-500 uppercase mb-1">
-                Range Funcional \u00d3timo
+                Range Funcional Ótimo
               </h5>
               <p className="text-sm text-gray-700">
                 {marker.functionalRange.min} - {marker.functionalRange.max} {marker.unit}
               </p>
               {marker.deviationScore !== undefined && marker.deviationScore > 0 && (
-                <p className="text-xs text-amber-600 mt-1">
-                  Desvio do \u00f3timo: {(marker.deviationScore * 100).toFixed(0)}%
+                <p className="text-xs text-[#D97706] mt-1">
+                  Desvio do ótimo: {(marker.deviationScore * 100).toFixed(0)}%
                 </p>
               )}
             </div>

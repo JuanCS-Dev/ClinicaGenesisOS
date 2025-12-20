@@ -3,6 +3,8 @@
  * =========================
  *
  * Summary panel showing triage result and key metrics from lab analysis.
+ *
+ * Note: Uses explicit hex colors for Tailwind 4 compatibility.
  */
 
 import React from 'react';
@@ -38,30 +40,30 @@ function getUrgencyConfig(urgency: UrgencyLevel): {
     case 'critical':
       return {
         icon: AlertCircle,
-        bgColor: 'bg-red-50',
-        textColor: 'text-red-700',
-        borderColor: 'border-red-200',
-        label: 'CR\u00cdTICO',
-        description: 'A\u00e7\u00e3o imediata necess\u00e1ria',
+        bgColor: 'bg-[#FEF2F2]',
+        textColor: 'text-[#B91C1C]',
+        borderColor: 'border-[#FECACA]',
+        label: 'CRÍTICO',
+        description: 'Ação imediata necessária',
       };
     case 'high':
       return {
         icon: AlertTriangle,
-        bgColor: 'bg-amber-50',
-        textColor: 'text-amber-700',
-        borderColor: 'border-amber-200',
-        label: 'URG\u00caNCIA',
-        description: 'Avalia\u00e7\u00e3o priorit\u00e1ria',
+        bgColor: 'bg-[#FFFBEB]',
+        textColor: 'text-[#B45309]',
+        borderColor: 'border-[#FDE68A]',
+        label: 'URGÊNCIA',
+        description: 'Avaliação prioritária',
       };
     case 'routine':
     default:
       return {
         icon: CheckCircle,
-        bgColor: 'bg-green-50',
-        textColor: 'text-green-700',
-        borderColor: 'border-green-200',
+        bgColor: 'bg-[#F0FDF4]',
+        textColor: 'text-[#15803D]',
+        borderColor: 'border-[#BBF7D0]',
         label: 'ROTINA',
-        description: 'Acompanhamento padr\u00e3o',
+        description: 'Acompanhamento padrão',
       };
   }
 }
@@ -110,10 +112,10 @@ export function AnalysisSummary({
             <p className="text-xs text-gray-500">Workflow</p>
             <p className={`font-medium ${urgencyConfig.textColor}`}>
               {triage.recommendedWorkflow === 'emergency'
-                ? 'Emerg\u00eancia'
+                ? 'Emergência'
                 : triage.recommendedWorkflow === 'specialist'
                 ? 'Especialista'
-                : 'Aten\u00e7\u00e3o Prim\u00e1ria'}
+                : 'Atenção Primária'}
             </p>
           </div>
         </div>
@@ -123,56 +125,56 @@ export function AnalysisSummary({
       <div className="grid grid-cols-3 gap-3">
         {/* Critical markers */}
         <div
-          className="p-4 bg-red-50 rounded-xl cursor-pointer hover:bg-red-100 transition-colors"
+          className="p-4 bg-[#FEF2F2] rounded-xl cursor-pointer hover:bg-[#FEE2E2] transition-colors"
           onClick={() => onSectionClick?.('markers')}
         >
           <div className="flex items-center gap-2 mb-2">
-            <AlertCircle className="w-5 h-5 text-red-500" />
-            <span className="text-sm font-medium text-red-700">Cr\u00edticos</span>
+            <AlertCircle className="w-5 h-5 text-[#EF4444]" />
+            <span className="text-sm font-medium text-[#B91C1C]">Críticos</span>
           </div>
-          <p className="text-3xl font-bold text-red-700">{summary.critical}</p>
+          <p className="text-3xl font-bold text-[#B91C1C]">{summary.critical}</p>
         </div>
 
         {/* Attention markers */}
         <div
-          className="p-4 bg-amber-50 rounded-xl cursor-pointer hover:bg-amber-100 transition-colors"
+          className="p-4 bg-[#FFFBEB] rounded-xl cursor-pointer hover:bg-[#FEF3C7] transition-colors"
           onClick={() => onSectionClick?.('markers')}
         >
           <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="w-5 h-5 text-amber-500" />
-            <span className="text-sm font-medium text-amber-700">Aten\u00e7\u00e3o</span>
+            <AlertTriangle className="w-5 h-5 text-[#F59E0B]" />
+            <span className="text-sm font-medium text-[#B45309]">Atenção</span>
           </div>
-          <p className="text-3xl font-bold text-amber-700">{summary.attention}</p>
+          <p className="text-3xl font-bold text-[#B45309]">{summary.attention}</p>
         </div>
 
         {/* Normal markers */}
         <div
-          className="p-4 bg-green-50 rounded-xl cursor-pointer hover:bg-green-100 transition-colors"
+          className="p-4 bg-[#F0FDF4] rounded-xl cursor-pointer hover:bg-[#DCFCE7] transition-colors"
           onClick={() => onSectionClick?.('markers')}
         >
           <div className="flex items-center gap-2 mb-2">
-            <CheckCircle className="w-5 h-5 text-green-500" />
-            <span className="text-sm font-medium text-green-700">Normais</span>
+            <CheckCircle className="w-5 h-5 text-[#22C55E]" />
+            <span className="text-sm font-medium text-[#15803D]">Normais</span>
           </div>
-          <p className="text-3xl font-bold text-green-700">{summary.normal}</p>
+          <p className="text-3xl font-bold text-[#15803D]">{summary.normal}</p>
         </div>
       </div>
 
       {/* Correlations preview */}
       {correlations.length > 0 && (
         <div
-          className="p-4 bg-blue-50 rounded-xl cursor-pointer hover:bg-blue-100 transition-colors"
+          className="p-4 bg-[#EFF6FF] rounded-xl cursor-pointer hover:bg-[#DBEAFE] transition-colors"
           onClick={() => onSectionClick?.('correlations')}
         >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-blue-500" />
-              <span className="font-medium text-blue-700">
-                Padr\u00f5es Cl\u00ednicos Identificados
+              <Activity className="w-5 h-5 text-[#3B82F6]" />
+              <span className="font-medium text-[#1D4ED8]">
+                Padrões Clínicos Identificados
               </span>
             </div>
-            <span className="text-sm text-blue-600">
-              {correlations.length} padr\u00e3o(s)
+            <span className="text-sm text-[#2563EB]">
+              {correlations.length} padrão(s)
             </span>
           </div>
           <div className="space-y-2">
@@ -185,22 +187,22 @@ export function AnalysisSummary({
                 <span
                   className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                     corr.confidence === 'high'
-                      ? 'bg-green-100 text-green-700'
+                      ? 'bg-[#DCFCE7] text-[#15803D]'
                       : corr.confidence === 'medium'
-                      ? 'bg-amber-100 text-amber-700'
+                      ? 'bg-[#FEF3C7] text-[#B45309]'
                       : 'bg-gray-100 text-gray-600'
                   }`}
                 >
                   {corr.confidence === 'high'
                     ? 'Alta'
                     : corr.confidence === 'medium'
-                    ? 'M\u00e9dia'
+                    ? 'Média'
                     : 'Baixa'}
                 </span>
               </div>
             ))}
             {correlations.length > 3 && (
-              <p className="text-xs text-blue-600 text-center pt-1">
+              <p className="text-xs text-[#2563EB] text-center pt-1">
                 +{correlations.length - 3} mais...
               </p>
             )}

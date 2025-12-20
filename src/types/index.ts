@@ -3,6 +3,9 @@ import type React from 'react';
 // Clinical Reasoning Engine Types (3.3)
 export * from './clinical-reasoning';
 
+// Finance Types (4.1)
+export * from './finance';
+
 export enum Status {
   CONFIRMED = 'Confirmado',
   PENDING = 'Pendente',

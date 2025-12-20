@@ -361,12 +361,12 @@ export const PatientDetails: React.FC = () => {
         <div className="bg-gray-100/80 p-1 rounded-xl self-start inline-flex backdrop-blur-sm">
           <TabButton active={activeTab === 'prontuario'} onClick={() => setActiveTab('prontuario')} icon={FileText} label="Prontuário" />
           <TabButton active={activeTab === 'timeline'} onClick={() => setActiveTab('timeline')} icon={History} label="Histórico" />
-          <TabButton active={activeTab === 'clinicalAI'} onClick={() => setActiveTab('clinicalAI')} icon={Sparkles} label="Clinical AI" colorClass="text-indigo-500" />
+          <TabButton active={activeTab === 'clinicalAI'} onClick={() => setActiveTab('clinicalAI')} icon={Sparkles} label="Diagnóstico Assistido" colorClass="text-[#6366F1]" />
         </div>
 
         <div className="flex-1">
           {activeTab === 'prontuario' && (
-            <div className="flex gap-8 animate-in fade-in zoom-in-95 h-[calc(100vh-28rem)]">
+            <div className="flex gap-8 animate-in fade-in zoom-in-95 h-[calc(100vh-18rem)]">
               
               {/* History Sidebar */}
               <div className="w-72 flex-shrink-0 flex flex-col bg-white rounded-[24px] border border-white shadow-soft overflow-hidden">
@@ -420,7 +420,7 @@ export const PatientDetails: React.FC = () => {
           )}
 
           {activeTab === 'clinicalAI' && id && (
-            <div className="bg-white rounded-[32px] border border-white shadow-soft overflow-hidden animate-in fade-in zoom-in-95 h-[calc(100vh-24rem)]">
+            <div className="bg-white rounded-[32px] border border-white shadow-soft overflow-hidden animate-in fade-in zoom-in-95 h-[calc(100vh-18rem)]">
               <ClinicalReasoningPanel
                 patientId={id}
                 patientContext={patientContext}

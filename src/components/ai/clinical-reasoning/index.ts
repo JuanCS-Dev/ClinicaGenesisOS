@@ -13,3 +13,7 @@ export { ClinicalReasoningPanel } from './ClinicalReasoningPanel';
 export { ReferenceCard } from './ReferenceCard';
 export { ReferencesPanel } from './ReferencesPanel';
 export { ConsensusBadge, ModelComparison } from './ConsensusBadge';
+export { HistoryView } from './HistoryView';
+export { DiagnosisView } from './DiagnosisView';
+export { SuggestionsView } from './SuggestionsView';
+export { ResultsView } from './ResultsView';

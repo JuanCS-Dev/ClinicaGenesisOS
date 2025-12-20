@@ -1,134 +1,378 @@
-import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
-import { Download, Share2, Info } from 'lucide-react';
+/**
+ * Reports Page
+ * ============
+ *
+ * Clinical reports dashboard with real-time data from Firestore.
+ * Fase 4: Financeiro & Relatórios
+ *
+ * Note: Uses explicit hex colors for Tailwind 4 compatibility.
+ */
 
-const DEMOGRAPHICS = [
-  { name: 'Feminino', value: 65, color: '#34C759' }, // Nutri Green
-  { name: 'Masculino', value: 35, color: '#007AFF' }, // Genesis Blue
-];
+import React, { useState } from 'react';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from 'recharts';
+import {
+  Download,
+  Share2,
+  Info,
+  Loader2,
+  Calendar,
+  Users,
+  FileText,
+  CheckCircle,
+  TrendingUp,
+} from 'lucide-react';
+import { useReports } from '../hooks/useReports';
+import { exportReportToPDF } from '../services/export.service';
+import type { SpecialtyType } from '@/types';
 
-const PROCEDURES_DATA = [
-  { name: 'Nutrição', value: 120 },
-  { name: 'Fisioterapia', value: 80 },
-  { name: 'Odonto', value: 45 },
-  { name: 'Estética', value: 30 },
-];
-
-const AGES_DATA = [
-  { name: '18-25', value: 15 },
-  { name: '26-35', value: 45 },
-  { name: '36-45', value: 25 },
-  { name: '46+', value: 15 },
-];
-
+/**
+ * Insight card component for KPI display.
+ */
 interface InsightCardProps {
   title: string;
   value: string;
   footer?: string;
+  loading?: boolean;
+  icon?: React.ReactNode;
 }
 
-const InsightCard = ({ title, value, footer }: InsightCardProps) => (
-  <div className="bg-white p-6 rounded-2xl border border-white shadow-soft flex flex-col justify-between">
+const InsightCard: React.FC<InsightCardProps> = ({
+  title,
+  value,
+  footer,
+  loading,
+  icon,
+}) => (
+  <div className="bg-white p-6 rounded-2xl border border-white shadow-soft flex flex-col justify-between group hover:shadow-float transition-all duration-300">
     <div className="flex justify-between items-start">
       <h4 className="text-sm font-medium text-genesis-medium">{title}</h4>
-      <Info className="w-4 h-4 text-gray-300 hover:text-genesis-blue cursor-pointer transition-colors" />
+      {icon || (
+        <Info className="w-4 h-4 text-gray-300 hover:text-[#4F46E5] cursor-pointer transition-colors" />
+      )}
     </div>
     <div className="mt-4">
-      <h2 className="text-3xl font-bold text-genesis-dark tracking-tight">{value}</h2>
+      {loading ? (
+        <div className="h-9 flex items-center">
+          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        </div>
+      ) : (
+        <h2 className="text-3xl font-bold text-genesis-dark tracking-tight">
+          {value}
+        </h2>
+      )}
       {footer && <p className="text-xs text-genesis-medium mt-1">{footer}</p>}
     </div>
   </div>
 );
 
+/**
+ * Filter bar component.
+ */
+interface FilterBarProps {
+  filters: {
+    specialty?: SpecialtyType;
+    professional?: string;
+  };
+  onFilterChange: (filters: { specialty?: SpecialtyType; professional?: string }) => void;
+}
+
+const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange }) => {
+  return (
+    <div className="flex gap-3 flex-wrap">
+      <select
+        value={filters.specialty || ''}
+        onChange={(e) =>
+          onFilterChange({
+            ...filters,
+            specialty: (e.target.value as SpecialtyType) || undefined,
+          })
+        }
+        className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-genesis-dark focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] outline-none"
+      >
+        <option value="">Todas Especialidades</option>
+        <option value="medicina">Medicina</option>
+        <option value="nutricao">Nutrição</option>
+        <option value="psicologia">Psicologia</option>
+      </select>
+      <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-genesis-dark hover:bg-gray-50 transition-colors shadow-sm">
+        <Calendar className="w-4 h-4 text-genesis-medium" />
+        Este Mês
+      </button>
+    </div>
+  );
+};
+
+/**
+ * Empty state component.
+ */
+const EmptyState: React.FC<{ message: string }> = ({ message }) => (
+  <div className="h-full flex flex-col items-center justify-center text-gray-400">
+    <FileText className="w-12 h-12 mb-3 text-gray-300" />
+    <p className="text-sm">{message}</p>
+  </div>
+);
+
+/**
+ * Main Reports page component.
+ */
 export const Reports: React.FC = () => {
+  const { loading, demographics, procedureStats, metrics, filters, setFilters } =
+    useReports();
+  const [exporting, setExporting] = useState(false);
+
+  // Handle export
+  const handleExport = () => {
+    setExporting(true);
+    try {
+      exportReportToPDF(
+        {
+          totalPatients: metrics?.totalPatients || 0,
+          activePatients: metrics?.activePatients || 0,
+          appointmentsCount: metrics?.appointmentsCount || 0,
+          completionRate: metrics?.completionRate || 0,
+          procedureStats,
+          demographics,
+        },
+        'Clínica Genesis'
+      );
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-8 animate-enter pb-12">
-      <div className="flex justify-between items-end">
+      {/* Header */}
+      <div className="flex justify-between items-end flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-genesis-dark tracking-tight">Relatórios Clínicos</h1>
-          <p className="text-genesis-medium text-sm">Análise demográfica e desempenho de procedimentos.</p>
+          <h1 className="text-2xl font-bold text-genesis-dark tracking-tight">
+            Relatórios Clínicos
+          </h1>
+          <p className="text-genesis-medium text-sm">
+            Análise demográfica e desempenho de procedimentos.
+          </p>
         </div>
         <div className="flex gap-3">
+          <FilterBar
+            filters={{
+              specialty: filters.specialty,
+              professional: filters.professional,
+            }}
+            onFilterChange={(f) =>
+              setFilters({
+                ...filters,
+                specialty: f.specialty,
+                professional: f.professional,
+              })
+            }
+          />
           <button className="p-2.5 bg-white border border-gray-200 rounded-xl text-genesis-dark hover:bg-gray-50 transition-colors shadow-sm">
-             <Share2 className="w-4 h-4" />
-           </button>
-           <button className="flex items-center gap-2 px-4 py-2.5 bg-genesis-dark text-white rounded-xl text-sm font-medium hover:bg-black transition-colors shadow-lg shadow-gray-200">
-             <Download className="w-4 h-4" /> Exportar PDF
-           </button>
+            <Share2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="flex items-center gap-2 px-4 py-2.5 bg-genesis-dark text-white rounded-xl text-sm font-medium hover:bg-black transition-colors shadow-lg shadow-gray-200 disabled:opacity-50"
+          >
+            {exporting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            Exportar PDF
+          </button>
         </div>
       </div>
 
+      {/* KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <InsightCard title="Total de Pacientes" value="1,248" footer="Base ativa" />
-        <InsightCard title="Ticket Médio" value="R$ 380" footer="Por consulta" />
-        <InsightCard title="LTV (Lifetime Value)" value="R$ 2.450" footer="Média anual" />
-        <InsightCard title="NPS (Satisfação)" value="92" footer="Zona de Excelência" />
+        <InsightCard
+          title="Total de Pacientes"
+          value={metrics?.totalPatients?.toLocaleString('pt-BR') || '0'}
+          footer="Base cadastrada"
+          loading={loading}
+          icon={<Users className="w-4 h-4 text-[#3B82F6]" />}
+        />
+        <InsightCard
+          title="Pacientes Ativos"
+          value={metrics?.activePatients?.toLocaleString('pt-BR') || '0'}
+          footer="Últimos 6 meses"
+          loading={loading}
+          icon={<TrendingUp className="w-4 h-4 text-[#22C55E]" />}
+        />
+        <InsightCard
+          title="Agendamentos"
+          value={metrics?.appointmentsCount?.toLocaleString('pt-BR') || '0'}
+          footer="Período selecionado"
+          loading={loading}
+          icon={<Calendar className="w-4 h-4 text-[#8B5CF6]" />}
+        />
+        <InsightCard
+          title="Taxa de Conclusão"
+          value={`${metrics?.completionRate || 0}%`}
+          footer="Consultas finalizadas"
+          loading={loading}
+          icon={<CheckCircle className="w-4 h-4 text-[#F59E0B]" />}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Procedures Chart */}
         <div className="bg-white p-8 rounded-3xl border border-white shadow-soft h-[400px] flex flex-col">
-          <h3 className="text-lg font-bold text-genesis-dark mb-6">Procedimentos Populares</h3>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={PROCEDURES_DATA} layout="vertical" margin={{ left: 20 }}>
-              <XAxis type="number" hide />
-              <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fill: '#111827', fontSize: 13, fontWeight: 500}} width={100} />
-              <Tooltip 
-                cursor={{fill: '#F5F5F7'}}
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-              />
-              <Bar dataKey="value" fill="#007AFF" radius={[0, 4, 4, 0]} barSize={32} animationDuration={1000} />
-            </BarChart>
-          </ResponsiveContainer>
+          <h3 className="text-lg font-bold text-genesis-dark mb-6">
+            Procedimentos Populares
+          </h3>
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+            </div>
+          ) : procedureStats.length === 0 ? (
+            <EmptyState message="Nenhum procedimento registrado" />
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={procedureStats}
+                layout="vertical"
+                margin={{ left: 20 }}
+              >
+                <XAxis type="number" hide />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#111827', fontSize: 13, fontWeight: 500 }}
+                  width={120}
+                />
+                <Tooltip
+                  cursor={{ fill: '#F5F5F7' }}
+                  contentStyle={{
+                    borderRadius: '8px',
+                    border: 'none',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  }}
+                  formatter={(value: number) => [
+                    `${value} agendamentos`,
+                    'Total',
+                  ]}
+                />
+                <Bar
+                  dataKey="value"
+                  fill="#4F46E5"
+                  radius={[0, 4, 4, 0]}
+                  barSize={32}
+                  animationDuration={1000}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         {/* Demographics & Age Grid */}
         <div className="grid grid-rows-2 gap-8">
-           <div className="bg-white p-6 rounded-3xl border border-white shadow-soft flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-bold text-genesis-dark mb-2">Gênero</h3>
+          {/* Gender Distribution */}
+          <div className="bg-white p-6 rounded-3xl border border-white shadow-soft flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold text-genesis-dark mb-2">
+                Gênero
+              </h3>
+              {loading ? (
+                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              ) : demographics?.gender && demographics.gender.length > 0 ? (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-[#34C759]" />
-                    <span className="text-sm text-genesis-medium">Feminino (65%)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                     <div className="w-3 h-3 rounded-full bg-[#007AFF]" />
-                     <span className="text-sm text-genesis-medium">Masculino (35%)</span>
-                  </div>
+                  {demographics.gender.map((g, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: g.color }}
+                      />
+                      <span className="text-sm text-genesis-medium">
+                        {g.name} ({g.value}%)
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              </div>
-              <div className="w-40 h-40">
+              ) : (
+                <p className="text-sm text-gray-400">Sem dados</p>
+              )}
+            </div>
+            <div className="w-40 h-40">
+              {demographics?.gender && demographics.gender.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={DEMOGRAPHICS} cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={5} dataKey="value">
-                      {DEMOGRAPHICS.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                    <Pie
+                      data={demographics.gender}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={60}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {demographics.gender.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={entry.color}
+                          stroke="none"
+                        />
                       ))}
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
-              </div>
-           </div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full bg-gray-100" />
+                </div>
+              )}
+            </div>
+          </div>
 
-           <div className="bg-white p-6 rounded-3xl border border-white shadow-soft flex flex-col">
-              <h3 className="text-lg font-bold text-genesis-dark mb-4">Faixa Etária Predominante</h3>
-              <div className="flex items-end justify-between h-full gap-4 px-4">
-                 {AGES_DATA.map((d, i) => (
-                   <div key={i} className="flex flex-col items-center gap-2 w-full group">
-                      <div className="w-full bg-genesis-soft rounded-t-xl relative overflow-hidden h-24 flex items-end">
-                         <div 
-                          className="w-full bg-genesis-dark/80 group-hover:bg-genesis-blue transition-colors duration-500 rounded-t-xl" 
-                          style={{ height: `${d.value * 2}%` }}
-                         />
-                      </div>
-                      <span className="text-xs font-semibold text-genesis-medium">{d.name}</span>
-                   </div>
-                 ))}
+          {/* Age Distribution */}
+          <div className="bg-white p-6 rounded-3xl border border-white shadow-soft flex flex-col">
+            <h3 className="text-lg font-bold text-genesis-dark mb-4">
+              Faixa Etária Predominante
+            </h3>
+            {loading ? (
+              <div className="flex-1 flex items-center justify-center">
+                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
               </div>
-           </div>
+            ) : demographics?.ageGroups && demographics.ageGroups.length > 0 ? (
+              <div className="flex items-end justify-between h-full gap-4 px-4">
+                {demographics.ageGroups.map((d, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col items-center gap-2 w-full group"
+                  >
+                    <div className="w-full bg-genesis-soft rounded-t-xl relative overflow-hidden h-24 flex items-end">
+                      <div
+                        className="w-full bg-genesis-dark/80 group-hover:bg-[#4F46E5] transition-colors duration-500 rounded-t-xl"
+                        style={{ height: `${Math.max(d.value * 2, 10)}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-semibold text-genesis-medium">
+                      {d.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyState message="Sem dados de idade" />
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 };
+
+export default Reports;

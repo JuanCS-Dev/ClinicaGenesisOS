@@ -6,6 +6,8 @@
  * Visual indicator showing the consensus level between multiple AI models
  * for a given diagnosis. Based on NEJM AI 2024 research.
  *
+ * Note: Uses explicit hex colors for Tailwind 4 compatibility.
+ *
  * @see https://ai.nejm.org/doi/full/10.1056/AIcs2400502
  */
 
@@ -41,12 +43,13 @@ const ICONS: Record<string, LucideIcon> = {
 
 /**
  * Tailwind color classes for each color variant.
+ * Uses explicit hex colors for Tailwind 4 compatibility.
  */
 const COLOR_CLASSES = {
-  emerald: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  blue: 'bg-blue-100 text-blue-700 border-blue-200',
-  amber: 'bg-amber-100 text-amber-700 border-amber-200',
-  red: 'bg-red-100 text-red-700 border-red-200',
+  emerald: 'bg-[#D1FAE5] text-[#047857] border-[#A7F3D0]',
+  blue: 'bg-[#DBEAFE] text-[#1D4ED8] border-[#BFDBFE]',
+  amber: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
+  red: 'bg-[#FEE2E2] text-[#B91C1C] border-[#FECACA]',
   gray: 'bg-gray-100 text-gray-600 border-gray-200',
 };
 
