@@ -34,7 +34,7 @@ const client = new GoogleGenAI({
 
 ## 📊 STATUS DE IMPLEMENTAÇÃO
 
-> Última atualização: 2025-12-20 (Clinical Reasoning Engine 3.3.1 ✅ + Scientific Literature Backing 3.3.7 planejado)
+> Última atualização: 2025-12-20 (Clinical Reasoning Engine 3.3.1 ✅ + Scientific Literature Backing 3.3.7 ✅)
 
 | Fase | Status | Progresso |
 |------|--------|-----------|
@@ -44,7 +44,7 @@ const client = new GoogleGenAI({
 | **Fase 1.3: Banco de Dados** | ✅ Completa | 100% |
 | **Fase 1.4: Test Coverage 90%+** | ✅ Completa | 100% |
 | **Fase 2: Core Features** | ✅ Completa | 100% |
-| **Fase 3: AI Integration** | 🔄 Em Progresso | 90% |
+| **Fase 3: AI Integration** | ✅ Completa | 100% |
 | **Fase 4: Financeiro** | 🔲 Pendente | 0% |
 | **Fase 5: Polish & Launch** | 🔲 Pendente | 0% |
 
@@ -644,7 +644,7 @@ export { onAppointmentCreated, onAppointmentUpdated } from './scheduler/triggers
 | **3.1 WhatsApp Lembretes** | -30% no-shows | Média | 2 | ✅ 100% |
 | **3.2 AI Scribe MVP** | -14 min/dia/médico | Média | 2 | ✅ 100% |
 | **3.3 Clinical Reasoning Engine** | -50% erros diagnósticos | **Alta** | **3** | ✅ 3.3.1 OK |
-| **3.3.7 Scientific Literature Backing** | +Credibilidade/Defensibilidade | Baixa | 1 | 📋 Planejado |
+| **3.3.7 Scientific Literature Backing** | +Credibilidade/Defensibilidade | Baixa | 1 | ✅ 100% |
 
 **✅ Fase 3.3.1 - Clinical Reasoning Engine (Completa)**:
 - Pipeline 4 camadas funcionando (OCR → Extração → Raciocínio → Formatação)
@@ -653,11 +653,13 @@ export { onAppointmentCreated, onAppointmentUpdated } from './scheduler/triggers
 - E2E testado com Vertex AI: 92.5s, diagnóstico diferencial preciso
 - Deploy em produção: `analyzeLabResults` Cloud Function
 
-**📋 Fase 3.3.7 - Scientific Literature Backing (Próximo)**:
-- Respaldo com artigos PubMed/Europe PMC/Semantic Scholar
-- Async: diagnóstico aparece primeiro, artigos depois
+**✅ Fase 3.3.7 - Scientific Literature Backing (Completa)**:
+- Europe PMC integration (simple, JSON, one call)
+- ICD-10 to English mapping for accurate queries
+- Async: diagnóstico aparece primeiro, artigos depois (evita anchoring bias)
 - Mínimo 2 artigos peer-reviewed por diagnóstico médio/difícil
-- Custo: negligível (~R$ 0.01/análise, APIs gratuitas + cache)
+- Premium UI: ReferenceCard + ReferencesPanel com tier-1 badges
+- E2E testado: 2 referências encontradas para hipertireoidismo + diabetes tipo 1
 
 **Stack AI**: Firebase AI Logic + Gemini 2.5 Flash (áudio nativo) - ~~Speech-to-Text não necessário~~
 
