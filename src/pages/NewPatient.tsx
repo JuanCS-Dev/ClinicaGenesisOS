@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { Save, User, Phone, ShieldCheck, ChevronRight, Loader2 } from 'lucide-react';
 import { usePatients } from '../hooks/usePatients';
 import { AvatarUpload } from '../components/ui/AvatarUpload';
@@ -62,7 +63,7 @@ export const NewPatient: React.FC = () => {
   const handleSave = async () => {
     // Basic validation
     if (!formData.name || !formData.phone) {
-      alert('Preencha os campos obrigatórios.');
+      toast.warning('Preencha os campos obrigatórios.');
       return;
     }
 
@@ -89,7 +90,7 @@ export const NewPatient: React.FC = () => {
       navigate('/patients');
     } catch (error) {
       console.error('Error creating patient:', error);
-      alert('Erro ao cadastrar paciente. Tente novamente.');
+      toast.error('Erro ao cadastrar paciente. Tente novamente.');
       setSaving(false);
     }
   };

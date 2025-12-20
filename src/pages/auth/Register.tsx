@@ -40,8 +40,8 @@ export const Register: React.FC = () => {
     try {
       await signUp(email, password, name);
       navigate('/dashboard');
-    } catch {
-      // Error is handled by useAuth
+    } catch (err) {
+      console.error('Sign up failed:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -53,8 +53,8 @@ export const Register: React.FC = () => {
     try {
       await signInWithGoogle();
       navigate('/dashboard');
-    } catch {
-      // Error is handled by useAuth
+    } catch (err) {
+      console.error('Google sign-in failed:', err);
     }
   };
 

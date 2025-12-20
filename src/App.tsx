@@ -1,25 +1,31 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { HashRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
+import { ErrorBoundary } from 'react-error-boundary';
 import { AuthProvider } from './contexts/AuthContext';
 import { ClinicProvider, useClinicContext } from './contexts/ClinicContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
-import { Landing } from './pages/Landing';
-import { Application } from './pages/Application';
-import { Login } from './pages/auth/Login';
-import { Register } from './pages/auth/Register';
-import { Onboarding } from './pages/Onboarding';
-import { Dashboard } from './pages/Dashboard';
-import { Agenda } from './pages/Agenda';
-import { Patients } from './pages/Patients';
-import { PatientDetails } from './pages/PatientDetails';
-import { Finance } from './pages/Finance';
-import { Reports } from './pages/Reports';
-import { WhatsAppMetrics } from './pages/WhatsAppMetrics';
-import { NewPatient } from './pages/NewPatient';
-import { EditPatient } from './pages/EditPatient';
+import { ErrorFallback } from './components/ui/ErrorFallback';
 import { Loader2 } from 'lucide-react';
+
+// Lazy-loaded pages for code splitting
+const Landing = lazy(() => import('./pages/Landing').then(m => ({ default: m.Landing })));
+const Application = lazy(() => import('./pages/Application').then(m => ({ default: m.Application })));
+const Login = lazy(() => import('./pages/auth/Login').then(m => ({ default: m.Login })));
+const Register = lazy(() => import('./pages/auth/Register').then(m => ({ default: m.Register })));
+const Onboarding = lazy(() => import('./pages/Onboarding').then(m => ({ default: m.Onboarding })));
+const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
+const Agenda = lazy(() => import('./pages/Agenda').then(m => ({ default: m.Agenda })));
+const Patients = lazy(() => import('./pages/Patients').then(m => ({ default: m.Patients })));
+const PatientDetails = lazy(() => import('./pages/PatientDetails').then(m => ({ default: m.PatientDetails })));
+const Finance = lazy(() => import('./pages/Finance').then(m => ({ default: m.Finance })));
+const Reports = lazy(() => import('./pages/Reports').then(m => ({ default: m.Reports })));
+const WhatsAppMetrics = lazy(() => import('./pages/WhatsAppMetrics').then(m => ({ default: m.WhatsAppMetrics })));
+const NewPatient = lazy(() => import('./pages/NewPatient').then(m => ({ default: m.NewPatient })));
+const EditPatient = lazy(() => import('./pages/EditPatient').then(m => ({ default: m.EditPatient })));
+const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
 
 /**
  * Loading spinner component for async operations.
@@ -107,10 +113,13 @@ function DemoLayout() {
 
 function App() {
   return (
-    <AuthProvider>
-      <ClinicProvider>
-        <Router>
-          <Routes>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <AuthProvider>
+        <ClinicProvider>
+          <Toaster richColors position="top-right" />
+          <Router>
+            <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
             {/* Public Landing Page */}
             <Route path="/" element={<Landing />} />
 
@@ -181,18 +190,13 @@ function App() {
             </Route>
 
             {/* Catch all */}
-            <Route
-              path="*"
-              element={
-                <div className="flex items-center justify-center h-screen text-genesis-medium">
-                  Página não encontrada
-                </div>
-              }
-            />
-          </Routes>
-        </Router>
-      </ClinicProvider>
-    </AuthProvider>
+            <Route path="*" element={<NotFound />} />
+            </Routes>
+            </Suspense>
+          </Router>
+        </ClinicProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

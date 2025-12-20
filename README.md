@@ -6,17 +6,19 @@ Sistema de gestao para clinicas e consultorios multi-especialidade.
 
 - **Frontend**: React 19 + TypeScript
 - **Styling**: Tailwind CSS v4
-- **State**: Zustand
+- **Backend**: Firebase (Firestore + Auth + Storage)
+- **AI**: Vertex AI (Gemini 2.5 Flash)
 - **Routing**: React Router v7
 - **Charts**: Recharts
 - **Build**: Vite 6
-- **Testing**: Vitest + Testing Library
+- **Testing**: Vitest + Testing Library (91%+ coverage)
 - **Linting**: ESLint + Prettier
 
 ## Pre-requisitos
 
 - Node.js >= 18
 - npm >= 9
+- Firebase project configurado
 
 ## Instalacao
 
@@ -27,6 +29,10 @@ cd ClinicaGenesisOS
 
 # Instale as dependencias
 npm install
+
+# Configure as variaveis de ambiente
+cp .env.example .env.local
+# Edite .env.local com suas credenciais Firebase
 ```
 
 ## Scripts Disponiveis
@@ -52,26 +58,18 @@ npm run test:ui      # Roda testes com interface grafica
 npm run test:coverage # Roda testes com cobertura
 ```
 
-## Estrutura do Projeto
+## Funcionalidades
 
-```
-ClinicaGenesisOS/
-├── __tests__/          # Testes
-├── components/         # Componentes React
-│   ├── layout/         # Sidebar, Header
-│   ├── patient/        # Timeline, etc
-│   └── plugins/        # Plugins de especialidades
-├── docs/               # Documentacao
-├── pages/              # Paginas da aplicacao
-├── plugins/            # Sistema de plugins
-├── store/              # Zustand store
-├── App.tsx             # Router principal
-├── constants.ts        # Dados mock
-├── index.css           # Estilos Tailwind
-├── index.html          # HTML entry
-├── index.tsx           # React entry
-└── types.ts            # TypeScript types
-```
+- **Autenticacao**: Firebase Auth (email/senha + Google OAuth)
+- **Multi-tenancy**: Isolamento de dados por clinica
+- **Dashboard**: KPIs e metricas em tempo real
+- **Agenda**: Visualizacao dia/semana/mes
+- **Pacientes**: CRUD completo com timeline
+- **Prontuario**: SOAP, prescricoes, exames
+- **Financeiro**: Transacoes, categorias, graficos
+- **Relatorios**: Export PDF/Excel
+- **AI Scribe**: Transcricao de consultas (Gemini 2.5 Flash)
+- **WhatsApp**: Dashboard de metricas
 
 ## Especialidades Suportadas
 
@@ -79,9 +77,30 @@ ClinicaGenesisOS/
 - Nutricao
 - Psicologia
 
+## Estrutura do Projeto
+
+```
+src/
+├── components/        # Componentes React
+│   ├── layout/        # Sidebar, Header
+│   ├── patient/       # Timeline, etc
+│   ├── finance/       # Componentes financeiros
+│   ├── ai/            # AI Scribe, Clinical Reasoning
+│   └── ui/            # Componentes base
+├── contexts/          # React Contexts
+├── hooks/             # Custom hooks
+├── pages/             # Paginas da aplicacao
+├── plugins/           # Sistema de plugins (especialidades)
+├── services/          # Firebase services
+├── types/             # TypeScript types
+└── __tests__/         # Testes unitarios
+```
+
 ## Roadmap
 
 Consulte [docs/PLANO_MVP.md](docs/PLANO_MVP.md) para o plano completo de desenvolvimento.
+
+**Status atual**: Fase 5 (Polish) completa - MVP production-ready.
 
 ## Licenca
 

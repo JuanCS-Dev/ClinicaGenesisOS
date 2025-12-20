@@ -98,8 +98,8 @@ export const Sidebar: React.FC = () => {
     try {
       await logout();
       navigate('/');
-    } catch {
-      // Error is handled by useAuth
+    } catch (err) {
+      console.error('Logout failed:', err);
     }
   };
 
@@ -114,7 +114,7 @@ export const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-64 h-screen flex flex-col fixed left-0 top-0 z-20 bg-[#F9FAFB] border-r border-gray-200/60 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)]">
+    <aside className="w-64 h-screen flex flex-col fixed left-0 top-0 z-20 bg-[#F9FAFB] border-r border-gray-200/60 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)]" aria-label="Menu principal">
       {/* Logo Area */}
       <Link to="/" className="h-20 flex items-center px-6 mb-2 hover:opacity-80 transition-opacity">
         <div className="w-9 h-9 bg-genesis-dark rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-gray-300/50">

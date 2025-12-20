@@ -20,8 +20,8 @@ export const Login: React.FC = () => {
     try {
       await signIn(email, password);
       navigate('/dashboard');
-    } catch {
-      // Error is handled by useAuth
+    } catch (err) {
+      console.error('Login failed:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -32,8 +32,8 @@ export const Login: React.FC = () => {
     try {
       await signInWithGoogle();
       navigate('/dashboard');
-    } catch {
-      // Error is handled by useAuth
+    } catch (err) {
+      console.error('Google sign-in failed:', err);
     }
   };
 

@@ -119,7 +119,8 @@ export function AttachmentUpload({
       try {
         await deleteRecordAttachment(attachment.url);
         onAttachmentsChange(attachments.filter((a) => a.id !== attachmentId));
-      } catch {
+      } catch (err) {
+        console.error('Failed to delete attachment:', err);
         setError('Erro ao remover anexo.');
       }
     },

@@ -1,75 +1,13 @@
-/**
- * Onboarding Page
- *
- * Wizard for setting up a new clinic after user registration.
- * Steps:
- * 1. Clinic basic info (name, phone, address)
- * 2. Specialties offered
- * 3. Working hours and settings
- */
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Activity,
-  Building2,
-  Phone,
-  MapPin,
-  Stethoscope,
-  Apple,
-  Brain,
-  Clock,
-  Check,
-  ChevronRight,
-  ChevronLeft,
-  Loader2,
-  Sparkles,
-} from 'lucide-react';
+import { Activity, ChevronRight, ChevronLeft, Loader2, Check } from 'lucide-react';
 import { useClinicContext } from '../contexts/ClinicContext';
 import type { SpecialtyType, ClinicSettings, CreateClinicInput } from '@/types';
 
-interface StepProps {
-  isActive: boolean;
-  isCompleted: boolean;
-  number: number;
-  title: string;
-}
-
-function StepIndicator({ isActive, isCompleted, number, title }: StepProps) {
-  return (
-    <div className="flex items-center gap-3">
-      <div
-        className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
-          isCompleted
-            ? 'bg-green-500 text-white'
-            : isActive
-              ? 'bg-genesis-blue text-white'
-              : 'bg-gray-200 text-gray-500'
-        }`}
-      >
-        {isCompleted ? <Check className="w-5 h-5" /> : number}
-      </div>
-      <span
-        className={`hidden sm:block font-medium transition-colors ${
-          isActive ? 'text-genesis-dark' : 'text-gray-400'
-        }`}
-      >
-        {title}
-      </span>
-    </div>
-  );
-}
-
-const SPECIALTIES: Array<{
-  id: SpecialtyType;
-  name: string;
-  icon: React.ElementType;
-  color: string;
-}> = [
-  { id: 'medicina', name: 'Medicina', icon: Stethoscope, color: 'bg-blue-500' },
-  { id: 'nutricao', name: 'Nutrição', icon: Apple, color: 'bg-green-500' },
-  { id: 'psicologia', name: 'Psicologia', icon: Brain, color: 'bg-purple-500' },
-];
+import { StepIndicator } from '../components/onboarding/StepIndicator';
+import { StepClinicInfo } from '../components/onboarding/StepClinicInfo';
+import { StepSpecialties } from '../components/onboarding/StepSpecialties';
+import { StepSettings } from '../components/onboarding/StepSettings';
 
 export function Onboarding() {
   const navigate = useNavigate();
@@ -174,7 +112,7 @@ export function Onboarding() {
           />
           <div className="flex-1 h-1 bg-gray-200 mx-4 rounded">
             <div
-              className={`h-full bg-genesis-blue rounded transition-all ${
+              className={`h-full bg-genesis-blue rounded transition-all duration-500 ${
                 step > 1 ? 'w-full' : 'w-0'
               }`}
             />
@@ -187,7 +125,7 @@ export function Onboarding() {
           />
           <div className="flex-1 h-1 bg-gray-200 mx-4 rounded">
             <div
-              className={`h-full bg-genesis-blue rounded transition-all ${
+              className={`h-full bg-genesis-blue rounded transition-all duration-500 ${
                 step > 2 ? 'w-full' : 'w-0'
               }`}
             />
@@ -201,212 +139,43 @@ export function Onboarding() {
         </div>
 
         {/* Step Content */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+        <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-white p-8">
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm">
+            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
               {error}
             </div>
           )}
 
-          {/* Step 1: Basic Info */}
           {step === 1 && (
-            <div className="space-y-6">
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-genesis-dark">
-                  Vamos configurar sua clínica
-                </h2>
-                <p className="text-genesis-medium mt-2">
-                  Preencha os dados básicos para começar
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="clinicName" className="block text-sm font-semibold text-genesis-dark mb-2">
-                    Nome da Clínica *
-                  </label>
-                  <div className="relative">
-                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-medium" />
-                    <input
-                      id="clinicName"
-                      type="text"
-                      value={clinicName}
-                      onChange={(e) => setClinicName(e.target.value)}
-                      placeholder="Ex: Clínica São Paulo"
-                      className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-genesis-dark placeholder-genesis-medium/50 focus:outline-none focus:ring-2 focus:ring-genesis-blue/20 focus:border-genesis-blue transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-semibold text-genesis-dark mb-2">
-                    Telefone
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-medium" />
-                    <input
-                      id="phone"
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="(11) 99999-9999"
-                      className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-genesis-dark placeholder-genesis-medium/50 focus:outline-none focus:ring-2 focus:ring-genesis-blue/20 focus:border-genesis-blue transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="address" className="block text-sm font-semibold text-genesis-dark mb-2">
-                    Endereço
-                  </label>
-                  <div className="relative">
-                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-medium" />
-                    <input
-                      id="address"
-                      type="text"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      placeholder="Rua, número - Cidade, Estado"
-                      className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-genesis-dark placeholder-genesis-medium/50 focus:outline-none focus:ring-2 focus:ring-genesis-blue/20 focus:border-genesis-blue transition-all"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+            <StepClinicInfo
+              clinicName={clinicName}
+              setClinicName={setClinicName}
+              phone={phone}
+              setPhone={setPhone}
+              address={address}
+              setAddress={setAddress}
+            />
           )}
 
-          {/* Step 2: Specialties */}
           {step === 2 && (
-            <div className="space-y-6">
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-genesis-dark">
-                  Quais especialidades você oferece?
-                </h2>
-                <p className="text-genesis-medium mt-2">
-                  Selecione uma ou mais especialidades
-                </p>
-              </div>
-
-              <div className="grid gap-4">
-                {SPECIALTIES.map(({ id, name, icon: Icon, color }) => {
-                  const isSelected = selectedSpecialties.includes(id);
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => toggleSpecialty(id)}
-                      className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
-                        isSelected
-                          ? 'border-genesis-blue bg-genesis-blue/5'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center`}>
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <span className="font-semibold text-genesis-dark flex-1 text-left">
-                        {name}
-                      </span>
-                      <div
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                          isSelected
-                            ? 'border-genesis-blue bg-genesis-blue'
-                            : 'border-gray-300'
-                        }`}
-                      >
-                        {isSelected && <Check className="w-4 h-4 text-white" />}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <StepSpecialties
+              selectedSpecialties={selectedSpecialties}
+              toggleSpecialty={toggleSpecialty}
+            />
           )}
 
-          {/* Step 3: Settings */}
           {step === 3 && (
-            <div className="space-y-6">
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-genesis-dark">
-                  Configurações de funcionamento
-                </h2>
-                <p className="text-genesis-medium mt-2">
-                  Defina o horário de atendimento
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="workStart" className="block text-sm font-semibold text-genesis-dark mb-2">
-                      Horário de Início
-                    </label>
-                    <div className="relative">
-                      <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-medium" />
-                      <input
-                        id="workStart"
-                        type="time"
-                        value={workStart}
-                        onChange={(e) => setWorkStart(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-genesis-dark focus:outline-none focus:ring-2 focus:ring-genesis-blue/20 focus:border-genesis-blue transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="workEnd" className="block text-sm font-semibold text-genesis-dark mb-2">
-                      Horário de Término
-                    </label>
-                    <div className="relative">
-                      <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-medium" />
-                      <input
-                        id="workEnd"
-                        type="time"
-                        value={workEnd}
-                        onChange={(e) => setWorkEnd(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-genesis-dark focus:outline-none focus:ring-2 focus:ring-genesis-blue/20 focus:border-genesis-blue transition-all"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="duration" className="block text-sm font-semibold text-genesis-dark mb-2">
-                    Duração padrão das consultas
-                  </label>
-                  <select
-                    id="duration"
-                    value={appointmentDuration}
-                    onChange={(e) => setAppointmentDuration(Number(e.target.value))}
-                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-genesis-dark focus:outline-none focus:ring-2 focus:ring-genesis-blue/20 focus:border-genesis-blue transition-all"
-                  >
-                    <option value={15}>15 minutos</option>
-                    <option value={20}>20 minutos</option>
-                    <option value={30}>30 minutos</option>
-                    <option value={45}>45 minutos</option>
-                    <option value={50}>50 minutos</option>
-                    <option value={60}>1 hora</option>
-                  </select>
-                </div>
-
-                <div className="pt-4">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={seedData}
-                      onChange={(e) => setSeedData(e.target.checked)}
-                      className="w-5 h-5 rounded border-gray-300 text-genesis-blue focus:ring-genesis-blue"
-                    />
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-amber-500" />
-                      <span className="text-sm text-genesis-dark">
-                        Adicionar dados de demonstração para explorar o sistema
-                      </span>
-                    </div>
-                  </label>
-                </div>
-              </div>
-            </div>
+            <StepSettings
+              workStart={workStart}
+              setWorkStart={setWorkStart}
+              workEnd={workEnd}
+              setWorkEnd={setWorkEnd}
+              appointmentDuration={appointmentDuration}
+              setAppointmentDuration={setAppointmentDuration}
+              seedData={seedData}
+              setSeedData={setSeedData}
+            />
           )}
 
           {/* Navigation Buttons */}
@@ -415,7 +184,7 @@ export function Onboarding() {
               type="button"
               onClick={handleBack}
               disabled={step === 1}
-              className="flex items-center gap-2 px-6 py-3 text-genesis-medium font-medium hover:text-genesis-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-3 text-genesis-medium font-medium hover:text-genesis-dark transition-colors disabled:opacity-0 cursor-pointer"
             >
               <ChevronLeft className="w-5 h-5" />
               Voltar
@@ -426,7 +195,7 @@ export function Onboarding() {
                 type="button"
                 onClick={handleNext}
                 disabled={(step === 1 && !canProceedStep1) || (step === 2 && !canProceedStep2)}
-                className="flex items-center gap-2 px-6 py-3 bg-genesis-blue text-white font-semibold rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-3 bg-genesis-blue text-white font-semibold rounded-xl hover:bg-blue-600 transition-all hover:scale-105 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20"
               >
                 Continuar
                 <ChevronRight className="w-5 h-5" />
@@ -436,17 +205,17 @@ export function Onboarding() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="flex items-center gap-2 px-8 py-3 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-8 py-3 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600 transition-all hover:scale-105 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed shadow-lg shadow-green-500/20"
               >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Criando...
+                    Criando Clínica...
                   </>
                 ) : (
                   <>
                     <Check className="w-5 h-5" />
-                    Criar Clínica
+                    Finalizar Setup
                   </>
                 )}
               </button>

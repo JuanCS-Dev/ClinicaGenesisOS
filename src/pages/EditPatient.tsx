@@ -6,6 +6,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { Save, User, Phone, ShieldCheck, ChevronRight, Loader2, ArrowLeft } from 'lucide-react';
 import { usePatients } from '../hooks/usePatients';
 import { usePatient } from '../hooks/usePatient';
@@ -97,7 +98,7 @@ export function EditPatient() {
     if (!id) return;
 
     if (!formData.name || !formData.phone) {
-      alert('Preencha os campos obrigatórios.');
+      toast.warning('Preencha os campos obrigatórios.');
       return;
     }
 
@@ -117,7 +118,7 @@ export function EditPatient() {
       navigate(`/patients/${id}`);
     } catch (error) {
       console.error('Error updating patient:', error);
-      alert('Erro ao atualizar paciente. Tente novamente.');
+      toast.error('Erro ao atualizar paciente. Tente novamente.');
       setSaving(false);
     }
   };

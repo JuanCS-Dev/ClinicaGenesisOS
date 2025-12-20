@@ -15,6 +15,7 @@
 
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { CheckCircle2, Mic, Bot } from 'lucide-react';
 import { RecordType, EditorRecordData, AIScribeResult } from '../../types';
 import { RecordingControls } from '../../components/ai/RecordingControls';
@@ -88,13 +89,13 @@ export function SoapEditor({ onSave }: SoapEditorProps) {
     },
     onError: (err) => {
       console.error('AI Scribe error:', err);
-      alert(`Erro no AI Scribe: ${err.message}`);
+      toast.error(`Erro no AI Scribe: ${err.message}`);
     },
   });
 
   const handleSave = () => {
     if (!soap.s && !soap.o) {
-      alert('Preencha pelo menos o campo Subjetivo ou Objetivo.');
+      toast.warning('Preencha pelo menos o campo Subjetivo ou Objetivo.');
       return;
     }
 

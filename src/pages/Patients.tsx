@@ -138,7 +138,8 @@ export function Patients() {
                             patient.avatar ||
                             `https://ui-avatars.com/api/?name=${encodeURIComponent(patient.name)}`
                           }
-                          alt=""
+                          alt={patient.name}
+                          loading="lazy"
                           className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm group-hover:scale-110 transition-transform duration-300"
                         />
                         <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
