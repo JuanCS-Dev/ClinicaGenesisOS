@@ -10,3 +10,5 @@ export { CorrelationCard } from './CorrelationCard';
 export { AnalysisSummary } from './AnalysisSummary';
 export { LabUploadPanel } from './LabUploadPanel';
 export { ClinicalReasoningPanel } from './ClinicalReasoningPanel';
+export { ReferenceCard } from './ReferenceCard';
+export { ReferencesPanel } from './ReferencesPanel';

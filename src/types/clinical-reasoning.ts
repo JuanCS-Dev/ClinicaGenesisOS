@@ -222,6 +222,8 @@ export interface LabAnalysisResult {
   suggestedTests: SuggestedTest[];
   /** Chain of thought reasoning (expandable) */
   chainOfThought: string[];
+  /** Scientific literature backing (async, may arrive after main result) */
+  scientificReferences?: DiagnosisLiterature[];
   /** Mandatory disclaimer */
   disclaimer: string;
   /** Processing metadata */
@@ -321,6 +323,46 @@ export interface CreateLabAnalysisInput {
   labResults: RawLabResult[];
   source: 'ocr' | 'manual' | 'hl7';
   documentUrl?: string;
+}
+
+// ============================================================================
+// SCIENTIFIC LITERATURE TYPES
+// ============================================================================
+
+/**
+ * Scientific article reference for diagnostic backing.
+ */
+export interface ScientificReference {
+  /** Article title */
+  title: string;
+  /** Authors (first author et al.) */
+  authors: string;
+  /** Journal name */
+  journal: string;
+  /** Publication year */
+  year: number;
+  /** DOI or PubMed URL */
+  url: string;
+  /** Abstract excerpt (first 300 chars) */
+  excerpt: string | null;
+  /** Relevance score (0-100) */
+  relevance: number;
+}
+
+/**
+ * Literature backing for a diagnosis.
+ */
+export interface DiagnosisLiterature {
+  /** ICD-10 code */
+  icd10: string;
+  /** Diagnosis name */
+  diagnosisName: string;
+  /** Supporting articles (minimum 2 for medium/high complexity) */
+  articles: ScientificReference[];
+  /** Status of literature search */
+  status: 'pending' | 'ready' | 'not_available';
+  /** Search latency in ms */
+  searchLatencyMs?: number;
 }
 
 // ============================================================================

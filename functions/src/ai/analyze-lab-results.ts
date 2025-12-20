@@ -22,7 +22,10 @@ import {
 import {
   LabAnalysisInput,
   LabAnalysisResult,
+  DifferentialDiagnosis,
+  DiagnosisLiterature,
 } from './types.js';
+import { searchByICD10, type Article } from '../literature/simple-search.js';
 import {
   processLabResults,
   detectRelevantSpecialty,
@@ -36,6 +39,9 @@ import {
 } from './analysis-pipeline.js';
 
 const GEMINI_MODEL = 'gemini-2.5-flash';
+
+/** Minimum confidence threshold for literature backing (skip basic diagnoses) */
+const LITERATURE_CONFIDENCE_THRESHOLD = 95;
 
 /**
  * Cloud Function: Analyze Lab Results
@@ -171,6 +177,16 @@ export const analyzeLabResults = onDocumentCreated(
         });
 
       console.warn(`Lab analysis ${sessionId} completed in ${processingTimeMs}ms`);
+
+      // Step 8: Search for scientific literature backing (async, non-blocking)
+      // Only for medium/high complexity diagnoses (confidence < 95%)
+      fetchLiteratureBacking(
+        sessionRef,
+        differentialDiagnosis,
+        specialty
+      ).catch((err) => {
+        console.warn(`[LiteratureBacking] Non-fatal error: ${err.message}`);
+      });
     } catch (error) {
       console.error(`Error analyzing lab results ${sessionId}:`, error);
 
@@ -182,3 +198,52 @@ export const analyzeLabResults = onDocumentCreated(
     }
   }
 );
+
+/**
+ * Fetch scientific literature backing for diagnoses.
+ * Simple: Europe PMC only, no overengineering.
+ */
+async function fetchLiteratureBacking(
+  sessionRef: FirebaseFirestore.DocumentReference,
+  diagnoses: DifferentialDiagnosis[],
+  _specialty: string
+): Promise<void> {
+  // Only for non-obvious diagnoses (confidence < 95%)
+  const needsBacking = diagnoses.filter(
+    (d) => d.confidence < LITERATURE_CONFIDENCE_THRESHOLD && d.icd10
+  );
+
+  if (needsBacking.length === 0) return;
+
+  console.log(`[Literature] Searching for ${needsBacking.length} diagnoses`);
+
+  const results: DiagnosisLiterature[] = [];
+
+  for (const d of needsBacking) {
+    const articles = await searchByICD10(d.icd10!);
+
+    results.push({
+      icd10: d.icd10!,
+      diagnosisName: d.name,
+      articles: articles.map((a: Article) => ({
+        title: a.title,
+        authors: a.authors,
+        journal: a.journal,
+        year: a.year,
+        url: a.url,
+        excerpt: null,
+        relevance: Math.min(100, 50 + Math.log10(a.citations + 1) * 15),
+      })),
+      status: articles.length >= 2 ? 'ready' : 'not_available',
+    });
+  }
+
+  const withArticles = results.filter((r) => r.status === 'ready');
+  if (withArticles.length > 0) {
+    await sessionRef.update({
+      'result.scientificReferences': results,
+      literatureBackingCompletedAt: new Date().toISOString(),
+    });
+    console.log(`[Literature] Added ${withArticles.length} references`);
+  }
+}
