@@ -42,7 +42,7 @@ export async function searchByICD10(icd10: string): Promise<Article[]> {
   const condition = CONDITIONS[icd10] || CONDITIONS[prefix];
 
   if (!condition) {
-    console.log(`[Literature] No mapping for ${icd10}`);
+    console.warn(`[Literature] No mapping for ${icd10}`);
     return [];
   }
 
@@ -57,7 +57,7 @@ async function searchEuropePMC(term: string): Promise<Article[]> {
   const query = encodeURIComponent(`"${term}" AND (diagnosis OR treatment OR management OR guidelines)`);
   const url = `https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=${query}&format=json&pageSize=5&sort=CITED%20desc`;
 
-  console.log(`[Literature] Searching: ${term}`);
+  // Debug logging for Europe PMC search
 
   try {
     const res = await fetch(url);

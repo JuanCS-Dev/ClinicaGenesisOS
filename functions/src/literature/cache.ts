@@ -40,7 +40,7 @@ export async function getCachedResults(
     const isExpired = Date.now() - cachedAt.getTime() > ttlMs;
 
     if (isExpired) {
-      console.log(`[LiteratureCache] Cache expired for ${cacheKey}`);
+      // Cache entry has expired
       return null;
     }
 
@@ -49,7 +49,7 @@ export async function getCachedResults(
       // Ignore update errors
     });
 
-    console.log(`[LiteratureCache] Cache hit for ${cacheKey}`);
+    // Cache hit
     return data.articles;
   } catch (error) {
     console.error('[LiteratureCache] Get error:', error);
@@ -80,7 +80,7 @@ export async function setCachedResults(
     };
 
     await db.collection(COLLECTION).doc(cacheKey).set(entry);
-    console.log(`[LiteratureCache] Cached ${articles.length} articles for ${cacheKey}`);
+    // Articles cached successfully
   } catch (error) {
     console.error('[LiteratureCache] Set error:', error);
     // Non-fatal: continue without caching
@@ -94,7 +94,7 @@ export async function invalidateCache(cacheKey: string): Promise<void> {
   try {
     const db = getFirestore();
     await db.collection(COLLECTION).doc(cacheKey).delete();
-    console.log(`[LiteratureCache] Invalidated cache for ${cacheKey}`);
+    // Cache invalidated
   } catch (error) {
     console.error('[LiteratureCache] Invalidate error:', error);
   }

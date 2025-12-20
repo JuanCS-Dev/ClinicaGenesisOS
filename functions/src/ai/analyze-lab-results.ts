@@ -215,7 +215,7 @@ async function fetchLiteratureBacking(
 
   if (needsBacking.length === 0) return;
 
-  console.log(`[Literature] Searching for ${needsBacking.length} diagnoses`);
+  // Searching literature for diagnoses that need backing
 
   const results: DiagnosisLiterature[] = [];
 
@@ -244,6 +244,6 @@ async function fetchLiteratureBacking(
       'result.scientificReferences': results,
       literatureBackingCompletedAt: new Date().toISOString(),
     });
-    console.log(`[Literature] Added ${withArticles.length} references`);
+    // Literature backing completed successfully
   }
 }

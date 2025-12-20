@@ -47,8 +47,7 @@ export async function searchLiterature(
   const pubmedQuery = buildPubMedQuery(query);
   const europepmcQuery = buildEuropePMCQuery(query);
 
-  console.log('[LiteratureSearch] PubMed query:', pubmedQuery);
-  console.log('[LiteratureSearch] EuropePMC query:', europepmcQuery);
+  // PubMed and EuropePMC queries built
 
   // Search both APIs in parallel with timeout
   const [pubmedResults, europepmcResults] = await Promise.all([
@@ -70,9 +69,7 @@ export async function searchLiterature(
     }),
   ]);
 
-  console.log(
-    `[LiteratureSearch] Found: PubMed=${pubmedResults.length}, EuropePMC=${europepmcResults.length}`
-  );
+  // Results fetched from both APIs
 
   // Merge and process results
   const allArticles = [...pubmedResults, ...europepmcResults];
