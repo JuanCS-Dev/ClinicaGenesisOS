@@ -34,7 +34,7 @@ const client = new GoogleGenAI({
 
 ## 📊 STATUS DE IMPLEMENTAÇÃO
 
-> Última atualização: 2025-12-19 (AI Scribe: Arquitetura simplificada - Gemini Audio nativo!)
+> Última atualização: 2025-12-20 (Clinical Reasoning Engine 3.3.1 ✅ + Scientific Literature Backing 3.3.7 planejado)
 
 | Fase | Status | Progresso |
 |------|--------|-----------|
@@ -44,7 +44,7 @@ const client = new GoogleGenAI({
 | **Fase 1.3: Banco de Dados** | ✅ Completa | 100% |
 | **Fase 1.4: Test Coverage 90%+** | ✅ Completa | 100% |
 | **Fase 2: Core Features** | ✅ Completa | 100% |
-| **Fase 3: AI Integration** | 🔄 Em Progresso | 85% |
+| **Fase 3: AI Integration** | 🔄 Em Progresso | 90% |
 | **Fase 4: Financeiro** | 🔲 Pendente | 0% |
 | **Fase 5: Polish & Launch** | 🔲 Pendente | 0% |
 
@@ -637,20 +637,27 @@ export { onAppointmentCreated, onAppointmentUpdated } from './scheduler/triggers
 
 > **Deep Research realizada em 18/12/2025** - Ver `docs/FASE3_AI_DEEP_RESEARCH.md` para detalhes completos.
 
-#### Resumo Executivo - ATUALIZADO 19/12/2025
+#### Resumo Executivo - ATUALIZADO 20/12/2025
 
 | Feature | ROI Esperado | Complexidade | Sprints | Status |
 |---------|-------------|--------------|---------|--------|
 | **3.1 WhatsApp Lembretes** | -30% no-shows | Média | 2 | ✅ 100% |
 | **3.2 AI Scribe MVP** | -14 min/dia/médico | Média | 2 | ✅ 100% |
-| **3.3 Clinical Reasoning Engine** | -50% erros diagnósticos | **Alta** | **3** | 📋 Planejado |
+| **3.3 Clinical Reasoning Engine** | -50% erros diagnósticos | **Alta** | **3** | ✅ 3.3.1 OK |
+| **3.3.7 Scientific Literature Backing** | +Credibilidade/Defensibilidade | Baixa | 1 | 📋 Planejado |
 
-**🆕 Fase 3.3 - Clinical Reasoning Engine**:
-- Deep research completa (14 agentes, 12 eixos científicos)
-- Arquitetura 4 camadas hierárquicas definida
-- Roadmap 2025-2030 com targets quantificados
-- Lições aprendidas de casos reais (TREWS, Paige, Watson)
-- ~4,500 linhas de código estimadas (15 dias dev)
+**✅ Fase 3.3.1 - Clinical Reasoning Engine (Completa)**:
+- Pipeline 4 camadas funcionando (OCR → Extração → Raciocínio → Formatação)
+- 12 analisadores de biomarcadores implementados
+- 6 detectores de padrões de correlação
+- E2E testado com Vertex AI: 92.5s, diagnóstico diferencial preciso
+- Deploy em produção: `analyzeLabResults` Cloud Function
+
+**📋 Fase 3.3.7 - Scientific Literature Backing (Próximo)**:
+- Respaldo com artigos PubMed/Europe PMC/Semantic Scholar
+- Async: diagnóstico aparece primeiro, artigos depois
+- Mínimo 2 artigos peer-reviewed por diagnóstico médio/difícil
+- Custo: negligível (~R$ 0.01/análise, APIs gratuitas + cache)
 
 **Stack AI**: Firebase AI Logic + Gemini 2.5 Flash (áudio nativo) - ~~Speech-to-Text não necessário~~
 
@@ -926,6 +933,7 @@ src/types/index.ts            # +AIScribeResult, AIScribeStatus
 | **3.3.4** | Correlações automáticas entre marcadores | Pattern matching + LLM |
 | **3.3.5** | Imaging analysis (Raio-X, CT básico) | Gemini Vision + BiomedCLIP concepts |
 | **3.3.6** | Diagnóstico diferencial rankeado | Hierarchical prompting |
+| **3.3.7** | Respaldo científico (artigos PubMed/PMC) | PubMed API + Semantic Scholar |
 | **Futuro** | Genômica (PRS, VUS) | Integração gnomAD/ClinVar |
 
 ---
@@ -1517,6 +1525,156 @@ interface ValidationMetrics {
 | 6.6 | 2028 | FDA 510(k) ou De Novo submission | Regulatório |
 | 6.7 | 2029 | Triage autônomo (low-risk conditions) | Muito Alta |
 | 6.8 | 2030 | Diagnóstico doenças raras <24h (vs 5-7 anos atual) | Revolucionário |
+
+---
+
+**FASE 3.3.7 - Scientific Literature Backing (Q1 2026)**
+
+> Respaldo científico para diagnósticos médios/difíceis com artigos peer-reviewed
+
+**Justificativa**:
+- AI será sempre o "bode expiatório" mais fácil quando algo der errado
+- Médico precisa de evidência para se respaldar perante pacientes, convênios e conselhos
+- Artigos são adicionados **APÓS** o diagnóstico (não influenciam o raciocínio - evita anchoring bias)
+- "Onde dois ou mais estiverem reunidos" - validação por pares é princípio científico fundamental
+
+**Critérios de Aplicação**:
+
+| Complexidade Diagnóstica | Artigos Necessários | Justificativa |
+|--------------------------|---------------------|---------------|
+| Básica (Glicose alta → DM2) | 0 | Médico chega intuitivamente, AI apenas confirma |
+| Média (Padrões metabólicos) | 2+ | Correlações não-óbvias, respaldo útil |
+| Alta (DDx complexo, raro) | 2+ | Essencial para defensibilidade clínica |
+
+**APIs Disponíveis (Pesquisa Dezembro 2025)**:
+
+| API | Rate Limit | Custo | Cobertura | Melhor Para |
+|-----|------------|-------|-----------|-------------|
+| **PubMed E-utilities** | 3/s (10/s com key) | Grátis | 35M+ artigos | Literatura médica geral |
+| **Europe PMC** | Generoso | Grátis | 33M+ artigos | Biomedicina, full-text OA |
+| **Semantic Scholar** | 1 RPS (com key) | Grátis | 200M+ papers | ML-powered ranking |
+
+**Fontes**:
+- [NCBI E-utilities](https://www.ncbi.nlm.nih.gov/books/NBK25497/)
+- [Europe PMC REST API](https://europepmc.org/RestfulWebService)
+- [Semantic Scholar API](https://www.semanticscholar.org/product/api)
+
+**Arquitetura Proposta**:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    SCIENTIFIC BACKING PIPELINE                           │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  ┌── TRIGGER ───────────────────────────────────────────────────────┐   │
+│  │  Diagnóstico completo (status: ready)                            │   │
+│  │  Complexidade ≥ média (confiança < 95% OU DDx ≥ 2)               │   │
+│  └──────────────────────────────────────────────────────────────────┘   │
+│                              │                                           │
+│                              ▼                                           │
+│  ┌── QUERY BUILDER ─────────────────────────────────────────────────┐   │
+│  │  Para cada diagnóstico:                                          │   │
+│  │  • ICD-10 code + nome condição                                   │   │
+│  │  • Biomarcadores relevantes                                      │   │
+│  │  • Contexto: specialty, patient demographics                     │   │
+│  │                                                                   │   │
+│  │  Query: "Diabetes Mellitus Type 2 HbA1c diagnostic criteria"     │   │
+│  └──────────────────────────────────────────────────────────────────┘   │
+│                              │                                           │
+│                              ▼                                           │
+│  ┌── API LAYER (Parallel) ──────────────────────────────────────────┐   │
+│  │                                                                   │   │
+│  │  ┌─ PubMed ─────┐  ┌─ Europe PMC ───┐  ┌─ Semantic Scholar ─┐   │   │
+│  │  │ ESearch API  │  │ REST Search    │  │ Relevance Search   │   │   │
+│  │  │ → PMIDs      │  │ → Full metadata│  │ → ML-ranked        │   │   │
+│  │  └──────────────┘  └────────────────┘  └────────────────────┘   │   │
+│  │                              │                                   │   │
+│  │                              ▼                                   │   │
+│  │  ┌─ DEDUPLICATION + RANKING ────────────────────────────────┐   │   │
+│  │  │ • Merge by DOI/PMID                                       │   │   │
+│  │  │ • Score: citations × recency × journal impact             │   │   │
+│  │  │ • Filter: peer-reviewed only, last 10 years               │   │   │
+│  │  └───────────────────────────────────────────────────────────┘   │   │
+│  │                                                                   │   │
+│  └──────────────────────────────────────────────────────────────────┘   │
+│                              │                                           │
+│                              ▼                                           │
+│  ┌── VALIDATION ────────────────────────────────────────────────────┐   │
+│  │  • DOI resolution check (artigo existe?)                         │   │
+│  │  • Journal whitelist (NEJM, Lancet, JAMA, BMJ, Diabetes Care...) │   │
+│  │  • Retraction check (via Retraction Watch API)                   │   │
+│  │  • Minimum citations: 10+ para artigos > 2 anos                  │   │
+│  └──────────────────────────────────────────────────────────────────┘   │
+│                              │                                           │
+│                              ▼                                           │
+│  ┌── OUTPUT ────────────────────────────────────────────────────────┐   │
+│  │  Por diagnóstico (mínimo 2 artigos):                             │   │
+│  │  • Título, autores (et al.), journal, ano                        │   │
+│  │  • DOI (link clicável)                                           │   │
+│  │  • Snippet relevante (abstract excerpt)                          │   │
+│  │  • Citation count, journal impact factor                         │   │
+│  └──────────────────────────────────────────────────────────────────┘   │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**UX Flow (Async)**:
+
+```
+[Diagnóstico aparece] → Médico já pode agir
+       ↓
+[Background: busca artigos ~2-3s]
+       ↓
+[UI atualiza] → Ícone 📚 "Referências disponíveis"
+       ↓
+[Click expande] → Lista de artigos por diagnóstico
+```
+
+**Análise de Custos**:
+
+| Item | Custo |
+|------|-------|
+| PubMed API | Grátis |
+| Europe PMC API | Grátis |
+| Semantic Scholar | Grátis |
+| Gemini Flash (resumo/ranking) | ~500 tokens × 4 diag = ~$0.0003/análise |
+| Cache (ICD-10 + specialty) | 80%+ hit após 1 mês |
+
+**Custo total estimado**: Negligível (~R$ 0.01/análise)
+
+**Implementação**:
+
+| Sprint | Tarefa | Arquivos |
+|--------|--------|----------|
+| 1 | API clients (PubMed, PMC, Semantic Scholar) | `functions/src/literature/*.ts` |
+| 1 | Query builder por ICD-10 | `functions/src/literature/query-builder.ts` |
+| 1 | Caching layer (Firestore) | `functions/src/literature/cache.ts` |
+| 2 | Deduplication + ranking | `functions/src/literature/ranking.ts` |
+| 2 | DOI validation | `functions/src/literature/validation.ts` |
+| 2 | Integration com analyze-lab-results | `functions/src/ai/analyze-lab-results.ts` |
+| 3 | Frontend: ReferenceCard component | `src/components/ai/clinical-reasoning/ReferenceCard.tsx` |
+| 3 | Frontend: ReferencesPanel (collapsible) | `src/components/ai/clinical-reasoning/ReferencesPanel.tsx` |
+| 3 | E2E tests | 10 diagnósticos com validação manual de artigos |
+
+**Riscos e Mitigações**:
+
+| Risco | Mitigação |
+|-------|-----------|
+| API fora do ar | Fallback entre APIs, diagnóstico funciona sem artigos |
+| Artigo não encontrado | "Referências em processamento..." ou omitir |
+| Hallucination (Gemini inventa artigo) | NUNCA usar LLM para gerar citações, apenas APIs reais |
+| Rate limiting | Cache agressivo por ICD-10, retry com backoff |
+| Artigo retratado | Check via Retraction Watch antes de exibir |
+
+**Métricas de Sucesso**:
+
+| Métrica | Target |
+|---------|--------|
+| Artigos encontrados por diagnóstico | ≥ 2 |
+| Tempo de busca (async) | < 3s |
+| Taxa de cache hit após 30 dias | > 80% |
+| Artigos de journals tier-1 | > 50% |
+| Zero artigos fabricados | 100% |
 
 ---
 
