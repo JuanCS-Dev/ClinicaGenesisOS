@@ -105,8 +105,8 @@ export const Landing: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <button 
-              onClick={() => navigate('/dashboard')}
+            <button
+              onClick={() => navigate('/login')}
               className="hidden md:block text-xs font-bold uppercase tracking-wider text-genesis-dark hover:text-genesis-blue transition-colors"
             >
               Login
@@ -169,7 +169,7 @@ export const Landing: React.FC = () => {
               Agendar Demonstração
             </button>
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/demo')}
               className="px-8 py-4 bg-white text-genesis-dark border border-gray-200 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-all min-w-[200px] flex items-center justify-center gap-2"
             >
               Ver o Sistema <ArrowRight className="w-4 h-4" />

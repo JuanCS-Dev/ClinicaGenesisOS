@@ -87,6 +87,24 @@ function AppLayout() {
   );
 }
 
+/**
+ * Demo layout - same as AppLayout but without auth requirement.
+ * For demonstration purposes only.
+ */
+function DemoLayout() {
+  return (
+    <div className="min-h-screen bg-[#F5F5F7] flex font-sans text-genesis-dark selection:bg-genesis-blue/20 selection:text-genesis-blue">
+      <Sidebar />
+      <div className="flex-1 ml-64 flex flex-col min-w-0 transition-all duration-300">
+        <Header />
+        <main className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   return (
     <AuthProvider>
@@ -102,6 +120,16 @@ function App() {
             {/* Auth Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+
+            {/* Demo Routes - No auth required */}
+            <Route element={<DemoLayout />}>
+              <Route path="/demo" element={<Dashboard />} />
+              <Route path="/demo/agenda" element={<Agenda />} />
+              <Route path="/demo/patients" element={<Patients />} />
+              <Route path="/demo/finance" element={<Finance />} />
+              <Route path="/demo/reports" element={<Reports />} />
+              <Route path="/demo/whatsapp" element={<WhatsAppMetrics />} />
+            </Route>
 
             {/* Onboarding Route (requires auth, but no clinic) */}
             <Route

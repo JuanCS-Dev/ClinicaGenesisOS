@@ -163,6 +163,17 @@ export function ClinicProvider({ children }: ClinicProviderProps) {
         await seedClinicData(clinicId, professionalName);
       }
 
+      // Fetch the updated profile and clinic to update state immediately
+      const updatedProfile = await userService.getById(user.uid);
+      if (updatedProfile) {
+        setUserProfile(updatedProfile);
+      }
+
+      const newClinic = await clinicService.getById(clinicId);
+      if (newClinic) {
+        setClinic(newClinic);
+      }
+
       return clinicId;
     },
     [user, userProfile]
