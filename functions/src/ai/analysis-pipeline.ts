@@ -5,8 +5,10 @@
  * Implements the 4-layer clinical reasoning pipeline:
  * Layer 1: Triage (urgency classification)
  * Layer 2: Specialty Investigation (focused analysis)
- * Layer 3: Multimodal Fusion (integrate all data)
+ * Layer 3: Multimodal Fusion (integrate all data) + Multi-LLM Consensus
  * Layer 4: Explainability (validation + XAI)
+ *
+ * Updated in Fase 3.3.8 to support Multi-LLM Consensus (Gemini + GPT-4o-mini)
  */
 
 import { getVertexAIClient } from '../utils/config.js';
@@ -28,7 +30,20 @@ import {
   SuggestedTest,
   PatientContext,
   ClinicalSpecialty,
+  ConsensusDiagnosis,
+  ConsensusMetrics,
 } from './types.js';
+import {
+  callAzureOpenAI,
+  parseAzureResponse,
+  isAzureOpenAIConfigured,
+} from './azure-openai-client.js';
+import {
+  aggregateDiagnoses,
+  toDiagnosisInput,
+  fallbackToSingleModel,
+  type ModelDiagnosisInput,
+} from './multi-llm-aggregator.js';
 import { formatMarkersForPrompt, formatPatientContext } from './analysis-utils.js';
 
 const GEMINI_MODEL = 'gemini-2.5-flash';
@@ -120,7 +135,24 @@ export async function runSpecialtyLayer(
 }
 
 /**
- * Run Layer 3: Multimodal Fusion.
+ * GPT-4o-mini Challenger prompt for multi-LLM consensus.
+ */
+const GPT_CHALLENGER_SYSTEM_PROMPT = `Você é um médico especialista revisando uma análise de exames laboratoriais.
+
+Sua tarefa é gerar um diagnóstico diferencial independente, baseado nos dados clínicos.
+Seja crítico e considere diagnósticos que podem ter sido negligenciados.
+
+IMPORTANTE:
+- Retorne EXATAMENTE 5 diagnósticos
+- Use terminologia médica em português
+- Inclua ICD-10 quando possível
+- Base suas conclusões nas evidências apresentadas`;
+
+/**
+ * Run Layer 3: Multimodal Fusion with Multi-LLM Consensus.
+ *
+ * Fase 3.3.8: Calls both Gemini and GPT-4o-mini in parallel,
+ * then aggregates results using 1/r weighted method.
  */
 export async function runFusionLayer(
   client: Awaited<ReturnType<typeof getVertexAIClient>>,
@@ -130,9 +162,10 @@ export async function runFusionLayer(
   correlations: ClinicalCorrelation[],
   specialtyAnalysis: unknown
 ): Promise<{
-  differentialDiagnosis: DifferentialDiagnosis[];
+  differentialDiagnosis: ConsensusDiagnosis[];
   investigativeQuestions: InvestigativeQuestion[];
   suggestedTests: SuggestedTest[];
+  consensusMetrics?: ConsensusMetrics;
 }> {
   const prompt = FUSION_USER_PROMPT
     .replace('{{patientSummary}}', formatPatientContext(patientContext))
@@ -145,22 +178,71 @@ export async function runFusionLayer(
     .replace('{{specialtyAnalysis}}', JSON.stringify(specialtyAnalysis))
     .replace('{{correlations}}', correlations.map(c => c.pattern).join('\n'));
 
-  const response = await client.models.generateContent({
-    model: GEMINI_MODEL,
-    config: {
-      systemInstruction: FUSION_SYSTEM_PROMPT,
-      temperature: 0.2,
-    },
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-  });
+  // Prepare GPT-4o challenger prompt
+  const gptUserPrompt = `DADOS DO PACIENTE:
+${formatPatientContext(patientContext)}
 
-  const text = response.text || '';
-  const jsonStr = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+EXAMES LABORATORIAIS:
+${formatMarkersForPrompt(markers)}
 
-  try {
-    const parsed = JSON.parse(jsonStr);
-    return {
-      differentialDiagnosis: (parsed.differentialDiagnosis || []).map((d: {
+TRIAGEM:
+- Urgência: ${triageResult.urgency}
+- Red Flags: ${triageResult.redFlags.map(r => r.description).join(', ') || 'Nenhum'}
+
+CORRELAÇÕES IDENTIFICADAS:
+${correlations.map(c => c.pattern).join('\n') || 'Nenhuma'}
+
+TAREFA: Gere um diagnóstico diferencial com 5 hipóteses, ordenadas por probabilidade.
+
+FORMATO DE SAÍDA (JSON):
+{
+  "differentialDiagnosis": [
+    {
+      "name": "Nome do diagnóstico",
+      "icd10": "X00.0",
+      "confidence": 85,
+      "supportingEvidence": ["evidência 1", "evidência 2"],
+      "contradictingEvidence": ["se houver"],
+      "suggestedTests": ["exame adicional"]
+    }
+  ]
+}`;
+
+  // Call both models in parallel
+  const startTime = Date.now();
+  const [geminiResult, gptResult] = await Promise.allSettled([
+    // Gemini 2.5 Flash (primary)
+    client.models.generateContent({
+      model: GEMINI_MODEL,
+      config: {
+        systemInstruction: FUSION_SYSTEM_PROMPT,
+        temperature: 0.2,
+      },
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    }),
+    // GPT-4o-mini (challenger) - only if configured
+    isAzureOpenAIConfigured()
+      ? callAzureOpenAI(GPT_CHALLENGER_SYSTEM_PROMPT, gptUserPrompt, {
+          temperature: 0.2,
+          responseFormat: 'json',
+        })
+      : Promise.resolve(null),
+  ]);
+
+  const geminiTimeMs = Date.now() - startTime;
+
+  // Parse Gemini response
+  let geminiDiagnoses: DifferentialDiagnosis[] = [];
+  let investigativeQuestions: InvestigativeQuestion[] = [];
+  let suggestedTests: SuggestedTest[] = [];
+
+  if (geminiResult.status === 'fulfilled' && geminiResult.value) {
+    const text = geminiResult.value.text || '';
+    const jsonStr = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+    try {
+      const parsed = JSON.parse(jsonStr);
+      geminiDiagnoses = (parsed.differentialDiagnosis || []).map((d: {
         name: string;
         icd10?: string;
         confidence: number;
@@ -174,9 +256,9 @@ export async function runFusionLayer(
         supportingEvidence: d.supportingEvidence?.map(e => e.finding) || [],
         contradictingEvidence: d.contradictingEvidence?.map(e => e.finding) || [],
         suggestedTests: d.suggestedTests?.map(t => t.name) || [],
-      })),
-      investigativeQuestions: parsed.investigativeQuestions || [],
-      suggestedTests: (parsed.additionalTests || []).map((t: {
+      }));
+      investigativeQuestions = parsed.investigativeQuestions || [];
+      suggestedTests = (parsed.additionalTests || []).map((t: {
         test: string;
         rationale: string;
         urgency: string;
@@ -186,11 +268,81 @@ export async function runFusionLayer(
         rationale: t.rationale,
         urgency: t.urgency,
         investigates: t.investigates,
-      })),
-    };
-  } catch {
-    return { differentialDiagnosis: [], investigativeQuestions: [], suggestedTests: [] };
+      }));
+    } catch {
+      console.error('[FusionLayer] Failed to parse Gemini response');
+    }
   }
+
+  // Parse GPT-4o response
+  let gptDiagnoses: ModelDiagnosisInput[] = [];
+  let gptTimeMs = 0;
+
+  if (gptResult.status === 'fulfilled' && gptResult.value) {
+    gptTimeMs = Date.now() - startTime - geminiTimeMs;
+    const parsed = parseAzureResponse<{
+      differentialDiagnosis: Array<{
+        name: string;
+        icd10?: string;
+        confidence: number;
+        supportingEvidence: string[];
+        contradictingEvidence?: string[];
+        suggestedTests?: string[];
+      }>;
+    }>(gptResult.value);
+
+    if (parsed?.differentialDiagnosis) {
+      gptDiagnoses = parsed.differentialDiagnosis.map((d, idx) => ({
+        name: d.name,
+        rank: idx + 1,
+        confidence: d.confidence,
+        icd10: d.icd10,
+        supportingEvidence: d.supportingEvidence || [],
+        contradictingEvidence: d.contradictingEvidence,
+        suggestedTests: d.suggestedTests,
+      }));
+    }
+  }
+
+  // Aggregate diagnoses using 1/r weighted method
+  let consensusDiagnoses: ConsensusDiagnosis[];
+  let consensusMetrics: ConsensusMetrics;
+
+  if (gptDiagnoses.length > 0) {
+    // Multi-LLM consensus
+    const geminiInputs = toDiagnosisInput(geminiDiagnoses);
+    const result = aggregateDiagnoses(geminiInputs, gptDiagnoses);
+    consensusDiagnoses = result.diagnoses;
+    consensusMetrics = {
+      ...result.metrics,
+      modelTimings: {
+        gemini: geminiTimeMs,
+        gpt4o: gptTimeMs,
+      },
+    };
+
+    console.warn(
+      `[FusionLayer] Multi-LLM consensus: ${consensusMetrics.strongConsensusRate}% strong, ` +
+      `${consensusMetrics.divergentCount} divergent`
+    );
+  } else {
+    // Fallback to single model
+    const result = fallbackToSingleModel(geminiDiagnoses);
+    consensusDiagnoses = result.diagnoses;
+    consensusMetrics = {
+      ...result.metrics,
+      modelTimings: { gemini: geminiTimeMs },
+    };
+
+    console.warn('[FusionLayer] Single model fallback (GPT-4o unavailable)');
+  }
+
+  return {
+    differentialDiagnosis: consensusDiagnoses,
+    investigativeQuestions,
+    suggestedTests,
+    consensusMetrics,
+  };
 }
 
 /**

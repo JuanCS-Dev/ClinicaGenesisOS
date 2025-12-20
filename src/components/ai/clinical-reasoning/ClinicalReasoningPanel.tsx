@@ -20,11 +20,23 @@ import { LabUploadPanel } from './LabUploadPanel';
 import { AnalysisSummary } from './AnalysisSummary';
 import { BiomarkerCard } from './BiomarkerCard';
 import { CorrelationCard } from './CorrelationCard';
+import { ConsensusBadge, ModelComparison } from './ConsensusBadge';
 import type {
   PatientContext,
   ClinicalAnalysisTab,
   LabAnalysisResult,
+  ConsensusDiagnosis,
+  DifferentialDiagnosis,
 } from '../../../types';
+
+/**
+ * Type guard to check if a diagnosis has consensus information.
+ */
+function hasConsensusInfo(
+  dx: DifferentialDiagnosis | ConsensusDiagnosis
+): dx is ConsensusDiagnosis {
+  return 'consensusLevel' in dx;
+}
 
 interface ClinicalReasoningPanelProps {
   /** Patient ID for analysis. */
@@ -262,21 +274,52 @@ export function ClinicalReasoningPanel({
 
             {activeTab === 'differential' && (
               <div className="space-y-4">
+                {/* Consensus metrics summary */}
+                {displayResult.consensusMetrics && (
+                  <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-indigo-700 font-medium">
+                        Consenso Multi-LLM
+                      </span>
+                      <span className="text-indigo-600">
+                        {displayResult.consensusMetrics.strongConsensusRate}% consenso forte
+                      </span>
+                    </div>
+                    <p className="text-xs text-indigo-500 mt-1">
+                      Modelos: {displayResult.consensusMetrics.modelsUsed.join(', ')}
+                    </p>
+                  </div>
+                )}
+
                 {displayResult.differentialDiagnosis.map((dx, idx) => (
                   <div
                     key={idx}
-                    className="p-4 bg-white rounded-lg border"
+                    className={`p-4 bg-white rounded-lg border ${
+                      hasConsensusInfo(dx) && dx.consensusLevel === 'divergent'
+                        ? 'border-red-200 bg-red-50'
+                        : ''
+                    }`}
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="font-medium text-gray-900">
-                          {idx + 1}. {dx.name}
-                        </h4>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-medium text-gray-900">
+                            {idx + 1}. {dx.name}
+                          </h4>
+                          {hasConsensusInfo(dx) && (
+                            <ConsensusBadge level={dx.consensusLevel} size="sm" />
+                          )}
+                        </div>
                         {dx.icd10 && (
                           <p className="text-xs text-gray-400">CID-10: {dx.icd10}</p>
                         )}
                       </div>
-                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm font-medium">
+                      <span className={`px-2 py-1 rounded text-sm font-medium ${
+                        dx.confidence >= 80 ? 'bg-emerald-100 text-emerald-700' :
+                        dx.confidence >= 60 ? 'bg-blue-100 text-blue-700' :
+                        dx.confidence >= 40 ? 'bg-amber-100 text-amber-700' :
+                        'bg-gray-100 text-gray-600'
+                      }`}>
                         {dx.confidence}%
                       </span>
                     </div>
@@ -291,6 +334,13 @@ export function ClinicalReasoningPanel({
                           ))}
                         </ul>
                       </div>
+                    )}
+                    {/* Model comparison details */}
+                    {hasConsensusInfo(dx) && (
+                      <ModelComparison
+                        gemini={dx.modelDetails.gemini}
+                        gpt4o={dx.modelDetails.gpt4o}
+                      />
                     )}
                   </div>
                 ))}

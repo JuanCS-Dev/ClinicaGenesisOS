@@ -12,3 +12,4 @@ export { LabUploadPanel } from './LabUploadPanel';
 export { ClinicalReasoningPanel } from './ClinicalReasoningPanel';
 export { ReferenceCard } from './ReferenceCard';
 export { ReferencesPanel } from './ReferencesPanel';
+export { ConsensusBadge, ModelComparison } from './ConsensusBadge';

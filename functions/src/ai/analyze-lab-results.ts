@@ -115,8 +115,8 @@ export const analyzeLabResults = onDocumentCreated(
         client, specialty, markers, sessionData.patientContext
       );
 
-      // Step 6: Layer 3 - Multimodal Fusion
-      const { differentialDiagnosis, investigativeQuestions, suggestedTests } =
+      // Step 6: Layer 3 - Multimodal Fusion + Multi-LLM Consensus
+      const { differentialDiagnosis, investigativeQuestions, suggestedTests, consensusMetrics } =
         await runFusionLayer(
           client, markers, sessionData.patientContext,
           triage, correlations, specialtyFindings
@@ -144,11 +144,13 @@ export const analyzeLabResults = onDocumentCreated(
         disclaimer: DISCLAIMERS.full,
         metadata: {
           processingTimeMs,
-          model: GEMINI_MODEL,
+          model: consensusMetrics?.modelsUsed.join(' + ') || GEMINI_MODEL,
           promptVersion: getCombinedPromptVersion(),
           inputTokens: 0,
           outputTokens: 0,
         },
+        // Multi-LLM Consensus metrics (Fase 3.3.8)
+        consensusMetrics,
       };
 
       // Update session with result
