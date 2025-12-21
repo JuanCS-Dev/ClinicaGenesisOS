@@ -29,6 +29,8 @@ interface DraggableDayViewProps {
   hours: number[];
   /** Callback when an appointment is rescheduled */
   onReschedule?: (appointmentId: string, newDate: Date) => Promise<void>;
+  /** Callback to start a telemedicine session */
+  onStartTelemedicine?: (appointment: Appointment) => void;
 }
 
 /**
@@ -63,9 +65,11 @@ function DroppableHourSlot({
 function DraggableAppointment({
   appointment,
   isDragging,
+  onStartTelemedicine,
 }: {
   appointment: Appointment;
   isDragging: boolean;
+  onStartTelemedicine?: (appointment: Appointment) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: appointment.id,
@@ -86,7 +90,10 @@ function DraggableAppointment({
       {...attributes}
       className={`absolute top-2 left-2 right-4 bottom-2 ${isDragging ? 'opacity-50' : ''}`}
     >
-      <AppointmentCard appointment={appointment} />
+      <AppointmentCard
+        appointment={appointment}
+        onStartTelemedicine={onStartTelemedicine}
+      />
     </div>
   );
 }
@@ -99,6 +106,7 @@ export function DraggableDayView({
   appointments,
   hours,
   onReschedule,
+  onStartTelemedicine,
 }: DraggableDayViewProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
@@ -195,6 +203,7 @@ export function DraggableDayView({
                     <DraggableAppointment
                       appointment={app}
                       isDragging={activeId === app.id}
+                      onStartTelemedicine={onStartTelemedicine}
                     />
                   </React.Fragment>
                 ))}

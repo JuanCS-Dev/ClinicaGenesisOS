@@ -23,7 +23,7 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useAppointments } from '../hooks/useAppointments';
-import { Status, type SpecialtyType } from '@/types';
+import { Status, type SpecialtyType, type Appointment } from '@/types';
 import {
   DraggableDayView,
   WeekView,
@@ -31,6 +31,7 @@ import {
   FilterPanel,
   type LocalFilters,
 } from '../components/agenda';
+import { TelemedicineModal } from '../components/telemedicine';
 import { expandRecurringAppointments } from '@/lib/recurrence';
 
 /** View modes for the agenda. */
@@ -55,6 +56,10 @@ export function Agenda() {
     specialties: [],
   });
   const filterRef = useRef<HTMLDivElement>(null);
+
+  // Telemedicine modal state
+  const [telemedicineModalOpen, setTelemedicineModalOpen] = useState(false);
+  const [selectedAppointmentForTele, setSelectedAppointmentForTele] = useState<Appointment | null>(null);
 
   // For week view, we need all appointments (no date filter)
   // For day view, we filter by specific date
@@ -263,6 +268,22 @@ export function Agenda() {
   );
 
   /**
+   * Handle starting a telemedicine session from an appointment.
+   */
+  const handleStartTelemedicine = useCallback((appointment: Appointment) => {
+    setSelectedAppointmentForTele(appointment);
+    setTelemedicineModalOpen(true);
+  }, []);
+
+  /**
+   * Handle closing the telemedicine modal.
+   */
+  const handleCloseTelemedicine = useCallback(() => {
+    setTelemedicineModalOpen(false);
+    setSelectedAppointmentForTele(null);
+  }, []);
+
+  /**
    * Formatted date display based on view mode.
    */
   const dateDisplay = useMemo(() => {
@@ -409,6 +430,7 @@ export function Agenda() {
           appointments={filteredAppointments}
           hours={hours}
           onReschedule={handleReschedule}
+          onStartTelemedicine={handleStartTelemedicine}
         />
       )}
 
@@ -425,6 +447,20 @@ export function Agenda() {
           selectedDate={selectedDate}
           appointments={filteredAppointments}
           onDayClick={handleDayClick}
+        />
+      )}
+
+      {/* Telemedicine Modal */}
+      {selectedAppointmentForTele && (
+        <TelemedicineModal
+          isOpen={telemedicineModalOpen}
+          onClose={handleCloseTelemedicine}
+          appointmentData={{
+            appointmentId: selectedAppointmentForTele.id,
+            patientId: selectedAppointmentForTele.patientId,
+            patientName: selectedAppointmentForTele.patientName,
+            scheduledAt: selectedAppointmentForTele.date,
+          }}
         />
       )}
     </div>

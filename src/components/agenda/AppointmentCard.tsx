@@ -3,11 +3,12 @@
  *
  * Renders a single appointment card with status and specialty colors.
  * Used in both day and week views of the agenda.
+ * Includes telemedicine button for starting video consultations.
  */
 /* eslint-disable react-refresh/only-export-components */
 
 import React from 'react';
-import { Repeat } from 'lucide-react';
+import { Repeat, Video } from 'lucide-react';
 import { Status, type Appointment, type SpecialtyType } from '@/types';
 import { isRecurringInstance, isRecurringParent } from '@/lib/recurrence';
 
@@ -51,18 +52,41 @@ export const SPECIALTY_COLORS: Record<SpecialtyType, { border: string; bg: strin
 interface AppointmentCardProps {
   appointment: Appointment;
   compact?: boolean;
+  /** Callback to start telemedicine session */
+  onStartTelemedicine?: (appointment: Appointment) => void;
 }
 
 /**
  * Appointment card component with status and specialty colors.
  */
-export function AppointmentCard({ appointment: app, compact = false }: AppointmentCardProps) {
+export function AppointmentCard({
+  appointment: app,
+  compact = false,
+  onStartTelemedicine,
+}: AppointmentCardProps) {
   const specialtyColors = SPECIALTY_COLORS[app.specialty] || SPECIALTY_COLORS.medicina;
   const statusColors = STATUS_COLORS[app.status] || STATUS_COLORS[Status.PENDING];
   const isCanceled = app.status === Status.CANCELED;
   const isFinished = app.status === Status.FINISHED;
   const isDimmed = isCanceled || isFinished;
   const isRecurring = isRecurringInstance(app) || isRecurringParent(app);
+
+  // Show telemedicine button for confirmed or in-progress appointments
+  const canStartTelemedicine =
+    onStartTelemedicine &&
+    !isCanceled &&
+    !isFinished &&
+    (app.status === Status.CONFIRMED || app.status === Status.IN_PROGRESS);
+
+  /**
+   * Handle telemedicine button click.
+   */
+  const handleTelemedicineClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onStartTelemedicine) {
+      onStartTelemedicine(app);
+    }
+  };
 
   if (compact) {
     return (
@@ -118,7 +142,7 @@ export function AppointmentCard({ appointment: app, compact = false }: Appointme
         </div>
       </div>
 
-      {/* Procedure + Duration */}
+      {/* Procedure + Duration + Telemedicine */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className={`w-1.5 h-1.5 rounded-full ${specialtyColors.border.replace('border-', 'bg-')}`} />
@@ -126,9 +150,22 @@ export function AppointmentCard({ appointment: app, compact = false }: Appointme
             {app.procedure}
           </p>
         </div>
-        <span className="text-[10px] font-bold text-genesis-dark/50 bg-white/80 px-2 py-0.5 rounded-lg">
-          {app.durationMin}min
-        </span>
+        <div className="flex items-center gap-2">
+          {/* Telemedicine Button */}
+          {canStartTelemedicine && (
+            <button
+              onClick={handleTelemedicineClick}
+              className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold rounded-lg transition-all shadow-sm hover:shadow-md hover:scale-105 opacity-0 group-hover/card:opacity-100"
+              title="Iniciar Teleconsulta"
+            >
+              <Video className="w-3 h-3" />
+              <span className="hidden sm:inline">Teleconsulta</span>
+            </button>
+          )}
+          <span className="text-[10px] font-bold text-genesis-dark/50 bg-white/80 px-2 py-0.5 rounded-lg">
+            {app.durationMin}min
+          </span>
+        </div>
       </div>
     </div>
   );

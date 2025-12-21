@@ -24,4 +24,6 @@ export { recordVersionService } from './record-version.service';
 
 export { transactionService } from './transaction.service';
 
+export { telemedicineService } from './telemedicine.service';
+
 export { seedClinicData, removeDemoData } from './seed.service';

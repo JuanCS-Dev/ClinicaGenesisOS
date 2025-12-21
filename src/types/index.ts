@@ -6,6 +6,12 @@ export * from './clinical-reasoning';
 // Finance Types (4.1)
 export * from './finance';
 
+// Telemedicine Types (Phase 6)
+export * from './telemedicine';
+
+// TISS Billing Types (Phase 7)
+export * from './tiss';
+
 export enum Status {
   CONFIRMED = 'Confirmado',
   PENDING = 'Pendente',
