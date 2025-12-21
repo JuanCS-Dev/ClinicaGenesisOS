@@ -12,6 +12,9 @@ export * from './telemedicine';
 // TISS Billing Types (Phase 7)
 export * from './tiss';
 
+// Digital Prescription Types (Phase 8)
+export * from './prescription';
+
 export enum Status {
   CONFIRMED = 'Confirmado',
   PENDING = 'Pendente',

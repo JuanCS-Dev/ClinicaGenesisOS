@@ -9,6 +9,7 @@ import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { ErrorFallback } from './components/ui/ErrorFallback';
 import { Loader2 } from 'lucide-react';
+import { InstallPrompt, OfflineIndicator, UpdatePrompt } from './components/pwa';
 
 // Lazy-loaded pages for code splitting
 const Landing = lazy(() => import('./pages/Landing').then(m => ({ default: m.Landing })));
@@ -117,6 +118,9 @@ function App() {
       <AuthProvider>
         <ClinicProvider>
           <Toaster richColors position="top-right" />
+          <OfflineIndicator />
+          <InstallPrompt />
+          <UpdatePrompt />
           <Router>
             <Suspense fallback={<LoadingSpinner />}>
             <Routes>

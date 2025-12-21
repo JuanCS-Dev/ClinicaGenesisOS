@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>Offline - ClinicaGenesisOS</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #fff;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 400px;
+    }
+
+    .icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 24px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 1; }
+    }
+
+    .icon svg {
+      width: 60px;
+      height: 60px;
+      stroke: #00d4aa;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+
+    p {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.5;
+      margin-bottom: 32px;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00d4aa 0%, #00a8cc 100%);
+      color: #1a1a2e;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 212, 170, 0.3);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .status {
+      margin-top: 40px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: blink 1.5s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .online .status-dot {
+      background: #00d4aa;
+      animation: none;
+    }
+
+    .online .status-text {
+      color: #00d4aa;
+    }
+
+    .tips {
+      margin-top: 24px;
+      text-align: left;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .tips ul {
+      list-style: none;
+      margin-top: 8px;
+    }
+
+    .tips li {
+      padding: 4px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .tips li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: #00d4aa;
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 20px; }
+      p { font-size: 14px; }
+      .btn { padding: 12px 20px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"></path>
+      </svg>
+    </div>
+
+    <h1>Sem conexão</h1>
+    <p>
+      Você está offline. Verifique sua conexão com a internet e tente novamente.
+    </p>
+
+    <div class="actions">
+      <button class="btn btn-primary" onclick="location.reload()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        Tentar novamente
+      </button>
+
+      <a href="/" class="btn btn-secondary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        Ir para início
+      </a>
+    </div>
+
+    <div class="status" id="status">
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span class="status-text">Aguardando conexão...</span>
+      </div>
+    </div>
+
+    <div class="tips">
+      <strong>Dicas:</strong>
+      <ul>
+        <li>Verifique se o Wi-Fi está ativado</li>
+        <li>Verifique os dados móveis</li>
+        <li>Tente se aproximar do roteador</li>
+        <li>Reinicie seu dispositivo</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Monitor online status
+    function updateStatus() {
+      const statusEl = document.getElementById('status');
+      const statusText = statusEl.querySelector('.status-text');
+
+      if (navigator.onLine) {
+        statusEl.classList.add('online');
+        statusText.textContent = 'Conexão restaurada!';
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        statusEl.classList.remove('online');
+        statusText.textContent = 'Aguardando conexão...';
+      }
+    }
+
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
+    updateStatus();
+  </script>
+</body>
+</html>

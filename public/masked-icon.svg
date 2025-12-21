@@ -1,0 +1,54 @@
+
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+    <linearGradient id="crossGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d4aa"/>
+      <stop offset="100%" style="stop-color:#00a8cc"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#bgGradient)"/>
+
+  <!-- Outer ring -->
+  <circle cx="256" cy="256" r="220" fill="none" stroke="#00d4aa" stroke-width="4" opacity="0.3"/>
+
+  <!-- Medical cross with rounded corners -->
+  <g filter="url(#shadow)">
+    <path d="
+      M 216 120
+      L 296 120
+      Q 316 120 316 140
+      L 316 216
+      L 392 216
+      Q 412 216 412 236
+      L 412 276
+      Q 412 296 392 296
+      L 316 296
+      L 316 372
+      Q 316 392 296 392
+      L 216 392
+      Q 196 392 196 372
+      L 196 296
+      L 120 296
+      Q 100 296 100 276
+      L 100 236
+      Q 100 216 120 216
+      L 196 216
+      L 196 140
+      Q 196 120 216 120
+      Z
+    " fill="url(#crossGradient)"/>
+  </g>
+
+  <!-- Small decorative circles -->
+  <circle cx="420" cy="92" r="12" fill="#00d4aa" opacity="0.4"/>
+  <circle cx="92" cy="420" r="8" fill="#00a8cc" opacity="0.3"/>
+</svg>
