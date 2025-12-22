@@ -10,7 +10,41 @@ import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { AnalysisSummary } from '../../../../components/ai/clinical-reasoning/AnalysisSummary';
-import type { LabAnalysisResult } from '@/types';
+import type { 
+  LabAnalysisResult, 
+  RedFlag, 
+  ClinicalCorrelation,
+  ConfidenceLevel,
+  PatternType,
+} from '@/types';
+
+/**
+ * Helper to create mock RedFlag objects
+ */
+function createRedFlag(description: string): RedFlag {
+  return {
+    description,
+    relatedMarkers: [],
+    action: 'Evaluate immediately',
+  };
+}
+
+/**
+ * Helper to create mock ClinicalCorrelation objects
+ */
+function createCorrelation(
+  pattern: string,
+  confidence: ConfidenceLevel,
+  type: PatternType = 'custom'
+): ClinicalCorrelation {
+  return {
+    type,
+    pattern,
+    confidence,
+    markers: [],
+    clinicalImplication: '',
+  };
+}
 
 // Create mock result factory
 function createMockResult(overrides: Partial<LabAnalysisResult> = {}): LabAnalysisResult {
@@ -19,21 +53,26 @@ function createMockResult(overrides: Partial<LabAnalysisResult> = {}): LabAnalys
       critical: 2,
       attention: 3,
       normal: 10,
-      total: 15,
     },
     triage: {
       urgency: 'routine',
       redFlags: [],
-      recommendedWorkflow: 'primary_care',
-      suggestedActions: [],
+      recommendedWorkflow: 'primary',
+      confidence: 0.9,
     },
     markers: [],
     correlations: [],
     differentialDiagnosis: [],
+    investigativeQuestions: [],
+    suggestedTests: [],
+    chainOfThought: [],
+    disclaimer: 'Este é um auxílio diagnóstico. Consulte um médico.',
     metadata: {
       processingTimeMs: 1500,
       promptVersion: 'genesis:1.0|multi',
-      modelUsed: 'gemini-2.5-flash',
+      model: 'gemini-2.5-flash',
+      inputTokens: 1000,
+      outputTokens: 500,
     },
     ...overrides,
   };
@@ -46,8 +85,8 @@ describe('AnalysisSummary', () => {
         triage: {
           urgency: 'routine',
           redFlags: [],
-          recommendedWorkflow: 'primary_care',
-          suggestedActions: [],
+          recommendedWorkflow: 'primary',
+          confidence: 0.9,
         },
       });
 
@@ -62,9 +101,9 @@ describe('AnalysisSummary', () => {
       const result = createMockResult({
         triage: {
           urgency: 'high',
-          redFlags: ['Anemia severa'],
+          redFlags: [createRedFlag('Anemia severa')],
           recommendedWorkflow: 'specialist',
-          suggestedActions: [],
+          confidence: 0.85,
         },
       });
 
@@ -79,9 +118,12 @@ describe('AnalysisSummary', () => {
       const result = createMockResult({
         triage: {
           urgency: 'critical',
-          redFlags: ['Hipercalemia severa', 'Creatinina > 10'],
+          redFlags: [
+            createRedFlag('Hipercalemia severa'),
+            createRedFlag('Creatinina > 10'),
+          ],
           recommendedWorkflow: 'emergency',
-          suggestedActions: [],
+          confidence: 0.95,
         },
       });
 
@@ -98,9 +140,12 @@ describe('AnalysisSummary', () => {
       const result = createMockResult({
         triage: {
           urgency: 'high',
-          redFlags: ['Red flag 1', 'Red flag 2'],
+          redFlags: [
+            createRedFlag('Red flag 1'),
+            createRedFlag('Red flag 2'),
+          ],
           recommendedWorkflow: 'specialist',
-          suggestedActions: [],
+          confidence: 0.85,
         },
       });
 
@@ -114,8 +159,8 @@ describe('AnalysisSummary', () => {
         triage: {
           urgency: 'routine',
           redFlags: [],
-          recommendedWorkflow: 'primary_care',
-          suggestedActions: [],
+          recommendedWorkflow: 'primary',
+          confidence: 0.9,
         },
       });
 
@@ -128,7 +173,7 @@ describe('AnalysisSummary', () => {
   describe('Stats Grid', () => {
     it('displays critical count', () => {
       const result = createMockResult({
-        summary: { critical: 5, attention: 3, normal: 10, total: 18 },
+        summary: { critical: 5, attention: 3, normal: 10 },
       });
 
       render(<AnalysisSummary result={result} />);
@@ -139,7 +184,7 @@ describe('AnalysisSummary', () => {
 
     it('displays attention count', () => {
       const result = createMockResult({
-        summary: { critical: 2, attention: 7, normal: 10, total: 19 },
+        summary: { critical: 2, attention: 7, normal: 10 },
       });
 
       render(<AnalysisSummary result={result} />);
@@ -150,7 +195,7 @@ describe('AnalysisSummary', () => {
 
     it('displays normal count', () => {
       const result = createMockResult({
-        summary: { critical: 2, attention: 3, normal: 15, total: 20 },
+        summary: { critical: 2, attention: 3, normal: 15 },
       });
 
       render(<AnalysisSummary result={result} />);
@@ -164,18 +209,8 @@ describe('AnalysisSummary', () => {
     it('displays correlations when present', () => {
       const result = createMockResult({
         correlations: [
-          {
-            pattern: 'Síndrome Metabólica',
-            confidence: 'high',
-            relatedMarkers: ['Glicemia', 'Triglicerídeos'],
-            clinicalImplication: 'Risco cardiovascular aumentado',
-          },
-          {
-            pattern: 'Hipotireoidismo',
-            confidence: 'medium',
-            relatedMarkers: ['TSH', 'T4'],
-            clinicalImplication: 'Avaliação tireoidiana recomendada',
-          },
+          createCorrelation('Síndrome Metabólica', 'high', 'metabolic_syndrome'),
+          createCorrelation('Hipotireoidismo', 'medium', 'hypothyroidism'),
         ],
       });
 
@@ -192,12 +227,7 @@ describe('AnalysisSummary', () => {
     it('displays low confidence correlations', () => {
       const result = createMockResult({
         correlations: [
-          {
-            pattern: 'Possível deficiência vitamínica',
-            confidence: 'low',
-            relatedMarkers: ['VCM'],
-            clinicalImplication: 'Investigar',
-          },
+          createCorrelation('Possível deficiência vitamínica', 'low', 'b12_deficiency'),
         ],
       });
 
@@ -209,11 +239,11 @@ describe('AnalysisSummary', () => {
     it('shows "+X mais" when more than 3 correlations', () => {
       const result = createMockResult({
         correlations: [
-          { pattern: 'Pattern 1', confidence: 'high', relatedMarkers: [], clinicalImplication: '' },
-          { pattern: 'Pattern 2', confidence: 'high', relatedMarkers: [], clinicalImplication: '' },
-          { pattern: 'Pattern 3', confidence: 'high', relatedMarkers: [], clinicalImplication: '' },
-          { pattern: 'Pattern 4', confidence: 'high', relatedMarkers: [], clinicalImplication: '' },
-          { pattern: 'Pattern 5', confidence: 'high', relatedMarkers: [], clinicalImplication: '' },
+          createCorrelation('Pattern 1', 'high'),
+          createCorrelation('Pattern 2', 'high'),
+          createCorrelation('Pattern 3', 'high'),
+          createCorrelation('Pattern 4', 'high'),
+          createCorrelation('Pattern 5', 'high'),
         ],
       });
 
@@ -265,9 +295,7 @@ describe('AnalysisSummary', () => {
     it('calls onSectionClick with "correlations" when correlations clicked', () => {
       const mockOnClick = vi.fn();
       const result = createMockResult({
-        correlations: [
-          { pattern: 'Test', confidence: 'high', relatedMarkers: [], clinicalImplication: '' },
-        ],
+        correlations: [createCorrelation('Test', 'high')],
       });
 
       render(<AnalysisSummary result={result} onSectionClick={mockOnClick} />);
@@ -302,7 +330,9 @@ describe('AnalysisSummary', () => {
         metadata: {
           processingTimeMs: 2500,
           promptVersion: 'genesis:2.0|multi',
-          modelUsed: 'gemini-2.5-flash',
+          model: 'gemini-2.5-flash',
+          inputTokens: 1000,
+          outputTokens: 500,
         },
       });
 
@@ -324,7 +354,9 @@ describe('AnalysisSummary', () => {
         metadata: {
           processingTimeMs: 1000,
           promptVersion: 'genesis:3.5|multi',
-          modelUsed: 'gemini-2.5-flash',
+          model: 'gemini-2.5-flash',
+          inputTokens: 1000,
+          outputTokens: 500,
         },
       });
 
