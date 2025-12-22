@@ -49,3 +49,7 @@ export {
   type ThemeSegmentedProps,
 } from './ThemeToggle';
 
+// Accessibility
+export { SkipLink, type SkipLinkProps } from './SkipLink';
+export { VisuallyHidden, type VisuallyHiddenProps } from './VisuallyHidden';
+

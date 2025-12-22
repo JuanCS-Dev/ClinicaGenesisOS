@@ -5,7 +5,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { AuthProvider } from './contexts/AuthContext';
 import { ClinicProvider, useClinicContext } from './contexts/ClinicContext';
 import { ConsentProvider } from './contexts/ConsentContext';
-import { ThemeProvider } from './design-system';
+import { ThemeProvider, SkipLink } from './design-system';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
@@ -86,11 +86,12 @@ function OnboardingGuard({ children }: { children: React.ReactNode }) {
  */
 function AppLayout() {
   return (
-    <div className="min-h-screen bg-[#F5F5F7] flex font-sans text-genesis-dark selection:bg-genesis-blue/20 selection:text-genesis-blue">
+    <div className="min-h-screen bg-[var(--color-genesis-soft)] flex font-sans text-[var(--color-genesis-text)] selection:bg-[var(--color-genesis-primary)]/20 selection:text-[var(--color-genesis-primary)]">
+      <SkipLink />
       <Sidebar />
       <div className="flex-1 ml-64 flex flex-col min-w-0 transition-all duration-300">
         <Header />
-        <main className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+        <main id="main-content" tabIndex={-1} className="flex-1 p-8 overflow-y-auto custom-scrollbar focus:outline-none">
           <Outlet />
         </main>
       </div>
@@ -104,11 +105,12 @@ function AppLayout() {
  */
 function DemoLayout() {
   return (
-    <div className="min-h-screen bg-[#F5F5F7] flex font-sans text-genesis-dark selection:bg-genesis-blue/20 selection:text-genesis-blue">
+    <div className="min-h-screen bg-[var(--color-genesis-soft)] flex font-sans text-[var(--color-genesis-text)] selection:bg-[var(--color-genesis-primary)]/20 selection:text-[var(--color-genesis-primary)]">
+      <SkipLink />
       <Sidebar />
       <div className="flex-1 ml-64 flex flex-col min-w-0 transition-all duration-300">
         <Header />
-        <main className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+        <main id="main-content" tabIndex={-1} className="flex-1 p-8 overflow-y-auto custom-scrollbar focus:outline-none">
           <Outlet />
         </main>
       </div>
