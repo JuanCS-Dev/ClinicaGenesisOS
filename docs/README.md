@@ -1,44 +1,49 @@
-# 📚 Documentação - ClinicaGenesisOS
+# 📚 ClinicaGenesisOS - Documentation Hub
 
-> Índice de toda a documentação do projeto
+> Central de documentação para desenvolvedores, investidores e parceiros
 
 ---
 
-## 📋 Documentos
+## 🎯 Quick Navigation
 
-### 🏛 Governança
+### Para Investidores & Parceiros
+| Documento | Descrição | Audiência |
+|-----------|-----------|-----------|
+| [📊 PITCH_DECK.md](./investors/PITCH_DECK.md) | One-pager executivo | Investidores |
+| [🏢 PRODUCT_OVERVIEW.md](./investors/PRODUCT_OVERVIEW.md) | Visão completa do produto | Parceiros, Investidores |
+| [📈 MARKET_ANALYSIS.md](./investors/MARKET_ANALYSIS.md) | Análise de mercado e competidores | Investidores |
+| [💰 BUSINESS_MODEL.md](./investors/BUSINESS_MODEL.md) | Modelo de negócio e monetização | Investidores |
 
+### Para Usuários
+| Documento | Descrição | Audiência |
+|-----------|-----------|-----------|
+| [📖 USER_MANUAL.md](./user/USER_MANUAL.md) | Manual completo do usuário | Médicos, Recepcionistas |
+| [🚀 QUICK_START.md](./user/QUICK_START.md) | Guia de início rápido | Novos usuários |
+| [❓ FAQ.md](./user/FAQ.md) | Perguntas frequentes | Todos |
+
+### Para Administradores
+| Documento | Descrição | Audiência |
+|-----------|-----------|-----------|
+| [⚙️ ADMIN_GUIDE.md](./admin/ADMIN_GUIDE.md) | Guia de administração | Admins de clínica |
+| [🔐 SECURITY_COMPLIANCE.md](./admin/SECURITY_COMPLIANCE.md) | Segurança e LGPD | Compliance, DPO |
+| [📊 REPORTS_GUIDE.md](./admin/REPORTS_GUIDE.md) | Guia de relatórios | Gestores |
+
+### Para Desenvolvedores
+| Documento | Descrição | Audiência |
+|-----------|-----------|-----------|
+| [🏗 ARCHITECTURE.md](./technical/ARCHITECTURE.md) | Arquitetura técnica | Desenvolvedores |
+| [🔌 API_REFERENCE.md](./technical/API_REFERENCE.md) | Referência de APIs | Integradores |
+| [🧩 COMPONENTS.md](./technical/COMPONENTS.md) | Documentação de componentes | Frontend devs |
+| [🎨 DESIGN_SYSTEM.md](./technical/DESIGN_SYSTEM.md) | Design System completo | UI/UX, Frontend |
+| [🔥 FIREBASE_GUIDE.md](./technical/FIREBASE_GUIDE.md) | Guia Firebase | Backend devs |
+| [📐 CODE_CONSTITUTION.md](./CODE_CONSTITUTION.md) | Padrões de código | Todos os devs |
+
+### Roadmap & Changelog
 | Documento | Descrição |
 |-----------|-----------|
-| [CODE_CONSTITUTION.md](CODE_CONSTITUTION.md) | Padrões de código Google-inspired. Lei suprema do projeto. |
-
-### 📅 Planejamento
-
-| Documento | Descrição |
-|-----------|-----------|
-| [PLANO_MVP.md](PLANO_MVP.md) | Plano original do MVP (Fases 1-5) |
-| [PLANO_HEROICO_FASE6-14.md](PLANO_HEROICO_FASE6-14.md) | Roadmap completo: Fases 6-16 com todas as integrações |
-
-### 🎨 Design
-
-| Documento | Descrição |
-|-----------|-----------|
-| [PREMIUM_DESIGN_SYSTEM.md](PREMIUM_DESIGN_SYSTEM.md) | Especificação do Design System Premium |
-| [UX_IMPROVEMENTS_PLAN.md](UX_IMPROVEMENTS_PLAN.md) | Plano de melhorias de UX/UI |
-
-### 🔍 Auditorias
-
-| Documento | Descrição |
-|-----------|-----------|
-| [AIRGAPS_AUDIT.md](AIRGAPS_AUDIT.md) | Auditoria de integração (air gaps) |
-| [FASE5_POLISH_PLANO.md](FASE5_POLISH_PLANO.md) | Plano de polish da Fase 5 |
-
-### 🤖 Inteligência Artificial
-
-| Documento | Descrição |
-|-----------|-----------|
-| [FASE3_AI_DEEP_RESEARCH.md](FASE3_AI_DEEP_RESEARCH.md) | Pesquisa profunda sobre IA médica |
-| [FASE3_MVP_FREE_TIER.md](FASE3_MVP_FREE_TIER.md) | Análise de custos free tier |
+| [🗺 ROADMAP.md](./ROADMAP.md) | Roadmap público |
+| [📝 CHANGELOG.md](./CHANGELOG.md) | Histórico de versões |
+| [🎯 PLANO_HEROICO_FASE6-14.md](./PLANO_HEROICO_FASE6-14.md) | Plano interno detalhado |
 
 ---
 
@@ -46,47 +51,89 @@
 
 ```
 docs/
-├── README.md                      # Este arquivo (índice)
-├── CODE_CONSTITUTION.md           # Padrões de código
-├── PLANO_MVP.md                   # MVP original
-├── PLANO_HEROICO_FASE6-14.md      # Roadmap completo
-├── PREMIUM_DESIGN_SYSTEM.md       # Design System
-├── UX_IMPROVEMENTS_PLAN.md        # Melhorias UX
-├── AIRGAPS_AUDIT.md               # Auditoria
-├── FASE3_AI_DEEP_RESEARCH.md      # Pesquisa IA
-├── FASE3_MVP_FREE_TIER.md         # Free tier
-└── FASE5_POLISH_PLANO.md          # Polish
+├── README.md                 # Este arquivo (hub central)
+│
+├── 💼 investors/             # Documentação para investidores
+│   ├── PITCH_DECK.md         # One-pager executivo
+│   ├── PRODUCT_OVERVIEW.md   # Visão do produto
+│   ├── MARKET_ANALYSIS.md    # Análise de mercado
+│   └── BUSINESS_MODEL.md     # Modelo de negócio
+│
+├── 👤 user/                  # Manuais de usuário
+│   ├── USER_MANUAL.md        # Manual completo
+│   ├── QUICK_START.md        # Início rápido
+│   └── FAQ.md                # Perguntas frequentes
+│
+├── 🔧 admin/                 # Guias administrativos
+│   ├── ADMIN_GUIDE.md        # Administração
+│   ├── SECURITY_COMPLIANCE.md # Segurança e LGPD
+│   └── REPORTS_GUIDE.md      # Relatórios
+│
+├── 🛠 technical/             # Documentação técnica
+│   ├── ARCHITECTURE.md       # Arquitetura
+│   ├── API_REFERENCE.md      # APIs
+│   ├── COMPONENTS.md         # Componentes
+│   ├── DESIGN_SYSTEM.md      # Design System
+│   └── FIREBASE_GUIDE.md     # Firebase
+│
+├── 📋 legacy/                # Documentos legados/internos
+│   ├── PLANO_MVP.md
+│   ├── FASE3_AI_DEEP_RESEARCH.md
+│   └── ...
+│
+├── CODE_CONSTITUTION.md      # Padrões de código
+├── ROADMAP.md                # Roadmap público
+└── CHANGELOG.md              # Histórico de versões
 ```
 
 ---
 
-## 🔗 Links Rápidos
+## 🏷 Convenções de Documentação
 
-- **Código**: [src/](../src/)
-- **Testes**: [src/__tests__/](../src/__tests__/)
-- **Design System**: [src/design-system/](../src/design-system/)
-- **Cloud Functions**: [functions/](../functions/)
+### Formato
+- **Markdown** para todos os documentos
+- **Mermaid** para diagramas
+- **Screenshots** em `/docs/assets/`
+
+### Versionamento
+Cada documento inclui no header:
+```markdown
+---
+version: 1.0.0
+last_updated: 2025-12-22
+author: Genesis Team
+status: draft | review | published
+---
+```
+
+### Status
+| Badge | Significado |
+|-------|-------------|
+| 🟢 Published | Pronto para uso |
+| 🟡 Review | Em revisão |
+| 🔴 Draft | Rascunho |
+| ⚪ Planned | Planejado |
 
 ---
 
-## 📊 Status do Projeto
+## 📊 Status da Documentação
 
-| Fase | Status | Data |
-|------|--------|------|
-| 1-5 | ✅ MVP Completo | Nov 2025 |
-| 6 | ✅ Telemedicina | Dez 2025 |
-| 7 | ✅ TISS | Dez 2025 |
-| 8 | ✅ Prescrição | Dez 2025 |
-| 9 | ✅ PWA | Dez 2025 |
-| 10 | ✅ PIX/Boleto | Dez 2025 |
-| 11 | ✅ LGPD | Dez 2025 |
-| 12 | ✅ AI Scribe | Dez 2025 |
-| 13 | ✅ Clinical XAI | Dez 2025 |
-| 14 | ✅ Command Palette | Dez 2025 |
-| 15 | ✅ Air Gap Fix | Dez 2025 |
-| 16 | ✅ Design System | Dez 2025 |
+| Categoria | Documentos | Status |
+|-----------|------------|--------|
+| Investidores | 4 | 🔴 Em criação |
+| Usuários | 3 | 🔴 Em criação |
+| Administradores | 3 | 🔴 Em criação |
+| Técnicos | 5 | 🟡 Parcial |
+| Roadmap | 2 | 🟢 Completo |
+
+---
+
+## 🔗 Links Externos
+
+- **GitHub**: [JuanCS-Dev/ClinicaGenesisOS](https://github.com/JuanCS-Dev/ClinicaGenesisOS)
+- **Demo**: (em breve)
+- **Landing Page**: (em breve)
 
 ---
 
 *Última atualização: 22 de Dezembro de 2025*
-
