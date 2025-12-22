@@ -760,10 +760,13 @@ describe('prescriptionService', () => {
     it('calls callback with null on error', () => {
       const callback = vi.fn();
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      vi.mocked(onSnapshot).mockImplementation((_, _onNext, onError) => {
-        (onError as (error: Error) => void)(new Error('Test error'));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.mocked(onSnapshot).mockImplementation(((_ref: any, _onNext: any, onError: any) => {
+        if (onError && typeof onError === 'function') {
+          onError(new Error('Test error'));
+        }
         return vi.fn();
-      });
+      }) as unknown as typeof onSnapshot);
 
       prescriptionService.subscribe(mockClinicId, mockPrescriptionId, callback);
 
@@ -801,10 +804,13 @@ describe('prescriptionService', () => {
     it('calls callback with empty array on error', () => {
       const callback = vi.fn();
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      vi.mocked(onSnapshot).mockImplementation((_, _onNext, onError) => {
-        (onError as (error: Error) => void)(new Error('Test error'));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.mocked(onSnapshot).mockImplementation(((_ref: any, _onNext: any, onError: any) => {
+        if (onError && typeof onError === 'function') {
+          onError(new Error('Test error'));
+        }
         return vi.fn();
-      });
+      }) as unknown as typeof onSnapshot);
 
       prescriptionService.subscribeByPatient(mockClinicId, mockPatientId, callback);
 

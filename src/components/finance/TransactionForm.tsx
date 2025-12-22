@@ -2,10 +2,13 @@
  * TransactionForm Component
  *
  * Modal form for creating new transactions.
+ * Supports optional PIX payment generation.
+ *
+ * Fase 10: PIX Integration
  */
 
 import React, { useState } from 'react';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, QrCode } from 'lucide-react';
 import {
   DEFAULT_CATEGORIES,
   PAYMENT_METHOD_LABELS,
@@ -18,12 +21,15 @@ export interface TransactionFormProps {
   onClose: () => void;
   onSubmit: (data: CreateTransactionInput) => Promise<string | void>;
   initialType?: TransactionType;
+  /** Optional: Open PIX modal after creating pending transaction */
+  onGeneratePix?: (transactionId: string, amount: number, description: string) => void;
 }
 
 export function TransactionForm({
   onClose,
   onSubmit,
   initialType = 'income',
+  onGeneratePix,
 }: TransactionFormProps) {
   const [type, setType] = useState<TransactionType>(initialType);
   const [description, setDescription] = useState('');
@@ -31,9 +37,12 @@ export function TransactionForm({
   const [categoryId, setCategoryId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pix');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [generatePix, setGeneratePix] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const categories = DEFAULT_CATEGORIES.filter((c) => c.type === type);
+  const amountInCents = Math.round(parseFloat(amount.replace(',', '.') || '0') * 100);
+  const canGeneratePix = type === 'income' && paymentMethod === 'pix' && onGeneratePix;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,15 +50,24 @@ export function TransactionForm({
 
     setSubmitting(true);
     try {
-      await onSubmit({
+      // If generating PIX, create as pending
+      const status = generatePix && canGeneratePix ? 'pending' : 'paid';
+
+      const transactionId = await onSubmit({
         description,
-        amount: Math.round(parseFloat(amount.replace(',', '.')) * 100),
+        amount: amountInCents,
         type,
         categoryId,
         paymentMethod,
         date: new Date(date).toISOString(),
-        status: 'paid',
+        status,
       });
+
+      // If generating PIX, open the PIX modal
+      if (generatePix && canGeneratePix && transactionId) {
+        onGeneratePix(transactionId, amountInCents, description);
+      }
+
       onClose();
     } catch (err) {
       console.error('Error creating transaction:', err);
@@ -179,6 +197,23 @@ export function TransactionForm({
             />
           </div>
 
+          {/* Generate PIX option */}
+          {canGeneratePix && (
+            <div className="flex items-center gap-3 p-3 bg-[#32D583]/5 border border-[#32D583]/20 rounded-xl">
+              <input
+                type="checkbox"
+                id="generatePix"
+                checked={generatePix}
+                onChange={(e) => setGeneratePix(e.target.checked)}
+                className="w-4 h-4 text-[#32D583] border-gray-300 rounded focus:ring-[#32D583]"
+              />
+              <label htmlFor="generatePix" className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                <QrCode className="w-4 h-4 text-[#32D583]" />
+                Gerar cobrança PIX para o cliente
+              </label>
+            </div>
+          )}
+
           {/* Submit */}
           <button
             type="submit"
@@ -189,6 +224,11 @@ export function TransactionForm({
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Salvando...
+              </>
+            ) : generatePix && canGeneratePix ? (
+              <>
+                <QrCode className="w-4 h-4" />
+                Salvar e Gerar PIX
               </>
             ) : (
               'Salvar Transação'

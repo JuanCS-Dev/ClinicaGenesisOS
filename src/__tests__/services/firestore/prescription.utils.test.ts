@@ -8,15 +8,26 @@ import { describe, it, expect, vi } from 'vitest';
 import type { PrescriptionMedication } from '@/types';
 
 // Mock Firebase
-vi.mock('firebase/firestore', () => ({
-  collection: vi.fn(() => 'mocked-collection'),
-  doc: vi.fn(() => 'mocked-doc'),
-  Timestamp: class {
+vi.mock('firebase/firestore', () => {
+  class MockTimestamp {
+    seconds: number;
+    nanoseconds: number;
+    
+    constructor(seconds?: number, nanoseconds?: number) {
+      this.seconds = seconds ?? Math.floor(Date.now() / 1000);
+      this.nanoseconds = nanoseconds ?? 0;
+    }
+    
     toDate() {
       return new Date('2025-12-21T10:00:00Z');
     }
-  },
-}));
+  }
+  return {
+    collection: vi.fn(() => 'mocked-collection'),
+    doc: vi.fn(() => 'mocked-doc'),
+    Timestamp: MockTimestamp,
+  };
+});
 
 vi.mock('@/services/firebase', () => ({
   db: {},
@@ -34,7 +45,12 @@ import {
   getLogsCollection,
   getPrescriptionDoc,
 } from '@/services/firestore/prescription.utils';
-import { Timestamp } from 'firebase/firestore';
+// Create mock timestamp instances using the mocked Timestamp class
+function createMockTimestamp() {
+  // Dynamic import from the mocked module
+  const { Timestamp } = require('firebase/firestore');
+  return new Timestamp(0, 0);
+}
 
 describe('prescription.utils', () => {
   describe('generateValidationCode', () => {
@@ -281,7 +297,7 @@ describe('prescription.utils', () => {
       expect(prescription.status).toBe('draft');
     });
 
-    it('converts Timestamp to ISO string for createdAt', () => {
+    it('handles string timestamps for createdAt/updatedAt', () => {
       const data = {
         clinicId: 'clinic-1',
         patientId: 'patient-1',
@@ -296,8 +312,8 @@ describe('prescription.utils', () => {
         validityDays: 60,
         prescribedAt: '2025-01-15T10:00:00Z',
         expiresAt: '2025-03-16T10:00:00Z',
-        createdAt: new Timestamp(),
-        updatedAt: new Timestamp(),
+        createdAt: '2025-12-21T10:00:00.000Z',
+        updatedAt: '2025-12-21T10:00:00.000Z',
       };
 
       const prescription = toPrescription('presc-1', data);
@@ -357,13 +373,13 @@ describe('prescription.utils', () => {
       expect(log.details).toEqual({ action: 'initial creation' });
     });
 
-    it('converts Timestamp to ISO string for timestamp', () => {
+    it('handles string timestamp', () => {
       const data = {
         prescriptionId: 'presc-1',
         eventType: 'signed',
         userId: 'user-1',
         userName: 'John Doe',
-        timestamp: new Timestamp(),
+        timestamp: '2025-12-21T10:00:00.000Z',
       };
 
       const log = toLogEntry('log-1', data);

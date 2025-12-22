@@ -29,6 +29,8 @@ vi.mock('@/services/firestore', () => ({
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    getVersionHistory: vi.fn(),
+    restoreVersion: vi.fn(),
   },
 }));
 
@@ -265,6 +267,65 @@ describe('useRecords', () => {
 
       await expect(result.current.deleteRecord('record-1')).rejects.toThrow('No clinic selected');
     });
+
+    it('getVersionHistory returns version history', async () => {
+      const mockHistory = [
+        { versionNumber: 1, timestamp: '2025-01-01', changedBy: 'Dr. A' },
+        { versionNumber: 2, timestamp: '2025-01-02', changedBy: 'Dr. B' },
+      ];
+      vi.mocked(recordService.getVersionHistory).mockResolvedValue(mockHistory as never);
+
+      const { result } = renderHook(() => useRecords('patient-1'));
+
+      let history;
+      await act(async () => {
+        history = await result.current.getVersionHistory('record-1');
+      });
+
+      expect(recordService.getVersionHistory).toHaveBeenCalledWith(mockClinicId, 'record-1');
+      expect(history).toEqual(mockHistory);
+    });
+
+    it('getVersionHistory throws when no clinic', async () => {
+      vi.mocked(useClinicContext).mockReturnValue({
+        clinicId: null,
+        userProfile: null,
+      } as unknown as ReturnType<typeof useClinicContext>);
+
+      const { result } = renderHook(() => useRecords('patient-1'));
+
+      await expect(result.current.getVersionHistory('record-1')).rejects.toThrow('No clinic selected');
+    });
+
+    it('restoreVersion restores to previous version', async () => {
+      vi.mocked(recordService.restoreVersion).mockResolvedValue(3);
+
+      const { result } = renderHook(() => useRecords('patient-1'));
+
+      let newVersion;
+      await act(async () => {
+        newVersion = await result.current.restoreVersion('record-1', 1);
+      });
+
+      expect(recordService.restoreVersion).toHaveBeenCalledWith(
+        mockClinicId,
+        'record-1',
+        1,
+        'Dr. Test'
+      );
+      expect(newVersion).toBe(3);
+    });
+
+    it('restoreVersion throws when no clinic', async () => {
+      vi.mocked(useClinicContext).mockReturnValue({
+        clinicId: null,
+        userProfile: null,
+      } as unknown as ReturnType<typeof useClinicContext>);
+
+      const { result } = renderHook(() => useRecords('patient-1'));
+
+      await expect(result.current.restoreVersion('record-1', 1)).rejects.toThrow('No clinic selected');
+    });
   });
 });
 
@@ -374,5 +435,101 @@ describe('useAllRecords', () => {
     const { result } = renderHook(() => useAllRecords());
 
     await expect(result.current.deleteRecord('record-1')).rejects.toThrow('No clinic selected');
+  });
+
+  it('getVersionHistory returns version history', async () => {
+    const mockHistory = [
+      { versionNumber: 1, timestamp: '2025-01-01', changedBy: 'Dr. A' },
+    ];
+    vi.mocked(recordService.getVersionHistory).mockResolvedValue(mockHistory as never);
+
+    const { result } = renderHook(() => useAllRecords());
+
+    let history;
+    await act(async () => {
+      history = await result.current.getVersionHistory('record-1');
+    });
+
+    expect(recordService.getVersionHistory).toHaveBeenCalledWith(mockClinicId, 'record-1');
+    expect(history).toEqual(mockHistory);
+  });
+
+  it('getVersionHistory throws when no clinic', async () => {
+    vi.mocked(useClinicContext).mockReturnValue({
+      clinicId: null,
+      userProfile: null,
+    } as unknown as ReturnType<typeof useClinicContext>);
+
+    const { result } = renderHook(() => useAllRecords());
+
+    await expect(result.current.getVersionHistory('record-1')).rejects.toThrow('No clinic selected');
+  });
+
+  it('restoreVersion restores to previous version', async () => {
+    vi.mocked(recordService.restoreVersion).mockResolvedValue(2);
+
+    const { result } = renderHook(() => useAllRecords());
+
+    let newVersion;
+    await act(async () => {
+      newVersion = await result.current.restoreVersion('record-1', 1);
+    });
+
+    expect(recordService.restoreVersion).toHaveBeenCalledWith(
+      mockClinicId,
+      'record-1',
+      1,
+      'Dr. Test'
+    );
+    expect(newVersion).toBe(2);
+  });
+
+  it('restoreVersion throws when no clinic', async () => {
+    vi.mocked(useClinicContext).mockReturnValue({
+      clinicId: null,
+      userProfile: null,
+    } as unknown as ReturnType<typeof useClinicContext>);
+
+    const { result } = renderHook(() => useAllRecords());
+
+    await expect(result.current.restoreVersion('record-1', 1)).rejects.toThrow('No clinic selected');
+  });
+
+  it('unsubscribes on unmount', () => {
+    const { unmount } = renderHook(() => useAllRecords());
+
+    unmount();
+
+    expect(mockUnsubscribe).toHaveBeenCalled();
+  });
+
+  it('updateRecord updates with versioning', async () => {
+    vi.mocked(recordService.update).mockResolvedValue();
+
+    const { result } = renderHook(() => useAllRecords());
+
+    await act(async () => {
+      await result.current.updateRecord('record-1', { plan: 'Updated' }, 'Reason');
+    });
+
+    expect(recordService.update).toHaveBeenCalledWith(
+      mockClinicId,
+      'record-1',
+      { plan: 'Updated' },
+      'Dr. Test',
+      'Reason'
+    );
+  });
+
+  it('deleteRecord deletes record', async () => {
+    vi.mocked(recordService.delete).mockResolvedValue();
+
+    const { result } = renderHook(() => useAllRecords());
+
+    await act(async () => {
+      await result.current.deleteRecord('record-1');
+    });
+
+    expect(recordService.delete).toHaveBeenCalledWith(mockClinicId, 'record-1');
   });
 });

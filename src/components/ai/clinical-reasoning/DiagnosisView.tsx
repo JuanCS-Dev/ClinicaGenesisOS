@@ -4,9 +4,12 @@
  * Displays differential diagnosis with multi-LLM consensus indicators.
  */
 
-import React from 'react';
-import { Brain } from 'lucide-react';
+import React, { useState } from 'react';
+import { Brain, ChevronDown, ChevronUp } from 'lucide-react';
 import { ConsensusBadge, ModelComparison } from './ConsensusBadge';
+import { ConfidenceGauge } from './ConfidenceGauge';
+import { ExplanationPanel } from './ExplanationPanel';
+import { EvidenceLinks } from './EvidenceLinks';
 import type {
   LabAnalysisResult,
   ConsensusDiagnosis,
@@ -30,6 +33,8 @@ interface DiagnosisViewProps {
  * Diagnosis view with consensus indicators.
  */
 export function DiagnosisView({ result }: DiagnosisViewProps) {
+  const [expandedDx, setExpandedDx] = useState<number | null>(null);
+
   return (
     <div className="space-y-4">
       {/* Consensus Metrics */}
@@ -86,21 +91,25 @@ export function DiagnosisView({ result }: DiagnosisViewProps) {
               )}
             </div>
 
-            <div
-              className={`
-                px-3 py-1.5 rounded-lg text-sm font-bold
-                ${
-                  dx.confidence >= 80
-                    ? 'bg-[#D1FAE5] text-[#047857]'
-                    : dx.confidence >= 60
-                    ? 'bg-[#DBEAFE] text-[#1D4ED8]'
-                    : dx.confidence >= 40
-                    ? 'bg-[#FEF3C7] text-[#B45309]'
-                    : 'bg-gray-100 text-gray-600'
-                }
-              `}
-            >
-              {dx.confidence}%
+            <div className="flex items-center gap-3">
+              <ConfidenceGauge
+                confidence={dx.confidence}
+                consensusLevel={hasConsensusInfo(dx) ? dx.consensusLevel : undefined}
+                size="sm"
+                showLabel={false}
+                showConsensus={false}
+              />
+              <button
+                onClick={() => setExpandedDx(expandedDx === idx ? null : idx)}
+                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                title={expandedDx === idx ? 'Recolher' : 'Expandir explicação'}
+              >
+                {expandedDx === idx ? (
+                  <ChevronUp className="w-4 h-4 text-gray-500" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
+                )}
+              </button>
             </div>
           </div>
 
@@ -123,6 +132,20 @@ export function DiagnosisView({ result }: DiagnosisViewProps) {
           {hasConsensusInfo(dx) && (
             <div className="mt-4 ml-10">
               <ModelComparison gemini={dx.modelDetails.gemini} gpt4o={dx.modelDetails.gpt4o} />
+            </div>
+          )}
+
+          {/* Expanded Explanation Panel */}
+          {expandedDx === idx && (
+            <div className="mt-4 ml-10 pt-4 border-t border-gray-100 space-y-4 animate-in fade-in slide-in-from-top-2">
+              <ExplanationPanel
+                diagnosis={dx}
+                showReferences
+              />
+              <EvidenceLinks
+                diagnosis={dx.name}
+                icd10={dx.icd10}
+              />
             </div>
           )}
         </div>

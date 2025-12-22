@@ -28,3 +28,19 @@ export { processAudioScribe } from './ai/process-audio-scribe.js';
 // Clinical Reasoning Engine (3.3)
 // ============================================
 export { analyzeLabResults } from './ai/analyze-lab-results.js';
+
+// ============================================
+// Stripe Payments - PIX & Boleto (10.1)
+// ============================================
+export {
+  // PIX (requires capability - may not be available yet)
+  createPixPayment,
+  cancelPixPayment,
+  refundPixPayment,
+  // Boleto (active and available)
+  createBoletoPayment,
+  cancelBoletoPayment,
+  refundBoletoPayment,
+  // Webhook
+  stripeWebhook,
+} from './stripe/index.js';

@@ -17,3 +17,10 @@ export { HistoryView } from './HistoryView';
 export { DiagnosisView } from './DiagnosisView';
 export { SuggestionsView } from './SuggestionsView';
 export { ResultsView } from './ResultsView';
+
+// Explainability components (Fase 13)
+export { ExplanationPanel } from './ExplanationPanel';
+export type { DiagnosisExplanation, ExplanationReason } from './ExplanationPanel';
+export { EvidenceLinks } from './EvidenceLinks';
+export type { ScientificReference, ReferenceSource } from './EvidenceLinks';
+export { ConfidenceGauge, ConfidenceBar } from './ConfidenceGauge';

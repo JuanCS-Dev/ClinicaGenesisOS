@@ -4,11 +4,12 @@
  *
  * Financial management dashboard with real-time data.
  * Fase 4: Financeiro & Relatórios
+ * Fase 10: PIX Integration
  *
  * Note: Uses explicit hex colors for Tailwind 4 compatibility.
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   Download,
   Filter,
@@ -16,6 +17,7 @@ import {
   Loader2,
   Calendar,
   Search,
+  QrCode,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -33,6 +35,7 @@ import {
   exportTransactionsToPDF,
 } from '../services/export.service';
 import { FinanceCard, TransactionForm, TransactionRow } from '../components/finance';
+import { DirectPixModal } from '../components/payments';
 
 /**
  * Main Finance page component.
@@ -42,6 +45,14 @@ export const Finance: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // PIX Payment Modal state
+  const [showPixModal, setShowPixModal] = useState(false);
+  const [pixModalData, setPixModalData] = useState<{
+    transactionId?: string;
+    amount?: number;
+    description?: string;
+  }>({});
 
   // Handle export
   const handleExportPDF = () => {
@@ -81,6 +92,21 @@ export const Finance: React.FC = () => {
     summary && summary.totalIncome > 0
       ? Math.round((summary.netBalance / summary.totalIncome) * 100)
       : 0;
+
+  // Handle PIX generation from transaction form
+  const handleGeneratePix = useCallback(
+    (transactionId: string, amount: number, description: string) => {
+      setPixModalData({ transactionId, amount, description });
+      setShowPixModal(true);
+    },
+    []
+  );
+
+  // Handle standalone PIX payment
+  const handleNewPix = useCallback(() => {
+    setPixModalData({});
+    setShowPixModal(true);
+  }, []);
 
   return (
     <div className="space-y-8 animate-enter pb-10">
@@ -124,6 +150,12 @@ export const Finance: React.FC = () => {
               </div>
             )}
           </div>
+          <button
+            onClick={handleNewPix}
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#32D583] text-white rounded-xl text-sm font-medium hover:bg-[#2BBF76] transition-colors shadow-lg shadow-[#32D583]/20"
+          >
+            <QrCode className="w-4 h-4" /> PIX
+          </button>
           <button
             onClick={() => setShowForm(true)}
             className="flex items-center gap-2 px-4 py-2.5 bg-genesis-dark text-white rounded-xl text-sm font-medium hover:bg-black transition-colors shadow-lg shadow-gray-200"
@@ -297,6 +329,25 @@ export const Finance: React.FC = () => {
         <TransactionForm
           onClose={() => setShowForm(false)}
           onSubmit={addTransaction}
+          onGeneratePix={handleGeneratePix}
+        />
+      )}
+
+      {/* Direct PIX Modal (0% fees) */}
+      {showPixModal && (
+        <DirectPixModal
+          amountInCents={pixModalData.amount || 0}
+          description={pixModalData.description || ''}
+          transactionId={pixModalData.transactionId}
+          onClose={() => {
+            setShowPixModal(false);
+            setPixModalData({});
+          }}
+          onConfirmPayment={() => {
+            // TODO: Update transaction status to 'paid'
+            setShowPixModal(false);
+            setPixModalData({});
+          }}
         />
       )}
     </div>

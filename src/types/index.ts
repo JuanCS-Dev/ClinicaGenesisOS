@@ -15,6 +15,15 @@ export * from './tiss';
 // Digital Prescription Types (Phase 8)
 export * from './prescription';
 
+// Payment Types (Phase 10)
+export * from './payment';
+
+// LGPD Types (Phase 11)
+export * from './lgpd';
+
+// Scribe Metrics Types (Phase 12)
+export * from './scribe-metrics';
+
 export enum Status {
   CONFIRMED = 'Confirmado',
   PENDING = 'Pendente',
@@ -283,9 +292,12 @@ export interface Clinic {
   email?: string;
   address?: string;
   logo?: string;
+  cnpj?: string;
   ownerId: string;
   plan: ClinicPlan;
   settings: ClinicSettings;
+  /** PIX configuration for direct payments (0% fees) */
+  pixConfig?: import('./payment').ClinicPixConfig;
   createdAt: string;
   updatedAt: string;
 }

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePatient } from '../hooks/usePatient';
 import { useRecords } from '../hooks/useRecords';
@@ -8,6 +8,7 @@ import { PLUGINS, MedicineEditor, NutritionEditor, PsychologyEditor } from '../p
 import { Timeline } from '../components/patient/Timeline';
 import { AttachmentList } from '../components/records/AttachmentUpload';
 import { ClinicalReasoningPanel } from '../components/ai/clinical-reasoning';
+import { PrescriptionModal } from '../components/prescription';
 import {
   Calendar,
   FileText,
@@ -20,7 +21,8 @@ import {
   FlaskConical,
   Loader2,
   Paperclip,
-  Sparkles
+  Sparkles,
+  Receipt
 } from 'lucide-react';
 import type { PatientContext } from '../types';
 import { format } from 'date-fns';
@@ -162,6 +164,13 @@ export const PatientDetails: React.FC = () => {
   const { appointments } = usePatientAppointments(id);
 
   const [activeTab, setActiveTab] = useState<'prontuario' | 'dados' | 'timeline' | 'clinicalAI'>('prontuario');
+  const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
+
+  // Handle prescription save
+  const handlePrescriptionSave = useCallback(() => {
+    setShowPrescriptionModal(false);
+    // Prescription is saved via the modal, records will refresh
+  }, []);
 
   // Build patient context for Clinical AI
   const patientContext: PatientContext = useMemo(() => ({
@@ -289,6 +298,12 @@ export const PatientDetails: React.FC = () => {
               className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-md border border-gray-200/50 rounded-xl text-xs font-bold text-genesis-dark hover:bg-white hover:shadow-sm transition-all"
             >
               <Edit2 className="w-3.5 h-3.5" /> Editar
+            </button>
+            <button
+              onClick={() => setShowPrescriptionModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-xl text-xs font-bold hover:bg-amber-600 transition-all shadow-lg shadow-amber-200/50"
+            >
+              <Receipt className="w-3.5 h-3.5" /> Prescrever
             </button>
             <button className="flex items-center gap-2 px-4 py-2 bg-genesis-dark text-white rounded-xl text-xs font-bold hover:bg-black transition-all shadow-lg shadow-gray-200/50 hover:-translate-y-0.5">
                 <Calendar className="w-3.5 h-3.5" /> Agendar
@@ -429,6 +444,17 @@ export const PatientDetails: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Prescription Modal */}
+      {patient && id && (
+        <PrescriptionModal
+          isOpen={showPrescriptionModal}
+          onClose={() => setShowPrescriptionModal(false)}
+          patientId={id}
+          patientName={patient.name}
+          onSave={handlePrescriptionSave}
+        />
+      )}
     </div>
   );
 };

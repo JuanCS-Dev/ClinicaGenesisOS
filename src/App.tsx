@@ -4,12 +4,14 @@ import { Toaster } from 'sonner';
 import { ErrorBoundary } from 'react-error-boundary';
 import { AuthProvider } from './contexts/AuthContext';
 import { ClinicProvider, useClinicContext } from './contexts/ClinicContext';
+import { ConsentProvider } from './contexts/ConsentContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { ErrorFallback } from './components/ui/ErrorFallback';
 import { Loader2 } from 'lucide-react';
 import { InstallPrompt, OfflineIndicator, UpdatePrompt } from './components/pwa';
+import { ConsentBanner } from './components/consent';
 
 // Lazy-loaded pages for code splitting
 const Landing = lazy(() => import('./pages/Landing').then(m => ({ default: m.Landing })));
@@ -26,6 +28,7 @@ const Reports = lazy(() => import('./pages/Reports').then(m => ({ default: m.Rep
 const WhatsAppMetrics = lazy(() => import('./pages/WhatsAppMetrics').then(m => ({ default: m.WhatsAppMetrics })));
 const NewPatient = lazy(() => import('./pages/NewPatient').then(m => ({ default: m.NewPatient })));
 const EditPatient = lazy(() => import('./pages/EditPatient').then(m => ({ default: m.EditPatient })));
+const Settings = lazy(() => import('./pages/Settings').then(m => ({ default: m.Settings })));
 const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
 
 /**
@@ -117,11 +120,13 @@ function App() {
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <AuthProvider>
         <ClinicProvider>
-          <Toaster richColors position="top-right" />
-          <OfflineIndicator />
-          <InstallPrompt />
-          <UpdatePrompt />
-          <Router>
+          <ConsentProvider>
+            <Toaster richColors position="top-right" />
+            <OfflineIndicator />
+            <InstallPrompt />
+            <UpdatePrompt />
+            <ConsentBanner />
+            <Router>
             <Suspense fallback={<LoadingSpinner />}>
             <Routes>
             {/* Public Landing Page */}
@@ -175,14 +180,7 @@ function App() {
               <Route path="/finance" element={<Finance />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/whatsapp" element={<WhatsAppMetrics />} />
-              <Route
-                path="/settings"
-                element={
-                  <div className="flex items-center justify-center h-full text-genesis-medium font-medium">
-                    Configurações (Em breve)
-                  </div>
-                }
-              />
+              <Route path="/settings" element={<Settings />} />
               <Route
                 path="/help"
                 element={
@@ -197,7 +195,8 @@ function App() {
             <Route path="*" element={<NotFound />} />
             </Routes>
             </Suspense>
-          </Router>
+            </Router>
+          </ConsentProvider>
         </ClinicProvider>
       </AuthProvider>
     </ErrorBoundary>
