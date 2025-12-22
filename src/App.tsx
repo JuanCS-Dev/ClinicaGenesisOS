@@ -5,6 +5,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { AuthProvider } from './contexts/AuthContext';
 import { ClinicProvider, useClinicContext } from './contexts/ClinicContext';
 import { ConsentProvider } from './contexts/ConsentContext';
+import { ThemeProvider } from './design-system';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
@@ -118,15 +119,16 @@ function DemoLayout() {
 function App() {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <AuthProvider>
-        <ClinicProvider>
-          <ConsentProvider>
-            <Toaster richColors position="top-right" />
-            <OfflineIndicator />
-            <InstallPrompt />
-            <UpdatePrompt />
-            <ConsentBanner />
-            <Router>
+      <ThemeProvider>
+        <AuthProvider>
+          <ClinicProvider>
+            <ConsentProvider>
+              <Toaster richColors position="top-right" />
+              <OfflineIndicator />
+              <InstallPrompt />
+              <UpdatePrompt />
+              <ConsentBanner />
+              <Router>
             <Suspense fallback={<LoadingSpinner />}>
             <Routes>
             {/* Public Landing Page */}
@@ -193,12 +195,13 @@ function App() {
 
             {/* Catch all */}
             <Route path="*" element={<NotFound />} />
-            </Routes>
-            </Suspense>
-            </Router>
-          </ConsentProvider>
-        </ClinicProvider>
-      </AuthProvider>
+              </Routes>
+              </Suspense>
+              </Router>
+            </ConsentProvider>
+          </ClinicProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

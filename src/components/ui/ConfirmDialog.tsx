@@ -1,11 +1,33 @@
+/**
+ * Confirm Dialog Component
+ * ========================
+ * 
+ * Modal de confirmação usando o Design System Genesis.
+ * 
+ * @example
+ * ```tsx
+ * <ConfirmDialog
+ *   open={isOpen}
+ *   title="Excluir paciente?"
+ *   description="Esta ação não pode ser desfeita."
+ *   onConfirm={handleDelete}
+ *   onCancel={() => setIsOpen(false)}
+ * />
+ * ```
+ */
+
+import { Modal, Button } from '@/design-system';
+
 interface Props {
   open: boolean;
   title: string;
   description: string;
   confirmLabel?: string;
+  cancelLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
   variant?: 'danger' | 'warning';
+  loading?: boolean;
 }
 
 export function ConfirmDialog({
@@ -13,41 +35,41 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel = 'Confirmar',
+  cancelLabel = 'Cancelar',
   onConfirm,
   onCancel,
-  variant = 'danger'
+  variant = 'danger',
+  loading = false,
 }: Props) {
-  if (!open) return null;
-
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="confirm-dialog-title"
-    >
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-200">
-        <h3 id="confirm-dialog-title" className="text-lg font-bold text-genesis-dark mb-2">
-          {title}
-        </h3>
-        <p className="text-genesis-medium text-sm mb-6">{description}</p>
-        <div className="flex gap-3 justify-end">
-          <button
+    <Modal
+      isOpen={open}
+      onClose={onCancel}
+      title={title}
+      size="sm"
+      showCloseButton={false}
+      footer={
+        <>
+          <Button 
+            variant="ghost" 
             onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-genesis-dark hover:bg-gray-100 rounded-lg transition-colors"
+            disabled={loading}
           >
-            Cancelar
-          </button>
-          <button
+            {cancelLabel}
+          </Button>
+          <Button
+            variant={variant === 'danger' ? 'danger' : 'primary'}
             onClick={onConfirm}
-            className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors ${
-              variant === 'danger' ? 'bg-red-500 hover:bg-red-600' : 'bg-amber-500 hover:bg-amber-600'
-            }`}
+            loading={loading}
           >
             {confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </>
+      }
+    >
+      <p className="text-[var(--color-genesis-muted)] text-sm">
+        {description}
+      </p>
+    </Modal>
   );
 }
