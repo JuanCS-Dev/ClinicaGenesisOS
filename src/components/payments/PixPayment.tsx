@@ -8,7 +8,7 @@
  * Fase 10: PIX Integration
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   QrCode,
   Copy,
@@ -61,7 +61,7 @@ export const PixPayment: React.FC<PixPaymentProps> = ({
   const [copied, setCopied] = useState(false);
 
   // Handle copy to clipboard
-  const handleCopy = useCallback(async () => {
+  const handleCopy = async () => {
     if (!payment?.pixData?.qrCodeText) return;
 
     try {
@@ -71,7 +71,7 @@ export const PixPayment: React.FC<PixPaymentProps> = ({
     } catch (error) {
       console.error('Failed to copy:', error);
     }
-  }, [payment?.pixData?.qrCodeText]);
+  };
 
   // Call callbacks on status change
   React.useEffect(() => {

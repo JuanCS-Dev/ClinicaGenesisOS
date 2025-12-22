@@ -134,7 +134,10 @@ CardHeader.displayName = 'CardHeader';
 /**
  * Card Body Component
  */
-export interface CardBodyProps extends React.HTMLAttributes<HTMLDivElement> {}
+export interface CardBodyProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Additional children */
+  children?: React.ReactNode;
+}
 
 export const CardBody = forwardRef<HTMLDivElement, CardBodyProps>(
   ({ children, className = '', ...props }, ref) => {

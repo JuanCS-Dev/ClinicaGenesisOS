@@ -13,6 +13,7 @@
  */
 
 import { onRequest } from 'firebase-functions/v2/https';
+import { logger } from 'firebase-functions';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { getStripeClient, getWebhookSecret, isStripeConfigured } from './config.js';
 import type { PaymentDisplayStatus } from './types.js';
@@ -91,7 +92,7 @@ export const stripeWebhook = onRequest(
           break;
 
         default:
-          console.log(`Unhandled event type: ${event.type}`);
+          logger.info(`Unhandled event type: ${event.type}`);
       }
 
       res.status(200).json({ received: true });
@@ -155,7 +156,7 @@ async function handlePaymentSucceeded(
     pixData: FieldValue.delete(),
   });
 
-  console.log(`Payment ${paymentDoc.id} marked as paid`);
+  logger.info(`Payment ${paymentDoc.id} marked as paid`);
 
   // Update related transaction if exists
   const transactionId = paymentIntent.metadata?.transactionId;
@@ -172,7 +173,7 @@ async function handlePaymentSucceeded(
         updatedAt: FieldValue.serverTimestamp(),
       });
 
-    console.log(`Transaction ${transactionId} marked as paid`);
+    logger.info(`Transaction ${transactionId} marked as paid`);
   }
 }
 
@@ -206,7 +207,7 @@ async function handlePaymentFailed(
     updatedAt: FieldValue.serverTimestamp(),
   });
 
-  console.log(`Payment ${paymentDoc.id} marked as failed: ${failureMessage}`);
+  logger.info(`Payment ${paymentDoc.id} marked as failed: ${failureMessage}`);
 }
 
 /**
@@ -237,7 +238,7 @@ async function handlePaymentCanceled(
     pixData: FieldValue.delete(),
   });
 
-  console.log(`Payment ${paymentDoc.id} marked as expired`);
+  logger.info(`Payment ${paymentDoc.id} marked as expired`);
 }
 
 /**
@@ -276,7 +277,7 @@ async function handleChargeRefunded(
     updatedAt: FieldValue.serverTimestamp(),
   });
 
-  console.log(`Payment ${paymentDoc.id} refunded: ${refundAmount} cents`);
+  logger.info(`Payment ${paymentDoc.id} refunded: ${refundAmount} cents`);
 
   // Update related transaction if exists
   const transactionId = paymentIntent.metadata?.transactionId;

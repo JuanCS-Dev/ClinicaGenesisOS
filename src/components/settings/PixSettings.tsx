@@ -106,7 +106,7 @@ export const PixSettings: React.FC = () => {
       });
       setPreviewQR(result.qrCodeDataUrl);
       setError(null);
-    } catch (_err) {
+    } catch {
       setError('Erro ao gerar QR code de preview');
     }
   };

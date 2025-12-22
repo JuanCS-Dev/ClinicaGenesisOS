@@ -45,12 +45,6 @@ import {
   getLogsCollection,
   getPrescriptionDoc,
 } from '@/services/firestore/prescription.utils';
-// Create mock timestamp instances using the mocked Timestamp class
-function createMockTimestamp() {
-  // Dynamic import from the mocked module
-  const { Timestamp } = require('firebase/firestore');
-  return new Timestamp(0, 0);
-}
 
 describe('prescription.utils', () => {
   describe('generateValidationCode', () => {

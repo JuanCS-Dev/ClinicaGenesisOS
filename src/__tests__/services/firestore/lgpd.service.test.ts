@@ -32,8 +32,6 @@ vi.mock('@/services/firebase', () => ({
 }));
 
 import {
-  collection,
-  doc,
   addDoc,
   getDoc,
   getDocs,

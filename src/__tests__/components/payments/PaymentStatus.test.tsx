@@ -13,7 +13,7 @@ import {
   PaymentStatusDot,
   PaymentStatusText,
 } from '@/components/payments/PaymentStatus';
-import { PAYMENT_STATUS_LABELS, PAYMENT_STATUS_COLORS } from '@/types';
+import { PAYMENT_STATUS_LABELS } from '@/types';
 
 describe('PaymentStatus', () => {
   describe('PaymentStatus component', () => {

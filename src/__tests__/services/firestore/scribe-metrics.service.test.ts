@@ -35,7 +35,6 @@ import {
   addDoc,
   getDoc,
   getDocs,
-  updateDoc,
   query,
 } from 'firebase/firestore';
 import {

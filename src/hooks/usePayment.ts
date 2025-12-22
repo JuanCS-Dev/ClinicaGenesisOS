@@ -361,56 +361,55 @@ export function useCreatePixPayment(): UseCreatePixPaymentReturn {
     paymentId: null,
   });
 
-  const createPayment = useCallback(
-    async (input: CreatePixPaymentInput): Promise<PaymentIntentResponse> => {
-      if (!clinic?.id) {
-        throw new Error('Clinic not found');
-      }
+  const clinicId = clinic?.id;
+
+  const createPayment = async (input: CreatePixPaymentInput): Promise<PaymentIntentResponse> => {
+    if (!clinicId) {
+      throw new Error('Clinic not found');
+    }
+
+    setState((prev) => ({
+      ...prev,
+      creating: true,
+      error: null,
+    }));
+
+    try {
+      const paymentIntent = await stripeService.createPixPayment(
+        clinicId,
+        input
+      );
 
       setState((prev) => ({
         ...prev,
-        creating: true,
-        error: null,
+        creating: false,
+        paymentIntent,
+        paymentId: paymentIntent.id,
       }));
 
-      try {
-        const paymentIntent = await stripeService.createPixPayment(
-          clinic.id,
-          input
-        );
+      return paymentIntent;
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to create payment';
 
-        setState((prev) => ({
-          ...prev,
-          creating: false,
-          paymentIntent,
-          paymentId: paymentIntent.id,
-        }));
+      setState((prev) => ({
+        ...prev,
+        creating: false,
+        error: message,
+      }));
 
-        return paymentIntent;
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : 'Failed to create payment';
+      throw error;
+    }
+  };
 
-        setState((prev) => ({
-          ...prev,
-          creating: false,
-          error: message,
-        }));
-
-        throw error;
-      }
-    },
-    [clinic?.id]
-  );
-
-  const reset = useCallback(() => {
+  const reset = () => {
     setState({
       creating: false,
       error: null,
       paymentIntent: null,
       paymentId: null,
     });
-  }, []);
+  };
 
   return {
     ...state,
