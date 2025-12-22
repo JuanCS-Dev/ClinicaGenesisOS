@@ -54,7 +54,7 @@ export function PrescriptionEditor({ onSave }: PrescriptionEditorProps) {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-left-2">
       {/* Formulário de adição */}
-      <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100">
+      <div className="bg-genesis-soft p-5 rounded-2xl border border-genesis-border-subtle">
         <h4 className="text-sm font-bold text-genesis-dark mb-4 flex items-center gap-2">
           <Plus className="w-4 h-4" /> Adicionar Medicamento
         </h4>
@@ -64,7 +64,7 @@ export function PrescriptionEditor({ onSave }: PrescriptionEditorProps) {
               Nome do Fármaco
             </label>
             <input
-              className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
+              className="w-full p-2.5 bg-genesis-surface border border-genesis-border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
               placeholder="Ex: Dipirona Sódica"
               value={currentMed.name}
               onChange={(e) => setCurrentMed({ ...currentMed, name: e.target.value })}
@@ -75,7 +75,7 @@ export function PrescriptionEditor({ onSave }: PrescriptionEditorProps) {
               Posologia / Conc.
             </label>
             <input
-              className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
+              className="w-full p-2.5 bg-genesis-surface border border-genesis-border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
               placeholder="Ex: 500mg"
               value={currentMed.dosage}
               onChange={(e) => setCurrentMed({ ...currentMed, dosage: e.target.value })}
@@ -86,7 +86,7 @@ export function PrescriptionEditor({ onSave }: PrescriptionEditorProps) {
               Instruções de Uso
             </label>
             <input
-              className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
+              className="w-full p-2.5 bg-genesis-surface border border-genesis-border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
               placeholder="Ex: 1 cp a cada 6 horas se dor"
               value={currentMed.instructions}
               onChange={(e) => setCurrentMed({ ...currentMed, instructions: e.target.value })}
@@ -109,16 +109,16 @@ export function PrescriptionEditor({ onSave }: PrescriptionEditorProps) {
           Itens da Receita
         </h4>
         {medications.length === 0 ? (
-          <div className="text-center p-8 border-2 border-dashed border-gray-100 rounded-xl">
-            <Pill className="w-8 h-8 text-gray-200 mx-auto mb-2" />
-            <p className="text-sm text-gray-400">Nenhum medicamento adicionado.</p>
+          <div className="text-center p-8 border-2 border-dashed border-genesis-border-subtle rounded-xl">
+            <Pill className="w-8 h-8 text-genesis-subtle mx-auto mb-2" />
+            <p className="text-sm text-genesis-subtle">Nenhum medicamento adicionado.</p>
           </div>
         ) : (
           <div className="space-y-2">
             {medications.map((med, idx) => (
               <div
                 key={idx}
-                className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl shadow-sm"
+                className="flex items-center justify-between p-3 bg-genesis-surface border border-genesis-border-subtle rounded-xl shadow-sm"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center font-bold text-xs">
@@ -127,14 +127,14 @@ export function PrescriptionEditor({ onSave }: PrescriptionEditorProps) {
                   <div>
                     <p className="font-bold text-sm text-genesis-dark">
                       {med.name}{' '}
-                      <span className="text-gray-400 font-normal">• {med.dosage}</span>
+                      <span className="text-genesis-subtle font-normal">• {med.dosage}</span>
                     </p>
                     <p className="text-xs text-genesis-medium">{med.instructions}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => handleRemove(idx)}
-                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2 text-genesis-subtle hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -145,14 +145,14 @@ export function PrescriptionEditor({ onSave }: PrescriptionEditorProps) {
       </div>
 
       {/* Ação */}
-      <div className="flex justify-end pt-4 border-t border-gray-50">
+      <div className="flex justify-end pt-4 border-t border-genesis-border-subtle">
         <button
           onClick={handleSave}
           disabled={!canSave}
           className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-all transform hover:-translate-y-0.5 ${
             canSave
               ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200'
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+              : 'bg-genesis-border-subtle text-genesis-subtle cursor-not-allowed shadow-none'
           }`}
         >
           <Pill className="w-4 h-4" /> Gerar Receita Digital

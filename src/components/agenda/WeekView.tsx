@@ -37,13 +37,13 @@ export function WeekView({ weekDates, appointments, onDayClick }: WeekViewProps)
   return (
     <div className="flex-1 overflow-hidden bg-genesis-soft/50">
       {/* Week Header */}
-      <div className="flex border-b border-gray-200 bg-white/80 sticky top-0 z-10">
+      <div className="flex border-b border-genesis-border bg-genesis-surface/80 sticky top-0 z-10">
         {weekDates.map((date, index) => {
           const isCurrentDay = isToday(date);
           return (
             <div
               key={index}
-              className={`flex-1 p-2 text-center border-r border-gray-100 last:border-r-0 cursor-pointer hover:bg-gray-50 transition-colors ${
+              className={`flex-1 p-2 text-center border-r border-genesis-border-subtle last:border-r-0 cursor-pointer hover:bg-genesis-soft transition-colors ${
                 isCurrentDay ? 'bg-blue-50' : ''
               }`}
               onClick={() => onDayClick?.(date)}
@@ -54,7 +54,7 @@ export function WeekView({ weekDates, appointments, onDayClick }: WeekViewProps)
               <div
                 className={`text-lg font-bold mt-0.5 ${
                   isCurrentDay
-                    ? 'text-white bg-genesis-blue rounded-full w-8 h-8 flex items-center justify-center mx-auto'
+                    ? 'text-white bg-genesis-primary rounded-full w-8 h-8 flex items-center justify-center mx-auto'
                     : 'text-genesis-dark'
                 }`}
               >
@@ -74,7 +74,7 @@ export function WeekView({ weekDates, appointments, onDayClick }: WeekViewProps)
           return (
             <div
               key={index}
-              className={`flex-1 border-r border-gray-100 last:border-r-0 p-2 overflow-y-auto custom-scrollbar ${
+              className={`flex-1 border-r border-genesis-border-subtle last:border-r-0 p-2 overflow-y-auto custom-scrollbar ${
                 isCurrentDay ? 'bg-blue-50/30' : ''
               }`}
             >

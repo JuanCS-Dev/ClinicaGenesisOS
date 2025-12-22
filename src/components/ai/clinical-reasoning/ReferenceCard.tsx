@@ -28,7 +28,7 @@ function isTier1(journal: string): boolean {
 function getRelevanceBadge(score: number): { label: string; color: string; bg: string } {
   if (score >= 80) return { label: 'Alta Relevância', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' };
   if (score >= 60) return { label: 'Relevante', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' };
-  return { label: 'Referência', color: 'text-gray-600', bg: 'bg-gray-50 border-gray-200' };
+  return { label: 'Referência', color: 'text-genesis-medium', bg: 'bg-genesis-soft border-genesis-border' };
 }
 
 export function ReferenceCard({ reference, index = 0 }: ReferenceCardProps): React.ReactElement {
@@ -42,7 +42,7 @@ export function ReferenceCard({ reference, index = 0 }: ReferenceCardProps): Rea
         group relative overflow-hidden rounded-xl border transition-all duration-300
         ${tier1
           ? 'bg-gradient-to-br from-amber-50/50 to-white border-amber-200/60 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-100/50'
-          : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-md'
+          : 'bg-genesis-surface border-genesis-border hover:border-blue-300 hover:shadow-md'
         }
       `}
       style={{ animationDelay: `${index * 100}ms` }}
@@ -73,19 +73,19 @@ export function ReferenceCard({ reference, index = 0 }: ReferenceCardProps): Rea
           {/* Content */}
           <div className="flex-1 min-w-0 pr-8">
             {/* Title */}
-            <h4 className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 group-hover:text-blue-900 transition-colors">
+            <h4 className="text-sm font-semibold text-genesis-dark leading-snug line-clamp-2 group-hover:text-blue-900 transition-colors">
               {reference.title}
             </h4>
 
             {/* Meta */}
             <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-              <span className="text-gray-600 font-medium">{reference.authors}</span>
-              <span className="text-gray-300">•</span>
-              <span className={`font-semibold ${tier1 ? 'text-amber-700' : 'text-gray-700'}`}>
+              <span className="text-genesis-medium font-medium">{reference.authors}</span>
+              <span className="text-genesis-subtle">•</span>
+              <span className={`font-semibold ${tier1 ? 'text-amber-700' : 'text-genesis-text'}`}>
                 {reference.journal}
               </span>
-              <span className="text-gray-300">•</span>
-              <span className="text-gray-500">{reference.year}</span>
+              <span className="text-genesis-subtle">•</span>
+              <span className="text-genesis-muted">{reference.year}</span>
             </div>
 
             {/* Badges */}
@@ -113,7 +113,7 @@ export function ReferenceCard({ reference, index = 0 }: ReferenceCardProps): Rea
                 p-2 rounded-lg transition-all duration-200
                 ${tier1
                   ? 'text-amber-500 hover:text-amber-700 hover:bg-amber-100'
-                  : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'
+                  : 'text-genesis-subtle hover:text-blue-600 hover:bg-blue-50'
                 }
               `}
               title="Abrir artigo original"
@@ -128,15 +128,15 @@ export function ReferenceCard({ reference, index = 0 }: ReferenceCardProps): Rea
           <div className="mt-3">
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+              className="flex items-center gap-1 text-xs text-genesis-muted hover:text-genesis-text transition-colors"
             >
               <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
               {isExpanded ? 'Ocultar resumo' : 'Ver resumo'}
             </button>
 
             {isExpanded && (
-              <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-100 animate-in fade-in slide-in-from-top-2 duration-200">
-                <p className="text-xs text-gray-600 leading-relaxed italic">
+              <div className="mt-2 p-3 bg-genesis-soft rounded-lg border border-genesis-border-subtle animate-in fade-in slide-in-from-top-2 duration-200">
+                <p className="text-xs text-genesis-medium leading-relaxed italic">
                   "{reference.excerpt}"
                 </p>
               </div>

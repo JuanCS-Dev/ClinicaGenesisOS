@@ -93,20 +93,20 @@ export function MonthView({ selectedDate, appointments, onDayClick }: MonthViewP
               onClick={() => onDayClick?.(day)}
               className={`
                 min-h-[100px] p-2 rounded-xl border cursor-pointer transition-all
-                ${isCurrentMonth ? 'bg-white border-gray-100' : 'bg-gray-50/50 border-transparent'}
-                ${isCurrentDay ? 'ring-2 ring-genesis-blue ring-offset-1' : ''}
+                ${isCurrentMonth ? 'bg-genesis-surface border-genesis-border-subtle' : 'bg-genesis-soft/50 border-transparent'}
+                ${isCurrentDay ? 'ring-2 ring-genesis-primary ring-offset-1' : ''}
                 ${isSelected ? 'bg-blue-50' : ''}
-                hover:shadow-md hover:border-gray-200
+                hover:shadow-md hover:border-genesis-border
               `}
             >
               {/* Day Number */}
               <div
                 className={`text-sm font-bold mb-1 ${
                   isCurrentDay
-                    ? 'text-white bg-genesis-blue rounded-full w-6 h-6 flex items-center justify-center'
+                    ? 'text-white bg-genesis-primary rounded-full w-6 h-6 flex items-center justify-center'
                     : isCurrentMonth
                       ? 'text-genesis-dark'
-                      : 'text-gray-400'
+                      : 'text-genesis-subtle'
                 }`}
               >
                 {format(day, 'd')}

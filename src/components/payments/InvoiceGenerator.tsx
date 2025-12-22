@@ -189,18 +189,18 @@ export const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+      <div className="bg-genesis-surface rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+        <div className="flex items-center justify-between p-6 border-b border-genesis-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#32D583]/10 flex items-center justify-center">
               <FileText className="w-5 h-5 text-[#32D583]" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-genesis-dark">
                 Gerar Fatura
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-genesis-muted">
                 Crie uma fatura para o paciente
               </p>
             </div>
@@ -208,7 +208,7 @@ export const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({
           {onClose && (
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-genesis-subtle hover:text-genesis-medium"
             >
               ✕
             </button>
@@ -219,41 +219,41 @@ export const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({
         <div className="p-6 space-y-6 overflow-y-auto max-h-[60vh]">
           {/* Customer Info */}
           <div className="space-y-4">
-            <h3 className="font-medium text-gray-900">Dados do Cliente</h3>
+            <h3 className="font-medium text-genesis-dark">Dados do Cliente</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-genesis-text mb-1">
                   Nome *
                 </label>
                 <input
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] outline-none"
+                  className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] outline-none"
                   placeholder="Nome do cliente"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-genesis-text mb-1">
                   CPF
                 </label>
                 <input
                   type="text"
                   value={customerCpf}
                   onChange={(e) => setCustomerCpf(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] outline-none"
+                  className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] outline-none"
                   placeholder="000.000.000-00"
                 />
               </div>
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-genesis-text mb-1">
                   Email
                 </label>
                 <input
                   type="email"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] outline-none"
+                  className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] outline-none"
                   placeholder="email@exemplo.com"
                 />
               </div>
@@ -263,7 +263,7 @@ export const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({
           {/* Items */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-medium text-gray-900">Itens</h3>
+              <h3 className="font-medium text-genesis-dark">Itens</h3>
               <button
                 onClick={addItem}
                 className="flex items-center gap-1 text-sm text-[#32D583] hover:underline"
@@ -277,7 +277,7 @@ export const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({
               {items.map((item, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                  className="flex items-center gap-3 p-3 bg-genesis-soft rounded-lg"
                 >
                   <input
                     type="text"
@@ -285,7 +285,7 @@ export const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({
                     onChange={(e) =>
                       updateItem(index, 'description', e.target.value)
                     }
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] outline-none"
+                    className="flex-1 px-3 py-2 border border-genesis-border rounded-lg bg-genesis-surface focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] outline-none"
                     placeholder="Descrição"
                   />
                   <input
@@ -294,11 +294,11 @@ export const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({
                     onChange={(e) =>
                       updateItem(index, 'quantity', e.target.value)
                     }
-                    className="w-20 px-3 py-2 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] outline-none text-center"
+                    className="w-20 px-3 py-2 border border-genesis-border rounded-lg bg-genesis-surface focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] outline-none text-center"
                     min="1"
                   />
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-genesis-muted">
                       R$
                     </span>
                     <input
@@ -311,18 +311,18 @@ export const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({
                           Math.round(Number(e.target.value) * 100)
                         )
                       }
-                      className="w-28 pl-10 pr-3 py-2 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] outline-none"
+                      className="w-28 pl-10 pr-3 py-2 border border-genesis-border rounded-lg bg-genesis-surface focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] outline-none"
                       min="0"
                       step="0.01"
                     />
                   </div>
-                  <span className="w-24 text-right font-medium text-gray-900">
+                  <span className="w-24 text-right font-medium text-genesis-dark">
                     {formatPaymentAmount(item.total)}
                   </span>
                   {items.length > 1 && (
                     <button
                       onClick={() => removeItem(index)}
-                      className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                      className="p-2 text-genesis-subtle hover:text-red-500 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -334,11 +334,11 @@ export const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({
 
           {/* Discount */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-genesis-text mb-1">
               Desconto
             </label>
             <div className="relative w-40">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-genesis-muted">
                 R$
               </span>
               <input
@@ -347,7 +347,7 @@ export const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({
                 onChange={(e) =>
                   setDiscount(Math.round(Number(e.target.value) * 100))
                 }
-                className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] outline-none"
+                className="w-full pl-10 pr-3 py-2 border border-genesis-border rounded-lg focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] outline-none"
                 min="0"
                 step="0.01"
               />
@@ -356,21 +356,21 @@ export const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-genesis-text mb-1">
               Observações
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] outline-none resize-none"
+              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] outline-none resize-none"
               placeholder="Observações adicionais..."
             />
           </div>
 
           {/* Totals */}
-          <div className="pt-4 border-t border-gray-100 space-y-2">
-            <div className="flex justify-between text-sm text-gray-600">
+          <div className="pt-4 border-t border-genesis-border-subtle space-y-2">
+            <div className="flex justify-between text-sm text-genesis-medium">
               <span>Subtotal</span>
               <span>{formatPaymentAmount(subtotal)}</span>
             </div>
@@ -380,7 +380,7 @@ export const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({
                 <span>-{formatPaymentAmount(discount)}</span>
               </div>
             )}
-            <div className="flex justify-between text-lg font-semibold text-gray-900">
+            <div className="flex justify-between text-lg font-semibold text-genesis-dark">
               <span>Total</span>
               <span>{formatPaymentAmount(total)}</span>
             </div>
@@ -388,7 +388,7 @@ export const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-gray-100 bg-gray-50">
+        <div className="flex items-center justify-between p-6 border-t border-genesis-border-subtle bg-genesis-soft">
           {generated && (
             <div className="flex items-center gap-2 text-green-600">
               <CheckCircle2 className="w-5 h-5" />
@@ -401,7 +401,7 @@ export const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({
             <button
               onClick={handlePrint}
               disabled={!isValid}
-              className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 text-genesis-text bg-genesis-surface border border-genesis-border rounded-lg hover:bg-genesis-soft transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Printer className="w-4 h-4" />
               Imprimir
@@ -410,7 +410,7 @@ export const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({
             <button
               onClick={handleGenerate}
               disabled={!isValid}
-              className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 text-genesis-text bg-genesis-surface border border-genesis-border rounded-lg hover:bg-genesis-soft transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Download className="w-4 h-4" />
               Download PDF

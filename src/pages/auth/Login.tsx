@@ -41,10 +41,10 @@ export const Login: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-genesis-soft via-white to-blue-50 flex">
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-genesis-dark relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-genesis-blue/20 via-transparent to-green-500/10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-genesis-primary/20 via-transparent to-green-500/10" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/10 backdrop-blur rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-genesis-surface/10 backdrop-blur rounded-xl flex items-center justify-center">
               <Activity className="w-6 h-6 text-white" strokeWidth={2.5} />
             </div>
             <span className="text-xl font-bold tracking-tight">CLÍNICA GENESIS</span>
@@ -53,7 +53,7 @@ export const Login: React.FC = () => {
           <div className="space-y-6">
             <h1 className="text-4xl font-bold leading-tight">
               Gestão clínica<br />
-              <span className="text-genesis-blue">inteligente</span> e<br />
+              <span className="text-genesis-primary">inteligente</span> e<br />
               humanizada.
             </h1>
             <p className="text-white/60 text-lg max-w-md">
@@ -67,7 +67,7 @@ export const Login: React.FC = () => {
         </div>
 
         {/* Decorative Elements */}
-        <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-genesis-blue/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-genesis-primary/10 rounded-full blur-3xl" />
         <div className="absolute top-1/4 -right-16 w-64 h-64 bg-green-500/10 rounded-full blur-3xl" />
       </div>
 
@@ -108,7 +108,7 @@ export const Login: React.FC = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="seu@email.com"
                   required
-                  className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-genesis-dark placeholder-genesis-medium/50 focus:outline-none focus:ring-2 focus:ring-genesis-blue/20 focus:border-genesis-blue transition-all"
+                  className="w-full pl-12 pr-4 py-3 bg-genesis-surface border border-genesis-border rounded-xl text-genesis-dark placeholder-genesis-medium/50 focus:outline-none focus:ring-2 focus:ring-genesis-primary/20 focus:border-genesis-primary transition-all"
                 />
               </div>
             </div>
@@ -120,7 +120,7 @@ export const Login: React.FC = () => {
                 </label>
                 <Link
                   to="/forgot-password"
-                  className="text-sm font-medium text-genesis-blue hover:text-blue-600 transition-colors"
+                  className="text-sm font-medium text-genesis-primary hover:text-blue-600 transition-colors"
                 >
                   Esqueceu a senha?
                 </Link>
@@ -134,7 +134,7 @@ export const Login: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full pl-12 pr-12 py-3 bg-white border border-gray-200 rounded-xl text-genesis-dark placeholder-genesis-medium/50 focus:outline-none focus:ring-2 focus:ring-genesis-blue/20 focus:border-genesis-blue transition-all"
+                  className="w-full pl-12 pr-12 py-3 bg-genesis-surface border border-genesis-border rounded-xl text-genesis-dark placeholder-genesis-medium/50 focus:outline-none focus:ring-2 focus:ring-genesis-primary/20 focus:border-genesis-primary transition-all"
                 />
                 <button
                   type="button"
@@ -149,7 +149,7 @@ export const Login: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting || loading}
-              className="w-full py-3 bg-genesis-dark text-white font-semibold rounded-xl hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-genesis-dark/20 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-genesis-dark text-white font-semibold rounded-xl hover:bg-genesis-dark/90 focus:outline-none focus:ring-2 focus:ring-genesis-dark/20 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Entrando...' : 'Entrar'}
             </button>
@@ -157,7 +157,7 @@ export const Login: React.FC = () => {
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
+              <div className="w-full border-t border-genesis-border" />
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-4 bg-gradient-to-br from-genesis-soft via-white to-blue-50 text-genesis-medium">
@@ -170,7 +170,7 @@ export const Login: React.FC = () => {
             type="button"
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full py-3 bg-white border border-gray-200 rounded-xl font-medium text-genesis-dark hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-genesis-surface border border-genesis-border rounded-xl font-medium text-genesis-dark hover:bg-genesis-soft focus:outline-none focus:ring-2 focus:ring-genesis-border transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -195,7 +195,7 @@ export const Login: React.FC = () => {
 
           <p className="text-center text-sm text-genesis-medium">
             Não tem uma conta?{' '}
-            <Link to="/register" className="font-semibold text-genesis-blue hover:text-blue-600 transition-colors">
+            <Link to="/register" className="font-semibold text-genesis-primary hover:text-blue-600 transition-colors">
               Criar conta
             </Link>
           </p>

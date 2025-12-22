@@ -55,7 +55,7 @@ function highlightXml(xml: string): string {
     // Attribute values
     .replace(/(=)(&quot;[^&]*&quot;)/g, '$1<span class="text-green-600">$2</span>')
     // Comments
-    .replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="text-gray-400 italic">$1</span>');
+    .replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="text-genesis-subtle italic">$1</span>');
 }
 
 /**
@@ -125,7 +125,7 @@ export function TissPreview({
   // Status badge
   const getStatusBadge = () => {
     const statusColors: Record<string, string> = {
-      rascunho: 'bg-gray-100 text-gray-700',
+      rascunho: 'bg-genesis-hover text-genesis-text',
       enviada: 'bg-blue-100 text-blue-700',
       em_analise: 'bg-yellow-100 text-yellow-700',
       autorizada: 'bg-green-100 text-green-700',
@@ -147,7 +147,7 @@ export function TissPreview({
     };
 
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[guia.status] || 'bg-gray-100'}`}>
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[guia.status] || 'bg-genesis-hover'}`}>
         {statusLabels[guia.status] || guia.status}
       </span>
     );
@@ -155,18 +155,18 @@ export function TissPreview({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+      <div className="bg-genesis-surface rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 border-b border-genesis-border">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
               <FileText className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-genesis-dark">
                 Guia {guia.tipo.toUpperCase()} - {guia.numeroGuiaPrestador}
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-genesis-muted">
                 {guia.nomeOperadora} • {formatDate(guia.dataAtendimento)}
               </p>
             </div>
@@ -176,7 +176,7 @@ export function TissPreview({
             {getStatusBadge()}
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 text-genesis-subtle hover:text-genesis-medium hover:bg-genesis-hover rounded-lg transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -184,13 +184,13 @@ export function TissPreview({
         </div>
 
         {/* View Toggle */}
-        <div className="flex items-center gap-2 p-4 border-b border-gray-200">
+        <div className="flex items-center gap-2 p-4 border-b border-genesis-border">
           <button
             onClick={() => setViewMode('preview')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               viewMode === 'preview'
                 ? 'bg-blue-100 text-blue-700'
-                : 'text-gray-600 hover:bg-gray-100'
+                : 'text-genesis-medium hover:bg-genesis-hover'
             }`}
           >
             <Eye className="w-4 h-4" />
@@ -201,7 +201,7 @@ export function TissPreview({
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               viewMode === 'xml'
                 ? 'bg-blue-100 text-blue-700'
-                : 'text-gray-600 hover:bg-gray-100'
+                : 'text-genesis-medium hover:bg-genesis-hover'
             }`}
           >
             <Code className="w-4 h-4" />
@@ -212,7 +212,7 @@ export function TissPreview({
 
           <button
             onClick={handleCopy}
-            className="flex items-center gap-2 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 text-genesis-medium hover:bg-genesis-hover rounded-lg text-sm transition-colors"
           >
             {copied ? (
               <>
@@ -228,7 +228,7 @@ export function TissPreview({
           </button>
           <button
             onClick={handleDownload}
-            className="flex items-center gap-2 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 text-genesis-medium hover:bg-genesis-hover rounded-lg text-sm transition-colors"
           >
             <Download className="w-4 h-4" />
             Download
@@ -258,9 +258,9 @@ export function TissPreview({
             <div className="space-y-4">
               {/* Summary Card */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-sm text-gray-500">Valor Total</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                <div className="bg-genesis-soft rounded-xl p-4">
+                  <p className="text-sm text-genesis-muted">Valor Total</p>
+                  <p className="text-2xl font-bold text-genesis-dark">
                     {formatCurrency(guia.valorTotal)}
                   </p>
                 </div>
@@ -283,33 +283,33 @@ export function TissPreview({
               </div>
 
               {/* Details */}
-              <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-                <h3 className="font-medium text-gray-900">Detalhes da Guia</h3>
+              <div className="bg-genesis-soft rounded-xl p-4 space-y-3">
+                <h3 className="font-medium text-genesis-dark">Detalhes da Guia</h3>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <p className="text-gray-500">Número do Prestador</p>
+                    <p className="text-genesis-muted">Número do Prestador</p>
                     <p className="font-mono">{guia.numeroGuiaPrestador}</p>
                   </div>
                   {guia.numeroGuiaOperadora && (
                     <div>
-                      <p className="text-gray-500">Número da Operadora</p>
+                      <p className="text-genesis-muted">Número da Operadora</p>
                       <p className="font-mono">{guia.numeroGuiaOperadora}</p>
                     </div>
                   )}
                   <div>
-                    <p className="text-gray-500">Registro ANS</p>
+                    <p className="text-genesis-muted">Registro ANS</p>
                     <p className="font-mono">{guia.registroANS}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Operadora</p>
+                    <p className="text-genesis-muted">Operadora</p>
                     <p>{guia.nomeOperadora}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Data do Atendimento</p>
+                    <p className="text-genesis-muted">Data do Atendimento</p>
                     <p>{formatDate(guia.dataAtendimento)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Criado em</p>
+                    <p className="text-genesis-muted">Criado em</p>
                     <p>{formatDate(guia.createdAt)}</p>
                   </div>
                 </div>
@@ -336,15 +336,15 @@ export function TissPreview({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between p-4 border-t border-gray-200">
-          <p className="text-sm text-gray-500">
+        <div className="flex items-center justify-between p-4 border-t border-genesis-border">
+          <p className="text-sm text-genesis-muted">
             Gerado em {new Date().toLocaleString('pt-BR')}
           </p>
 
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-genesis-text bg-genesis-surface border border-genesis-border rounded-lg hover:bg-genesis-soft transition-colors"
             >
               Fechar
             </button>

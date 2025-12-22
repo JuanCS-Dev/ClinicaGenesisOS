@@ -158,36 +158,36 @@ export const PixSettings: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6">
+    <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle p-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-xl bg-[#32D583]/10 flex items-center justify-center">
           <QrCode className="w-5 h-5 text-[#32D583]" />
         </div>
         <div>
-          <h3 className="font-semibold text-gray-900">Configuração PIX</h3>
-          <p className="text-sm text-gray-500">
+          <h3 className="font-semibold text-genesis-dark">Configuração PIX</h3>
+          <p className="text-sm text-genesis-muted">
             Configure sua chave PIX para receber pagamentos sem taxas
           </p>
         </div>
       </div>
 
       {/* Enable toggle */}
-      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl mb-6">
+      <div className="flex items-center justify-between p-4 bg-genesis-soft rounded-xl mb-6">
         <div>
-          <p className="font-medium text-gray-900">Habilitar PIX Direto</p>
-          <p className="text-sm text-gray-500">
+          <p className="font-medium text-genesis-dark">Habilitar PIX Direto</p>
+          <p className="text-sm text-genesis-muted">
             Receba pagamentos diretamente na sua conta (0% de taxas)
           </p>
         </div>
         <button
           onClick={() => setEnabled(!enabled)}
           className={`relative w-12 h-6 rounded-full transition-colors ${
-            enabled ? 'bg-[#32D583]' : 'bg-gray-300'
+            enabled ? 'bg-[#32D583]' : 'bg-genesis-border'
           }`}
         >
           <div
-            className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+            className={`absolute top-1 w-4 h-4 bg-genesis-surface rounded-full transition-transform ${
               enabled ? 'left-7' : 'left-1'
             }`}
           />
@@ -198,7 +198,7 @@ export const PixSettings: React.FC = () => {
       <div className={`space-y-4 ${!enabled && 'opacity-50 pointer-events-none'}`}>
         {/* PIX Key */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-genesis-text mb-1">
             Chave PIX *
           </label>
           <div className="relative">
@@ -207,30 +207,30 @@ export const PixSettings: React.FC = () => {
               value={pixKey}
               onChange={(e) => setPixKey(e.target.value)}
               placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] pr-10"
+              className="w-full px-4 py-2.5 border border-genesis-border rounded-xl focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] pr-10"
             />
             <button
               type="button"
               onClick={() => setShowKey(!showKey)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-genesis-subtle hover:text-genesis-medium"
             >
               {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
-          <p className="mt-1 text-xs text-gray-400">
+          <p className="mt-1 text-xs text-genesis-subtle">
             Detectado: {PIX_KEY_TYPE_LABELS[pixKeyType]}
           </p>
         </div>
 
         {/* Key Type (manual override) */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-genesis-text mb-1">
             Tipo de Chave
           </label>
           <select
             value={pixKeyType}
             onChange={(e) => setPixKeyType(e.target.value as PixKeyType)}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583]"
+            className="w-full px-4 py-2.5 border border-genesis-border rounded-xl focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583]"
           >
             {Object.entries(PIX_KEY_TYPE_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
@@ -242,44 +242,44 @@ export const PixSettings: React.FC = () => {
 
         {/* Receiver Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Nome do Recebedor * <span className="text-gray-400">(max 25 caracteres)</span>
+          <label className="block text-sm font-medium text-genesis-text mb-1">
+            Nome do Recebedor * <span className="text-genesis-subtle">(max 25 caracteres)</span>
           </label>
           <input
             type="text"
             value={receiverName}
             onChange={(e) => setReceiverName(e.target.value.slice(0, 25))}
             placeholder="Nome que aparecerá no app do pagador"
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] uppercase"
+            className="w-full px-4 py-2.5 border border-genesis-border rounded-xl focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] uppercase"
           />
-          <p className="mt-1 text-xs text-gray-400">
+          <p className="mt-1 text-xs text-genesis-subtle">
             {receiverName.length}/25 caracteres
           </p>
         </div>
 
         {/* Receiver City */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Cidade * <span className="text-gray-400">(max 15 caracteres)</span>
+          <label className="block text-sm font-medium text-genesis-text mb-1">
+            Cidade * <span className="text-genesis-subtle">(max 15 caracteres)</span>
           </label>
           <input
             type="text"
             value={receiverCity}
             onChange={(e) => setReceiverCity(e.target.value.slice(0, 15))}
             placeholder="Ex: SAO PAULO"
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] uppercase"
+            className="w-full px-4 py-2.5 border border-genesis-border rounded-xl focus:ring-2 focus:ring-[#32D583]/20 focus:border-[#32D583] uppercase"
           />
-          <p className="mt-1 text-xs text-gray-400">
+          <p className="mt-1 text-xs text-genesis-subtle">
             {receiverCity.length}/15 caracteres
           </p>
         </div>
 
         {/* Preview */}
         {previewQR && (
-          <div className="flex flex-col items-center p-4 bg-gray-50 rounded-xl">
-            <p className="text-sm font-medium text-gray-700 mb-3">Preview do QR Code</p>
+          <div className="flex flex-col items-center p-4 bg-genesis-soft rounded-xl">
+            <p className="text-sm font-medium text-genesis-text mb-3">Preview do QR Code</p>
             <img src={previewQR} alt="Preview QR Code" className="w-32 h-32" />
-            <p className="mt-2 text-xs text-gray-400">Valor de teste: R$ 1,00</p>
+            <p className="mt-2 text-xs text-genesis-subtle">Valor de teste: R$ 1,00</p>
           </div>
         )}
 
@@ -302,7 +302,7 @@ export const PixSettings: React.FC = () => {
         <div className="flex gap-3 pt-4">
           <button
             onClick={handlePreview}
-            className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
+            className="flex-1 px-4 py-2.5 border border-genesis-border rounded-xl text-genesis-text hover:bg-genesis-soft transition-colors"
           >
             Testar QR Code
           </button>

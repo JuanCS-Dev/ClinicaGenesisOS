@@ -36,7 +36,7 @@ function FeedbackButton({
 }) {
   const colorClasses = {
     green: 'bg-[#D1FAE5] text-[#047857] hover:bg-[#A7F3D0]',
-    gray: 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+    gray: 'bg-genesis-hover text-genesis-medium hover:bg-genesis-border-subtle',
     red: 'bg-[#FEE2E2] text-[#B91C1C] hover:bg-[#FECACA]',
   };
 
@@ -91,10 +91,10 @@ export function ResultsView({
           ))}
           {result.correlations.length === 0 && (
             <div className="col-span-2 text-center py-12">
-              <div className="p-4 bg-gray-100 rounded-2xl w-fit mx-auto mb-4">
-                <GitBranch className="w-8 h-8 text-gray-400" />
+              <div className="p-4 bg-genesis-hover rounded-2xl w-fit mx-auto mb-4">
+                <GitBranch className="w-8 h-8 text-genesis-subtle" />
               </div>
-              <p className="text-gray-500">Nenhum padrão clínico identificado</p>
+              <p className="text-genesis-muted">Nenhum padrão clínico identificado</p>
             </div>
           )}
         </div>
@@ -114,7 +114,7 @@ export function ResultsView({
 
       {/* Feedback */}
       <div className="flex items-center justify-center gap-4 py-4">
-        <span className="text-sm text-gray-500">Esta análise foi útil?</span>
+        <span className="text-sm text-genesis-muted">Esta análise foi útil?</span>
         <div className="flex gap-2">
           <FeedbackButton
             onClick={() => onFeedback('helpful')}

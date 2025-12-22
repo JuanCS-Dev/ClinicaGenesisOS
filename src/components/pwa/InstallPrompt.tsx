@@ -31,14 +31,14 @@ export function InstallPrompt(): React.ReactElement | null {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 pointer-events-none">
-      <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden pointer-events-auto animate-slide-up">
+      <div className="max-w-lg mx-auto bg-genesis-surface rounded-2xl shadow-2xl border border-genesis-border-subtle overflow-hidden pointer-events-auto animate-slide-up">
         {/* Close button */}
         <button
           onClick={dismissInstall}
-          className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+          className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-genesis-hover transition-colors"
           aria-label="Fechar"
         >
-          <X className="w-4 h-4 text-gray-400" />
+          <X className="w-4 h-4 text-genesis-subtle" />
         </button>
 
         <div className="p-5">
@@ -48,10 +48,10 @@ export function InstallPrompt(): React.ReactElement | null {
               <Smartphone className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1 pr-6">
-              <h3 className="font-semibold text-gray-900 text-lg">
+              <h3 className="font-semibold text-genesis-dark text-lg">
                 Instale o ClinicaGenesis
               </h3>
-              <p className="text-sm text-gray-500 mt-0.5">
+              <p className="text-sm text-genesis-muted mt-0.5">
                 Acesse mais rapido direto da sua tela inicial
               </p>
             </div>
@@ -59,11 +59,11 @@ export function InstallPrompt(): React.ReactElement | null {
 
           {/* Benefits */}
           <div className="grid grid-cols-2 gap-3 mb-5">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-sm text-genesis-medium">
               <Zap className="w-4 h-4 text-amber-500" />
               <span>Acesso instantaneo</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-sm text-genesis-medium">
               <WifiOff className="w-4 h-4 text-blue-500" />
               <span>Funciona offline</span>
             </div>
@@ -73,7 +73,7 @@ export function InstallPrompt(): React.ReactElement | null {
           <div className="flex gap-3">
             <button
               onClick={dismissInstall}
-              className="flex-1 px-4 py-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors font-medium"
+              className="flex-1 px-4 py-2.5 text-genesis-medium hover:text-genesis-dark hover:bg-genesis-hover rounded-xl transition-colors font-medium"
             >
               Agora nao
             </button>

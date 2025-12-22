@@ -32,7 +32,7 @@ export const MetricCard = memo(function MetricCard({
   const isPositive = trend !== undefined && trend >= 0;
 
   return (
-    <div className="group bg-white p-6 rounded-2xl border border-white shadow-soft hover:shadow-float hover:-translate-y-1 transition-all duration-300 ease-out relative overflow-hidden">
+    <div className="group bg-genesis-surface p-6 rounded-2xl border border-white shadow-soft hover:shadow-float hover:-translate-y-1 transition-all duration-300 ease-out relative overflow-hidden">
       {/* Background gradient */}
       <div
         className={`absolute top-0 right-0 w-24 h-24 ${bgClass} opacity-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110`}
@@ -69,11 +69,11 @@ export const MetricCard = memo(function MetricCard({
           <p className="text-[13px] font-medium text-genesis-medium">{title}</p>
         </div>
 
-        <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="mt-4 pt-3 border-t border-genesis-border-subtle flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <span className="text-[10px] text-genesis-medium">
             {trendLabel || subtitle}
           </span>
-          <ArrowRight className="w-3 h-3 text-genesis-blue" />
+          <ArrowRight className="w-3 h-3 text-genesis-primary" />
         </div>
       </div>
     </div>

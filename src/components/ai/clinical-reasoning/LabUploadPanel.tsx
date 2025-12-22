@@ -136,7 +136,7 @@ export function LabUploadPanel({
             ${
               isDragActive || isDragHovering
                 ? 'border-[#818CF8] bg-[#EEF2FF]/50 scale-[1.01]'
-                : 'border-gray-200 bg-gradient-to-b from-white to-gray-50/50 hover:border-gray-300 hover:shadow-lg'
+                : 'border-genesis-border bg-gradient-to-b from-white to-gray-50/50 hover:border-genesis-border hover:shadow-lg'
             }
           `}
         >
@@ -172,12 +172,12 @@ export function LabUploadPanel({
             </div>
 
             {/* Title */}
-            <h3 className="text-xl font-semibold text-gray-900 text-center mb-2">
+            <h3 className="text-xl font-semibold text-genesis-dark text-center mb-2">
               {isDragActive ? 'Solte o arquivo aqui' : 'Análise de Exame Laboratorial'}
             </h3>
 
             {/* Subtitle */}
-            <p className="text-gray-500 text-center mb-8 max-w-sm mx-auto">
+            <p className="text-genesis-muted text-center mb-8 max-w-sm mx-auto">
               {isDragActive
                 ? 'Vamos processar seu exame com IA avançada'
                 : 'Arraste um PDF ou imagem do exame, ou escolha uma das opções abaixo'}
@@ -224,15 +224,15 @@ export function LabUploadPanel({
                   }}
                   className="
                     flex items-center gap-3 px-6 py-3.5 rounded-xl
-                    bg-white border border-gray-200
-                    text-gray-700 font-medium
+                    bg-genesis-surface border border-genesis-border
+                    text-genesis-text font-medium
                     shadow-sm
-                    hover:bg-gray-50 hover:border-gray-300 hover:shadow-md
+                    hover:bg-genesis-soft hover:border-genesis-border hover:shadow-md
                     active:scale-[0.98]
                     transition-all duration-200
                   "
                 >
-                  <Camera className="w-5 h-5 text-gray-500" />
+                  <Camera className="w-5 h-5 text-genesis-muted" />
                   <span>Usar Câmera</span>
                 </button>
               </div>
@@ -260,7 +260,7 @@ export function LabUploadPanel({
         </div>
 
         {/* Supported Formats */}
-        <p className="mt-6 text-center text-xs text-gray-400">
+        <p className="mt-6 text-center text-xs text-genesis-subtle">
           Formatos aceitos: PDF, JPG, PNG, WebP • Máximo 15MB
         </p>
       </div>
@@ -271,12 +271,12 @@ export function LabUploadPanel({
   if (isProcessing) {
     return (
       <div className="animate-[fadeIn_0.3s_ease-out_forwards]">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden">
+        <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle shadow-xl overflow-hidden">
           {/* Header with gradient */}
           <div className="relative px-6 py-5 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                <div className="p-2 bg-genesis-surface/20 rounded-xl backdrop-blur-sm">
                   <Brain className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -290,7 +290,7 @@ export function LabUploadPanel({
               {onCancel && (
                 <button
                   onClick={onCancel}
-                  className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                  className="p-2 rounded-lg bg-genesis-surface/10 hover:bg-genesis-surface/20 transition-colors"
                 >
                   <X className="w-4 h-4 text-white" />
                 </button>
@@ -325,7 +325,7 @@ export function LabUploadPanel({
                             ? 'bg-[#D1FAE5]'
                             : isActive
                             ? 'bg-[#4F46E5] animate-[progressPulse_2s_ease-in-out_infinite]'
-                            : 'bg-gray-100'
+                            : 'bg-genesis-hover'
                         }
                       `}
                     >
@@ -334,7 +334,7 @@ export function LabUploadPanel({
                       ) : isActive ? (
                         <Loader2 className="w-5 h-5 text-white animate-spin" />
                       ) : (
-                        <StageIcon className="w-5 h-5 text-gray-400" />
+                        <StageIcon className="w-5 h-5 text-genesis-subtle" />
                       )}
                     </div>
 
@@ -343,7 +343,7 @@ export function LabUploadPanel({
                       <p
                         className={`
                           font-medium transition-colors duration-300
-                          ${isActive ? 'text-[#312E81]' : isCompleted ? 'text-gray-500' : 'text-gray-400'}
+                          ${isActive ? 'text-[#312E81]' : isCompleted ? 'text-genesis-muted' : 'text-genesis-subtle'}
                         `}
                       >
                         {stage.label}
@@ -367,7 +367,7 @@ export function LabUploadPanel({
             </div>
 
             {/* Progress bar */}
-            <div className="mt-6 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="mt-6 h-1.5 bg-genesis-hover rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] rounded-full transition-all duration-500 ease-out"
                 style={{
@@ -377,7 +377,7 @@ export function LabUploadPanel({
             </div>
 
             {/* Estimated time */}
-            <p className="mt-4 text-center text-sm text-gray-500">
+            <p className="mt-4 text-center text-sm text-genesis-muted">
               Tempo estimado: 15-30 segundos
             </p>
           </div>
@@ -435,7 +435,7 @@ export function LabUploadPanel({
                 onClick={onCancel}
                 className="
                   flex items-center gap-2 px-6 py-3 rounded-xl
-                  bg-white border border-[#FECACA]
+                  bg-genesis-surface border border-[#FECACA]
                   text-[#B91C1C] font-medium
                   hover:bg-[#FEF2F2]
                   transition-colors
@@ -474,11 +474,11 @@ function FeatureItem({
   };
 
   return (
-    <div className="flex flex-col items-center gap-2 p-3 rounded-xl bg-gray-50/50">
+    <div className="flex flex-col items-center gap-2 p-3 rounded-xl bg-genesis-soft/50">
       <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
         <Icon className="w-4 h-4" />
       </div>
-      <span className="text-xs font-medium text-gray-600">{label}</span>
+      <span className="text-xs font-medium text-genesis-medium">{label}</span>
     </div>
   );
 }

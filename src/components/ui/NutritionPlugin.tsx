@@ -11,17 +11,17 @@ export const NutritionPlugin: React.FC = () => {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Plugin Header/Nav */}
       <div className="flex items-center justify-between">
-        <div className="flex p-1 bg-gray-100 rounded-xl w-fit">
+        <div className="flex p-1 bg-genesis-hover rounded-xl w-fit">
             <button 
             onClick={() => setActiveSubTab('anthro')}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${activeSubTab === 'anthro' ? 'bg-white text-genesis-dark shadow-sm' : 'text-genesis-medium hover:text-genesis-dark'}`}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${activeSubTab === 'anthro' ? 'bg-genesis-surface text-genesis-dark shadow-sm' : 'text-genesis-medium hover:text-genesis-dark'}`}
             >
             <Activity className="w-3.5 h-3.5" />
             Dados Corporais
             </button>
             <button 
             onClick={() => setActiveSubTab('plan')}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${activeSubTab === 'plan' ? 'bg-white text-genesis-dark shadow-sm' : 'text-genesis-medium hover:text-genesis-dark'}`}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${activeSubTab === 'plan' ? 'bg-genesis-surface text-genesis-dark shadow-sm' : 'text-genesis-medium hover:text-genesis-dark'}`}
             >
             <Utensils className="w-3.5 h-3.5" />
             Plano Alimentar
@@ -36,7 +36,7 @@ export const NutritionPlugin: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Quick Stats - Apple Health Cards */}
           <div className="lg:col-span-1 space-y-4">
-            <div className="bg-white p-6 rounded-3xl border border-white shadow-soft group hover:shadow-float transition-all duration-300">
+            <div className="bg-genesis-surface p-6 rounded-3xl border border-white shadow-soft group hover:shadow-float transition-all duration-300">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-gradient-to-br from-orange-400 to-orange-500 text-white rounded-full shadow-lg shadow-orange-200">
@@ -50,33 +50,33 @@ export const NutritionPlugin: React.FC = () => {
                  <p className="text-3xl font-bold text-genesis-dark tracking-tight">{latest.weight}</p>
                  <span className="text-sm font-medium text-genesis-medium">kg</span>
               </div>
-              <div className="mt-4 pt-4 border-t border-gray-50 flex justify-between items-center">
+              <div className="mt-4 pt-4 border-t border-genesis-border-subtle flex justify-between items-center">
                 <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">-2.0kg</span>
                 <span className="text-[10px] text-genesis-medium">vs. anterior</span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white p-5 rounded-3xl border border-white shadow-soft hover:shadow-float transition-all">
+                <div className="bg-genesis-surface p-5 rounded-3xl border border-white shadow-soft hover:shadow-float transition-all">
                    <div className="p-2 w-fit bg-gradient-to-br from-blue-400 to-blue-500 text-white rounded-full shadow-lg shadow-blue-200 mb-3">
                       <Activity className="w-3.5 h-3.5" />
                    </div>
                    <p className="text-[10px] font-bold text-genesis-medium uppercase mb-1">IMC</p>
                    <p className="text-xl font-bold text-genesis-dark">{latest.imc}</p>
                 </div>
-                <div className="bg-white p-5 rounded-3xl border border-white shadow-soft hover:shadow-float transition-all">
+                <div className="bg-genesis-surface p-5 rounded-3xl border border-white shadow-soft hover:shadow-float transition-all">
                    <div className="p-2 w-fit bg-gradient-to-br from-purple-400 to-purple-500 text-white rounded-full shadow-lg shadow-purple-200 mb-3">
                       <Ruler className="w-3.5 h-3.5" />
                    </div>
                    <p className="text-[10px] font-bold text-genesis-medium uppercase mb-1">Cintura</p>
-                   <p className="text-xl font-bold text-genesis-dark">{latest.waist} <span className="text-xs text-gray-400">cm</span></p>
+                   <p className="text-xl font-bold text-genesis-dark">{latest.waist} <span className="text-xs text-genesis-subtle">cm</span></p>
                 </div>
             </div>
 
             <div className="bg-gradient-to-br from-[#34C759] to-[#28A745] p-6 rounded-3xl text-white shadow-glow">
                 <div className="flex justify-between items-start mb-4">
                     <h4 className="font-bold">Metas do Mês</h4>
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                    <div className="w-8 h-8 rounded-full bg-genesis-surface/20 flex items-center justify-center backdrop-blur-sm">
                         <Flame className="w-4 h-4 text-white" />
                     </div>
                 </div>
@@ -87,7 +87,7 @@ export const NutritionPlugin: React.FC = () => {
                             <span>28% / 25%</span>
                         </div>
                         <div className="h-1.5 bg-black/10 rounded-full overflow-hidden">
-                            <div className="h-full bg-white w-[80%] rounded-full"></div>
+                            <div className="h-full bg-genesis-surface w-[80%] rounded-full"></div>
                         </div>
                     </div>
                      <div>
@@ -96,7 +96,7 @@ export const NutritionPlugin: React.FC = () => {
                             <span>2.1L / 3.0L</span>
                         </div>
                         <div className="h-1.5 bg-black/10 rounded-full overflow-hidden">
-                            <div className="h-full bg-white w-[60%] rounded-full"></div>
+                            <div className="h-full bg-genesis-surface w-[60%] rounded-full"></div>
                         </div>
                     </div>
                 </div>
@@ -104,13 +104,13 @@ export const NutritionPlugin: React.FC = () => {
           </div>
 
           {/* Chart - Clean & Minimal */}
-          <div className="lg:col-span-2 bg-white p-8 rounded-3xl border border-white shadow-soft flex flex-col relative overflow-hidden">
+          <div className="lg:col-span-2 bg-genesis-surface p-8 rounded-3xl border border-white shadow-soft flex flex-col relative overflow-hidden">
             <div className="flex justify-between items-start mb-8 relative z-10">
                 <div>
                     <h3 className="text-lg font-bold text-genesis-dark tracking-tight">Evolução de Peso</h3>
                     <p className="text-xs text-genesis-medium font-medium">Últimos 4 meses</p>
                 </div>
-                <button className="text-xs font-bold text-genesis-blue bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors">
+                <button className="text-xs font-bold text-genesis-primary bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors">
                     Ver Histórico
                 </button>
             </div>
@@ -141,8 +141,8 @@ export const NutritionPlugin: React.FC = () => {
       )}
 
       {activeSubTab === 'plan' && (
-        <div className="bg-white border border-white rounded-3xl shadow-soft overflow-hidden group">
-          <div className="p-8 border-b border-gray-50 flex justify-between items-center bg-gradient-to-r from-white to-gray-50">
+        <div className="bg-genesis-surface border border-white rounded-3xl shadow-soft overflow-hidden group">
+          <div className="p-8 border-b border-genesis-border-subtle flex justify-between items-center bg-gradient-to-r from-white to-gray-50">
             <div>
               <div className="flex items-center gap-3 mb-1">
                  <h3 className="text-xl font-bold text-genesis-dark tracking-tight">Reeducação Metabólica</h3>
@@ -150,28 +150,28 @@ export const NutritionPlugin: React.FC = () => {
               </div>
               <p className="text-xs font-medium text-genesis-medium">Vigência: 10 Dez - 10 Jan • Dr. André</p>
             </div>
-            <button className="flex items-center gap-2 text-genesis-dark bg-white border border-gray-200 hover:border-genesis-blue hover:text-genesis-blue px-4 py-2 rounded-xl transition-all text-xs font-bold shadow-sm">
+            <button className="flex items-center gap-2 text-genesis-dark bg-genesis-surface border border-genesis-border hover:border-genesis-primary hover:text-genesis-primary px-4 py-2 rounded-xl transition-all text-xs font-bold shadow-sm">
               <Download className="w-4 h-4" /> Baixar PDF
             </button>
           </div>
           
           <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
              <div className="relative pl-6 border-l-2 border-green-500/20">
-                <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white border-4 border-green-500"></div>
+                <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-genesis-surface border-4 border-green-500"></div>
                 <h4 className="font-bold text-genesis-dark mb-4 text-sm flex items-center justify-between">
                   Café da Manhã
-                  <span className="text-[10px] text-genesis-medium font-medium bg-gray-100 px-2 py-0.5 rounded">07:30</span>
+                  <span className="text-[10px] text-genesis-medium font-medium bg-genesis-hover px-2 py-0.5 rounded">07:30</span>
                 </h4>
                 <ul className="space-y-4">
-                  <li className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl border border-transparent hover:border-green-200 hover:bg-green-50/30 transition-all cursor-pointer group/item">
+                  <li className="flex items-center justify-between p-3 bg-genesis-soft/50 rounded-xl border border-transparent hover:border-green-200 hover:bg-green-50/30 transition-all cursor-pointer group/item">
                     <span className="text-sm font-medium text-genesis-dark">Ovos mexidos</span>
                     <span className="text-xs font-semibold text-genesis-medium group-hover/item:text-green-600">2 un</span>
                   </li>
-                  <li className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl border border-transparent hover:border-green-200 hover:bg-green-50/30 transition-all cursor-pointer group/item">
+                  <li className="flex items-center justify-between p-3 bg-genesis-soft/50 rounded-xl border border-transparent hover:border-green-200 hover:bg-green-50/30 transition-all cursor-pointer group/item">
                     <span className="text-sm font-medium text-genesis-dark">Mamão papaya</span>
                     <span className="text-xs font-semibold text-genesis-medium group-hover/item:text-green-600">1/2 un</span>
                   </li>
-                   <li className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl border border-transparent hover:border-green-200 hover:bg-green-50/30 transition-all cursor-pointer group/item">
+                   <li className="flex items-center justify-between p-3 bg-genesis-soft/50 rounded-xl border border-transparent hover:border-green-200 hover:bg-green-50/30 transition-all cursor-pointer group/item">
                     <span className="text-sm font-medium text-genesis-dark">Aveia em flocos</span>
                     <span className="text-xs font-semibold text-genesis-medium group-hover/item:text-green-600">1 col.</span>
                   </li>
@@ -179,21 +179,21 @@ export const NutritionPlugin: React.FC = () => {
              </div>
 
              <div className="relative pl-6 border-l-2 border-orange-500/20">
-                <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white border-4 border-orange-500"></div>
+                <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-genesis-surface border-4 border-orange-500"></div>
                 <h4 className="font-bold text-genesis-dark mb-4 text-sm flex items-center justify-between">
                   Almoço
-                  <span className="text-[10px] text-genesis-medium font-medium bg-gray-100 px-2 py-0.5 rounded">12:30</span>
+                  <span className="text-[10px] text-genesis-medium font-medium bg-genesis-hover px-2 py-0.5 rounded">12:30</span>
                 </h4>
                 <ul className="space-y-4">
-                  <li className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl border border-transparent hover:border-orange-200 hover:bg-orange-50/30 transition-all cursor-pointer group/item">
+                  <li className="flex items-center justify-between p-3 bg-genesis-soft/50 rounded-xl border border-transparent hover:border-orange-200 hover:bg-orange-50/30 transition-all cursor-pointer group/item">
                     <span className="text-sm font-medium text-genesis-dark">Peito de frango</span>
                     <span className="text-xs font-semibold text-genesis-medium group-hover/item:text-orange-600">120g</span>
                   </li>
-                  <li className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl border border-transparent hover:border-orange-200 hover:bg-orange-50/30 transition-all cursor-pointer group/item">
+                  <li className="flex items-center justify-between p-3 bg-genesis-soft/50 rounded-xl border border-transparent hover:border-orange-200 hover:bg-orange-50/30 transition-all cursor-pointer group/item">
                     <span className="text-sm font-medium text-genesis-dark">Arroz integral</span>
                     <span className="text-xs font-semibold text-genesis-medium group-hover/item:text-orange-600">4 col.</span>
                   </li>
-                   <li className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl border border-transparent hover:border-orange-200 hover:bg-orange-50/30 transition-all cursor-pointer group/item">
+                   <li className="flex items-center justify-between p-3 bg-genesis-soft/50 rounded-xl border border-transparent hover:border-orange-200 hover:bg-orange-50/30 transition-all cursor-pointer group/item">
                     <span className="text-sm font-medium text-genesis-dark">Brócolis</span>
                     <span className="text-xs font-semibold text-genesis-medium group-hover/item:text-orange-600">1 xíc.</span>
                   </li>

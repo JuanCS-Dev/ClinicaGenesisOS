@@ -42,7 +42,7 @@ export function DiagnosisView({ result }: DiagnosisViewProps) {
         <div className="p-4 bg-gradient-to-r from-[#EEF2FF] to-[#F5F3FF] rounded-xl border border-[#E0E7FF]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-white rounded-lg shadow-sm">
+              <div className="p-2 bg-genesis-surface rounded-lg shadow-sm">
                 <Brain className="w-5 h-5 text-[#4F46E5]" />
               </div>
               <div>
@@ -67,27 +67,27 @@ export function DiagnosisView({ result }: DiagnosisViewProps) {
         <div
           key={idx}
           className={`
-            p-5 bg-white rounded-xl border transition-all duration-200
+            p-5 bg-genesis-surface rounded-xl border transition-all duration-200
             ${
               hasConsensusInfo(dx) && dx.consensusLevel === 'divergent'
                 ? 'border-[#FECACA] bg-[#FEF2F2]/30'
-                : 'border-gray-100 hover:shadow-lg hover:border-gray-200'
+                : 'border-genesis-border-subtle hover:shadow-lg hover:border-genesis-border'
             }
           `}
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-1">
-                <span className="flex items-center justify-center w-7 h-7 bg-gray-100 rounded-full text-sm font-bold text-gray-600">
+                <span className="flex items-center justify-center w-7 h-7 bg-genesis-hover rounded-full text-sm font-bold text-genesis-medium">
                   {idx + 1}
                 </span>
-                <h4 className="font-semibold text-gray-900">{dx.name}</h4>
+                <h4 className="font-semibold text-genesis-dark">{dx.name}</h4>
                 {hasConsensusInfo(dx) && (
                   <ConsensusBadge level={dx.consensusLevel} size="sm" />
                 )}
               </div>
               {dx.icd10 && (
-                <p className="text-xs text-gray-400 ml-10">CID-10: {dx.icd10}</p>
+                <p className="text-xs text-genesis-subtle ml-10">CID-10: {dx.icd10}</p>
               )}
             </div>
 
@@ -101,13 +101,13 @@ export function DiagnosisView({ result }: DiagnosisViewProps) {
               />
               <button
                 onClick={() => setExpandedDx(expandedDx === idx ? null : idx)}
-                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-1.5 hover:bg-genesis-hover rounded-lg transition-colors"
                 title={expandedDx === idx ? 'Recolher' : 'Expandir explicação'}
               >
                 {expandedDx === idx ? (
-                  <ChevronUp className="w-4 h-4 text-gray-500" />
+                  <ChevronUp className="w-4 h-4 text-genesis-muted" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-gray-500" />
+                  <ChevronDown className="w-4 h-4 text-genesis-muted" />
                 )}
               </button>
             </div>
@@ -115,12 +115,12 @@ export function DiagnosisView({ result }: DiagnosisViewProps) {
 
           {dx.supportingEvidence.length > 0 && (
             <div className="mt-4 ml-10">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+              <p className="text-xs font-medium text-genesis-muted uppercase tracking-wide mb-2">
                 Evidências
               </p>
               <ul className="space-y-1">
                 {dx.supportingEvidence.map((ev, i) => (
-                  <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
+                  <li key={i} className="text-sm text-genesis-medium flex items-start gap-2">
                     <span className="text-[#818CF8] mt-1">•</span>
                     {ev}
                   </li>
@@ -137,7 +137,7 @@ export function DiagnosisView({ result }: DiagnosisViewProps) {
 
           {/* Expanded Explanation Panel */}
           {expandedDx === idx && (
-            <div className="mt-4 ml-10 pt-4 border-t border-gray-100 space-y-4 animate-in fade-in slide-in-from-top-2">
+            <div className="mt-4 ml-10 pt-4 border-t border-genesis-border-subtle space-y-4 animate-in fade-in slide-in-from-top-2">
               <ExplanationPanel
                 diagnosis={dx}
                 showReferences

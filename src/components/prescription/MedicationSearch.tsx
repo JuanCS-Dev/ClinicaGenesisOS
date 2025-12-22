@@ -239,7 +239,7 @@ export function MedicationSearch({
     <div className="relative">
       {/* Search Input */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-subtle" />
         <input
           ref={inputRef}
           type="text"
@@ -249,7 +249,7 @@ export function MedicationSearch({
           onFocus={() => results.length > 0 && setIsOpen(true)}
           placeholder={placeholder}
           disabled={disabled}
-          className="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+          className="w-full pl-10 pr-10 py-3 border border-genesis-border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-genesis-hover disabled:cursor-not-allowed"
         />
         {loading && (
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-500 animate-spin" />
@@ -260,7 +260,7 @@ export function MedicationSearch({
       {isOpen && results.length > 0 && (
         <ul
           ref={listRef}
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-80 overflow-y-auto"
+          className="absolute z-50 w-full mt-1 bg-genesis-surface border border-genesis-border rounded-xl shadow-lg max-h-80 overflow-y-auto"
           role="listbox"
         >
           {results.map((medication, index) => (
@@ -268,8 +268,8 @@ export function MedicationSearch({
               key={medication.id}
               onClick={() => handleSelect(medication)}
               onMouseEnter={() => setHighlightedIndex(index)}
-              className={`px-4 py-3 cursor-pointer border-b border-gray-100 last:border-b-0 ${
-                highlightedIndex === index ? 'bg-blue-50' : 'hover:bg-gray-50'
+              className={`px-4 py-3 cursor-pointer border-b border-genesis-border-subtle last:border-b-0 ${
+                highlightedIndex === index ? 'bg-blue-50' : 'hover:bg-genesis-soft'
               }`}
               role="option"
               aria-selected={highlightedIndex === index}
@@ -288,9 +288,9 @@ export function MedicationSearch({
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 truncate">{medication.name}</div>
-                  <div className="text-sm text-gray-500">{medication.activePrinciple}</div>
-                  <div className="text-xs text-gray-400 mt-0.5">
+                  <div className="font-medium text-genesis-dark truncate">{medication.name}</div>
+                  <div className="text-sm text-genesis-muted">{medication.activePrinciple}</div>
+                  <div className="text-xs text-genesis-subtle mt-0.5">
                     {medication.presentation} • {medication.manufacturer}
                   </div>
                 </div>
@@ -302,7 +302,7 @@ export function MedicationSearch({
                         ? 'bg-yellow-100 text-yellow-800'
                         : medication.controlType.startsWith('B')
                           ? 'bg-blue-100 text-blue-800'
-                          : 'bg-gray-100 text-gray-800'
+                          : 'bg-genesis-hover text-genesis-dark'
                     }`}
                   >
                     {medication.controlType}
@@ -316,7 +316,7 @@ export function MedicationSearch({
 
       {/* Empty state */}
       {isOpen && results.length === 0 && query.length >= 2 && !loading && (
-        <div className="absolute z-50 w-full mt-1 p-4 bg-white border border-gray-200 rounded-xl shadow-lg text-center text-gray-500">
+        <div className="absolute z-50 w-full mt-1 p-4 bg-genesis-surface border border-genesis-border rounded-xl shadow-lg text-center text-genesis-muted">
           Nenhum medicamento encontrado
         </div>
       )}

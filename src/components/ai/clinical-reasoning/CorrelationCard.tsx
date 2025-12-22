@@ -43,8 +43,8 @@ function getConfidenceConfig(confidence: ConfidenceLevel): {
     default:
       return {
         label: 'Baixa',
-        bgColor: 'bg-gray-100',
-        textColor: 'text-gray-600',
+        bgColor: 'bg-genesis-hover',
+        textColor: 'text-genesis-medium',
       };
   }
 }
@@ -72,7 +72,7 @@ function getPatternIcon(type: string): {
     autoimmune_pattern: { icon: Info, color: 'text-[#6366F1]' },
   };
 
-  return patterns[type] || { icon: Link2, color: 'text-gray-500' };
+  return patterns[type] || { icon: Link2, color: 'text-genesis-muted' };
 }
 
 /**
@@ -87,17 +87,17 @@ export function CorrelationCard({
   const PatternIcon = patternConfig.icon;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
+    <div className="bg-genesis-surface rounded-lg border border-genesis-border p-4 hover:shadow-md transition-shadow">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-3">
-          <div className={`p-2 rounded-lg bg-gray-50 ${patternConfig.color}`}>
+          <div className={`p-2 rounded-lg bg-genesis-soft ${patternConfig.color}`}>
             <PatternIcon className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="font-medium text-gray-900">{correlation.pattern}</h4>
+            <h4 className="font-medium text-genesis-dark">{correlation.pattern}</h4>
             {correlation.criteriaMet && (
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-xs text-genesis-muted mt-0.5">
                 {correlation.criteriaMet}
               </p>
             )}
@@ -113,15 +113,15 @@ export function CorrelationCard({
       </div>
 
       {/* Clinical implication */}
-      <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-        <p className="text-sm text-gray-700 leading-relaxed">
+      <div className="mt-3 p-3 bg-genesis-soft rounded-lg">
+        <p className="text-sm text-genesis-text leading-relaxed">
           {correlation.clinicalImplication}
         </p>
       </div>
 
       {/* Involved markers */}
       <div className="mt-3 flex items-center gap-2 flex-wrap">
-        <span className="text-xs text-gray-500">Marcadores:</span>
+        <span className="text-xs text-genesis-muted">Marcadores:</span>
         {correlation.markers.map((markerId) => (
           <span
             key={markerId}
@@ -134,8 +134,8 @@ export function CorrelationCard({
 
       {/* Evidence (if available) */}
       {correlation.evidence && correlation.evidence.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <h5 className="text-xs font-medium text-gray-500 uppercase mb-2">
+        <div className="mt-3 pt-3 border-t border-genesis-border-subtle">
+          <h5 className="text-xs font-medium text-genesis-muted uppercase mb-2">
             Evidência
           </h5>
           <div className="space-y-1">
@@ -147,12 +147,12 @@ export function CorrelationCard({
                       ? 'bg-[#DBEAFE] text-[#2563EB]'
                       : ev.source === 'soap'
                       ? 'bg-[#DCFCE7] text-[#16A34A]'
-                      : 'bg-gray-100 text-gray-600'
+                      : 'bg-genesis-hover text-genesis-medium'
                   }`}
                 >
                   {ev.source.toUpperCase()}
                 </span>
-                <span className="text-gray-600">
+                <span className="text-genesis-medium">
                   {ev.reference}
                   {ev.value && `: ${ev.value}`}
                 </span>

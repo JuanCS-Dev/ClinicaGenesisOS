@@ -135,7 +135,7 @@ export const ConfidenceScoreDisplay: React.FC<ConfidenceScoreProps> = ({
         </div>
 
         {/* Progress bar */}
-        <div className="mt-3 h-2 bg-white/50 rounded-full overflow-hidden">
+        <div className="mt-3 h-2 bg-genesis-surface/50 rounded-full overflow-hidden">
           <div
             className={`h-full transition-all duration-500 ${
               score.overall >= 0.8
@@ -153,8 +153,8 @@ export const ConfidenceScoreDisplay: React.FC<ConfidenceScoreProps> = ({
 
       {/* Field breakdown */}
       {showBreakdown && (
-        <div className="p-4 bg-gray-50 rounded-xl">
-          <h4 className="text-sm font-medium text-gray-700 mb-3">
+        <div className="p-4 bg-genesis-soft rounded-xl">
+          <h4 className="text-sm font-medium text-genesis-text mb-3">
             Confiança por Campo
           </h4>
           <div className="space-y-2">
@@ -163,10 +163,10 @@ export const ConfidenceScoreDisplay: React.FC<ConfidenceScoreProps> = ({
                 const fieldColors = getConfidenceColor(value);
                 return (
                   <div key={field} className="flex items-center gap-3">
-                    <span className="w-20 text-sm text-gray-600">
+                    <span className="w-20 text-sm text-genesis-medium">
                       {SOAP_FIELD_LABELS[field]}
                     </span>
-                    <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="flex-1 h-2 bg-genesis-border-subtle rounded-full overflow-hidden">
                       <div
                         className={`h-full transition-all ${
                           value >= 0.8
@@ -193,8 +193,8 @@ export const ConfidenceScoreDisplay: React.FC<ConfidenceScoreProps> = ({
 
       {/* Factors */}
       {showFactors && sortedFactors.length > 0 && (
-        <div className="p-4 bg-gray-50 rounded-xl">
-          <h4 className="text-sm font-medium text-gray-700 mb-3">
+        <div className="p-4 bg-genesis-soft rounded-xl">
+          <h4 className="text-sm font-medium text-genesis-text mb-3">
             Fatores de Confiança
           </h4>
           <div className="space-y-2">
@@ -216,10 +216,10 @@ export const ConfidenceScoreDisplay: React.FC<ConfidenceScoreProps> = ({
                   >
                     {factor.name}
                   </span>
-                  <span className="text-gray-500 ml-1">
+                  <span className="text-genesis-muted ml-1">
                     ({factor.value > 0 ? '+' : ''}{Math.round(factor.value * 100)}%)
                   </span>
-                  <p className="text-gray-500 text-xs mt-0.5">
+                  <p className="text-genesis-muted text-xs mt-0.5">
                     {factor.description}
                   </p>
                 </div>

@@ -20,7 +20,7 @@ interface InputGroupProps {
 
 const InputGroup: React.FC<InputGroupProps> = ({ label, icon: Icon, children }) => (
   <div className="space-y-1.5 group">
-    <label className="text-xs font-semibold text-genesis-medium uppercase tracking-wider ml-1 flex items-center gap-1.5 group-focus-within:text-genesis-blue transition-colors">
+    <label className="text-xs font-semibold text-genesis-medium uppercase tracking-wider ml-1 flex items-center gap-1.5 group-focus-within:text-genesis-primary transition-colors">
       {Icon && <Icon className="w-3 h-3" />}
       {label}
     </label>
@@ -31,7 +31,7 @@ const InputGroup: React.FC<InputGroupProps> = ({ label, icon: Icon, children }) 
 const StyledInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => (
   <input
     {...props}
-    className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-sm font-medium text-genesis-dark placeholder-gray-400 focus:ring-2 focus:ring-genesis-blue/20 focus:bg-white transition-all duration-300 outline-none shadow-sm hover:bg-gray-100"
+    className="w-full px-4 py-3 bg-genesis-soft border-none rounded-xl text-sm font-medium text-genesis-dark placeholder-gray-400 focus:ring-2 focus:ring-genesis-primary/20 focus:bg-genesis-surface transition-all duration-300 outline-none shadow-sm hover:bg-genesis-hover"
   />
 );
 
@@ -39,10 +39,10 @@ const StyledSelect: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = (p
   <div className="relative">
     <select
       {...props}
-      className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-sm font-medium text-genesis-dark focus:ring-2 focus:ring-genesis-blue/20 focus:bg-white transition-all duration-300 outline-none shadow-sm appearance-none hover:bg-gray-100 cursor-pointer"
+      className="w-full px-4 py-3 bg-genesis-soft border-none rounded-xl text-sm font-medium text-genesis-dark focus:ring-2 focus:ring-genesis-primary/20 focus:bg-genesis-surface transition-all duration-300 outline-none shadow-sm appearance-none hover:bg-genesis-hover cursor-pointer"
     />
     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-      <ChevronRight className="w-4 h-4 text-gray-400 rotate-90" />
+      <ChevronRight className="w-4 h-4 text-genesis-subtle rotate-90" />
     </div>
   </div>
 );
@@ -126,7 +126,7 @@ export function EditPatient() {
   if (loadingPatient) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 text-genesis-blue animate-spin" />
+        <Loader2 className="w-8 h-8 text-genesis-primary animate-spin" />
       </div>
     );
   }
@@ -137,7 +137,7 @@ export function EditPatient() {
         <p className="text-genesis-medium">Paciente não encontrado.</p>
         <button
           onClick={() => navigate('/patients')}
-          className="text-genesis-blue font-semibold mt-4 hover:underline"
+          className="text-genesis-primary font-semibold mt-4 hover:underline"
         >
           Voltar para lista
         </button>
@@ -161,14 +161,14 @@ export function EditPatient() {
         <div className="flex gap-3">
           <button
             onClick={() => navigate(`/patients/${id}`)}
-            className="px-6 py-2.5 rounded-xl text-sm font-semibold text-genesis-medium hover:bg-gray-100 hover:text-genesis-dark transition-colors"
+            className="px-6 py-2.5 rounded-xl text-sm font-semibold text-genesis-medium hover:bg-genesis-hover hover:text-genesis-dark transition-colors"
           >
             Cancelar
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 bg-genesis-blue text-white rounded-xl text-sm font-bold hover:bg-blue-600 shadow-lg shadow-blue-200 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-6 py-2.5 bg-genesis-primary text-white rounded-xl text-sm font-bold hover:bg-blue-600 shadow-lg shadow-blue-200 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? (
               <>
@@ -186,7 +186,7 @@ export function EditPatient() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Photo */}
         <div className="space-y-6">
-          <div className="bg-white p-8 rounded-3xl border border-white shadow-soft flex flex-col items-center text-center">
+          <div className="bg-genesis-surface p-8 rounded-3xl border border-white shadow-soft flex flex-col items-center text-center">
             <AvatarUpload
               currentAvatar={formData.avatar}
               patientId={id}
@@ -202,10 +202,10 @@ export function EditPatient() {
         {/* Right Column: The Form */}
         <div className="lg:col-span-2 space-y-8">
           {/* Section 1: Personal */}
-          <div className="bg-white p-8 rounded-3xl border border-white shadow-soft">
+          <div className="bg-genesis-surface p-8 rounded-3xl border border-white shadow-soft">
             <h3 className="text-lg font-bold text-genesis-dark mb-6 flex items-center gap-2">
               <div className="p-1.5 bg-blue-50 rounded-lg">
-                <User className="w-4 h-4 text-genesis-blue" />
+                <User className="w-4 h-4 text-genesis-primary" />
               </div>
               Dados Pessoais
             </h3>
@@ -243,7 +243,7 @@ export function EditPatient() {
           </div>
 
           {/* Section 2: Contact */}
-          <div className="bg-white p-8 rounded-3xl border border-white shadow-soft">
+          <div className="bg-genesis-surface p-8 rounded-3xl border border-white shadow-soft">
             <h3 className="text-lg font-bold text-genesis-dark mb-6 flex items-center gap-2">
               <div className="p-1.5 bg-green-50 rounded-lg">
                 <Phone className="w-4 h-4 text-green-600" />
@@ -274,7 +274,7 @@ export function EditPatient() {
           </div>
 
           {/* Section 3: Insurance */}
-          <div className="bg-white p-8 rounded-3xl border border-white shadow-soft">
+          <div className="bg-genesis-surface p-8 rounded-3xl border border-white shadow-soft">
             <h3 className="text-lg font-bold text-genesis-dark mb-6 flex items-center gap-2">
               <div className="p-1.5 bg-purple-50 rounded-lg">
                 <ShieldCheck className="w-4 h-4 text-purple-600" />

@@ -190,18 +190,18 @@ export function PrescriptionModal({
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
       <div className="h-full flex items-center justify-center p-4">
-        <div className="w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div className="w-full max-w-4xl max-h-[90vh] bg-genesis-surface rounded-2xl shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <div className="flex items-center justify-between p-6 border-b border-genesis-border-subtle">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 rounded-xl">
                 <FileText className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <h2 className="font-semibold text-gray-900 text-lg">
+                <h2 className="font-semibold text-genesis-dark text-lg">
                   {existingPrescription ? 'Editar Prescrição' : 'Nova Prescrição'}
                 </h2>
-                <p className="text-sm text-gray-500">{patientName}</p>
+                <p className="text-sm text-genesis-muted">{patientName}</p>
               </div>
             </div>
 
@@ -215,18 +215,18 @@ export function PrescriptionModal({
                         ? 'bg-blue-600 text-white'
                         : i < ['medications', 'preview', 'success'].indexOf(step)
                           ? 'bg-emerald-500 text-white'
-                          : 'bg-gray-100 text-gray-400'
+                          : 'bg-genesis-hover text-genesis-subtle'
                     }`}
                   >
                     {i + 1}
                   </div>
-                  {i < 2 && <div className="w-8 h-0.5 bg-gray-200 mx-1" />}
+                  {i < 2 && <div className="w-8 h-0.5 bg-genesis-border-subtle mx-1" />}
                 </div>
               ))}
             </div>
 
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <X className="w-5 h-5 text-gray-500" />
+            <button onClick={onClose} className="p-2 hover:bg-genesis-hover rounded-lg transition-colors">
+              <X className="w-5 h-5 text-genesis-muted" />
             </button>
           </div>
 
@@ -242,7 +242,7 @@ export function PrescriptionModal({
             {/* Step 1: Medications */}
             {step === 'medications' && (
               <div className="space-y-6">
-                <h3 className="font-medium text-gray-900">Medicamentos</h3>
+                <h3 className="font-medium text-genesis-dark">Medicamentos</h3>
 
                 {medications.map((med, index) => {
                   const key = med.id;
@@ -260,14 +260,14 @@ export function PrescriptionModal({
 
                 <button
                   onClick={addMedication}
-                  className="flex items-center gap-2 px-4 py-3 w-full border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-xl text-gray-600 hover:text-blue-600 transition-colors"
+                  className="flex items-center gap-2 px-4 py-3 w-full border-2 border-dashed border-genesis-border hover:border-blue-400 rounded-xl text-genesis-medium hover:text-blue-600 transition-colors"
                 >
                   <Plus className="w-5 h-5" />
                   Adicionar medicamento
                 </button>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-genesis-text mb-1">
                     Observações gerais (opcional)
                   </label>
                   <textarea
@@ -275,7 +275,7 @@ export function PrescriptionModal({
                     onChange={(e) => setObservations(e.target.value)}
                     placeholder="Orientações adicionais para o paciente..."
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   />
                 </div>
               </div>
@@ -284,7 +284,7 @@ export function PrescriptionModal({
             {/* Step 2: Preview */}
             {step === 'preview' && (
               <div className="space-y-6">
-                <h3 className="font-medium text-gray-900">Revisar Prescrição</h3>
+                <h3 className="font-medium text-genesis-dark">Revisar Prescrição</h3>
 
                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
                   <p className="text-sm text-amber-800">
@@ -292,22 +292,22 @@ export function PrescriptionModal({
                   </p>
                 </div>
 
-                <div className="border border-gray-200 rounded-xl overflow-hidden">
-                  <div className="p-4 bg-gray-50 border-b border-gray-200">
-                    <h4 className="font-medium text-gray-900">{patientName}</h4>
-                    {patientCpf && <p className="text-sm text-gray-500">CPF: {patientCpf}</p>}
+                <div className="border border-genesis-border rounded-xl overflow-hidden">
+                  <div className="p-4 bg-genesis-soft border-b border-genesis-border">
+                    <h4 className="font-medium text-genesis-dark">{patientName}</h4>
+                    {patientCpf && <p className="text-sm text-genesis-muted">CPF: {patientCpf}</p>}
                   </div>
 
                   <div className="p-4 space-y-3">
                     {medications.map((med, index) => (
-                      <div key={med.id} className="p-3 bg-gray-50 rounded-lg">
-                        <div className="font-medium text-gray-900">
+                      <div key={med.id} className="p-3 bg-genesis-soft rounded-lg">
+                        <div className="font-medium text-genesis-dark">
                           {med.name || `Medicamento ${index + 1}`}
                         </div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-genesis-medium">
                           {med.dosage} - {med.frequency} por {med.duration}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-genesis-muted">
                           Quantidade: {med.quantity} {med.unit}
                         </div>
                       </div>
@@ -315,9 +315,9 @@ export function PrescriptionModal({
                   </div>
 
                   {observations && (
-                    <div className="p-4 border-t border-gray-200 bg-gray-50">
-                      <div className="text-sm font-medium text-gray-700 mb-1">Observações:</div>
-                      <p className="text-gray-600">{observations}</p>
+                    <div className="p-4 border-t border-genesis-border bg-genesis-soft">
+                      <div className="text-sm font-medium text-genesis-text mb-1">Observações:</div>
+                      <p className="text-genesis-medium">{observations}</p>
                     </div>
                   )}
                 </div>
@@ -331,8 +331,8 @@ export function PrescriptionModal({
                   <BadgeCheck className="w-10 h-10 text-emerald-600" />
                 </div>
 
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Prescrição Criada!</h3>
-                <p className="text-gray-600 mb-8">
+                <h3 className="text-2xl font-bold text-genesis-dark mb-2">Prescrição Criada!</h3>
+                <p className="text-genesis-medium mb-8">
                   A prescrição foi salva. Você pode assinar e enviar ao paciente.
                 </p>
 
@@ -361,11 +361,11 @@ export function PrescriptionModal({
 
           {/* Footer */}
           {step !== 'success' && (
-            <div className="flex items-center justify-between p-6 border-t border-gray-100 bg-gray-50">
+            <div className="flex items-center justify-between p-6 border-t border-genesis-border-subtle bg-genesis-soft">
               {step === 'preview' ? (
                 <button
                   onClick={() => setStep('medications')}
-                  className="flex items-center gap-2 px-4 py-2.5 text-gray-600 hover:text-gray-900"
+                  className="flex items-center gap-2 px-4 py-2.5 text-genesis-medium hover:text-genesis-dark"
                 >
                   <ChevronLeft className="w-5 h-5" />
                   Voltar
@@ -375,7 +375,7 @@ export function PrescriptionModal({
               )}
 
               <div className="flex items-center gap-3">
-                <button onClick={onClose} className="px-4 py-2.5 text-gray-600 hover:text-gray-900">
+                <button onClick={onClose} className="px-4 py-2.5 text-genesis-medium hover:text-genesis-dark">
                   Cancelar
                 </button>
 

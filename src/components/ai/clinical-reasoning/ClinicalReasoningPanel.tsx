@@ -144,9 +144,9 @@ export function ClinicalReasoningPanel({
   const displayResult = result || latestAnalysis?.result;
 
   return (
-    <div className="h-full flex flex-col bg-gray-50/50">
+    <div className="h-full flex flex-col bg-genesis-soft/50">
       {/* Premium Header */}
-      <div className="bg-white border-b border-gray-100 shadow-sm">
+      <div className="bg-genesis-surface border-b border-genesis-border-subtle shadow-sm">
         <div className="px-6 py-5">
           <div className="flex items-center justify-between">
             {/* Title Section */}
@@ -158,10 +158,10 @@ export function ClinicalReasoningPanel({
                 <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-[#FBBF24]" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 tracking-tight">
+                <h2 className="text-xl font-semibold text-genesis-dark tracking-tight">
                   Diagnóstico Assistido
                 </h2>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-genesis-muted">
                   Análise laboratorial com IA Multi-LLM
                 </p>
               </div>
@@ -178,14 +178,14 @@ export function ClinicalReasoningPanel({
                   ${
                     showHistory
                       ? 'bg-[#EEF2FF] text-[#4338CA] shadow-sm'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      : 'text-genesis-medium hover:bg-genesis-hover'
                   }
                 `}
               >
                 <History className="w-4 h-4" />
                 <span>Histórico</span>
                 {sessions.length > 0 && (
-                  <span className="ml-1 px-2 py-0.5 text-xs bg-gray-200 rounded-full">
+                  <span className="ml-1 px-2 py-0.5 text-xs bg-genesis-border-subtle rounded-full">
                     {sessions.length}
                   </span>
                 )}
@@ -230,7 +230,7 @@ export function ClinicalReasoningPanel({
                       ${
                         isActive
                           ? 'border-[#4F46E5] text-[#4338CA] bg-[#EEF2FF]/50'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                          : 'border-transparent text-genesis-muted hover:text-genesis-text hover:bg-genesis-soft'
                       }
                     `}
                   >

@@ -17,7 +17,7 @@ export function NotFound() {
         <div className="flex gap-4 justify-center">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 px-4 py-2 text-genesis-dark hover:bg-white rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 text-genesis-dark hover:bg-genesis-surface rounded-xl transition-colors"
           >
             <ArrowLeft className="w-4 h-4" /> Voltar
           </button>

@@ -198,26 +198,26 @@ export function TissConsultaForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
+      <div className="flex items-center gap-3 pb-4 border-b border-genesis-border">
         <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
           <FileText className="w-5 h-5 text-blue-600" />
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Guia de Consulta</h2>
-          <p className="text-sm text-gray-500">TISS 4.02.00</p>
+          <h2 className="text-lg font-semibold text-genesis-dark">Guia de Consulta</h2>
+          <p className="text-sm text-genesis-muted">TISS 4.02.00</p>
         </div>
       </div>
 
       {/* Operadora Section */}
-      <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-        <div className="flex items-center gap-2 text-gray-700">
+      <div className="bg-genesis-soft rounded-xl p-4 space-y-4">
+        <div className="flex items-center gap-2 text-genesis-text">
           <Building2 className="w-4 h-4" />
           <span className="font-medium">Operadora / Convênio</span>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-genesis-text mb-1">
               Registro ANS *
             </label>
             <input
@@ -227,7 +227,7 @@ export function TissConsultaForm({
               placeholder="000000"
               maxLength={6}
               className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.registroANS ? 'border-red-300' : 'border-gray-300'
+                errors.registroANS ? 'border-red-300' : 'border-genesis-border'
               }`}
             />
             {errors.registroANS && (
@@ -236,7 +236,7 @@ export function TissConsultaForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-genesis-text mb-1">
               Nome da Operadora *
             </label>
             <input
@@ -244,22 +244,22 @@ export function TissConsultaForm({
               value={nomeOperadora}
               onChange={(e) => setNomeOperadora(e.target.value)}
               placeholder="Ex: Unimed, Bradesco Saúde"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
       </div>
 
       {/* Beneficiário Section */}
-      <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-        <div className="flex items-center gap-2 text-gray-700">
+      <div className="bg-genesis-soft rounded-xl p-4 space-y-4">
+        <div className="flex items-center gap-2 text-genesis-text">
           <User className="w-4 h-4" />
           <span className="font-medium">Dados do Beneficiário</span>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-genesis-text mb-1">
               Número da Carteira *
             </label>
             <input
@@ -268,7 +268,7 @@ export function TissConsultaForm({
               onChange={(e) => setNumeroCarteira(e.target.value.replace(/\D/g, ''))}
               placeholder="00000000000000000"
               className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.numeroCarteira ? 'border-red-300' : 'border-gray-300'
+                errors.numeroCarteira ? 'border-red-300' : 'border-genesis-border'
               }`}
             />
             {errors.numeroCarteira && (
@@ -277,7 +277,7 @@ export function TissConsultaForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-genesis-text mb-1">
               Nome do Beneficiário *
             </label>
             <input
@@ -286,7 +286,7 @@ export function TissConsultaForm({
               onChange={(e) => setNomeBeneficiario(e.target.value)}
               placeholder="Nome completo"
               className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.nomeBeneficiario ? 'border-red-300' : 'border-gray-300'
+                errors.nomeBeneficiario ? 'border-red-300' : 'border-genesis-border'
               }`}
             />
             {errors.nomeBeneficiario && (
@@ -297,21 +297,21 @@ export function TissConsultaForm({
       </div>
 
       {/* Atendimento Section */}
-      <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-        <div className="flex items-center gap-2 text-gray-700">
+      <div className="bg-genesis-soft rounded-xl p-4 space-y-4">
+        <div className="flex items-center gap-2 text-genesis-text">
           <Calendar className="w-4 h-4" />
           <span className="font-medium">Dados do Atendimento</span>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-genesis-text mb-1">
               Tipo de Consulta *
             </label>
             <select
               value={tipoConsulta}
               onChange={(e) => setTipoConsulta(e.target.value as TipoConsulta)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {TIPO_CONSULTA_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -322,7 +322,7 @@ export function TissConsultaForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-genesis-text mb-1">
               Data do Atendimento *
             </label>
             <input
@@ -330,7 +330,7 @@ export function TissConsultaForm({
               value={dataAtendimento}
               onChange={(e) => setDataAtendimento(e.target.value)}
               className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.dataAtendimento ? 'border-red-300' : 'border-gray-300'
+                errors.dataAtendimento ? 'border-red-300' : 'border-genesis-border'
               }`}
             />
             {errors.dataAtendimento && (
@@ -340,7 +340,7 @@ export function TissConsultaForm({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-genesis-text mb-1">
             Indicação Clínica / CID
           </label>
           <input
@@ -348,21 +348,21 @@ export function TissConsultaForm({
             value={indicacaoClinica}
             onChange={(e) => setIndicacaoClinica(e.target.value)}
             placeholder="Ex: Hipertensão arterial - I10"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
 
       {/* Procedimento Section */}
-      <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-        <div className="flex items-center gap-2 text-gray-700">
+      <div className="bg-genesis-soft rounded-xl p-4 space-y-4">
+        <div className="flex items-center gap-2 text-genesis-text">
           <DollarSign className="w-4 h-4" />
           <span className="font-medium">Procedimento</span>
         </div>
 
         {/* Quick select common consultation codes */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-genesis-text mb-2">
             Consultas Comuns
           </label>
           <div className="flex flex-wrap gap-2">
@@ -374,7 +374,7 @@ export function TissConsultaForm({
                 className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${
                   codigoProcedimento === code.codigo
                     ? 'bg-blue-100 border-blue-300 text-blue-700'
-                    : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300'
+                    : 'bg-genesis-surface border-genesis-border text-genesis-medium hover:border-blue-300'
                 }`}
               >
                 {code.codigo} - {code.descricao.substring(0, 30)}...
@@ -385,11 +385,11 @@ export function TissConsultaForm({
 
         {/* TUSS Search */}
         <div className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-genesis-text mb-1">
             Buscar Procedimento TUSS
           </label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-genesis-subtle" />
             <input
               type="text"
               value={tussSearch}
@@ -400,19 +400,19 @@ export function TissConsultaForm({
               onFocus={() => setShowTussDropdown(tussSearch.length >= 2)}
               onBlur={() => setTimeout(() => setShowTussDropdown(false), 200)}
               placeholder="Digite código ou descrição..."
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Search Results Dropdown */}
           {showTussDropdown && tussResults.length > 0 && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-10 w-full mt-1 bg-genesis-surface border border-genesis-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
               {tussResults.map((tuss) => (
                 <button
                   key={tuss.codigo}
                   type="button"
                   onClick={() => handleSelectTuss(tuss)}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-50 border-b border-gray-100 last:border-0"
+                  className="w-full px-4 py-2 text-left hover:bg-genesis-soft border-b border-genesis-border-subtle last:border-0"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-sm text-blue-600">{tuss.codigo}</span>
@@ -422,7 +422,7 @@ export function TissConsultaForm({
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-700 truncate">{tuss.descricao}</p>
+                  <p className="text-sm text-genesis-text truncate">{tuss.descricao}</p>
                 </button>
               ))}
             </div>
@@ -432,7 +432,7 @@ export function TissConsultaForm({
         {/* Selected Procedure */}
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-genesis-text mb-1">
               Código TUSS *
             </label>
             <input
@@ -441,7 +441,7 @@ export function TissConsultaForm({
               onChange={(e) => setCodigoProcedimento(e.target.value)}
               placeholder="00000000"
               className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono ${
-                errors.codigoProcedimento ? 'border-red-300' : 'border-gray-300'
+                errors.codigoProcedimento ? 'border-red-300' : 'border-genesis-border'
               }`}
             />
             {errors.codigoProcedimento && (
@@ -450,7 +450,7 @@ export function TissConsultaForm({
           </div>
 
           <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-genesis-text mb-1">
               Descrição
             </label>
             <input
@@ -458,13 +458,13 @@ export function TissConsultaForm({
               value={descricaoProcedimento}
               onChange={(e) => setDescricaoProcedimento(e.target.value)}
               placeholder="Descrição do procedimento"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-genesis-text mb-1">
             Valor do Procedimento (R$) *
           </label>
           <input
@@ -476,7 +476,7 @@ export function TissConsultaForm({
             }}
             placeholder="0.00"
             className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.valorProcedimento ? 'border-red-300' : 'border-gray-300'
+              errors.valorProcedimento ? 'border-red-300' : 'border-genesis-border'
             }`}
           />
           {errors.valorProcedimento && (
@@ -501,12 +501,12 @@ export function TissConsultaForm({
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+      <div className="flex items-center justify-end gap-3 pt-4 border-t border-genesis-border">
         <button
           type="button"
           onClick={onCancel}
           disabled={isLoading}
-          className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+          className="px-4 py-2 text-genesis-text bg-genesis-surface border border-genesis-border rounded-lg hover:bg-genesis-soft transition-colors disabled:opacity-50"
         >
           Cancelar
         </button>

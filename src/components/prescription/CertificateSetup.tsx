@@ -115,18 +115,18 @@ export function CertificateSetup({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <div className="w-full max-w-lg bg-genesis-surface rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+        <div className="flex items-center justify-between p-6 border-b border-genesis-border-subtle">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-xl">
               <Shield className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <h2 className="font-semibold text-gray-900 text-lg">
+              <h2 className="font-semibold text-genesis-dark text-lg">
                 Certificado Digital
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-genesis-muted">
                 Configure seu e-CPF para assinatura
               </p>
             </div>
@@ -135,16 +135,16 @@ export function CertificateSetup({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowHelp(!showHelp)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-genesis-hover rounded-lg transition-colors"
               title="Ajuda"
             >
-              <HelpCircle className="w-5 h-5 text-gray-500" />
+              <HelpCircle className="w-5 h-5 text-genesis-muted" />
             </button>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-genesis-hover rounded-lg transition-colors"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-genesis-muted" />
             </button>
           </div>
         </div>
@@ -205,7 +205,7 @@ export function CertificateSetup({
 
           {/* Certificate Type Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label className="block text-sm font-medium text-genesis-text mb-3">
               Tipo de certificado
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -214,14 +214,14 @@ export function CertificateSetup({
                 className={`p-4 border-2 rounded-xl text-left transition-colors ${
                   type === 'A1'
                     ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-genesis-border hover:border-genesis-border'
                 }`}
               >
-                <FileKey className={`w-6 h-6 mb-2 ${type === 'A1' ? 'text-blue-600' : 'text-gray-400'}`} />
-                <div className={`font-medium ${type === 'A1' ? 'text-blue-900' : 'text-gray-900'}`}>
+                <FileKey className={`w-6 h-6 mb-2 ${type === 'A1' ? 'text-blue-600' : 'text-genesis-subtle'}`} />
+                <div className={`font-medium ${type === 'A1' ? 'text-blue-900' : 'text-genesis-dark'}`}>
                   Certificado A1
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-genesis-muted">
                   Arquivo digital (.pfx)
                 </div>
               </button>
@@ -231,14 +231,14 @@ export function CertificateSetup({
                 className={`p-4 border-2 rounded-xl text-left transition-colors ${
                   type === 'A3'
                     ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-genesis-border hover:border-genesis-border'
                 }`}
               >
-                <CreditCard className={`w-6 h-6 mb-2 ${type === 'A3' ? 'text-blue-600' : 'text-gray-400'}`} />
-                <div className={`font-medium ${type === 'A3' ? 'text-blue-900' : 'text-gray-900'}`}>
+                <CreditCard className={`w-6 h-6 mb-2 ${type === 'A3' ? 'text-blue-600' : 'text-genesis-subtle'}`} />
+                <div className={`font-medium ${type === 'A3' ? 'text-blue-900' : 'text-genesis-dark'}`}>
                   Certificado A3
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-genesis-muted">
                   Token USB / Smartcard
                 </div>
               </button>
@@ -249,12 +249,12 @@ export function CertificateSetup({
           {type === 'A1' && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-genesis-text mb-2">
                   Arquivo do certificado
                 </label>
                 <div
                   className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
-                    file ? 'border-emerald-300 bg-emerald-50' : 'border-gray-300 hover:border-gray-400'
+                    file ? 'border-emerald-300 bg-emerald-50' : 'border-genesis-border hover:border-genesis-border'
                   }`}
                 >
                   <input
@@ -270,11 +270,11 @@ export function CertificateSetup({
                     </div>
                   ) : (
                     <>
-                      <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-gray-600">
+                      <Upload className="w-8 h-8 text-genesis-subtle mx-auto mb-2" />
+                      <p className="text-genesis-medium">
                         Arraste o arquivo ou clique para selecionar
                       </p>
-                      <p className="text-sm text-gray-400 mt-1">
+                      <p className="text-sm text-genesis-subtle mt-1">
                         Formatos aceitos: .pfx, .p12
                       </p>
                     </>
@@ -283,17 +283,17 @@ export function CertificateSetup({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-genesis-text mb-2">
                   Senha do certificado
                 </label>
                 <div className="relative">
-                  <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-subtle" />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Digite a senha"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-10 pr-4 py-3 border border-genesis-border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -320,10 +320,10 @@ export function CertificateSetup({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-100 bg-gray-50">
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-genesis-border-subtle bg-genesis-soft">
           <button
             onClick={onClose}
-            className="px-4 py-2.5 text-gray-600 hover:text-gray-900"
+            className="px-4 py-2.5 text-genesis-medium hover:text-genesis-dark"
           >
             Cancelar
           </button>

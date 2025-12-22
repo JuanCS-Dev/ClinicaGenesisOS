@@ -40,7 +40,7 @@ export function FinanceCard({
     : 'bg-[#FEF2F2] text-[#B91C1C]';
 
   return (
-    <div className="group bg-white p-6 rounded-2xl border border-white shadow-soft hover:shadow-float transition-all duration-300 relative overflow-hidden">
+    <div className="group bg-genesis-surface p-6 rounded-2xl border border-white shadow-soft hover:shadow-float transition-all duration-300 relative overflow-hidden">
       <div
         className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${gradientClass} to-transparent rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110`}
       />
@@ -49,7 +49,7 @@ export function FinanceCard({
         <p className="text-[13px] font-medium text-genesis-medium mb-1">{title}</p>
         {loading ? (
           <div className="h-9 flex items-center">
-            <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+            <Loader2 className="w-6 h-6 animate-spin text-genesis-subtle" />
           </div>
         ) : (
           <h3 className="text-3xl font-bold text-genesis-dark tracking-tight mb-4">

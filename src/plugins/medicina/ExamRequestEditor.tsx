@@ -56,11 +56,11 @@ export function ExamRequestEditor({ onSave }: ExamRequestEditorProps) {
               return (
                 <label
                   key={exam}
-                  className="flex items-center gap-3 p-3 bg-white border border-gray-100 rounded-xl cursor-pointer hover:bg-blue-50 hover:border-blue-100 transition-colors"
+                  className="flex items-center gap-3 p-3 bg-genesis-surface border border-genesis-border-subtle rounded-xl cursor-pointer hover:bg-blue-50 hover:border-blue-100 transition-colors"
                 >
                   <div
                     className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
-                      isSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300 bg-white'
+                      isSelected ? 'bg-blue-600 border-blue-600' : 'border-genesis-border bg-genesis-surface'
                     }`}
                   >
                     {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
@@ -86,14 +86,14 @@ export function ExamRequestEditor({ onSave }: ExamRequestEditorProps) {
               <h5 className="text-xs font-bold uppercase">Justificativa Clínica</h5>
             </div>
             <textarea
-              className="w-full h-32 p-3 bg-white border border-orange-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-orange-200 transition-all resize-none"
+              className="w-full h-32 p-3 bg-genesis-surface border border-orange-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-orange-200 transition-all resize-none"
               placeholder="Motivo da solicitação (obrigatório para alguns convênios)..."
               value={justification}
               onChange={(e) => setJustification(e.target.value)}
             />
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+          <div className="bg-genesis-soft p-4 rounded-xl border border-genesis-border-subtle">
             <h5 className="text-xs font-bold text-genesis-dark uppercase mb-2">
               Resumo da Solicitação
             </h5>
@@ -106,14 +106,14 @@ export function ExamRequestEditor({ onSave }: ExamRequestEditorProps) {
       </div>
 
       {/* Ação */}
-      <div className="flex justify-end pt-4 border-t border-gray-50">
+      <div className="flex justify-end pt-4 border-t border-genesis-border-subtle">
         <button
           onClick={handleSave}
           disabled={!canSave}
           className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-all transform hover:-translate-y-0.5 ${
             canSave
               ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200'
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+              : 'bg-genesis-border-subtle text-genesis-subtle cursor-not-allowed shadow-none'
           }`}
         >
           <FlaskConical className="w-4 h-4" /> Solicitar Exames

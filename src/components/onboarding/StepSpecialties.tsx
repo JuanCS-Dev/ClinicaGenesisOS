@@ -41,23 +41,23 @@ export function StepSpecialties({ selectedSpecialties, toggleSpecialty }: StepSp
               onClick={() => toggleSpecialty(id)}
               className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-300 group ${
                 isSelected
-                  ? 'border-genesis-blue bg-genesis-blue/5 shadow-sm'
-                  : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                  ? 'border-genesis-primary bg-genesis-primary/5 shadow-sm'
+                  : 'border-genesis-border-subtle hover:border-genesis-border hover:bg-genesis-soft'
               }`}
             >
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${isSelected ? bg : 'bg-gray-100'}`}>
-                <Icon className={`w-6 h-6 ${isSelected ? 'text-white' : 'text-gray-400'}`} />
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${isSelected ? bg : 'bg-genesis-hover'}`}>
+                <Icon className={`w-6 h-6 ${isSelected ? 'text-white' : 'text-genesis-subtle'}`} />
               </div>
               
-              <span className={`font-semibold flex-1 text-left text-lg ${isSelected ? 'text-genesis-dark' : 'text-gray-500'}`}>
+              <span className={`font-semibold flex-1 text-left text-lg ${isSelected ? 'text-genesis-dark' : 'text-genesis-muted'}`}>
                 {name}
               </span>
               
               <div
                 className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
                   isSelected
-                    ? 'border-genesis-blue bg-genesis-blue scale-110'
-                    : 'border-gray-300'
+                    ? 'border-genesis-primary bg-genesis-primary scale-110'
+                    : 'border-genesis-border'
                 }`}
               >
                 {isSelected && <Check className="w-4 h-4 text-white" />}

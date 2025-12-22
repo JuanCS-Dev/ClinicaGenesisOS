@@ -49,7 +49,7 @@ const TabButton: React.FC<TabButtonProps> = ({ tab, isActive, onClick }) => {
       className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${
         isActive
           ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-          : 'text-gray-500 hover:bg-gray-100'
+          : 'text-genesis-muted hover:bg-genesis-hover'
       }`}
     >
       <Icon className="w-4 h-4" />
@@ -64,7 +64,7 @@ export function MedicineEditor({ onSave }: MedicineEditorProps) {
   return (
     <div className="space-y-6">
       {/* Navegação de tabs */}
-      <div className="flex gap-2 pb-4 border-b border-gray-100">
+      <div className="flex gap-2 pb-4 border-b border-genesis-border-subtle">
         {TABS.map((tab) => (
           <TabButton
             key={tab.id}

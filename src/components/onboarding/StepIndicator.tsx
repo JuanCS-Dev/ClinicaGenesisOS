@@ -16,15 +16,15 @@ export function StepIndicator({ isActive, isCompleted, number, title }: StepIndi
           isCompleted
             ? 'bg-green-500 text-white'
             : isActive
-              ? 'bg-genesis-blue text-white'
-              : 'bg-gray-200 text-gray-500'
+              ? 'bg-genesis-primary text-white'
+              : 'bg-genesis-border-subtle text-genesis-muted'
         }`}
       >
         {isCompleted ? <Check className="w-5 h-5" /> : number}
       </div>
       <span
         className={`hidden sm:block font-medium transition-colors ${
-          isActive ? 'text-genesis-dark' : 'text-gray-400'
+          isActive ? 'text-genesis-dark' : 'text-genesis-subtle'
         }`}
       >
         {title}

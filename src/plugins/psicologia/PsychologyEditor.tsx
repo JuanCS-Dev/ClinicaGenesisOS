@@ -63,7 +63,7 @@ export function PsychologyEditor({ onSave }: PsychologyEditorProps) {
               className={`flex-1 p-3 rounded-xl border transition-all ${
                 mood === m.id
                   ? 'bg-pink-50 border-pink-200 shadow-sm'
-                  : 'bg-white border-gray-100 hover:bg-gray-50'
+                  : 'bg-genesis-surface border-genesis-border-subtle hover:bg-genesis-soft'
               }`}
             >
               <span className="text-2xl block mb-1">{m.icon}</span>
@@ -82,23 +82,23 @@ export function PsychologyEditor({ onSave }: PsychologyEditorProps) {
           Registro da Sessão
         </label>
         <textarea
-          className="w-full h-32 p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-pink-100 outline-none transition-all text-sm leading-relaxed"
+          className="w-full h-32 p-4 bg-genesis-soft border border-transparent rounded-xl focus:bg-genesis-surface focus:ring-2 focus:ring-pink-100 outline-none transition-all text-sm leading-relaxed"
           placeholder="Temas abordados, intervenções realizadas, comportamentos observados, evolução terapêutica..."
           value={summary}
           onChange={(e) => setSummary(e.target.value)}
         />
-        <p className="text-[10px] text-gray-400">
+        <p className="text-[10px] text-genesis-subtle">
           Estas notas podem ser compartilhadas com outros profissionais se necessário.
         </p>
       </div>
 
       {/* Toggle para notas privadas */}
-      <div className="border-t border-gray-100 pt-4">
+      <div className="border-t border-genesis-border-subtle pt-4">
         <button
           type="button"
           onClick={() => setShowPrivateNotes(!showPrivateNotes)}
           className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-colors ${
-            showPrivateNotes ? 'text-pink-600' : 'text-gray-400 hover:text-gray-600'
+            showPrivateNotes ? 'text-pink-600' : 'text-genesis-subtle hover:text-genesis-medium'
           }`}
         >
           <Lock className="w-3.5 h-3.5" />
@@ -114,7 +114,7 @@ export function PsychologyEditor({ onSave }: PsychologyEditorProps) {
             Notas Privadas do Terapeuta
           </label>
           <textarea
-            className="w-full h-24 p-4 bg-pink-50 border border-pink-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-pink-200 outline-none transition-all text-sm leading-relaxed"
+            className="w-full h-24 p-4 bg-pink-50 border border-pink-100 rounded-xl focus:bg-genesis-surface focus:ring-2 focus:ring-pink-200 outline-none transition-all text-sm leading-relaxed"
             placeholder="Reflexões pessoais, hipóteses, contratransferência, impressões clínicas reservadas..."
             value={privateNotes}
             onChange={(e) => setPrivateNotes(e.target.value)}
@@ -133,7 +133,7 @@ export function PsychologyEditor({ onSave }: PsychologyEditorProps) {
           className={`px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-all transform hover:-translate-y-0.5 ${
             canSave
               ? 'bg-pink-600 hover:bg-pink-700 text-white shadow-pink-200'
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+              : 'bg-genesis-border-subtle text-genesis-subtle cursor-not-allowed shadow-none'
           }`}
         >
           Registrar Sessão

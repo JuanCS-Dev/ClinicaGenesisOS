@@ -50,18 +50,18 @@ interface TabButtonProps {
   colorClass?: string;
 }
 
-const TabButton = ({ active, onClick, icon: Icon, label, colorClass = 'text-genesis-blue' }: TabButtonProps) => (
+const TabButton = ({ active, onClick, icon: Icon, label, colorClass = 'text-genesis-primary' }: TabButtonProps) => (
   <button
     onClick={onClick}
     className={`
       relative flex items-center justify-center gap-2 px-6 py-2 text-[13px] font-semibold transition-all duration-300 rounded-lg flex-1 md:flex-none
       ${active 
-        ? `bg-white text-genesis-dark shadow-sm ring-1 ring-black/5` 
+        ? `bg-genesis-surface text-genesis-dark shadow-sm ring-1 ring-black/5` 
         : 'text-genesis-medium hover:text-genesis-dark hover:bg-black/5'
       }
     `}
   >
-    <Icon className={`w-4 h-4 transition-colors ${active ? colorClass : 'text-gray-400'}`} />
+    <Icon className={`w-4 h-4 transition-colors ${active ? colorClass : 'text-genesis-subtle'}`} />
     {label}
   </button>
 );
@@ -122,20 +122,20 @@ const HistoryItem = ({ record, active }: HistoryItemProps) => {
   const hasAttachments = record.attachments && record.attachments.length > 0;
 
   return (
-    <div className={`p-4 rounded-xl cursor-pointer transition-all duration-200 group border ${active ? 'bg-white shadow-soft border-gray-100 ring-1 ring-black/5' : 'border-transparent hover:bg-white/50 hover:border-gray-100'}`}>
+    <div className={`p-4 rounded-xl cursor-pointer transition-all duration-200 group border ${active ? 'bg-genesis-surface shadow-soft border-genesis-border-subtle ring-1 ring-black/5' : 'border-transparent hover:bg-genesis-surface/50 hover:border-genesis-border-subtle'}`}>
       <div className="flex justify-between items-start mb-1.5">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-genesis-medium uppercase tracking-wider bg-gray-50 px-2 py-0.5 rounded-md">
+          <span className="text-[10px] font-bold text-genesis-medium uppercase tracking-wider bg-genesis-soft px-2 py-0.5 rounded-md">
             {format(new Date(record.date), 'dd MMM yy', {locale: ptBR})}
           </span>
           {hasAttachments && (
-            <span className="flex items-center gap-0.5 text-[10px] text-gray-400">
+            <span className="flex items-center gap-0.5 text-[10px] text-genesis-subtle">
               <Paperclip className="w-3 h-3" />
               {record.attachments.length}
             </span>
           )}
         </div>
-        {active && <div className="w-1.5 h-1.5 rounded-full bg-genesis-blue shadow-[0_0_8px_rgba(0,122,255,0.5)]" />}
+        {active && <div className="w-1.5 h-1.5 rounded-full bg-genesis-primary shadow-[0_0_8px_rgba(0,122,255,0.5)]" />}
       </div>
       <div className="flex items-center gap-2 mb-1">
         <Icon className="w-3.5 h-3.5 text-genesis-medium/80" />
@@ -191,7 +191,7 @@ export const PatientDetails: React.FC = () => {
   if (patientLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 text-genesis-blue animate-spin" />
+        <Loader2 className="w-8 h-8 text-genesis-primary animate-spin" />
       </div>
     );
   }
@@ -289,13 +289,13 @@ export const PatientDetails: React.FC = () => {
     <div className="space-y-6 animate-enter pb-8">
       
       {/* Patient Header */}
-      <div className="bg-white rounded-[24px] border border-white shadow-soft overflow-hidden group relative z-0">
-        <div className="h-40 bg-gradient-to-r from-slate-50 via-gray-50 to-zinc-50 border-b border-gray-100 relative overflow-hidden">
+      <div className="bg-genesis-surface rounded-[24px] border border-white shadow-soft overflow-hidden group relative z-0">
+        <div className="h-40 bg-gradient-to-r from-slate-50 via-gray-50 to-zinc-50 border-b border-genesis-border-subtle relative overflow-hidden">
            <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px] opacity-60"></div>
            <div className="absolute top-6 right-8 flex gap-3 z-20">
              <button
               onClick={() => navigate(`/patients/${id}/edit`)}
-              className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-md border border-gray-200/50 rounded-xl text-xs font-bold text-genesis-dark hover:bg-white hover:shadow-sm transition-all"
+              className="flex items-center gap-2 px-4 py-2 bg-genesis-surface/60 backdrop-blur-md border border-genesis-border/50 rounded-xl text-xs font-bold text-genesis-dark hover:bg-genesis-surface hover:shadow-sm transition-all"
             >
               <Edit2 className="w-3.5 h-3.5" /> Editar
             </button>
@@ -305,7 +305,7 @@ export const PatientDetails: React.FC = () => {
             >
               <Receipt className="w-3.5 h-3.5" /> Prescrever
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-genesis-dark text-white rounded-xl text-xs font-bold hover:bg-black transition-all shadow-lg shadow-gray-200/50 hover:-translate-y-0.5">
+            <button className="flex items-center gap-2 px-4 py-2 bg-genesis-dark text-white rounded-xl text-xs font-bold hover:bg-black transition-all shadow-lg shadow-genesis-medium/20/50 hover:-translate-y-0.5">
                 <Calendar className="w-3.5 h-3.5" /> Agendar
             </button>
            </div>
@@ -315,7 +315,7 @@ export const PatientDetails: React.FC = () => {
           <div className="flex flex-col md:flex-row justify-between items-end -mt-12 mb-8 gap-6">
             <div className="flex items-end gap-6">
               <div className="relative group/avatar cursor-pointer">
-                <div className="w-28 h-28 rounded-[24px] border-[4px] border-white shadow-xl overflow-hidden bg-white transition-transform duration-500 group-hover/avatar:scale-105 group-hover/avatar:shadow-2xl">
+                <div className="w-28 h-28 rounded-[24px] border-[4px] border-white shadow-xl overflow-hidden bg-genesis-surface transition-transform duration-500 group-hover/avatar:scale-105 group-hover/avatar:shadow-2xl">
                     <img src={patient.avatar || `https://ui-avatars.com/api/?name=${patient.name}`} alt={patient.name} className="w-full h-full object-cover"/>
                 </div>
               </div>
@@ -326,18 +326,18 @@ export const PatientDetails: React.FC = () => {
                 </h1>
                 <div className="flex flex-wrap gap-2 mt-2">
                     {patient.tags.map(tag => (
-                        <span key={tag} className="px-2.5 py-0.5 bg-gray-50 text-genesis-medium text-[10px] rounded-md font-bold uppercase border border-gray-100 tracking-wide">
+                        <span key={tag} className="px-2.5 py-0.5 bg-genesis-soft text-genesis-medium text-[10px] rounded-md font-bold uppercase border border-genesis-border-subtle tracking-wide">
                         {tag}
                         </span>
                     ))}
-                    <span className="text-gray-300 mx-1">|</span>
+                    <span className="text-genesis-subtle mx-1">|</span>
                     <span className="text-sm text-genesis-medium font-medium">{patient.age} anos</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-1 bg-gray-50/50 p-1 rounded-2xl border border-gray-100">
-                <div className="px-5 py-2 text-center border-r border-gray-200/50">
+            <div className="flex gap-1 bg-genesis-soft/50 p-1 rounded-2xl border border-genesis-border-subtle">
+                <div className="px-5 py-2 text-center border-r border-genesis-border/50">
                     <p className="text-[10px] font-bold text-genesis-medium uppercase tracking-wider">Telefone</p>
                     <p className="text-sm font-bold text-genesis-dark">{patient.phone}</p>
                 </div>
@@ -353,7 +353,7 @@ export const PatientDetails: React.FC = () => {
       {/* Plugin Selector (The "Genesis" Modular Part) */}
       <div className="flex gap-4 items-center">
          <span className="text-[10px] font-bold uppercase tracking-widest text-genesis-medium">Especialidade Ativa:</span>
-         <div className="flex bg-white p-1 rounded-xl shadow-sm border border-gray-100">
+         <div className="flex bg-genesis-surface p-1 rounded-xl shadow-sm border border-genesis-border-subtle">
             {(Object.keys(PLUGINS) as SpecialtyType[]).map(key => {
                const plugin = PLUGINS[key];
                const Icon = plugin.icon;
@@ -362,7 +362,7 @@ export const PatientDetails: React.FC = () => {
                   <button 
                     key={key}
                     onClick={() => setActivePluginId(key)}
-                    className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${isActive ? `${plugin.color} shadow-sm` : 'text-genesis-medium hover:bg-gray-50'}`}
+                    className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${isActive ? `${plugin.color} shadow-sm` : 'text-genesis-medium hover:bg-genesis-soft'}`}
                   >
                      <Icon className="w-3.5 h-3.5" />
                      {plugin.name}
@@ -373,7 +373,7 @@ export const PatientDetails: React.FC = () => {
       </div>
 
       <div className="min-h-[600px] flex flex-col gap-6">
-        <div className="bg-gray-100/80 p-1 rounded-xl self-start inline-flex backdrop-blur-sm">
+        <div className="bg-genesis-hover/80 p-1 rounded-xl self-start inline-flex backdrop-blur-sm">
           <TabButton active={activeTab === 'prontuario'} onClick={() => setActiveTab('prontuario')} icon={FileText} label="Prontuário" />
           <TabButton active={activeTab === 'timeline'} onClick={() => setActiveTab('timeline')} icon={History} label="Histórico" />
           <TabButton active={activeTab === 'clinicalAI'} onClick={() => setActiveTab('clinicalAI')} icon={Sparkles} label="Diagnóstico Assistido" colorClass="text-[#6366F1]" />
@@ -384,8 +384,8 @@ export const PatientDetails: React.FC = () => {
             <div className="flex gap-8 animate-in fade-in zoom-in-95 h-[calc(100vh-18rem)]">
               
               {/* History Sidebar */}
-              <div className="w-72 flex-shrink-0 flex flex-col bg-white rounded-[24px] border border-white shadow-soft overflow-hidden">
-                 <div className="p-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
+              <div className="w-72 flex-shrink-0 flex flex-col bg-genesis-surface rounded-[24px] border border-white shadow-soft overflow-hidden">
+                 <div className="p-4 border-b border-genesis-border-subtle flex justify-between items-center bg-genesis-soft/30">
                     <h3 className="text-xs font-bold text-genesis-medium uppercase tracking-wider">Registros</h3>
                  </div>
                  <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2">
@@ -402,8 +402,8 @@ export const PatientDetails: React.FC = () => {
               </div>
 
               {/* Dynamic Editor Area */}
-              <div className="flex-1 flex flex-col bg-white rounded-[24px] border border-white shadow-soft overflow-hidden relative">
-                <div className={`px-8 py-5 border-b border-gray-50 flex justify-between items-center bg-white sticky top-0 z-10 ${activePlugin.color.split(' ')[1]}`}>
+              <div className="flex-1 flex flex-col bg-genesis-surface rounded-[24px] border border-white shadow-soft overflow-hidden relative">
+                <div className={`px-8 py-5 border-b border-genesis-border-subtle flex justify-between items-center bg-genesis-surface sticky top-0 z-10 ${activePlugin.color.split(' ')[1]}`}>
                     <div>
                         <div className="flex items-center gap-2 mb-1">
                             <span className="w-2 h-2 rounded-full bg-current animate-pulse"></span>
@@ -424,10 +424,10 @@ export const PatientDetails: React.FC = () => {
           )}
 
           {activeTab === 'timeline' && (
-             <div className="bg-white rounded-[32px] border border-white shadow-soft p-10 animate-in fade-in zoom-in-95">
+             <div className="bg-genesis-surface rounded-[32px] border border-white shadow-soft p-10 animate-in fade-in zoom-in-95">
                 <h3 className="text-lg font-bold text-genesis-dark mb-8 pl-8">Linha do Tempo</h3>
                 {timelineEvents.length === 0 ? (
-                    <p className="text-center text-gray-400 py-10">Nenhum evento registrado no histórico.</p>
+                    <p className="text-center text-genesis-subtle py-10">Nenhum evento registrado no histórico.</p>
                 ) : (
                     <Timeline events={timelineEvents} />
                 )}
@@ -435,7 +435,7 @@ export const PatientDetails: React.FC = () => {
           )}
 
           {activeTab === 'clinicalAI' && id && (
-            <div className="bg-white rounded-[32px] border border-white shadow-soft overflow-hidden animate-in fade-in zoom-in-95 h-[calc(100vh-18rem)]">
+            <div className="bg-genesis-surface rounded-[32px] border border-white shadow-soft overflow-hidden animate-in fade-in zoom-in-95 h-[calc(100vh-18rem)]">
               <ClinicalReasoningPanel
                 patientId={id}
                 patientContext={patientContext}

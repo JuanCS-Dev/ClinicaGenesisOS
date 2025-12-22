@@ -98,7 +98,7 @@ export function AnalysisSummary({
               >
                 {urgencyConfig.label}
               </span>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-genesis-muted">
                 {urgencyConfig.description}
               </span>
             </div>
@@ -109,7 +109,7 @@ export function AnalysisSummary({
             )}
           </div>
           <div className="text-right">
-            <p className="text-xs text-gray-500">Workflow</p>
+            <p className="text-xs text-genesis-muted">Workflow</p>
             <p className={`font-medium ${urgencyConfig.textColor}`}>
               {triage.recommendedWorkflow === 'emergency'
                 ? 'Emergência'
@@ -181,16 +181,16 @@ export function AnalysisSummary({
             {correlations.slice(0, 3).map((corr, idx) => (
               <div
                 key={idx}
-                className="flex items-center justify-between p-2 bg-white rounded-lg"
+                className="flex items-center justify-between p-2 bg-genesis-surface rounded-lg"
               >
-                <span className="text-sm text-gray-700">{corr.pattern}</span>
+                <span className="text-sm text-genesis-text">{corr.pattern}</span>
                 <span
                   className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                     corr.confidence === 'high'
                       ? 'bg-[#DCFCE7] text-[#15803D]'
                       : corr.confidence === 'medium'
                       ? 'bg-[#FEF3C7] text-[#B45309]'
-                      : 'bg-gray-100 text-gray-600'
+                      : 'bg-genesis-hover text-genesis-medium'
                   }`}
                 >
                   {corr.confidence === 'high'
@@ -211,7 +211,7 @@ export function AnalysisSummary({
       )}
 
       {/* Metadata footer */}
-      <div className="flex items-center justify-between text-xs text-gray-400 pt-2">
+      <div className="flex items-center justify-between text-xs text-genesis-subtle pt-2">
         <div className="flex items-center gap-2">
           <Bot className="w-4 h-4" />
           <span>Gemini 2.5 Flash</span>

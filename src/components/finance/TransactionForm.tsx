@@ -78,14 +78,14 @@ export function TransactionForm({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+      <div className="bg-genesis-surface rounded-2xl shadow-xl w-full max-w-md">
+        <div className="flex items-center justify-between p-6 border-b border-genesis-border-subtle">
           <h2 className="text-lg font-bold text-genesis-dark">Nova Transação</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-genesis-hover rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-genesis-muted" />
           </button>
         </div>
 
@@ -98,7 +98,7 @@ export function TransactionForm({
               className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
                 type === 'income'
                   ? 'bg-[#22C55E] text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-genesis-hover text-genesis-medium hover:bg-genesis-border-subtle'
               }`}
             >
               Receita
@@ -109,7 +109,7 @@ export function TransactionForm({
               className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
                 type === 'expense'
                   ? 'bg-[#EF4444] text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-genesis-hover text-genesis-medium hover:bg-genesis-border-subtle'
               }`}
             >
               Despesa
@@ -118,7 +118,7 @@ export function TransactionForm({
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-genesis-text mb-1">
               Descrição
             </label>
             <input
@@ -126,14 +126,14 @@ export function TransactionForm({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Ex: Consulta Nutricional - Maria Silva"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] outline-none transition-all"
+              className="w-full px-4 py-2.5 border border-genesis-border rounded-xl focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] outline-none transition-all"
               required
             />
           </div>
 
           {/* Amount */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-genesis-text mb-1">
               Valor (R$)
             </label>
             <input
@@ -141,20 +141,20 @@ export function TransactionForm({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0,00"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] outline-none transition-all"
+              className="w-full px-4 py-2.5 border border-genesis-border rounded-xl focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] outline-none transition-all"
               required
             />
           </div>
 
           {/* Category */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-genesis-text mb-1">
               Categoria
             </label>
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] outline-none transition-all"
+              className="w-full px-4 py-2.5 border border-genesis-border rounded-xl focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] outline-none transition-all"
               required
             >
               <option value="">Selecione...</option>
@@ -168,13 +168,13 @@ export function TransactionForm({
 
           {/* Payment method */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-genesis-text mb-1">
               Forma de Pagamento
             </label>
             <select
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] outline-none transition-all"
+              className="w-full px-4 py-2.5 border border-genesis-border rounded-xl focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] outline-none transition-all"
             >
               {Object.entries(PAYMENT_METHOD_LABELS).map(([key, label]) => (
                 <option key={key} value={key}>
@@ -186,14 +186,14 @@ export function TransactionForm({
 
           {/* Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-genesis-text mb-1">
               Data
             </label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] outline-none transition-all"
+              className="w-full px-4 py-2.5 border border-genesis-border rounded-xl focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] outline-none transition-all"
             />
           </div>
 
@@ -205,9 +205,9 @@ export function TransactionForm({
                 id="generatePix"
                 checked={generatePix}
                 onChange={(e) => setGeneratePix(e.target.checked)}
-                className="w-4 h-4 text-[#32D583] border-gray-300 rounded focus:ring-[#32D583]"
+                className="w-4 h-4 text-[#32D583] border-genesis-border rounded focus:ring-[#32D583]"
               />
-              <label htmlFor="generatePix" className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+              <label htmlFor="generatePix" className="flex items-center gap-2 text-sm text-genesis-text cursor-pointer">
                 <QrCode className="w-4 h-4 text-[#32D583]" />
                 Gerar cobrança PIX para o cliente
               </label>

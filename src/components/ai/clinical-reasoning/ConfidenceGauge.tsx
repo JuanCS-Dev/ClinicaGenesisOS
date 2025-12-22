@@ -155,8 +155,8 @@ function getConsensusBadge(level?: ConsensusLevel): {
     case 'single':
       return {
         label: 'Modelo Único',
-        color: 'text-gray-700',
-        bgColor: 'bg-gray-100',
+        color: 'text-genesis-text',
+        bgColor: 'bg-genesis-hover',
       };
     case 'divergent':
       return {
@@ -289,7 +289,7 @@ export const ConfidenceBar: React.FC<ConfidenceBarProps> = ({
       {(label || showPercentage) && (
         <div className="flex items-center justify-between mb-1">
           {label && (
-            <span className="text-xs text-gray-600">{label}</span>
+            <span className="text-xs text-genesis-medium">{label}</span>
           )}
           {showPercentage && (
             <span className={`text-xs font-medium ${config.color}`}>
@@ -298,7 +298,7 @@ export const ConfidenceBar: React.FC<ConfidenceBarProps> = ({
           )}
         </div>
       )}
-      <div className={`w-full bg-gray-200 rounded-full overflow-hidden ${heightClass}`}>
+      <div className={`w-full bg-genesis-border-subtle rounded-full overflow-hidden ${heightClass}`}>
         <div
           className={`${heightClass} transition-all duration-500`}
           style={{

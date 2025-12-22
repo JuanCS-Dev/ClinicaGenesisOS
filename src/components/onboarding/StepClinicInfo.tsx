@@ -35,14 +35,14 @@ export function StepClinicInfo({
             Nome da Clínica *
           </label>
           <div className="relative group">
-            <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-medium group-focus-within:text-genesis-blue transition-colors" />
+            <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-medium group-focus-within:text-genesis-primary transition-colors" />
             <input
               id="clinicName"
               type="text"
               value={clinicName}
               onChange={(e) => setClinicName(e.target.value)}
               placeholder="Ex: Clínica São Paulo"
-              className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-genesis-dark placeholder-genesis-medium/50 focus:outline-none focus:ring-2 focus:ring-genesis-blue/20 focus:border-genesis-blue transition-all"
+              className="w-full pl-12 pr-4 py-3 bg-genesis-surface border border-genesis-border rounded-xl text-genesis-dark placeholder-genesis-medium/50 focus:outline-none focus:ring-2 focus:ring-genesis-primary/20 focus:border-genesis-primary transition-all"
             />
           </div>
         </div>
@@ -52,14 +52,14 @@ export function StepClinicInfo({
             Telefone
           </label>
           <div className="relative group">
-            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-medium group-focus-within:text-genesis-blue transition-colors" />
+            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-medium group-focus-within:text-genesis-primary transition-colors" />
             <input
               id="phone"
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="(11) 99999-9999"
-              className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-genesis-dark placeholder-genesis-medium/50 focus:outline-none focus:ring-2 focus:ring-genesis-blue/20 focus:border-genesis-blue transition-all"
+              className="w-full pl-12 pr-4 py-3 bg-genesis-surface border border-genesis-border rounded-xl text-genesis-dark placeholder-genesis-medium/50 focus:outline-none focus:ring-2 focus:ring-genesis-primary/20 focus:border-genesis-primary transition-all"
             />
           </div>
         </div>
@@ -69,14 +69,14 @@ export function StepClinicInfo({
             Endereço
           </label>
           <div className="relative group">
-            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-medium group-focus-within:text-genesis-blue transition-colors" />
+            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-medium group-focus-within:text-genesis-primary transition-colors" />
             <input
               id="address"
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               placeholder="Rua, número - Cidade, Estado"
-              className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-genesis-dark placeholder-genesis-medium/50 focus:outline-none focus:ring-2 focus:ring-genesis-blue/20 focus:border-genesis-blue transition-all"
+              className="w-full pl-12 pr-4 py-3 bg-genesis-surface border border-genesis-border rounded-xl text-genesis-dark placeholder-genesis-medium/50 focus:outline-none focus:ring-2 focus:ring-genesis-primary/20 focus:border-genesis-primary transition-all"
             />
           </div>
         </div>

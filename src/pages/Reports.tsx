@@ -53,17 +53,17 @@ const InsightCard: React.FC<InsightCardProps> = ({
   loading,
   icon,
 }) => (
-  <div className="bg-white p-6 rounded-2xl border border-white shadow-soft flex flex-col justify-between group hover:shadow-float transition-all duration-300">
+  <div className="bg-genesis-surface p-6 rounded-2xl border border-white shadow-soft flex flex-col justify-between group hover:shadow-float transition-all duration-300">
     <div className="flex justify-between items-start">
       <h4 className="text-sm font-medium text-genesis-medium">{title}</h4>
       {icon || (
-        <Info className="w-4 h-4 text-gray-300 hover:text-[#4F46E5] cursor-pointer transition-colors" />
+        <Info className="w-4 h-4 text-genesis-subtle hover:text-[#4F46E5] cursor-pointer transition-colors" />
       )}
     </div>
     <div className="mt-4">
       {loading ? (
         <div className="h-9 flex items-center">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+          <Loader2 className="w-6 h-6 animate-spin text-genesis-subtle" />
         </div>
       ) : (
         <h2 className="text-3xl font-bold text-genesis-dark tracking-tight">
@@ -97,14 +97,14 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange }) => {
             specialty: (e.target.value as SpecialtyType) || undefined,
           })
         }
-        className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-genesis-dark focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] outline-none"
+        className="px-4 py-2.5 bg-genesis-surface border border-genesis-border rounded-xl text-sm font-medium text-genesis-dark focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] outline-none"
       >
         <option value="">Todas Especialidades</option>
         <option value="medicina">Medicina</option>
         <option value="nutricao">Nutrição</option>
         <option value="psicologia">Psicologia</option>
       </select>
-      <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-genesis-dark hover:bg-gray-50 transition-colors shadow-sm">
+      <button className="flex items-center gap-2 px-4 py-2.5 bg-genesis-surface border border-genesis-border rounded-xl text-sm font-medium text-genesis-dark hover:bg-genesis-soft transition-colors shadow-sm">
         <Calendar className="w-4 h-4 text-genesis-medium" />
         Este Mês
       </button>
@@ -116,8 +116,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange }) => {
  * Empty state component.
  */
 const EmptyState: React.FC<{ message: string }> = ({ message }) => (
-  <div className="h-full flex flex-col items-center justify-center text-gray-400">
-    <FileText className="w-12 h-12 mb-3 text-gray-300" />
+  <div className="h-full flex flex-col items-center justify-center text-genesis-subtle">
+    <FileText className="w-12 h-12 mb-3 text-genesis-subtle" />
     <p className="text-sm">{message}</p>
   </div>
 );
@@ -176,13 +176,13 @@ export const Reports: React.FC = () => {
               })
             }
           />
-          <button className="p-2.5 bg-white border border-gray-200 rounded-xl text-genesis-dark hover:bg-gray-50 transition-colors shadow-sm">
+          <button className="p-2.5 bg-genesis-surface border border-genesis-border rounded-xl text-genesis-dark hover:bg-genesis-soft transition-colors shadow-sm">
             <Share2 className="w-4 h-4" />
           </button>
           <button
             onClick={handleExport}
             disabled={exporting}
-            className="flex items-center gap-2 px-4 py-2.5 bg-genesis-dark text-white rounded-xl text-sm font-medium hover:bg-black transition-colors shadow-lg shadow-gray-200 disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2.5 bg-genesis-dark text-white rounded-xl text-sm font-medium hover:bg-black transition-colors shadow-lg shadow-genesis-medium/20 disabled:opacity-50"
           >
             {exporting ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -228,13 +228,13 @@ export const Reports: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Procedures Chart */}
-        <div className="bg-white p-8 rounded-3xl border border-white shadow-soft h-[400px] flex flex-col">
+        <div className="bg-genesis-surface p-8 rounded-3xl border border-white shadow-soft h-[400px] flex flex-col">
           <h3 className="text-lg font-bold text-genesis-dark mb-6">
             Procedimentos Populares
           </h3>
           {loading ? (
             <div className="flex-1 flex items-center justify-center">
-              <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+              <Loader2 className="w-8 h-8 animate-spin text-genesis-subtle" />
             </div>
           ) : procedureStats.length === 0 ? (
             <EmptyState message="Nenhum procedimento registrado" />
@@ -281,13 +281,13 @@ export const Reports: React.FC = () => {
         {/* Demographics & Age Grid */}
         <div className="grid grid-rows-2 gap-8">
           {/* Gender Distribution */}
-          <div className="bg-white p-6 rounded-3xl border border-white shadow-soft flex items-center justify-between">
+          <div className="bg-genesis-surface p-6 rounded-3xl border border-white shadow-soft flex items-center justify-between">
             <div>
               <h3 className="text-lg font-bold text-genesis-dark mb-2">
                 Gênero
               </h3>
               {loading ? (
-                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                <Loader2 className="w-6 h-6 animate-spin text-genesis-subtle" />
               ) : demographics?.gender && demographics.gender.length > 0 ? (
                 <div className="space-y-2">
                   {demographics.gender.map((g, i) => (
@@ -303,7 +303,7 @@ export const Reports: React.FC = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-400">Sem dados</p>
+                <p className="text-sm text-genesis-subtle">Sem dados</p>
               )}
             </div>
             <div className="w-40 h-40">
@@ -331,20 +331,20 @@ export const Reports: React.FC = () => {
                 </ResponsiveContainer>
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <div className="w-24 h-24 rounded-full bg-gray-100" />
+                  <div className="w-24 h-24 rounded-full bg-genesis-hover" />
                 </div>
               )}
             </div>
           </div>
 
           {/* Age Distribution */}
-          <div className="bg-white p-6 rounded-3xl border border-white shadow-soft flex flex-col">
+          <div className="bg-genesis-surface p-6 rounded-3xl border border-white shadow-soft flex flex-col">
             <h3 className="text-lg font-bold text-genesis-dark mb-4">
               Faixa Etária Predominante
             </h3>
             {loading ? (
               <div className="flex-1 flex items-center justify-center">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                <Loader2 className="w-6 h-6 animate-spin text-genesis-subtle" />
               </div>
             ) : demographics?.ageGroups && demographics.ageGroups.length > 0 ? (
               <div className="flex items-end justify-between h-full gap-4 px-4">

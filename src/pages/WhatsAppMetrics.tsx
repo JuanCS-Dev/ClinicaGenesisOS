@@ -69,7 +69,7 @@ export function WhatsAppMetrics() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 text-genesis-blue animate-spin" />
+        <Loader2 className="w-8 h-8 text-genesis-primary animate-spin" />
       </div>
     );
   }
@@ -100,7 +100,7 @@ export function WhatsAppMetrics() {
             Métricas de engajamento e confirmações de consulta via WhatsApp.
           </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-genesis-dark text-white rounded-xl text-sm font-medium hover:bg-black transition-colors shadow-lg shadow-gray-200">
+        <button className="flex items-center gap-2 px-4 py-2.5 bg-genesis-dark text-white rounded-xl text-sm font-medium hover:bg-black transition-colors shadow-lg shadow-genesis-medium/20">
           <RefreshCw className="w-4 h-4" /> Atualizar
         </button>
       </div>
@@ -148,10 +148,10 @@ export function WhatsAppMetrics() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Chart - Delivery Trend */}
-        <div className="lg:col-span-2 bg-white rounded-3xl border border-white shadow-soft p-8">
+        <div className="lg:col-span-2 bg-genesis-surface rounded-3xl border border-white shadow-soft p-8">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold text-genesis-dark">Tendência de Engajamento</h3>
-            <span className="text-xs text-genesis-medium bg-gray-100 px-3 py-1 rounded-full">
+            <span className="text-xs text-genesis-medium bg-genesis-hover px-3 py-1 rounded-full">
               Últimos 30 dias
             </span>
           </div>
@@ -187,7 +187,7 @@ export function WhatsAppMetrics() {
         </div>
 
         {/* No-Show Impact */}
-        <div className="bg-white rounded-3xl border border-white shadow-soft p-6">
+        <div className="bg-genesis-surface rounded-3xl border border-white shadow-soft p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-red-50 rounded-lg">
               <CalendarX className="w-4 h-4 text-red-600" />
@@ -230,29 +230,29 @@ export function WhatsAppMetrics() {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-bold mb-1">Resumo de Respostas</h3>
-            <p className="text-gray-400 text-sm">Interações dos pacientes com os lembretes</p>
+            <p className="text-genesis-subtle text-sm">Interações dos pacientes com os lembretes</p>
           </div>
           <div className="text-right">
             <p className="text-3xl font-bold">{formatPercent(metrics.responseRate)}</p>
-            <p className="text-gray-400 text-xs">Taxa de Resposta</p>
+            <p className="text-genesis-subtle text-xs">Taxa de Resposta</p>
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
           <div className="text-center">
             <p className="text-2xl font-bold text-green-400">{metrics.totalConfirmed}</p>
-            <p className="text-xs text-gray-400 mt-1">Confirmaram</p>
+            <p className="text-xs text-genesis-subtle mt-1">Confirmaram</p>
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-amber-400">{metrics.totalNeedReschedule}</p>
-            <p className="text-xs text-gray-400 mt-1">Pediram Remarcação</p>
+            <p className="text-xs text-genesis-subtle mt-1">Pediram Remarcação</p>
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-blue-400">{metrics.totalRead}</p>
-            <p className="text-xs text-gray-400 mt-1">Visualizaram</p>
+            <p className="text-xs text-genesis-subtle mt-1">Visualizaram</p>
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-red-400">{metrics.totalFailed}</p>
-            <p className="text-xs text-gray-400 mt-1">Falhas de Envio</p>
+            <p className="text-xs text-genesis-subtle mt-1">Falhas de Envio</p>
           </div>
         </div>
       </div>

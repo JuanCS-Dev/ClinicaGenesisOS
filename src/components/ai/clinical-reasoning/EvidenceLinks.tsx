@@ -161,9 +161,9 @@ function getSourceColor(source: ReferenceSource): {
       };
     default:
       return {
-        bg: 'bg-gray-50',
-        text: 'text-gray-700',
-        border: 'border-gray-100',
+        bg: 'bg-genesis-soft',
+        text: 'text-genesis-text',
+        border: 'border-genesis-border-subtle',
       };
   }
 }
@@ -208,7 +208,7 @@ export const EvidenceLinks: React.FC<EvidenceLinksProps> = ({
         {hasMore && !showAll && (
           <button
             onClick={() => setShowAll(true)}
-            className="text-xs text-gray-500 hover:text-gray-700"
+            className="text-xs text-genesis-muted hover:text-genesis-text"
           >
             +{references.length - maxShown}
           </button>
@@ -220,7 +220,7 @@ export const EvidenceLinks: React.FC<EvidenceLinksProps> = ({
   // Full mode
   return (
     <div className="space-y-2">
-      <h4 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+      <h4 className="text-sm font-medium text-genesis-text flex items-center gap-2">
         <BookOpen className="w-4 h-4" />
         Referências Científicas
       </h4>
@@ -241,28 +241,28 @@ export const EvidenceLinks: React.FC<EvidenceLinksProps> = ({
                   {getSourceIcon(ref.source)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 line-clamp-2">
+                  <p className="text-sm font-medium text-genesis-dark line-clamp-2">
                     {ref.title}
                   </p>
-                  <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                  <div className="flex items-center gap-2 mt-1 text-xs text-genesis-muted">
                     {ref.authors && (
                       <span className="truncate max-w-[200px]">{ref.authors}</span>
                     )}
                     {ref.journal && (
                       <>
-                        <span className="text-gray-300">•</span>
+                        <span className="text-genesis-subtle">•</span>
                         <span>{ref.journal}</span>
                       </>
                     )}
                     {ref.year && (
                       <>
-                        <span className="text-gray-300">•</span>
+                        <span className="text-genesis-subtle">•</span>
                         <span>{ref.year}</span>
                       </>
                     )}
                   </div>
                 </div>
-                <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <ExternalLink className="w-4 h-4 text-genesis-subtle flex-shrink-0" />
               </div>
             </a>
           );

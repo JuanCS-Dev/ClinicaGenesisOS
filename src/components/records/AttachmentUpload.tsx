@@ -170,7 +170,7 @@ export function AttachmentUpload({
         onClick={handleClick}
         className={`
           relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all
-          ${isDragging ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}
+          ${isDragging ? 'border-blue-400 bg-blue-50' : 'border-genesis-border hover:border-genesis-border hover:bg-genesis-soft'}
           ${disabled || !canAddMore ? 'opacity-50 cursor-not-allowed' : ''}
         `}
       >
@@ -187,15 +187,15 @@ export function AttachmentUpload({
         {isUploading ? (
           <div className="flex flex-col items-center gap-2">
             <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-            <p className="text-sm text-gray-500">Enviando arquivo...</p>
+            <p className="text-sm text-genesis-muted">Enviando arquivo...</p>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2">
-            <Upload className={`w-8 h-8 ${isDragging ? 'text-blue-500' : 'text-gray-400'}`} />
-            <p className="text-sm text-gray-600">
+            <Upload className={`w-8 h-8 ${isDragging ? 'text-blue-500' : 'text-genesis-subtle'}`} />
+            <p className="text-sm text-genesis-medium">
               {isDragging ? 'Solte os arquivos aqui' : 'Arraste arquivos ou clique para selecionar'}
             </p>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-genesis-subtle">
               PDF, JPG, PNG, GIF ou WebP (máx. 10MB)
             </p>
           </div>
@@ -213,7 +213,7 @@ export function AttachmentUpload({
       {/* Attachments list */}
       {attachments.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+          <p className="text-xs font-bold text-genesis-muted uppercase tracking-wider">
             Anexos ({attachments.length}/{maxAttachments})
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -246,7 +246,7 @@ const AttachmentItem = memo(function AttachmentItem({ attachment, onDelete, disa
 
   return (
     <>
-      <div className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-lg group">
+      <div className="flex items-center gap-3 p-3 bg-genesis-soft border border-genesis-border-subtle rounded-lg group">
         {/* Icon/Thumbnail */}
         <div className="flex-shrink-0">
           {attachment.type === 'pdf' ? (
@@ -274,11 +274,11 @@ const AttachmentItem = memo(function AttachmentItem({ attachment, onDelete, disa
             href={attachment.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-medium text-gray-700 hover:text-blue-600 truncate block"
+            className="text-sm font-medium text-genesis-text hover:text-blue-600 truncate block"
           >
             {attachment.name}
           </a>
-          <p className="text-xs text-gray-400">{formatFileSize(attachment.size)}</p>
+          <p className="text-xs text-genesis-subtle">{formatFileSize(attachment.size)}</p>
         </div>
 
         {/* Delete button */}
@@ -286,7 +286,7 @@ const AttachmentItem = memo(function AttachmentItem({ attachment, onDelete, disa
           <button
             type="button"
             onClick={onDelete}
-            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+            className="p-1.5 text-genesis-subtle hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
           >
             <X className="w-4 h-4" />
           </button>
@@ -308,7 +308,7 @@ const AttachmentItem = memo(function AttachmentItem({ attachment, onDelete, disa
             <button
               type="button"
               onClick={() => setShowPreview(false)}
-              className="absolute -top-3 -right-3 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100"
+              className="absolute -top-3 -right-3 p-2 bg-genesis-surface rounded-full shadow-lg hover:bg-genesis-hover"
             >
               <X className="w-5 h-5" />
             </button>
@@ -337,7 +337,7 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
           href={attachment.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs text-gray-600 transition-colors"
+          className="flex items-center gap-1.5 px-2 py-1 bg-genesis-hover hover:bg-genesis-border-subtle rounded-lg text-xs text-genesis-medium transition-colors"
         >
           {attachment.type === 'pdf' ? (
             <FileText className="w-3.5 h-3.5 text-red-500" />

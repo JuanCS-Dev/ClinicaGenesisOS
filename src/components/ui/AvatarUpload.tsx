@@ -99,9 +99,9 @@ export function AvatarUpload({
         onClick={handleClick}
         className={`relative group ${disabled || uploading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
       >
-        <div className="w-32 h-32 rounded-full bg-gray-100 flex items-center justify-center border-4 border-white shadow-md overflow-hidden group-hover:ring-4 group-hover:ring-genesis-blue/10 transition-all">
+        <div className="w-32 h-32 rounded-full bg-genesis-hover flex items-center justify-center border-4 border-white shadow-md overflow-hidden group-hover:ring-4 group-hover:ring-genesis-primary/10 transition-all">
           {uploading ? (
-            <Loader2 className="w-8 h-8 text-genesis-blue animate-spin" />
+            <Loader2 className="w-8 h-8 text-genesis-primary animate-spin" />
           ) : displayAvatar ? (
             <img
               src={displayAvatar}
@@ -113,7 +113,7 @@ export function AvatarUpload({
               }}
             />
           ) : (
-            <User className="w-12 h-12 text-gray-300" />
+            <User className="w-12 h-12 text-genesis-subtle" />
           )}
         </div>
 
@@ -145,7 +145,7 @@ export function AvatarUpload({
         disabled={disabled || uploading}
       />
 
-      <p className="text-sm font-semibold text-genesis-blue mt-4">
+      <p className="text-sm font-semibold text-genesis-primary mt-4">
         {uploading ? 'Enviando...' : 'Alterar Foto'}
       </p>
 

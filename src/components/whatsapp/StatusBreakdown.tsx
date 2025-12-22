@@ -29,13 +29,13 @@ export const StatusBreakdown = memo(function StatusBreakdown({
   accentColor,
 }: StatusBreakdownProps) {
   return (
-    <div className="bg-white rounded-2xl border border-white shadow-soft p-6">
+    <div className="bg-genesis-surface rounded-2xl border border-white shadow-soft p-6">
       <div className="flex items-center gap-3 mb-4">
         <div className={`p-2 rounded-lg ${accentColor}`}>
           <Icon className="w-4 h-4 text-white" />
         </div>
         <h4 className="font-semibold text-genesis-dark text-sm">{title}</h4>
-        <span className="ml-auto text-xs text-genesis-medium bg-gray-100 px-2 py-1 rounded-full">
+        <span className="ml-auto text-xs text-genesis-medium bg-genesis-hover px-2 py-1 rounded-full">
           {data.total} total
         </span>
       </div>
@@ -49,7 +49,7 @@ export const StatusBreakdown = memo(function StatusBreakdown({
             <div key={key} className="flex items-center gap-3">
               <div className={`w-2 h-2 rounded-full ${color}`} />
               <span className="text-xs text-genesis-medium w-20">{label}</span>
-              <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="flex-1 h-2 bg-genesis-hover rounded-full overflow-hidden">
                 <div
                   className={`h-full ${color} rounded-full transition-all duration-500`}
                   style={{ width: `${percent}%` }}

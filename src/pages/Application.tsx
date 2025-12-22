@@ -46,19 +46,19 @@ export const Application: React.FC = () => {
             <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px]"></div>
         </div>
 
-        <div className="max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 p-12 rounded-[32px] text-center relative z-10 animate-enter shadow-2xl">
+        <div className="max-w-md w-full bg-genesis-surface/5 backdrop-blur-xl border border-white/10 p-12 rounded-[32px] text-center relative z-10 animate-enter shadow-2xl">
            <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-8 border border-green-500/50">
               <CheckCircle2 className="w-10 h-10 text-green-500" />
            </div>
            <h2 className="text-3xl font-bold mb-4 tracking-tight">Solicitação Criptografada</h2>
-           <p className="text-gray-400 mb-8 leading-relaxed">
+           <p className="text-genesis-subtle mb-8 leading-relaxed">
              Seus dados foram recebidos pelo Concierge Genesis.
              <br/><br/>
              Nossa IA está analisando o perfil da sua clínica. Se houver compatibilidade com o ecossistema, entraremos em contato via WhatsApp Blindado em até 2 horas.
            </p>
            <button 
              onClick={() => navigate('/')}
-             className="text-sm font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors"
+             className="text-sm font-bold uppercase tracking-widest text-genesis-muted hover:text-white transition-colors"
            >
              Retornar à Base
            </button>
@@ -77,12 +77,12 @@ export const Application: React.FC = () => {
 
          <div className="relative z-10">
             <div className="flex items-center gap-3 mb-8 cursor-pointer" onClick={() => navigate('/')}>
-                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-10 h-10 bg-genesis-surface rounded-xl flex items-center justify-center shadow-lg">
                   <Activity className="text-[#0F172A] w-5 h-5" />
                 </div>
                 <div className="flex flex-col">
                     <span className="text-lg font-bold tracking-tighter leading-none">CLÍNICA<span className="text-blue-500">GENESIS</span></span>
-                    <span className="text-[9px] uppercase tracking-[0.2em] text-gray-500 font-bold">Secure Gateway</span>
+                    <span className="text-[9px] uppercase tracking-[0.2em] text-genesis-muted font-bold">Secure Gateway</span>
                 </div>
             </div>
          </div>
@@ -91,14 +91,14 @@ export const Application: React.FC = () => {
             <h1 className="text-5xl font-bold tracking-tighter mb-6 leading-tight">
               Apenas 3% das clínicas são aprovadas.
             </h1>
-            <p className="text-gray-400 text-lg leading-relaxed">
+            <p className="text-genesis-subtle text-lg leading-relaxed">
               O Genesis não é para todos. É para quem já entendeu que o tempo é o único ativo que não se recupera.
               <br/><br/>
               Preencha com precisão.
             </p>
          </div>
 
-         <div className="relative z-10 flex items-center gap-4 text-xs font-mono text-gray-600">
+         <div className="relative z-10 flex items-center gap-4 text-xs font-mono text-genesis-medium">
             <Lock className="w-3 h-3" />
             <span>256-BIT ENCRYPTION ACTIVE</span>
          </div>
@@ -118,27 +118,27 @@ export const Application: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-6 animate-enter">
                
                <div className="space-y-1">
-                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Nome do Titular</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-genesis-muted ml-1">Nome do Titular</label>
                   <input 
                     required
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
+                    className="w-full bg-genesis-surface/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
                     placeholder="Dr. Seu Nome"
                   />
                </div>
 
                <div className="space-y-1">
-                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Nome da Clínica</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-genesis-muted ml-1">Nome da Clínica</label>
                   <div className="relative">
-                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-muted" />
                     <input 
                         required
                         name="clinicName"
                         value={formData.clinicName}
                         onChange={handleChange}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
+                        className="w-full bg-genesis-surface/5 border border-white/10 rounded-xl pl-12 pr-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
                         placeholder="Nome da sua estrutura"
                     />
                   </div>
@@ -146,18 +146,18 @@ export const Application: React.FC = () => {
 
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                      <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Whatsapp</label>
+                      <label className="text-xs font-bold uppercase tracking-widest text-genesis-muted ml-1">Whatsapp</label>
                       <input 
                         required
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
+                        className="w-full bg-genesis-surface/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
                         placeholder="(DDD) 99999..."
                       />
                   </div>
                   <div className="space-y-1">
-                      <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Equipe</label>
+                      <label className="text-xs font-bold uppercase tracking-widest text-genesis-muted ml-1">Equipe</label>
                       <div className="relative">
                         <input 
                             required
@@ -165,7 +165,7 @@ export const Application: React.FC = () => {
                             type="number"
                             value={formData.professionals}
                             onChange={handleChange}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
+                            className="w-full bg-genesis-surface/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
                             placeholder="Qtd. Profissionais"
                         />
                       </div>
@@ -173,14 +173,14 @@ export const Application: React.FC = () => {
                </div>
 
                <div className="space-y-1">
-                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Email Corporativo</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-genesis-muted ml-1">Email Corporativo</label>
                   <input 
                     required
                     name="email"
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
+                    className="w-full bg-genesis-surface/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
                     placeholder="voce@suaclinica.com"
                   />
                </div>
@@ -189,7 +189,7 @@ export const Application: React.FC = () => {
                   <button 
                     type="submit" 
                     disabled={isSubmitting}
-                    className="w-full bg-white text-[#0F172A] rounded-xl py-4 font-bold uppercase tracking-widest hover:bg-gray-200 transition-all transform hover:-translate-y-1 shadow-[0_0_20px_rgba(255,255,255,0.3)] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                    className="w-full bg-genesis-surface text-[#0F172A] rounded-xl py-4 font-bold uppercase tracking-widest hover:bg-genesis-border-subtle transition-all transform hover:-translate-y-1 shadow-[0_0_20px_rgba(255,255,255,0.3)] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                   >
                     {isSubmitting ? (
                         <>
@@ -202,7 +202,7 @@ export const Application: React.FC = () => {
                         </>
                     )}
                   </button>
-                  <p className="text-center text-gray-500 text-[10px] mt-4 uppercase tracking-wider">
+                  <p className="text-center text-genesis-muted text-[10px] mt-4 uppercase tracking-wider">
                       Ao clicar, você concorda com nossa política de confidencialidade estrita.
                   </p>
                </div>

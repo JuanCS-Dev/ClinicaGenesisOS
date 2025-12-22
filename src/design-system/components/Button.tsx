@@ -38,6 +38,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 /**
  * Base styles shared across all variants
+ * Premium micro-interactions: scale, shadow, translate-y
  */
 const baseStyles = `
   inline-flex items-center justify-center gap-2
@@ -45,7 +46,8 @@ const baseStyles = `
   transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]
   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
   disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none
-  active:scale-[0.98]
+  hover:scale-[1.02] hover:-translate-y-0.5
+  active:scale-[0.98] active:translate-y-0
 `.replace(/\s+/g, ' ').trim();
 
 /**

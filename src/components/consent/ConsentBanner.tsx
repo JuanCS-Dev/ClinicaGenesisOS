@@ -66,7 +66,7 @@ export const ConsentBanner: React.FC = () => {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-black/20 to-transparent pointer-events-none">
       <div className="max-w-4xl mx-auto pointer-events-auto">
-        <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+        <div className="bg-genesis-surface rounded-2xl shadow-2xl border border-genesis-border-subtle overflow-hidden">
           {/* Header */}
           <div className="p-6 pb-4">
             <div className="flex items-start gap-4">
@@ -74,10 +74,10 @@ export const ConsentBanner: React.FC = () => {
                 <Shield className="w-6 h-6 text-[#4F46E5]" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-gray-900">
+                <h3 className="text-lg font-bold text-genesis-dark">
                   Sua Privacidade é Nossa Prioridade
                 </h3>
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm text-genesis-medium">
                   Utilizamos seus dados para prestar serviços de saúde de qualidade.
                   Em conformidade com a LGPD (Lei Geral de Proteção de Dados),
                   precisamos do seu consentimento para processar suas informações.
@@ -85,18 +85,18 @@ export const ConsentBanner: React.FC = () => {
               </div>
               <button
                 onClick={dismissBanner}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-genesis-hover rounded-lg transition-colors"
                 aria-label="Fechar banner"
               >
-                <X className="w-5 h-5 text-gray-400" />
+                <X className="w-5 h-5 text-genesis-subtle" />
               </button>
             </div>
           </div>
 
           {/* Expandable details */}
           {expanded && (
-            <div className="px-6 pb-4 border-t border-gray-100 pt-4">
-              <h4 className="font-medium text-gray-900 mb-3">
+            <div className="px-6 pb-4 border-t border-genesis-border-subtle pt-4">
+              <h4 className="font-medium text-genesis-dark mb-3">
                 Como utilizamos seus dados:
               </h4>
               <div className="space-y-3">
@@ -104,14 +104,14 @@ export const ConsentBanner: React.FC = () => {
                   (purpose) => (
                     <div
                       key={purpose}
-                      className="p-3 bg-gray-50 rounded-xl"
+                      className="p-3 bg-genesis-soft rounded-xl"
                     >
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-[#22C55E]" />
-                        <span className="font-medium text-gray-900">
+                        <span className="font-medium text-genesis-dark">
                           {PURPOSE_LABELS[purpose]}
                         </span>
-                        <span className="text-xs text-gray-500 ml-auto">
+                        <span className="text-xs text-genesis-muted ml-auto">
                           {getLegalBasis(purpose)}
                         </span>
                       </div>
@@ -122,7 +122,7 @@ export const ConsentBanner: React.FC = () => {
                             className={`text-xs px-2 py-0.5 rounded-full ${
                               isSensitiveCategory(category)
                                 ? 'bg-amber-100 text-amber-700'
-                                : 'bg-gray-200 text-gray-600'
+                                : 'bg-genesis-border-subtle text-genesis-medium'
                             }`}
                           >
                             {DATA_CATEGORY_LABELS[category]}
@@ -151,10 +151,10 @@ export const ConsentBanner: React.FC = () => {
           )}
 
           {/* Actions */}
-          <div className="p-4 bg-gray-50 flex flex-col sm:flex-row items-center gap-3">
+          <div className="p-4 bg-genesis-soft flex flex-col sm:flex-row items-center gap-3">
             <button
               onClick={() => setExpanded(!expanded)}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              className="flex items-center gap-2 text-sm text-genesis-medium hover:text-genesis-dark transition-colors"
             >
               {expanded ? (
                 <>

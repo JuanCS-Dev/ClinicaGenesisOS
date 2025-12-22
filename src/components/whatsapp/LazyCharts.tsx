@@ -43,7 +43,7 @@ export const LazyBar = lazy(() =>
 export function ChartLoader() {
   return (
     <div className="flex items-center justify-center h-full">
-      <Loader2 className="w-6 h-6 text-genesis-blue animate-spin" />
+      <Loader2 className="w-6 h-6 text-genesis-primary animate-spin" />
     </div>
   );
 }

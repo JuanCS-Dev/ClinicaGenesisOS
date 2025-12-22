@@ -51,7 +51,7 @@ function DroppableHourSlot({
     <div
       ref={setNodeRef}
       className={`flex-1 relative mx-2 transition-colors ${
-        isOver ? 'bg-genesis-blue/10 ring-2 ring-genesis-blue/30 rounded-xl' : ''
+        isOver ? 'bg-genesis-primary/10 ring-2 ring-genesis-primary/30 rounded-xl' : ''
       }`}
     >
       {children}
@@ -191,9 +191,9 @@ export function DraggableDayView({
           return (
             <div
               key={hour}
-              className="flex min-h-[120px] group relative border-b border-gray-100/50"
+              className="flex min-h-[120px] group relative border-b border-genesis-border-subtle/50"
             >
-              <div className="w-20 p-3 text-[11px] font-bold text-genesis-medium/70 text-center border-r border-gray-100/50 bg-[#F5F5F7]/40 backdrop-blur-sm">
+              <div className="w-20 p-3 text-[11px] font-bold text-genesis-medium/70 text-center border-r border-genesis-border-subtle/50 bg-[#F5F5F7]/40 backdrop-blur-sm">
                 {hour}:00
               </div>
 

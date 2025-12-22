@@ -158,14 +158,14 @@ describe('ConfidenceBar', () => {
   it('renders small height variant', () => {
     const { container } = render(<ConfidenceBar confidence={50} height="sm" />);
 
-    const bar = container.querySelector('.bg-gray-200');
+    const bar = container.querySelector('.bg-genesis-border-subtle');
     expect(bar).toHaveClass('h-1.5');
   });
 
   it('renders default medium height', () => {
     const { container } = render(<ConfidenceBar confidence={50} />);
 
-    const bar = container.querySelector('.bg-gray-200');
+    const bar = container.querySelector('.bg-genesis-border-subtle');
     expect(bar).toHaveClass('h-2.5');
   });
 

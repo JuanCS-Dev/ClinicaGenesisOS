@@ -5,6 +5,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { AuthProvider } from './contexts/AuthContext';
 import { ClinicProvider, useClinicContext } from './contexts/ClinicContext';
 import { ConsentProvider } from './contexts/ConsentContext';
+import { PatientAuthProvider } from './contexts/PatientAuthContext';
 import { PageProvider } from './contexts/PageContext';
 import { ThemeProvider, SkipLink } from './design-system';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
@@ -33,11 +34,26 @@ const EditPatient = lazy(() => import('./pages/EditPatient').then(m => ({ defaul
 const Settings = lazy(() => import('./pages/Settings').then(m => ({ default: m.Settings })));
 const Billing = lazy(() => import('./pages/Billing').then(m => ({ default: m.Billing })));
 const Help = lazy(() => import('./pages/Help').then(m => ({ default: m.Help })));
+const Analytics = lazy(() => import('./pages/Analytics').then(m => ({ default: m.Analytics })));
 const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
 
 // Public pages (no auth required)
 const BookAppointment = lazy(() => import('./pages/public/BookAppointment'));
 const ClinicProfile = lazy(() => import('./pages/public/ClinicProfile'));
+
+// Patient Portal pages
+const PatientLogin = lazy(() => import('./pages/patient-portal/Login'));
+const PatientDashboard = lazy(() => import('./pages/patient-portal/Dashboard'));
+const PatientAppointments = lazy(() => import('./pages/patient-portal/Appointments'));
+const PatientHistory = lazy(() => import('./pages/patient-portal/History'));
+const PatientLabResults = lazy(() => import('./pages/patient-portal/LabResults'));
+const PatientPrescriptions = lazy(() => import('./pages/patient-portal/Prescriptions'));
+const PatientMessages = lazy(() => import('./pages/patient-portal/Messages'));
+const PatientBilling = lazy(() => import('./pages/patient-portal/Billing'));
+const PatientTelehealth = lazy(() => import('./pages/patient-portal/Telehealth'));
+
+// Patient Portal Layout
+const PatientPortalLayout = lazy(() => import('./components/patient-portal/PatientPortalLayout'));
 
 /**
  * Loading spinner component for async operations.
@@ -136,6 +152,7 @@ function App() {
         <AuthProvider>
           <ClinicProvider>
             <ConsentProvider>
+              <PatientAuthProvider>
               <Toaster richColors position="top-right" />
               <OfflineIndicator />
               <UpdatePrompt />
@@ -152,6 +169,19 @@ function App() {
             {/* Public Booking Pages (no auth required) */}
             <Route path="/agendar/:clinicSlug" element={<BookAppointment />} />
             <Route path="/clinica/:clinicSlug" element={<ClinicProfile />} />
+
+            {/* Patient Portal Routes */}
+            <Route path="/portal/login" element={<PatientLogin />} />
+            <Route element={<PatientPortalLayout />}>
+              <Route path="/portal" element={<PatientDashboard />} />
+              <Route path="/portal/consultas" element={<PatientAppointments />} />
+              <Route path="/portal/historico" element={<PatientHistory />} />
+              <Route path="/portal/exames" element={<PatientLabResults />} />
+              <Route path="/portal/receitas" element={<PatientPrescriptions />} />
+              <Route path="/portal/mensagens" element={<PatientMessages />} />
+              <Route path="/portal/financeiro" element={<PatientBilling />} />
+              <Route path="/portal/teleconsulta" element={<PatientTelehealth />} />
+            </Route>
 
             {/* Auth Routes */}
             <Route path="/login" element={<Login />} />
@@ -197,6 +227,7 @@ function App() {
               <Route path="/patients/:id/edit" element={<EditPatient />} />
               <Route path="/finance" element={<Finance />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/analytics" element={<Analytics />} />
               <Route path="/whatsapp" element={<WhatsAppMetrics />} />
               <Route path="/billing" element={<Billing />} />
               <Route path="/settings" element={<Settings />} />
@@ -208,6 +239,7 @@ function App() {
               </Routes>
               </Suspense>
               </Router>
+              </PatientAuthProvider>
             </ConsentProvider>
           </ClinicProvider>
         </AuthProvider>

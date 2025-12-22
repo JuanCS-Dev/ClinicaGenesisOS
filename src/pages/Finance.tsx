@@ -121,28 +121,28 @@ export const Finance: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-genesis-dark hover:bg-gray-50 transition-colors shadow-sm">
+          <button className="flex items-center gap-2 px-4 py-2.5 bg-genesis-surface border border-genesis-border rounded-xl text-sm font-medium text-genesis-dark hover:bg-genesis-soft transition-colors shadow-sm">
             <Filter className="w-4 h-4 text-genesis-medium" /> Filtros
           </button>
           <div className="relative">
             <button
               onClick={() => setShowExportMenu(!showExportMenu)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-genesis-dark hover:bg-gray-50 transition-colors shadow-sm"
+              className="flex items-center gap-2 px-4 py-2.5 bg-genesis-surface border border-genesis-border rounded-xl text-sm font-medium text-genesis-dark hover:bg-genesis-soft transition-colors shadow-sm"
             >
               <Download className="w-4 h-4 text-genesis-medium" /> Exportar
             </button>
             {showExportMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-20">
+              <div className="absolute right-0 mt-2 w-48 bg-genesis-surface rounded-xl shadow-lg border border-genesis-border-subtle py-2 z-20">
                 <button
                   onClick={handleExportPDF}
-                  className="w-full px-4 py-2 text-left text-sm text-genesis-dark hover:bg-gray-50 flex items-center gap-2"
+                  className="w-full px-4 py-2 text-left text-sm text-genesis-dark hover:bg-genesis-soft flex items-center gap-2"
                 >
                   <Download className="w-4 h-4 text-[#EF4444]" />
                   Exportar PDF
                 </button>
                 <button
                   onClick={handleExportExcel}
-                  className="w-full px-4 py-2 text-left text-sm text-genesis-dark hover:bg-gray-50 flex items-center gap-2"
+                  className="w-full px-4 py-2 text-left text-sm text-genesis-dark hover:bg-genesis-soft flex items-center gap-2"
                 >
                   <Download className="w-4 h-4 text-[#22C55E]" />
                   Exportar Excel
@@ -158,7 +158,7 @@ export const Finance: React.FC = () => {
           </button>
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-genesis-dark text-white rounded-xl text-sm font-medium hover:bg-black transition-colors shadow-lg shadow-gray-200"
+            className="flex items-center gap-2 px-4 py-2.5 bg-genesis-dark text-white rounded-xl text-sm font-medium hover:bg-black transition-colors shadow-lg shadow-genesis-medium/20"
           >
             <Plus className="w-4 h-4" /> Nova Transação
           </button>
@@ -203,7 +203,7 @@ export const Finance: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[500px]">
         {/* Main Chart */}
-        <div className="lg:col-span-2 bg-white rounded-3xl border border-white shadow-soft p-8 flex flex-col">
+        <div className="lg:col-span-2 bg-genesis-surface rounded-3xl border border-white shadow-soft p-8 flex flex-col">
           <h3 className="text-lg font-bold text-genesis-dark mb-6">
             Fluxo de Caixa (Semestral)
           </h3>
@@ -268,7 +268,7 @@ export const Finance: React.FC = () => {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-gray-400">
+              <div className="h-full flex items-center justify-center text-genesis-subtle">
                 {loading ? (
                   <Loader2 className="w-8 h-8 animate-spin" />
                 ) : (
@@ -280,8 +280,8 @@ export const Finance: React.FC = () => {
         </div>
 
         {/* Recent Transactions List */}
-        <div className="bg-white rounded-3xl border border-white shadow-soft p-0 overflow-hidden flex flex-col">
-          <div className="p-6 border-b border-gray-50 flex flex-col gap-3 bg-white/50 backdrop-blur-sm sticky top-0 z-10">
+        <div className="bg-genesis-surface rounded-3xl border border-white shadow-soft p-0 overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-genesis-border-subtle flex flex-col gap-3 bg-genesis-surface/50 backdrop-blur-sm sticky top-0 z-10">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-bold text-genesis-dark">Transações</h3>
               <span className="text-xs text-genesis-medium">
@@ -289,25 +289,25 @@ export const Finance: React.FC = () => {
               </span>
             </div>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-genesis-subtle" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Buscar..."
-                className="w-full pl-10 pr-4 py-2 text-sm border border-gray-100 rounded-lg focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] outline-none"
+                className="w-full pl-10 pr-4 py-2 text-sm border border-genesis-border-subtle rounded-lg focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] outline-none"
               />
             </div>
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                <Loader2 className="w-6 h-6 animate-spin text-genesis-subtle" />
               </div>
             ) : filteredTransactions.length === 0 ? (
               <div className="text-center py-12">
-                <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm text-gray-500">Nenhuma transação encontrada</p>
+                <Calendar className="w-12 h-12 text-genesis-subtle mx-auto mb-3" />
+                <p className="text-sm text-genesis-muted">Nenhuma transação encontrada</p>
                 <button
                   onClick={() => setShowForm(true)}
                   className="mt-4 text-sm text-[#4F46E5] font-medium hover:underline"

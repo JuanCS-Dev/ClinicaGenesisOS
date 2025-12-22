@@ -153,7 +153,7 @@ export function WaitingRoom({
   const getStatusIcon = (status: DeviceStatus['camera']) => {
     switch (status) {
       case 'checking':
-        return <Loader2 className="w-4 h-4 animate-spin text-gray-400" />;
+        return <Loader2 className="w-4 h-4 animate-spin text-genesis-subtle" />;
       case 'granted':
         return <CheckCircle className="w-4 h-4 text-emerald-500" />;
       case 'denied':
@@ -171,7 +171,7 @@ export function WaitingRoom({
         <h2 className="text-2xl font-bold text-white mb-2">
           {isProfessional ? 'Sala de Espera' : 'Aguardando o Médico'}
         </h2>
-        <p className="text-gray-400">
+        <p className="text-genesis-subtle">
           {isProfessional
             ? `Paciente: ${session.patientName}`
             : `Dr(a). ${session.professionalName} entrará em breve`}
@@ -192,9 +192,9 @@ export function WaitingRoom({
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center">
             <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center mb-4">
-              <User className="w-12 h-12 text-gray-500" />
+              <User className="w-12 h-12 text-genesis-muted" />
             </div>
-            <p className="text-gray-400 text-sm">
+            <p className="text-genesis-subtle text-sm">
               {deviceStatus.camera === 'denied'
                 ? 'Câmera sem permissão'
                 : 'Câmera desativada'}
@@ -247,11 +247,11 @@ export function WaitingRoom({
 
       {/* Device status */}
       <div className="flex items-center gap-6 mb-8 text-sm">
-        <div className="flex items-center gap-2 text-gray-300">
+        <div className="flex items-center gap-2 text-genesis-subtle">
           {getStatusIcon(deviceStatus.camera)}
           <span>Câmera</span>
         </div>
-        <div className="flex items-center gap-2 text-gray-300">
+        <div className="flex items-center gap-2 text-genesis-subtle">
           {getStatusIcon(deviceStatus.microphone)}
           <span>Microfone</span>
         </div>
@@ -282,7 +282,7 @@ export function WaitingRoom({
           className={`px-8 py-3 rounded-xl font-semibold transition-all ${
             canJoin
               ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 hover:scale-105'
-              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+              : 'bg-gray-600 text-genesis-subtle cursor-not-allowed'
           }`}
         >
           {isProfessional ? 'Iniciar Consulta' : 'Entrar na Consulta'}

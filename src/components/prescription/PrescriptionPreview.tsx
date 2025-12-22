@@ -29,7 +29,7 @@ import { PRESCRIPTION_STATUS_LABELS, PRESCRIPTION_TYPE_LABELS } from '@/types';
  */
 function getStatusConfig(status: Prescription['status']) {
   const configs = {
-    draft: { color: 'text-gray-500 bg-gray-100', icon: FileText },
+    draft: { color: 'text-genesis-muted bg-genesis-hover', icon: FileText },
     pending_signature: { color: 'text-amber-600 bg-amber-100', icon: Clock },
     signed: { color: 'text-blue-600 bg-blue-100', icon: BadgeCheck },
     sent: { color: 'text-purple-600 bg-purple-100', icon: Send },
@@ -76,21 +76,21 @@ export function PrescriptionPreview({
 
   if (compact) {
     return (
-      <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200 hover:border-blue-300 transition-colors">
+      <div className="flex items-center gap-4 p-4 bg-genesis-surface rounded-xl border border-genesis-border hover:border-blue-300 transition-colors">
         <div className={`p-2 rounded-lg ${statusConfig.color}`}>
           <StatusIcon className="w-5 h-5" />
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-900">{prescription.patientName}</span>
+            <span className="font-medium text-genesis-dark">{prescription.patientName}</span>
             {hasControlled && (
               <span className="px-2 py-0.5 text-xs bg-amber-100 text-amber-700 rounded">
                 Controlado
               </span>
             )}
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-genesis-muted">
             {prescription.medications.length} medicamento(s) • {formatDate(prescription.prescribedAt)}
           </div>
         </div>
@@ -103,19 +103,19 @@ export function PrescriptionPreview({
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+    <div className="bg-genesis-surface rounded-2xl border border-genesis-border overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-gray-100">
+      <div className="p-6 border-b border-genesis-border-subtle">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className={`p-3 rounded-xl ${statusConfig.color}`}>
               <FileText className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 text-lg">
+              <h3 className="font-semibold text-genesis-dark text-lg">
                 {PRESCRIPTION_TYPE_LABELS[prescription.type]}
               </h3>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-genesis-muted">
                 Código: {prescription.validationCode}
               </p>
             </div>
@@ -136,23 +136,23 @@ export function PrescriptionPreview({
 
         {/* Patient & Professional Info */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-            <User className="w-5 h-5 text-gray-400" />
+          <div className="flex items-center gap-3 p-3 bg-genesis-soft rounded-lg">
+            <User className="w-5 h-5 text-genesis-subtle" />
             <div>
-              <div className="text-sm text-gray-500">Paciente</div>
-              <div className="font-medium text-gray-900">{prescription.patientName}</div>
+              <div className="text-sm text-genesis-muted">Paciente</div>
+              <div className="font-medium text-genesis-dark">{prescription.patientName}</div>
               {prescription.patientCpf && (
-                <div className="text-xs text-gray-400">CPF: {prescription.patientCpf}</div>
+                <div className="text-xs text-genesis-subtle">CPF: {prescription.patientCpf}</div>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-            <BadgeCheck className="w-5 h-5 text-gray-400" />
+          <div className="flex items-center gap-3 p-3 bg-genesis-soft rounded-lg">
+            <BadgeCheck className="w-5 h-5 text-genesis-subtle" />
             <div>
-              <div className="text-sm text-gray-500">Profissional</div>
-              <div className="font-medium text-gray-900">{prescription.professionalName}</div>
-              <div className="text-xs text-gray-400">
+              <div className="text-sm text-genesis-muted">Profissional</div>
+              <div className="font-medium text-genesis-dark">{prescription.professionalName}</div>
+              <div className="text-xs text-genesis-subtle">
                 CRM {prescription.professionalCrm}/{prescription.professionalCrmState}
               </div>
             </div>
@@ -161,8 +161,8 @@ export function PrescriptionPreview({
       </div>
 
       {/* Medications */}
-      <div className="p-6 border-b border-gray-100">
-        <h4 className="font-medium text-gray-900 mb-4 flex items-center gap-2">
+      <div className="p-6 border-b border-genesis-border-subtle">
+        <h4 className="font-medium text-genesis-dark mb-4 flex items-center gap-2">
           <Pill className="w-5 h-5 text-blue-500" />
           Medicamentos ({prescription.medications.length})
         </h4>
@@ -172,13 +172,13 @@ export function PrescriptionPreview({
             <div
               key={med.id || index}
               className={`p-4 rounded-xl border ${
-                med.isControlled ? 'border-amber-200 bg-amber-50' : 'border-gray-100 bg-gray-50'
+                med.isControlled ? 'border-amber-200 bg-amber-50' : 'border-genesis-border-subtle bg-genesis-soft'
               }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-gray-900">{med.name}</span>
+                    <span className="font-medium text-genesis-dark">{med.name}</span>
                     {med.isControlled && med.controlType && (
                       <span className="px-2 py-0.5 text-xs font-medium bg-amber-200 text-amber-800 rounded">
                         {med.controlType}
@@ -191,18 +191,18 @@ export function PrescriptionPreview({
                     )}
                   </div>
 
-                  <div className="text-sm text-gray-600 space-y-0.5">
+                  <div className="text-sm text-genesis-medium space-y-0.5">
                     <p>
-                      <span className="text-gray-400">Posologia:</span> {med.dosage} - {med.frequency}
+                      <span className="text-genesis-subtle">Posologia:</span> {med.dosage} - {med.frequency}
                     </p>
                     <p>
-                      <span className="text-gray-400">Duração:</span> {med.duration}
+                      <span className="text-genesis-subtle">Duração:</span> {med.duration}
                     </p>
                     <p>
-                      <span className="text-gray-400">Quantidade:</span> {med.quantity} {med.unit}
+                      <span className="text-genesis-subtle">Quantidade:</span> {med.quantity} {med.unit}
                     </p>
                     {med.instructions && (
-                      <p className="text-gray-500 italic mt-1">{med.instructions}</p>
+                      <p className="text-genesis-muted italic mt-1">{med.instructions}</p>
                     )}
                   </div>
                 </div>
@@ -223,28 +223,28 @@ export function PrescriptionPreview({
 
       {/* Observations */}
       {prescription.observations && (
-        <div className="p-6 border-b border-gray-100">
-          <h4 className="font-medium text-gray-900 mb-2">Observações</h4>
-          <p className="text-gray-600">{prescription.observations}</p>
+        <div className="p-6 border-b border-genesis-border-subtle">
+          <h4 className="font-medium text-genesis-dark mb-2">Observações</h4>
+          <p className="text-genesis-medium">{prescription.observations}</p>
         </div>
       )}
 
       {/* Dates & Signature */}
-      <div className="p-6 border-b border-gray-100">
+      <div className="p-6 border-b border-genesis-border-subtle">
         <div className="grid grid-cols-3 gap-4">
           <div className="flex items-center gap-3">
-            <Calendar className="w-5 h-5 text-gray-400" />
+            <Calendar className="w-5 h-5 text-genesis-subtle" />
             <div>
-              <div className="text-sm text-gray-500">Emissão</div>
-              <div className="font-medium text-gray-900">{formatDate(prescription.prescribedAt)}</div>
+              <div className="text-sm text-genesis-muted">Emissão</div>
+              <div className="font-medium text-genesis-dark">{formatDate(prescription.prescribedAt)}</div>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <Clock className="w-5 h-5 text-gray-400" />
+            <Clock className="w-5 h-5 text-genesis-subtle" />
             <div>
-              <div className="text-sm text-gray-500">Validade</div>
-              <div className={`font-medium ${isExpired ? 'text-red-600' : 'text-gray-900'}`}>
+              <div className="text-sm text-genesis-muted">Validade</div>
+              <div className={`font-medium ${isExpired ? 'text-red-600' : 'text-genesis-dark'}`}>
                 {formatDate(prescription.expiresAt)}
               </div>
             </div>
@@ -254,8 +254,8 @@ export function PrescriptionPreview({
             <div className="flex items-center gap-3">
               <CheckCircle2 className="w-5 h-5 text-emerald-500" />
               <div>
-                <div className="text-sm text-gray-500">Assinada em</div>
-                <div className="font-medium text-gray-900">
+                <div className="text-sm text-genesis-muted">Assinada em</div>
+                <div className="font-medium text-genesis-dark">
                   {formatDate(prescription.signature.signedAt)}
                 </div>
               </div>
@@ -266,7 +266,7 @@ export function PrescriptionPreview({
 
       {/* Actions */}
       {showActions && (
-        <div className="p-6 bg-gray-50 flex items-center gap-3">
+        <div className="p-6 bg-genesis-soft flex items-center gap-3">
           {prescription.status === 'draft' && onSign && (
             <button
               onClick={onSign}
@@ -290,7 +290,7 @@ export function PrescriptionPreview({
           {onPrint && (
             <button
               onClick={onPrint}
-              className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 hover:bg-gray-100 text-gray-700 rounded-xl font-medium transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 border border-genesis-border hover:bg-genesis-hover text-genesis-text rounded-xl font-medium transition-colors"
             >
               <Printer className="w-5 h-5" />
               Imprimir

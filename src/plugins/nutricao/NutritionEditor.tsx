@@ -109,21 +109,21 @@ export function NutritionEditor({ onSave }: NutritionEditorProps) {
         </label>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <span className="text-[10px] text-gray-500 uppercase">Peso (kg)</span>
+            <span className="text-[10px] text-genesis-muted uppercase">Peso (kg)</span>
             <input
               type="number"
               step="0.1"
-              className="w-full p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-green-100 outline-none transition-all text-sm font-bold"
+              className="w-full p-4 bg-genesis-soft border border-transparent rounded-xl focus:bg-genesis-surface focus:ring-2 focus:ring-green-100 outline-none transition-all text-sm font-bold"
               placeholder="Ex: 72.5"
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
             />
           </div>
           <div className="space-y-1">
-            <span className="text-[10px] text-gray-500 uppercase">Altura (cm)</span>
+            <span className="text-[10px] text-genesis-muted uppercase">Altura (cm)</span>
             <input
               type="number"
-              className="w-full p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-green-100 outline-none transition-all text-sm font-bold"
+              className="w-full p-4 bg-genesis-soft border border-transparent rounded-xl focus:bg-genesis-surface focus:ring-2 focus:ring-green-100 outline-none transition-all text-sm font-bold"
               placeholder="Ex: 175"
               value={height}
               onChange={(e) => setHeight(e.target.value)}
@@ -142,19 +142,19 @@ export function NutritionEditor({ onSave }: NutritionEditorProps) {
             </div>
             <div className="text-right">
               <p className={`text-sm font-bold ${imcClass.color}`}>{imcClass.label}</p>
-              <p className="text-[10px] text-gray-500">Risco: {imcClass.risk}</p>
+              <p className="text-[10px] text-genesis-muted">Risco: {imcClass.risk}</p>
             </div>
           </div>
         </div>
       )}
 
       {/* Toggle para circunferências */}
-      <div className="border-t border-gray-100 pt-4">
+      <div className="border-t border-genesis-border-subtle pt-4">
         <button
           type="button"
           onClick={() => setShowCircumferences(!showCircumferences)}
           className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-colors ${
-            showCircumferences ? 'text-green-600' : 'text-gray-400 hover:text-gray-600'
+            showCircumferences ? 'text-green-600' : 'text-genesis-subtle hover:text-genesis-medium'
           }`}
         >
           <Ruler className="w-3.5 h-3.5" />
@@ -172,22 +172,22 @@ export function NutritionEditor({ onSave }: NutritionEditorProps) {
             </label>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <span className="text-[10px] text-gray-500 uppercase">Cintura</span>
+                <span className="text-[10px] text-genesis-muted uppercase">Cintura</span>
                 <input
                   type="number"
                   step="0.1"
-                  className="w-full p-4 bg-green-50 border border-green-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-green-200 outline-none transition-all text-sm font-bold"
+                  className="w-full p-4 bg-green-50 border border-green-100 rounded-xl focus:bg-genesis-surface focus:ring-2 focus:ring-green-200 outline-none transition-all text-sm font-bold"
                   placeholder="Ex: 82"
                   value={waist}
                   onChange={(e) => setWaist(e.target.value)}
                 />
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] text-gray-500 uppercase">Quadril</span>
+                <span className="text-[10px] text-genesis-muted uppercase">Quadril</span>
                 <input
                   type="number"
                   step="0.1"
-                  className="w-full p-4 bg-green-50 border border-green-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-green-200 outline-none transition-all text-sm font-bold"
+                  className="w-full p-4 bg-green-50 border border-green-100 rounded-xl focus:bg-genesis-surface focus:ring-2 focus:ring-green-200 outline-none transition-all text-sm font-bold"
                   placeholder="Ex: 98"
                   value={hip}
                   onChange={(e) => setHip(e.target.value)}
@@ -198,11 +198,11 @@ export function NutritionEditor({ onSave }: NutritionEditorProps) {
 
           {/* RCQ calculado */}
           {rcq && rcqRisk && (
-            <div className="p-3 bg-gray-50 border border-gray-100 rounded-xl">
+            <div className="p-3 bg-genesis-soft border border-genesis-border-subtle rounded-xl">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-bold text-gray-500 uppercase">Relação Cintura/Quadril</p>
-                  <p className="text-xl font-bold text-gray-800">{rcq}</p>
+                  <p className="text-[10px] font-bold text-genesis-muted uppercase">Relação Cintura/Quadril</p>
+                  <p className="text-xl font-bold text-genesis-dark">{rcq}</p>
                 </div>
                 <p className={`text-xs font-bold ${rcqRisk.color}`}>{rcqRisk.label}</p>
               </div>
@@ -218,7 +218,7 @@ export function NutritionEditor({ onSave }: NutritionEditorProps) {
           className={`px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-all transform hover:-translate-y-0.5 ${
             canSave
               ? 'bg-green-600 hover:bg-green-700 text-white shadow-green-200'
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+              : 'bg-genesis-border-subtle text-genesis-subtle cursor-not-allowed shadow-none'
           }`}
         >
           Salvar Avaliação Antropométrica

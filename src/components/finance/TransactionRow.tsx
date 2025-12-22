@@ -28,7 +28,7 @@ export const TransactionRow: React.FC<TransactionRowProps> = ({ transaction }) =
   });
 
   return (
-    <div className="p-4 hover:bg-gray-50 rounded-2xl transition-colors cursor-pointer group flex items-center justify-between mb-1">
+    <div className="p-4 hover:bg-genesis-soft rounded-2xl transition-colors cursor-pointer group flex items-center justify-between mb-1">
       <div className="flex items-center gap-4">
         <div
           className={`w-10 h-10 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 ${
@@ -67,7 +67,7 @@ export const TransactionRow: React.FC<TransactionRowProps> = ({ transaction }) =
         <span
           className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
             transaction.status === 'paid'
-              ? 'bg-gray-100 text-gray-500'
+              ? 'bg-genesis-hover text-genesis-muted'
               : transaction.status === 'pending'
               ? 'bg-[#FEF3C7] text-[#B45309]'
               : 'bg-[#FEE2E2] text-[#B91C1C]'

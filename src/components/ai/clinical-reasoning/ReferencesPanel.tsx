@@ -63,20 +63,20 @@ function DiagnosisSection({ literature }: { literature: DiagnosisLiterature }): 
   const hasArticles = literature.articles.length > 0;
 
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+    <div className="border border-genesis-border rounded-xl overflow-hidden bg-genesis-surface">
       {/* Header */}
       <button
         onClick={() => hasArticles && setIsOpen(!isOpen)}
         disabled={!hasArticles}
         className={`
           w-full flex items-center justify-between p-4 text-left transition-all
-          ${hasArticles ? 'hover:bg-gray-50 cursor-pointer' : 'cursor-default bg-gray-50/50'}
+          ${hasArticles ? 'hover:bg-genesis-soft cursor-pointer' : 'cursor-default bg-genesis-soft/50'}
         `}
       >
         <div className="flex items-center gap-3">
           <div className={`
             p-2 rounded-lg
-            ${hasArticles ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-400'}
+            ${hasArticles ? 'bg-purple-100 text-purple-600' : 'bg-genesis-hover text-genesis-subtle'}
           `}>
             {hasArticles ? (
               isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />
@@ -87,16 +87,16 @@ function DiagnosisSection({ literature }: { literature: DiagnosisLiterature }): 
 
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm font-semibold text-genesis-dark">
                 {literature.diagnosisName}
               </span>
               {literature.icd10 && (
-                <span className="px-1.5 py-0.5 text-[10px] font-mono bg-gray-100 text-gray-600 rounded border border-gray-200">
+                <span className="px-1.5 py-0.5 text-[10px] font-mono bg-genesis-hover text-genesis-medium rounded border border-genesis-border">
                   {literature.icd10}
                 </span>
               )}
             </div>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-genesis-muted mt-0.5">
               {literature.articles.length === 0
                 ? 'Sem referências disponíveis'
                 : `${literature.articles.length} artigo${literature.articles.length !== 1 ? 's' : ''} científico${literature.articles.length !== 1 ? 's' : ''}`
@@ -115,7 +115,7 @@ function DiagnosisSection({ literature }: { literature: DiagnosisLiterature }): 
 
       {/* Articles */}
       {isOpen && hasArticles && (
-        <div className="p-4 pt-0 space-y-3 border-t border-gray-100 bg-gradient-to-b from-gray-50/50 to-white">
+        <div className="p-4 pt-0 space-y-3 border-t border-genesis-border-subtle bg-gradient-to-b from-gray-50/50 to-white">
           {literature.articles.map((article, idx) => (
             <React.Fragment key={`${article.url}-${idx}`}>
               <ReferenceCard reference={article} index={idx} />
@@ -148,7 +148,7 @@ export function ReferencesPanel({
       {/* Premium Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-5 text-left hover:bg-white/50 transition-colors"
+        className="w-full p-5 text-left hover:bg-genesis-surface/50 transition-colors"
       >
         <div className="flex items-start justify-between">
           {/* Left side */}
@@ -159,13 +159,13 @@ export function ReferencesPanel({
 
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-gray-900">
+                <h3 className="text-base font-bold text-genesis-dark">
                   Respaldo Científico
                 </h3>
                 <Sparkles className="w-4 h-4 text-purple-500" />
               </div>
 
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-genesis-medium mt-1">
                 {isLoading ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-500" />
@@ -195,11 +195,11 @@ export function ReferencesPanel({
           </div>
 
           {/* Expand indicator */}
-          <div className="p-2 rounded-lg bg-white shadow-sm border border-gray-100">
+          <div className="p-2 rounded-lg bg-genesis-surface shadow-sm border border-genesis-border-subtle">
             {isExpanded ? (
-              <ChevronDown className="w-5 h-5 text-gray-400" />
+              <ChevronDown className="w-5 h-5 text-genesis-subtle" />
             ) : (
-              <ChevronRight className="w-5 h-5 text-gray-400" />
+              <ChevronRight className="w-5 h-5 text-genesis-subtle" />
             )}
           </div>
         </div>
@@ -213,10 +213,10 @@ export function ReferencesPanel({
               <div className="p-4 bg-purple-100 rounded-full mb-4">
                 <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
               </div>
-              <p className="text-sm font-medium text-gray-700">
+              <p className="text-sm font-medium text-genesis-text">
                 Consultando PubMed e Europe PMC...
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-genesis-muted mt-1">
                 Buscando artigos peer-reviewed para cada diagnóstico
               </p>
             </div>
@@ -229,9 +229,9 @@ export function ReferencesPanel({
               ))}
 
               {/* Disclaimer */}
-              <div className="p-4 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl border border-gray-200">
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  <span className="font-semibold text-gray-600">Nota:</span> Artigos selecionados automaticamente
+              <div className="p-4 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl border border-genesis-border">
+                <p className="text-xs text-genesis-muted leading-relaxed">
+                  <span className="font-semibold text-genesis-medium">Nota:</span> Artigos selecionados automaticamente
                   de bases científicas indexadas (Europe PMC). Ordenados por citações e relevância.
                   Sempre consulte as fontes originais para validação clínica.
                 </p>

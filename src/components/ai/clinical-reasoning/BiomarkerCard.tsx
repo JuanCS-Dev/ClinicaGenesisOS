@@ -109,8 +109,8 @@ export function BiomarkerCard({
         <div className="flex items-center gap-3">
           <StatusIcon className={`w-5 h-5 ${config.textColor}`} />
           <div>
-            <h4 className="font-medium text-gray-900">{marker.name}</h4>
-            <p className="text-sm text-gray-500">{marker.id}</p>
+            <h4 className="font-medium text-genesis-dark">{marker.name}</h4>
+            <p className="text-sm text-genesis-muted">{marker.id}</p>
           </div>
         </div>
 
@@ -120,16 +120,16 @@ export function BiomarkerCard({
             <span className={`text-xl font-bold ${config.textColor}`}>
               {marker.value.toLocaleString('pt-BR')}
             </span>
-            <span className="text-sm text-gray-500 ml-1">{marker.unit}</span>
+            <span className="text-sm text-genesis-muted ml-1">{marker.unit}</span>
           </div>
 
           {/* Expand toggle */}
           {onToggle && (
-            <button className="p-1 hover:bg-white/50 rounded">
+            <button className="p-1 hover:bg-genesis-surface/50 rounded">
               {expanded ? (
-                <ChevronUp className="w-4 h-4 text-gray-400" />
+                <ChevronUp className="w-4 h-4 text-genesis-subtle" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+                <ChevronDown className="w-4 h-4 text-genesis-subtle" />
               )}
             </button>
           )}
@@ -137,10 +137,10 @@ export function BiomarkerCard({
       </div>
 
       {/* Range bar visualization */}
-      <div className="mt-4 relative h-2 bg-gray-200 rounded-full overflow-visible">
+      <div className="mt-4 relative h-2 bg-genesis-border-subtle rounded-full overflow-visible">
         {/* Lab range highlight */}
         <div
-          className="absolute h-full bg-gray-300 rounded-full"
+          className="absolute h-full bg-genesis-border rounded-full"
           style={{
             left: `${labMinPos}%`,
             width: `${labMaxPos - labMinPos}%`,
@@ -161,9 +161,9 @@ export function BiomarkerCard({
       </div>
 
       {/* Range labels */}
-      <div className="flex justify-between mt-1 text-xs text-gray-400">
+      <div className="flex justify-between mt-1 text-xs text-genesis-subtle">
         <span>{marker.labRange.min}</span>
-        <span className="font-medium text-gray-500">
+        <span className="font-medium text-genesis-muted">
           Ref: {marker.labRange.min} - {marker.labRange.max}
         </span>
         <span>{marker.labRange.max}</span>
@@ -171,22 +171,22 @@ export function BiomarkerCard({
 
       {/* Expanded details */}
       {expanded && (
-        <div className="mt-4 pt-4 border-t border-gray-200/50 space-y-3">
+        <div className="mt-4 pt-4 border-t border-genesis-border/50 space-y-3">
           {/* Interpretation */}
           <div>
-            <h5 className="text-xs font-medium text-gray-500 uppercase mb-1">
+            <h5 className="text-xs font-medium text-genesis-muted uppercase mb-1">
               Interpretação
             </h5>
-            <p className="text-sm text-gray-700">{marker.interpretation}</p>
+            <p className="text-sm text-genesis-text">{marker.interpretation}</p>
           </div>
 
           {/* Functional range comparison */}
           {showFunctionalRange && (
             <div>
-              <h5 className="text-xs font-medium text-gray-500 uppercase mb-1">
+              <h5 className="text-xs font-medium text-genesis-muted uppercase mb-1">
                 Range Funcional Ótimo
               </h5>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-genesis-text">
                 {marker.functionalRange.min} - {marker.functionalRange.max} {marker.unit}
               </p>
               {marker.deviationScore !== undefined && marker.deviationScore > 0 && (

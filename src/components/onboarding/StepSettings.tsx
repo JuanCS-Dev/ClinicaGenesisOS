@@ -40,13 +40,13 @@ export function StepSettings({
               Horário de Início
             </label>
             <div className="relative group">
-              <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-medium group-focus-within:text-genesis-blue transition-colors" />
+              <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-medium group-focus-within:text-genesis-primary transition-colors" />
               <input
                 id="workStart"
                 type="time"
                 value={workStart}
                 onChange={(e) => setWorkStart(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-genesis-dark focus:outline-none focus:ring-2 focus:ring-genesis-blue/20 focus:border-genesis-blue transition-all cursor-pointer"
+                className="w-full pl-12 pr-4 py-3 bg-genesis-surface border border-genesis-border rounded-xl text-genesis-dark focus:outline-none focus:ring-2 focus:ring-genesis-primary/20 focus:border-genesis-primary transition-all cursor-pointer"
               />
             </div>
           </div>
@@ -56,13 +56,13 @@ export function StepSettings({
               Horário de Término
             </label>
             <div className="relative group">
-              <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-medium group-focus-within:text-genesis-blue transition-colors" />
+              <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-genesis-medium group-focus-within:text-genesis-primary transition-colors" />
               <input
                 id="workEnd"
                 type="time"
                 value={workEnd}
                 onChange={(e) => setWorkEnd(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-genesis-dark focus:outline-none focus:ring-2 focus:ring-genesis-blue/20 focus:border-genesis-blue transition-all cursor-pointer"
+                className="w-full pl-12 pr-4 py-3 bg-genesis-surface border border-genesis-border rounded-xl text-genesis-dark focus:outline-none focus:ring-2 focus:ring-genesis-primary/20 focus:border-genesis-primary transition-all cursor-pointer"
               />
             </div>
           </div>
@@ -77,7 +77,7 @@ export function StepSettings({
               id="duration"
               value={appointmentDuration}
               onChange={(e) => setAppointmentDuration(Number(e.target.value))}
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-genesis-dark focus:outline-none focus:ring-2 focus:ring-genesis-blue/20 focus:border-genesis-blue transition-all appearance-none cursor-pointer"
+              className="w-full px-4 py-3 bg-genesis-surface border border-genesis-border rounded-xl text-genesis-dark focus:outline-none focus:ring-2 focus:ring-genesis-primary/20 focus:border-genesis-primary transition-all appearance-none cursor-pointer"
             >
               <option value={15}>15 minutos (Rápida)</option>
               <option value={20}>20 minutos</option>
@@ -87,23 +87,23 @@ export function StepSettings({
               <option value={60}>1 hora (Primeira Consulta)</option>
             </select>
             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              <svg className="w-4 h-4 text-genesis-subtle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
             </div>
           </div>
         </div>
 
-        <div className="pt-6 border-t border-gray-100">
+        <div className="pt-6 border-t border-genesis-border-subtle">
           <label className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
             seedData 
               ? 'border-amber-200 bg-amber-50' 
-              : 'border-gray-100 hover:border-gray-200'
+              : 'border-genesis-border-subtle hover:border-genesis-border'
           }`}>
             <div className="pt-1">
               <input
                 type="checkbox"
                 checked={seedData}
                 onChange={(e) => setSeedData(e.target.checked)}
-                className="w-5 h-5 rounded border-gray-300 text-amber-500 focus:ring-amber-500 cursor-pointer"
+                className="w-5 h-5 rounded border-genesis-border text-amber-500 focus:ring-amber-500 cursor-pointer"
               />
             </div>
             <div>
@@ -111,7 +111,7 @@ export function StepSettings({
                 <Sparkles className="w-5 h-5 text-amber-500 fill-amber-500/20" />
                 <span className="font-bold text-genesis-dark">Modo Demonstração</span>
               </div>
-              <p className="text-sm text-gray-500 leading-relaxed">
+              <p className="text-sm text-genesis-muted leading-relaxed">
                 Adicionar pacientes e agendamentos fictícios para você explorar o sistema imediatamente. (Recomendado)
               </p>
             </div>

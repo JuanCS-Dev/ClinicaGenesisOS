@@ -13,21 +13,21 @@ export function Navbar() {
   }, []);
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'bg-white/90 backdrop-blur-xl border-b border-gray-200/50 py-4' : 'bg-transparent py-6'}`}>
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'bg-genesis-surface/90 backdrop-blur-xl border-b border-genesis-border/50 py-4' : 'bg-transparent py-6'}`}>
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <div className="flex items-center gap-3 group cursor-pointer" onClick={() => navigate('/')}>
           <div className="w-10 h-10 bg-genesis-dark rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-500">
             <Activity className="text-white w-5 h-5" />
           </div>
           <div className="flex flex-col">
-              <span className="text-lg font-bold tracking-tighter leading-none text-genesis-dark">CLÍNICA<span className="text-genesis-blue">GENESIS</span></span>
+              <span className="text-lg font-bold tracking-tighter leading-none text-genesis-dark">CLÍNICA<span className="text-genesis-primary">GENESIS</span></span>
               <span className="text-[9px] uppercase tracking-[0.2em] text-genesis-medium font-bold">System One</span>
           </div>
         </div>
 
         <div className="hidden md:flex items-center gap-10">
           {['Manifesto', 'Tecnologia', 'Membership'].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-genesis-dark transition-colors relative group">
+              <a key={item} href={`#${item.toLowerCase()}`} className="text-xs font-bold uppercase tracking-widest text-genesis-muted hover:text-genesis-dark transition-colors relative group">
                   {item}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-genesis-dark transition-all duration-300 group-hover:w-full"></span>
               </a>
@@ -37,7 +37,7 @@ export function Navbar() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/login')}
-            className="hidden md:block text-xs font-bold uppercase tracking-wider text-genesis-dark hover:text-genesis-blue transition-colors"
+            className="hidden md:block text-xs font-bold uppercase tracking-wider text-genesis-dark hover:text-genesis-primary transition-colors"
           >
             Login
           </button>
@@ -45,7 +45,7 @@ export function Navbar() {
             onClick={() => navigate('/apply')}
             className="px-6 py-3 bg-genesis-dark text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-black transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center gap-2 group"
           >
-            <Lock className="w-3 h-3 group-hover:text-genesis-blue transition-colors" />
+            <Lock className="w-3 h-3 group-hover:text-genesis-primary transition-colors" />
             Falar com Concierge
           </button>
         </div>

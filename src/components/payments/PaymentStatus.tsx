@@ -53,7 +53,7 @@ const STATUS_BG_COLORS: Record<PaymentDisplayStatus, string> = {
   awaiting_payment: 'bg-amber-50',
   processing: 'bg-blue-50',
   paid: 'bg-green-50',
-  expired: 'bg-gray-50',
+  expired: 'bg-genesis-soft',
   failed: 'bg-red-50',
   refunded: 'bg-purple-50',
 };

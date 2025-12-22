@@ -139,7 +139,7 @@ export const DirectPixPayment: React.FC<DirectPixPaymentProps> = ({
     return (
       <div className="flex flex-col items-center justify-center p-8">
         <Loader2 className="w-8 h-8 animate-spin text-[#32D583]" />
-        <p className="mt-4 text-sm text-gray-500">Gerando QR Code PIX...</p>
+        <p className="mt-4 text-sm text-genesis-muted">Gerando QR Code PIX...</p>
       </div>
     );
   }
@@ -185,17 +185,17 @@ export const DirectPixPayment: React.FC<DirectPixPaymentProps> = ({
   // Compact mode
   if (compact) {
     return (
-      <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-100">
+      <div className="flex items-center gap-4 p-4 bg-genesis-surface rounded-xl border border-genesis-border-subtle">
         <img
           src={pixData.qrCodeDataUrl}
           alt="QR Code PIX"
           className="w-20 h-20 rounded-lg"
         />
         <div className="flex-1">
-          <p className="font-semibold text-gray-900">
+          <p className="font-semibold text-genesis-dark">
             {amountInCents ? formatPixAmount(amountInCents) : 'Valor a definir'}
           </p>
-          <p className="text-xs text-gray-500 mt-1">PIX Direto (sem taxas)</p>
+          <p className="text-xs text-genesis-muted mt-1">PIX Direto (sem taxas)</p>
           <button
             onClick={handleCopy}
             className="mt-2 text-sm text-[#32D583] hover:underline flex items-center gap-1"
@@ -217,7 +217,7 @@ export const DirectPixPayment: React.FC<DirectPixPaymentProps> = ({
 
   // Full display
   return (
-    <div className="flex flex-col items-center p-6 bg-white rounded-2xl border border-gray-100 shadow-sm">
+    <div className="flex flex-col items-center p-6 bg-genesis-surface rounded-2xl border border-genesis-border-subtle shadow-sm">
       {/* Header */}
       <div className="flex items-center gap-2 text-[#32D583]">
         <QrCode className="w-5 h-5" />
@@ -228,17 +228,17 @@ export const DirectPixPayment: React.FC<DirectPixPaymentProps> = ({
       </div>
 
       {/* Amount */}
-      <p className="mt-4 text-2xl font-bold text-gray-900">
+      <p className="mt-4 text-2xl font-bold text-genesis-dark">
         {amountInCents ? formatPixAmount(amountInCents) : 'Valor a definir'}
       </p>
 
       {/* Description */}
       {description && (
-        <p className="mt-1 text-sm text-gray-500 text-center">{description}</p>
+        <p className="mt-1 text-sm text-genesis-muted text-center">{description}</p>
       )}
 
       {/* QR Code */}
-      <div className="mt-6 p-4 bg-white rounded-xl border-2 border-gray-100">
+      <div className="mt-6 p-4 bg-genesis-surface rounded-xl border-2 border-genesis-border-subtle">
         <img
           src={pixData.qrCodeDataUrl}
           alt="QR Code PIX"
@@ -248,14 +248,14 @@ export const DirectPixPayment: React.FC<DirectPixPaymentProps> = ({
 
       {/* Instructions */}
       <div className="mt-6 w-full space-y-3">
-        <div className="flex items-start gap-3 text-sm text-gray-600">
-          <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+        <div className="flex items-start gap-3 text-sm text-genesis-medium">
+          <div className="w-6 h-6 rounded-full bg-genesis-hover flex items-center justify-center flex-shrink-0">
             <Smartphone className="w-3 h-3" />
           </div>
           <p>Abra o app do seu banco e escolha pagar com PIX</p>
         </div>
-        <div className="flex items-start gap-3 text-sm text-gray-600">
-          <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+        <div className="flex items-start gap-3 text-sm text-genesis-medium">
+          <div className="w-6 h-6 rounded-full bg-genesis-hover flex items-center justify-center flex-shrink-0">
             <QrCode className="w-3 h-3" />
           </div>
           <p>Escaneie o QR Code ou copie o código PIX abaixo</p>
@@ -265,7 +265,7 @@ export const DirectPixPayment: React.FC<DirectPixPaymentProps> = ({
       {/* Copy Button */}
       <button
         onClick={handleCopy}
-        className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-50 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors border border-gray-200"
+        className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-3 bg-genesis-soft text-genesis-text rounded-xl hover:bg-genesis-hover transition-colors border border-genesis-border"
       >
         {copied ? (
           <>
@@ -281,7 +281,7 @@ export const DirectPixPayment: React.FC<DirectPixPaymentProps> = ({
       </button>
 
       {/* Receiver info */}
-      <div className="mt-4 text-xs text-gray-400 text-center">
+      <div className="mt-4 text-xs text-genesis-subtle text-center">
         <p>Recebedor: {pixConfig.receiverName}</p>
         <p>Cidade: {pixConfig.receiverCity}</p>
       </div>
@@ -298,7 +298,7 @@ export const DirectPixPayment: React.FC<DirectPixPaymentProps> = ({
       )}
 
       {/* Note */}
-      <p className="mt-4 text-xs text-gray-400 text-center">
+      <p className="mt-4 text-xs text-genesis-subtle text-center">
         Após o pagamento, clique em "Confirmar que paguei" para registrar a transação
       </p>
     </div>

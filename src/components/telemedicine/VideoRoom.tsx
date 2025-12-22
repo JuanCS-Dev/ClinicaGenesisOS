@@ -121,7 +121,7 @@ export function VideoRoom({
       <div className="flex flex-col items-center justify-center h-full bg-gray-900 text-white p-8">
         <AlertCircle className="w-16 h-16 text-red-400 mb-4" />
         <h2 className="text-xl font-semibold mb-2">Erro de Conexão</h2>
-        <p className="text-gray-400 text-center mb-6">{connectionError}</p>
+        <p className="text-genesis-subtle text-center mb-6">{connectionError}</p>
         <button
           onClick={() => window.location.reload()}
           className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl font-medium transition-colors"
@@ -139,7 +139,7 @@ export function VideoRoom({
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-10">
           <Loader2 className="w-12 h-12 text-blue-400 animate-spin mb-4" />
           <p className="text-white text-lg">Conectando à teleconsulta...</p>
-          <p className="text-gray-400 text-sm mt-2">
+          <p className="text-genesis-subtle text-sm mt-2">
             Preparando ambiente seguro de vídeo
           </p>
         </div>
@@ -159,7 +159,7 @@ export function VideoRoom({
 
         {/* Patient/Doctor info */}
         <div className="text-white text-sm">
-          <span className="text-gray-300">
+          <span className="text-genesis-subtle">
             {isProfessional ? 'Paciente: ' : 'Dr(a). '}
           </span>
           <span className="font-medium">

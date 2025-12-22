@@ -27,7 +27,7 @@ export function HistoryView({ sessions, onClose }: HistoryViewProps) {
   return (
     <div className="max-w-2xl mx-auto animate-[fadeIn_0.3s_ease-out]">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="text-lg font-semibold text-genesis-dark">
           Análises Anteriores
         </h3>
         <button
@@ -40,10 +40,10 @@ export function HistoryView({ sessions, onClose }: HistoryViewProps) {
 
       {sessions.length === 0 ? (
         <div className="text-center py-12">
-          <div className="p-4 bg-gray-100 rounded-2xl w-fit mx-auto mb-4">
-            <History className="w-8 h-8 text-gray-400" />
+          <div className="p-4 bg-genesis-hover rounded-2xl w-fit mx-auto mb-4">
+            <History className="w-8 h-8 text-genesis-subtle" />
           </div>
-          <p className="text-gray-500">Nenhuma análise anterior encontrada</p>
+          <p className="text-genesis-muted">Nenhuma análise anterior encontrada</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -51,8 +51,8 @@ export function HistoryView({ sessions, onClose }: HistoryViewProps) {
             <div
               key={session.id}
               className="
-                p-4 bg-white rounded-xl border border-gray-100
-                hover:shadow-lg hover:border-gray-200
+                p-4 bg-genesis-surface rounded-xl border border-genesis-border-subtle
+                hover:shadow-lg hover:border-genesis-border
                 cursor-pointer transition-all duration-200
               "
               onClick={onClose}
@@ -63,21 +63,21 @@ export function HistoryView({ sessions, onClose }: HistoryViewProps) {
                     <FlaskConical className="w-5 h-5 text-[#4F46E5]" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-genesis-dark">
                       {new Date(session.createdAt).toLocaleDateString('pt-BR', {
                         day: '2-digit',
                         month: 'long',
                         year: 'numeric',
                       })}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-genesis-muted">
                       {session.result
                         ? `${session.result.markers.length} marcadores analisados`
                         : session.status}
                     </p>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-400" />
+                <ChevronRight className="w-5 h-5 text-genesis-subtle" />
               </div>
             </div>
           ))}

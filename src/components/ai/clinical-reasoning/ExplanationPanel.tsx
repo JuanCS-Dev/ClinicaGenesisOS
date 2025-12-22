@@ -187,7 +187,7 @@ export const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
                   ) : (
                     <XCircle className="w-4 h-4 text-red-500" />
                   )}
-                  <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="flex-1 h-2 bg-genesis-border-subtle rounded-full overflow-hidden">
                     <div
                       className={`h-full ${
                         reason.type === 'supporting'
@@ -203,7 +203,7 @@ export const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
 
                 {/* Factor description */}
                 <div className="flex-1">
-                  <span className="text-sm text-gray-700">{reason.factor}</span>
+                  <span className="text-sm text-genesis-text">{reason.factor}</span>
                   {reason.reference && showReferences && (
                     <a
                       href={`https://pubmed.ncbi.nlm.nih.gov/${reason.reference}`}
@@ -243,7 +243,7 @@ export const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
                 {explanation.clarifyingTests.map((test, index) => (
                   <li
                     key={index}
-                    className="text-sm text-gray-600 flex items-center gap-2"
+                    className="text-sm text-genesis-medium flex items-center gap-2"
                   >
                     <span className="w-1 h-1 bg-blue-400 rounded-full" />
                     {test}

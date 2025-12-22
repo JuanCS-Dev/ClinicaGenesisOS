@@ -88,7 +88,7 @@ export const PixPayment: React.FC<PixPaymentProps> = ({
     return (
       <div className="flex flex-col items-center justify-center p-8">
         <Loader2 className="w-8 h-8 animate-spin text-[#32D583]" />
-        <p className="mt-4 text-sm text-gray-500">Carregando pagamento...</p>
+        <p className="mt-4 text-sm text-genesis-muted">Carregando pagamento...</p>
       </div>
     );
   }
@@ -97,8 +97,8 @@ export const PixPayment: React.FC<PixPaymentProps> = ({
   if (!payment) {
     return (
       <div className="flex flex-col items-center justify-center p-8">
-        <AlertCircle className="w-12 h-12 text-gray-400" />
-        <p className="mt-4 text-sm text-gray-500">Pagamento não encontrado</p>
+        <AlertCircle className="w-12 h-12 text-genesis-subtle" />
+        <p className="mt-4 text-sm text-genesis-muted">Pagamento não encontrado</p>
       </div>
     );
   }
@@ -133,14 +133,14 @@ export const PixPayment: React.FC<PixPaymentProps> = ({
   // Payment expired
   if (isExpired || payment.status === 'expired') {
     return (
-      <div className="flex flex-col items-center justify-center p-8 bg-gray-50 rounded-2xl">
-        <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
-          <Clock className="w-8 h-8 text-gray-500" />
+      <div className="flex flex-col items-center justify-center p-8 bg-genesis-soft rounded-2xl">
+        <div className="w-16 h-16 rounded-full bg-genesis-border-subtle flex items-center justify-center">
+          <Clock className="w-8 h-8 text-genesis-muted" />
         </div>
-        <h3 className="mt-4 text-lg font-semibold text-gray-700">
+        <h3 className="mt-4 text-lg font-semibold text-genesis-text">
           PIX Expirado
         </h3>
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="mt-2 text-sm text-genesis-muted">
           O tempo para pagamento expirou
         </p>
         {onRetry && (
@@ -188,7 +188,7 @@ export const PixPayment: React.FC<PixPaymentProps> = ({
 
   if (compact) {
     return (
-      <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-100">
+      <div className="flex items-center gap-4 p-4 bg-genesis-surface rounded-xl border border-genesis-border-subtle">
         {qrCodeImage && (
           <img
             src={qrCodeImage}
@@ -197,7 +197,7 @@ export const PixPayment: React.FC<PixPaymentProps> = ({
           />
         )}
         <div className="flex-1">
-          <p className="font-semibold text-gray-900">
+          <p className="font-semibold text-genesis-dark">
             {formatPaymentAmount(payment.amount)}
           </p>
           {timeRemaining && (
@@ -225,7 +225,7 @@ export const PixPayment: React.FC<PixPaymentProps> = ({
   }
 
   return (
-    <div className="flex flex-col items-center p-6 bg-white rounded-2xl border border-gray-100 shadow-sm">
+    <div className="flex flex-col items-center p-6 bg-genesis-surface rounded-2xl border border-genesis-border-subtle shadow-sm">
       {/* Header */}
       <div className="flex items-center gap-2 text-[#32D583]">
         <QrCode className="w-5 h-5" />
@@ -233,7 +233,7 @@ export const PixPayment: React.FC<PixPaymentProps> = ({
       </div>
 
       {/* Amount */}
-      <p className="mt-4 text-2xl font-bold text-gray-900">
+      <p className="mt-4 text-2xl font-bold text-genesis-dark">
         {formatPaymentAmount(payment.amount)}
       </p>
 
@@ -249,7 +249,7 @@ export const PixPayment: React.FC<PixPaymentProps> = ({
 
       {/* QR Code */}
       {qrCodeImage && (
-        <div className="mt-6 p-4 bg-white rounded-xl border-2 border-gray-100">
+        <div className="mt-6 p-4 bg-genesis-surface rounded-xl border-2 border-genesis-border-subtle">
           <img
             src={qrCodeImage}
             alt="QR Code PIX"
@@ -260,14 +260,14 @@ export const PixPayment: React.FC<PixPaymentProps> = ({
 
       {/* Instructions */}
       <div className="mt-6 w-full space-y-3">
-        <div className="flex items-start gap-3 text-sm text-gray-600">
-          <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+        <div className="flex items-start gap-3 text-sm text-genesis-medium">
+          <div className="w-6 h-6 rounded-full bg-genesis-hover flex items-center justify-center flex-shrink-0">
             <Smartphone className="w-3 h-3" />
           </div>
           <p>Abra o app do seu banco e escolha pagar com PIX</p>
         </div>
-        <div className="flex items-start gap-3 text-sm text-gray-600">
-          <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+        <div className="flex items-start gap-3 text-sm text-genesis-medium">
+          <div className="w-6 h-6 rounded-full bg-genesis-hover flex items-center justify-center flex-shrink-0">
             <QrCode className="w-3 h-3" />
           </div>
           <p>Escaneie o QR Code ou copie o código PIX abaixo</p>
@@ -278,7 +278,7 @@ export const PixPayment: React.FC<PixPaymentProps> = ({
       {qrCodeText && (
         <button
           onClick={handleCopy}
-          className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-50 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors border border-gray-200"
+          className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-3 bg-genesis-soft text-genesis-text rounded-xl hover:bg-genesis-hover transition-colors border border-genesis-border"
         >
           {copied ? (
             <>
@@ -295,7 +295,7 @@ export const PixPayment: React.FC<PixPaymentProps> = ({
       )}
 
       {/* Status indicator */}
-      <div className="mt-4 flex items-center gap-2 text-sm text-gray-500">
+      <div className="mt-4 flex items-center gap-2 text-sm text-genesis-muted">
         <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
         <span>{PAYMENT_STATUS_LABELS[payment.status]}</span>
       </div>

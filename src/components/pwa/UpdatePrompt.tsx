@@ -27,7 +27,7 @@ export function UpdatePrompt(): React.ReactElement | null {
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-2xl overflow-hidden">
         <div className="p-4">
           <div className="flex items-start gap-3">
-            <div className="p-2 bg-white/20 rounded-lg">
+            <div className="p-2 bg-genesis-surface/20 rounded-lg">
               <Sparkles className="w-5 h-5" />
             </div>
             <div className="flex-1">
@@ -40,7 +40,7 @@ export function UpdatePrompt(): React.ReactElement | null {
 
           <button
             onClick={applyUpdate}
-            className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors"
+            className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2.5 bg-genesis-surface text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
             Atualizar agora

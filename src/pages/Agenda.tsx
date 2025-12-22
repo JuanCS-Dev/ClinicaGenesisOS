@@ -305,23 +305,23 @@ export function Agenda() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 text-genesis-blue animate-spin" />
+        <Loader2 className="w-8 h-8 text-genesis-primary animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col bg-white/60 backdrop-blur-md rounded-3xl border border-white shadow-soft overflow-hidden animate-enter">
+    <div className="h-[calc(100vh-8rem)] flex flex-col bg-genesis-surface/60 backdrop-blur-md rounded-3xl border border-white shadow-soft overflow-hidden animate-enter">
       {/* Calendar Header */}
-      <div className="p-4 border-b border-white/50 flex justify-between items-center bg-white/80 backdrop-blur-md z-20 sticky top-0 shadow-sm">
+      <div className="p-4 border-b border-white/50 flex justify-between items-center bg-genesis-surface/80 backdrop-blur-md z-20 sticky top-0 shadow-sm">
         <div className="flex items-center gap-6">
           {/* View Mode Toggle */}
-          <div className="flex bg-gray-100/80 p-1 rounded-xl shadow-inner">
+          <div className="flex bg-genesis-hover/80 p-1 rounded-xl shadow-inner">
             <button
               onClick={() => setViewMode('day')}
               className={`px-5 py-1.5 text-xs font-bold rounded-[0.6rem] transition-all ${
                 viewMode === 'day'
-                  ? 'bg-white shadow-sm text-genesis-dark'
+                  ? 'bg-genesis-surface shadow-sm text-genesis-dark'
                   : 'text-genesis-medium hover:text-genesis-dark'
               }`}
             >
@@ -331,7 +331,7 @@ export function Agenda() {
               onClick={() => setViewMode('week')}
               className={`px-5 py-1.5 text-xs font-bold rounded-[0.6rem] transition-all ${
                 viewMode === 'week'
-                  ? 'bg-white shadow-sm text-genesis-dark'
+                  ? 'bg-genesis-surface shadow-sm text-genesis-dark'
                   : 'text-genesis-medium hover:text-genesis-dark'
               }`}
             >
@@ -341,7 +341,7 @@ export function Agenda() {
               onClick={() => setViewMode('month')}
               className={`px-5 py-1.5 text-xs font-bold rounded-[0.6rem] transition-all ${
                 viewMode === 'month'
-                  ? 'bg-white shadow-sm text-genesis-dark'
+                  ? 'bg-genesis-surface shadow-sm text-genesis-dark'
                   : 'text-genesis-medium hover:text-genesis-dark'
               }`}
             >
@@ -355,7 +355,7 @@ export function Agenda() {
             {!isSelectedToday && (
               <button
                 onClick={goToToday}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-genesis-blue bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-genesis-primary bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
               >
                 <Calendar className="w-3.5 h-3.5" />
                 Hoje
@@ -364,21 +364,21 @@ export function Agenda() {
 
             <button
               onClick={goToPrevious}
-              className="p-1.5 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-gray-200 shadow-sm hover:shadow-md"
+              className="p-1.5 hover:bg-genesis-surface rounded-lg transition-colors border border-transparent hover:border-genesis-border shadow-sm hover:shadow-md"
             >
               <ChevronLeft className="w-5 h-5 text-genesis-medium" />
             </button>
             <h2 className="text-lg font-bold text-genesis-dark min-w-[200px] text-center tracking-tight flex items-center justify-center gap-2 capitalize">
               {dateDisplay}
               {viewMode === 'day' && isSelectedToday && (
-                <span className="text-[10px] font-bold text-genesis-blue bg-blue-50 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-bold text-genesis-primary bg-blue-50 px-2 py-0.5 rounded-full">
                   HOJE
                 </span>
               )}
             </h2>
             <button
               onClick={goToNext}
-              className="p-1.5 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-gray-200 shadow-sm hover:shadow-md"
+              className="p-1.5 hover:bg-genesis-surface rounded-lg transition-colors border border-transparent hover:border-genesis-border shadow-sm hover:shadow-md"
             >
               <ChevronRight className="w-5 h-5 text-genesis-medium" />
             </button>
@@ -392,14 +392,14 @@ export function Agenda() {
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-2 px-4 py-2 border rounded-xl text-xs font-bold transition-colors shadow-sm ${
                 hasActiveFilters
-                  ? 'border-genesis-blue bg-blue-50 text-genesis-blue'
-                  : 'border-gray-200 bg-white text-genesis-dark hover:bg-gray-50'
+                  ? 'border-genesis-primary bg-blue-50 text-genesis-primary'
+                  : 'border-genesis-border bg-genesis-surface text-genesis-dark hover:bg-genesis-soft'
               }`}
             >
-              <Filter className={`w-3.5 h-3.5 ${hasActiveFilters ? 'text-genesis-blue' : 'text-genesis-medium'}`} />
+              <Filter className={`w-3.5 h-3.5 ${hasActiveFilters ? 'text-genesis-primary' : 'text-genesis-medium'}`} />
               Filtros
               {hasActiveFilters && (
-                <span className="flex items-center justify-center w-5 h-5 bg-genesis-blue text-white text-[10px] font-bold rounded-full">
+                <span className="flex items-center justify-center w-5 h-5 bg-genesis-primary text-white text-[10px] font-bold rounded-full">
                   {localFilters.statuses.length + localFilters.specialties.length}
                 </span>
               )}
@@ -417,7 +417,7 @@ export function Agenda() {
             )}
           </div>
 
-          <button className="flex items-center gap-2 px-5 py-2 bg-genesis-dark text-white rounded-xl text-xs font-bold hover:bg-black shadow-lg shadow-gray-300 transition-all hover:-translate-y-0.5">
+          <button className="flex items-center gap-2 px-5 py-2 bg-genesis-dark text-white rounded-xl text-xs font-bold hover:bg-black shadow-lg shadow-genesis-medium/30 transition-all hover:-translate-y-0.5">
             <Plus className="w-4 h-4" /> Nova Consulta
           </button>
         </div>

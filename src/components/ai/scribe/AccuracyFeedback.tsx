@@ -149,7 +149,7 @@ export const AccuracyFeedback: React.FC<AccuracyFeedbackProps> = ({
   // Submitted state
   if (submitted) {
     return (
-      <div className="flex items-center gap-2 text-sm text-gray-500">
+      <div className="flex items-center gap-2 text-sm text-genesis-muted">
         <CheckCircle2 className="w-4 h-4 text-green-500" />
         <span>Obrigado pelo feedback!</span>
       </div>
@@ -166,7 +166,7 @@ export const AccuracyFeedback: React.FC<AccuracyFeedbackProps> = ({
           className={`p-1.5 rounded-lg transition-colors ${
             feedbackType === 'positive'
               ? 'bg-green-100 text-green-600'
-              : 'hover:bg-gray-100 text-gray-400 hover:text-green-600'
+              : 'hover:bg-genesis-hover text-genesis-subtle hover:text-green-600'
           }`}
           title="Útil"
         >
@@ -178,7 +178,7 @@ export const AccuracyFeedback: React.FC<AccuracyFeedbackProps> = ({
           className={`p-1.5 rounded-lg transition-colors ${
             feedbackType === 'negative'
               ? 'bg-red-100 text-red-600'
-              : 'hover:bg-gray-100 text-gray-400 hover:text-red-600'
+              : 'hover:bg-genesis-hover text-genesis-subtle hover:text-red-600'
           }`}
           title="Não útil"
         >
@@ -186,7 +186,7 @@ export const AccuracyFeedback: React.FC<AccuracyFeedbackProps> = ({
         </button>
         <button
           onClick={() => setShowDetails(true)}
-          className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors"
+          className="p-1.5 hover:bg-genesis-hover rounded-lg text-genesis-subtle hover:text-genesis-medium transition-colors"
           title="Dar feedback detalhado"
         >
           <MessageSquare className="w-4 h-4" />
@@ -200,7 +200,7 @@ export const AccuracyFeedback: React.FC<AccuracyFeedbackProps> = ({
       {/* Quick feedback buttons */}
       {!showDetails && (
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-500">Esta nota foi útil?</span>
+          <span className="text-sm text-genesis-muted">Esta nota foi útil?</span>
           <div className="flex items-center gap-1">
             <button
               onClick={() => handleThumbsClick('positive')}
@@ -208,7 +208,7 @@ export const AccuracyFeedback: React.FC<AccuracyFeedbackProps> = ({
               className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition-colors ${
                 feedbackType === 'positive'
                   ? 'bg-green-100 text-green-700'
-                  : 'bg-gray-50 text-gray-600 hover:bg-green-50 hover:text-green-600'
+                  : 'bg-genesis-soft text-genesis-medium hover:bg-green-50 hover:text-green-600'
               }`}
             >
               <ThumbsUp className="w-4 h-4" />
@@ -220,7 +220,7 @@ export const AccuracyFeedback: React.FC<AccuracyFeedbackProps> = ({
               className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition-colors ${
                 feedbackType === 'negative'
                   ? 'bg-red-100 text-red-700'
-                  : 'bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-600'
+                  : 'bg-genesis-soft text-genesis-medium hover:bg-red-50 hover:text-red-600'
               }`}
             >
               <ThumbsDown className="w-4 h-4" />
@@ -232,16 +232,16 @@ export const AccuracyFeedback: React.FC<AccuracyFeedbackProps> = ({
 
       {/* Expanded feedback form */}
       {showDetails && feedbackType && (
-        <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-4">
+        <div className="p-4 bg-genesis-soft rounded-xl border border-genesis-border-subtle space-y-4">
           <div className="flex items-center justify-between">
-            <h4 className="font-medium text-gray-900">
+            <h4 className="font-medium text-genesis-dark">
               {feedbackType === 'positive' ? '👍 O que foi bom?' : '👎 O que pode melhorar?'}
             </h4>
             <button
               onClick={handleClose}
-              className="p-1 hover:bg-gray-200 rounded-lg transition-colors"
+              className="p-1 hover:bg-genesis-border-subtle rounded-lg transition-colors"
             >
-              <X className="w-4 h-4 text-gray-400" />
+              <X className="w-4 h-4 text-genesis-subtle" />
             </button>
           </div>
 
@@ -257,7 +257,7 @@ export const AccuracyFeedback: React.FC<AccuracyFeedbackProps> = ({
                       ? feedbackType === 'positive'
                         ? 'bg-green-500 text-white'
                         : 'bg-red-500 text-white'
-                      : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
+                      : 'bg-genesis-surface border border-genesis-border text-genesis-medium hover:border-genesis-border'
                   }`}
                 >
                   {FEEDBACK_CATEGORY_LABELS[category]}
@@ -272,7 +272,7 @@ export const AccuracyFeedback: React.FC<AccuracyFeedbackProps> = ({
             onChange={(e) => setComment(e.target.value)}
             placeholder="Comentário adicional (opcional)..."
             rows={2}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
           />
 
           {/* Submit button */}

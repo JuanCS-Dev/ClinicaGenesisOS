@@ -37,7 +37,7 @@ export function Patients() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 text-genesis-blue animate-spin" />
+        <Loader2 className="w-8 h-8 text-genesis-primary animate-spin" />
       </div>
     );
   }
@@ -53,23 +53,23 @@ export function Patients() {
         </div>
         <button
           onClick={() => navigate('/patients/new')}
-          className="flex items-center gap-2 px-5 py-2.5 bg-genesis-dark text-white rounded-xl text-sm font-bold hover:bg-black transition-all shadow-lg shadow-gray-200 hover:-translate-y-0.5"
+          className="flex items-center gap-2 px-5 py-2.5 bg-genesis-dark text-white rounded-xl text-sm font-bold hover:bg-black transition-all shadow-lg shadow-genesis-medium/20 hover:-translate-y-0.5"
         >
           <Plus className="w-4 h-4" /> Novo Paciente
         </button>
       </div>
 
-      <div className="bg-white rounded-3xl border border-white shadow-soft overflow-hidden">
+      <div className="bg-genesis-surface rounded-3xl border border-white shadow-soft overflow-hidden">
         {/* Toolbar */}
-        <div className="p-5 border-b border-gray-50 flex gap-4 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="p-5 border-b border-genesis-border-subtle flex gap-4 bg-genesis-surface/80 backdrop-blur-sm sticky top-0 z-10">
           <div className="relative flex-1 max-w-md group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-genesis-medium group-focus-within:text-genesis-blue transition-colors" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-genesis-medium group-focus-within:text-genesis-primary transition-colors" />
             <input
               type="text"
               placeholder="Buscar por nome, telefone ou convênio..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border-none rounded-xl text-sm font-medium text-genesis-dark focus:ring-2 focus:ring-genesis-blue/20 focus:bg-white transition-all placeholder-gray-400 shadow-inner"
+              className="w-full pl-10 pr-4 py-2.5 bg-genesis-soft border-none rounded-xl text-sm font-medium text-genesis-dark focus:ring-2 focus:ring-genesis-primary/20 focus:bg-genesis-surface transition-all placeholder-gray-400 shadow-inner"
             />
           </div>
           {searchTerm && (
@@ -87,7 +87,7 @@ export function Patients() {
             </p>
             <button
               onClick={() => navigate('/patients/new')}
-              className="text-genesis-blue font-semibold text-sm hover:underline"
+              className="text-genesis-primary font-semibold text-sm hover:underline"
             >
               Cadastrar primeiro paciente
             </button>
@@ -99,14 +99,14 @@ export function Patients() {
             </p>
             <button
               onClick={() => setSearchTerm('')}
-              className="text-genesis-blue font-semibold text-sm hover:underline"
+              className="text-genesis-primary font-semibold text-sm hover:underline"
             >
               Limpar busca
             </button>
           </div>
         ) : (
           <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-50/80 border-b border-gray-100">
+            <thead className="bg-genesis-soft/80 border-b border-genesis-border-subtle">
               <tr>
                 <th className="px-6 py-4 font-bold text-genesis-medium uppercase tracking-wider text-[10px]">
                   Nome
@@ -127,7 +127,7 @@ export function Patients() {
               {filteredPatients.map((patient) => (
                 <tr
                   key={patient.id}
-                  className="hover:bg-gray-50/80 transition-all cursor-pointer group"
+                  className="hover:bg-genesis-soft/80 transition-all cursor-pointer group"
                   onClick={() => navigate(`/patients/${patient.id}`)}
                 >
                   <td className="px-6 py-4">
@@ -145,7 +145,7 @@ export function Patients() {
                         <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
                       </div>
                       <div>
-                        <p className="font-bold text-genesis-dark text-sm group-hover:text-genesis-blue transition-colors">
+                        <p className="font-bold text-genesis-dark text-sm group-hover:text-genesis-primary transition-colors">
                           {patient.name}
                         </p>
                         <p className="text-[11px] font-medium text-genesis-medium">
@@ -159,7 +159,7 @@ export function Patients() {
                     <p className="text-[11px] text-genesis-medium">{patient.email}</p>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-600 border border-gray-200">
+                    <span className="inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide bg-genesis-hover text-genesis-medium border border-genesis-border">
                       {patient.insurance || 'Particular'}
                     </span>
                   </td>
@@ -168,7 +168,7 @@ export function Patients() {
                       {patient.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="px-2.5 py-1 bg-white border border-gray-100 text-genesis-medium text-[10px] font-bold rounded-md uppercase tracking-wide shadow-sm"
+                          className="px-2.5 py-1 bg-genesis-surface border border-genesis-border-subtle text-genesis-medium text-[10px] font-bold rounded-md uppercase tracking-wide shadow-sm"
                         >
                           {tag}
                         </span>
@@ -177,10 +177,10 @@ export function Patients() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-2 text-gray-400 hover:text-genesis-dark hover:bg-white rounded-full transition-all shadow-sm">
+                      <button className="p-2 text-genesis-subtle hover:text-genesis-dark hover:bg-genesis-surface rounded-full transition-all shadow-sm">
                         <MoreVertical className="w-4 h-4" />
                       </button>
-                      <ChevronRight className="w-4 h-4 text-gray-300" />
+                      <ChevronRight className="w-4 h-4 text-genesis-subtle" />
                     </div>
                   </td>
                 </tr>

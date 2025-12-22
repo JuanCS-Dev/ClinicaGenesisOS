@@ -21,7 +21,7 @@ export function SuggestionsView({ result }: SuggestionsViewProps) {
       {/* Investigative Questions */}
       {result.investigativeQuestions.length > 0 && (
         <div>
-          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <h3 className="font-semibold text-genesis-dark mb-4 flex items-center gap-2">
             <Target className="w-5 h-5 text-[#D97706]" />
             Perguntas Investigativas
           </h3>
@@ -31,7 +31,7 @@ export function SuggestionsView({ result }: SuggestionsViewProps) {
                 key={idx}
                 className="p-4 bg-[#FFFBEB]/50 rounded-xl border border-[#FDE68A]"
               >
-                <p className="font-medium text-gray-900">{q.question}</p>
+                <p className="font-medium text-genesis-dark">{q.question}</p>
                 <p className="text-sm text-[#B45309] mt-1">{q.rationale}</p>
               </div>
             ))}
@@ -42,7 +42,7 @@ export function SuggestionsView({ result }: SuggestionsViewProps) {
       {/* Suggested Tests */}
       {result.suggestedTests.length > 0 && (
         <div>
-          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <h3 className="font-semibold text-genesis-dark mb-4 flex items-center gap-2">
             <FlaskConical className="w-5 h-5 text-[#2563EB]" />
             Exames Sugeridos
           </h3>
@@ -50,10 +50,10 @@ export function SuggestionsView({ result }: SuggestionsViewProps) {
             {result.suggestedTests.map((test, idx) => (
               <div
                 key={idx}
-                className="p-4 bg-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow"
+                className="p-4 bg-genesis-surface rounded-xl border border-genesis-border-subtle hover:shadow-md transition-shadow"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-gray-900">{test.name}</span>
+                  <span className="font-medium text-genesis-dark">{test.name}</span>
                   <span
                     className={`
                       text-xs font-medium px-2.5 py-1 rounded-full
@@ -61,7 +61,7 @@ export function SuggestionsView({ result }: SuggestionsViewProps) {
                         test.urgency === 'urgent'
                           ? 'bg-[#FEE2E2] text-[#B91C1C]'
                           : test.urgency === 'routine'
-                          ? 'bg-gray-100 text-gray-600'
+                          ? 'bg-genesis-hover text-genesis-medium'
                           : 'bg-[#DBEAFE] text-[#2563EB]'
                       }
                     `}
@@ -73,7 +73,7 @@ export function SuggestionsView({ result }: SuggestionsViewProps) {
                       : 'Seguimento'}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600">{test.rationale}</p>
+                <p className="text-sm text-genesis-medium">{test.rationale}</p>
               </div>
             ))}
           </div>
@@ -82,10 +82,10 @@ export function SuggestionsView({ result }: SuggestionsViewProps) {
 
       {result.investigativeQuestions.length === 0 && result.suggestedTests.length === 0 && (
         <div className="text-center py-12">
-          <div className="p-4 bg-gray-100 rounded-2xl w-fit mx-auto mb-4">
-            <ClipboardList className="w-8 h-8 text-gray-400" />
+          <div className="p-4 bg-genesis-hover rounded-2xl w-fit mx-auto mb-4">
+            <ClipboardList className="w-8 h-8 text-genesis-subtle" />
           </div>
-          <p className="text-gray-500">Nenhuma sugestão adicional</p>
+          <p className="text-genesis-muted">Nenhuma sugestão adicional</p>
         </div>
       )}
     </div>

@@ -220,75 +220,103 @@
 
 ---
 
-### FASE 4: DESIGN SYSTEM PREMIUM (Sprint 4)
+### FASE 4: DESIGN SYSTEM PREMIUM (Sprint 4) ✅ COMPLETO
 **Objetivo:** Consistência visual de nível Linear/Stripe
+**Status:** Implementado em 22/12/2024
 
-#### 4.1 Micro-interações
+**Entregas:**
+- [x] Micro-interações premium (hover lift, active scale, focus ring)
+- [x] Card premium com shadow transitions
+- [x] Button com micro-animações (scale, translate-y)
+- [x] Progress components (ProgressBar, ProgressCircular, LoadingDots, LoadingSpinner, StepProgress)
+- [x] EmptyState com ilustrações SVG animadas (6 tipos)
+- [x] Skeleton loading com shimmer animation
+- [x] Glass morphism, glow effects, gradient borders
+- [x] Stagger animations para listas
+
+#### 4.1 Micro-interações ✅
 **Inspiração:** Linear, Stripe
 
-**Implementar:**
+**Implementado em `index.css`:**
 ```css
-/* Hover premium */
-.card-premium {
-  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-.card-premium:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px -8px rgba(0,0,0,0.15);
-}
-
-/* Active feedback */
-.btn-premium:active {
-  transform: scale(0.98);
-}
-
-/* Focus ring premium */
-.focus-ring-premium:focus-visible {
-  outline: 2px solid var(--color-genesis-primary);
-  outline-offset: 2px;
-}
+/* Hover premium - já no Button.tsx e Card.tsx */
+.card-premium { hover:translateY(-2px), shadow-lg }
+.interactive { hover:translateY(-1px), active:scale(0.98) }
+.focus-ring { focus-visible:ring-2 ring-offset-2 }
+.glow-primary { hover:shadow com cor primária }
 ```
 
-#### 4.2 Loading States Premium
+**Componentes atualizados:**
+- `Button.tsx`: hover:scale-[1.02], active:scale-[0.98], translateY
+- `Card.tsx`: interactive mode com hover lift e focus ring
+
+#### 4.2 Loading States Premium ✅
 **Inspiração:** Carbon Design System
 
-- Skeleton com shimmer animation
-- Progress indicators contextuais
-- Optimistic updates
-- Micro-copy durante loading ("Carregando sua agenda...")
+**Novo componente: `/src/design-system/components/Progress.tsx`**
+- [x] ProgressBar - linear com valor ou indeterminate
+- [x] ProgressCircular - circular com SVG animado
+- [x] LoadingDots - dots bouncing
+- [x] LoadingSpinner - spinner SVG
+- [x] StepProgress - steps de wizard com checkmarks
 
-#### 4.3 Empty States com Personalidade
+**Existentes:**
+- [x] Skeleton.tsx com shimmer animation (já implementado)
+
+#### 4.3 Empty States com Personalidade ✅
 **Inspiração:** Mailchimp, Notion
 
-Cada empty state deve ter:
-- Ilustração SVG minimalista
-- Título empático
-- Descrição útil
-- CTA claro
-- Animação sutil
+**Já implementado: `/src/components/ui/EmptyState.tsx`**
+- [x] 6 ilustrações SVG minimalistas (documents, search, success, calendar, patients, inbox)
+- [x] Título empático configurável
+- [x] Descrição útil
+- [x] CTA com ação
+- [x] Animação float sutil
 
 ---
 
-### FASE 5: INTELIGÊNCIA E ANALYTICS (Sprint 5)
+### FASE 5: INTELIGÊNCIA E ANALYTICS (Sprint 5) ✅ COMPLETO
 **Objetivo:** Insights acionáveis
+**Status:** Implementado em 22/12/2024
 
-#### 5.1 Financial Wellness Dashboard
+**Entregas:**
+- [x] useFinancialWellness hook - métricas financeiras avançadas
+- [x] usePatientInsights hook - retenção, NPS, engajamento
+- [x] FinancialWellness component - dashboard visual premium
+- [x] PatientInsights component - insights de pacientes
+- [x] Analytics page - página unificada com tabs
+- [x] Rota /analytics configurada + link no Sidebar
+
+#### 5.1 Financial Wellness Dashboard ✅
 **Inspiração:** Healthie, athenahealth
 
-**Métricas:**
-- Faturamento por período
-- Ticket médio por procedimento
-- Taxa de inadimplência
-- Projeção de receita
-- Comparativo YoY
+**Métricas implementadas:**
+- [x] Health Score financeiro (0-100) com breakdown
+- [x] Ticket médio por procedimento com ranking
+- [x] Taxa de inadimplência com aging (1-30d, 31-60d, 61-90d, 90+d)
+- [x] Projeção de receita (mensal, trimestral, anual)
+- [x] Comparativo YoY com trend indicators
+- [x] Recomendações automáticas baseadas nos dados
 
-#### 5.2 Patient Insights
+**Arquivos:**
+- `/src/hooks/useFinancialWellness.ts` - Hook de métricas
+- `/src/components/analytics/FinancialWellness.tsx` - Componente visual
+
+#### 5.2 Patient Insights ✅
 **Inspiração:** Epic MyChart Central
 
-- Taxa de retorno de pacientes
-- NPS automatizado
-- Alertas de pacientes em risco
-- Histórico de engagement
+**Métricas implementadas:**
+- [x] Taxa de retorno de pacientes
+- [x] NPS automatizado com promoters/passives/detractors
+- [x] Alertas de pacientes em risco (no_return, missed_appointments)
+- [x] Métricas de engajamento (confirmação, no-show, canais)
+- [x] Demographics (idade, gênero, convênio)
+- [x] Feedback recente
+
+**Arquivos:**
+- `/src/hooks/usePatientInsights.ts` - Hook de métricas
+- `/src/components/analytics/PatientInsights.tsx` - Componente visual
+- `/src/pages/Analytics.tsx` - Página unificada
 
 ---
 
@@ -408,78 +436,406 @@ cd functions && npm run deploy
 
 ---
 
-### FASE 8: GERAÇÃO XML TISS REAL (Sprint 9)
-**Objetivo:** Faturamento eletrônico com convênios
+### FASE 8: CONVÊNIOS E TISS - PESQUISA PROFUNDA (Sprint 9-10)
+**Objetivo:** Pesquisa completa da legislação e requisitos técnicos para faturamento eletrônico
+**Status:** 🔴 REQUER PESQUISA ANTES DE IMPLEMENTAÇÃO
 
-#### 8.1 Implementação TISS 4.01.00
-**Padrão ANS obrigatório desde março/2023**
+> ⚠️ **IMPORTANTE:** Esta fase NÃO é implementação direta. É pesquisa profunda de legislação,
+> documentação técnica e requisitos específicos de cada operadora. Convênios de saúde no Brasil
+> são regulamentados pela ANS e têm requisitos legais estritos.
 
-**Tipos de Guia suportados:**
-- Guia de Consulta
-- Guia SP/SADT (Serviços Profissionais/Diagnóstico)
-- Guia de Honorários
-- Guia de Internação
-- Resumo de Internação
+#### 8.1 Escopo de Pesquisa
 
-**Arquivos:**
-- `/src/services/tiss/tiss.service.ts` - Geração XML
-- `/src/services/tiss/schemas/` - XSD schemas ANS
-- `/src/services/tiss/validators/` - Validação prévia
-- `/src/services/tiss/templates/` - Templates por tipo
-- `/functions/src/tiss/generate-xml.ts` - Cloud Function
+**Operadoras Prioritárias (Mercado Brasil):**
+| Operadora | Tipo | Prioridade | Notas |
+|-----------|------|------------|-------|
+| **UNIMED** | Cooperativa médica | 🔴 CRÍTICA | Maior rede do Brasil, ~18M beneficiários |
+| **GEAP** | Autogestão federal | 🔴 CRÍTICA | Servidores públicos federais |
+| **CASSI** | Autogestão | 🟡 ALTA | Funcionários Banco do Brasil |
+| **POSTAL SAÚDE** | Autogestão | 🟡 ALTA | Funcionários Correios |
+| **FAPES** | Autogestão | 🟢 MÉDIA | Funcionários BNDES |
+| **SulAmérica** | Seguradora | 🟡 ALTA | Grande operadora privada |
+| **Bradesco Saúde** | Seguradora | 🟡 ALTA | Grande operadora privada |
+| **Amil** | Medicina de grupo | 🟡 ALTA | UnitedHealth Group |
 
-#### 8.2 Estrutura XML Guia Consulta
-```xml
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<ans:mensagemTISS xmlns:ans="http://www.ans.gov.br/padroes/tiss/schemas">
-  <ans:cabecalho>
-    <ans:identificacaoTransacao>
-      <ans:tipoTransacao>ENVIO_LOTE_GUIAS</ans:tipoTransacao>
-      <ans:sequencialTransacao>1</ans:sequencialTransacao>
-      <ans:dataRegistroTransacao>2025-01-15</ans:dataRegistroTransacao>
-    </ans:identificacaoTransacao>
-    <ans:versaoPadrao>4.01.00</ans:versaoPadrao>
-  </ans:cabecalho>
-  <ans:prestadorParaOperadora>
-    <ans:loteGuias>
-      <ans:guiaConsulta>
-        <!-- Dados do beneficiário -->
-        <!-- Dados do contratado -->
-        <!-- Dados do atendimento -->
-      </ans:guiaConsulta>
-    </ans:loteGuias>
-  </ans:prestadorParaOperadora>
-</ans:mensagemTISS>
+#### 8.2 Pesquisa Obrigatória - Legislação ANS
+
+**Documentos a estudar:**
+- [ ] RN (Resolução Normativa) vigente sobre TISS
+- [ ] Versão atual do padrão TISS (verificar se ainda é 4.01.00 ou houve atualização)
+- [ ] Componentes obrigatórios: Organizacional, Conteúdo e Estrutura, Representação de Conceitos, Comunicação
+- [ ] Prazos legais para envio de guias
+- [ ] Penalidades por não conformidade
+- [ ] Regras de glosas e recursos
+
+**Fontes oficiais:**
+- [ ] Portal ANS: https://www.gov.br/ans/
+- [ ] Padrão TISS oficial: https://www.gov.br/ans/pt-br/assuntos/prestadores/padrao-tiss
+- [ ] Terminologia Unificada em Saúde Suplementar (TUSS)
+- [ ] Tabelas de domínio ANS
+
+#### 8.3 Pesquisa Técnica - Por Operadora
+
+**Para CADA operadora, pesquisar:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    CHECKLIST POR OPERADORA                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  CREDENCIAMENTO                                                  │
+│  [ ] Processo de credenciamento de prestador                    │
+│  [ ] Documentação exigida                                       │
+│  [ ] Prazos de aprovação                                        │
+│  [ ] Códigos de identificação (CNES, registro ANS)              │
+│                                                                  │
+│  INTEGRAÇÃO TÉCNICA                                             │
+│  [ ] Webservice disponível? URL?                                │
+│  [ ] Autenticação (certificado digital, token, usuário/senha)  │
+│  [ ] Ambiente de homologação                                    │
+│  [ ] Ambiente de produção                                       │
+│  [ ] Documentação técnica da API                                │
+│  [ ] Suporte técnico (contato, SLA)                            │
+│                                                                  │
+│  GUIAS ACEITAS                                                  │
+│  [ ] Guia de Consulta                                           │
+│  [ ] Guia SP/SADT                                               │
+│  [ ] Guia de Honorários                                         │
+│  [ ] Outras guias específicas                                   │
+│                                                                  │
+│  PARTICULARIDADES                                               │
+│  [ ] Campos obrigatórios além do padrão TISS                   │
+│  [ ] Regras específicas de autorização prévia                  │
+│  [ ] Prazos de envio específicos                               │
+│  [ ] Formato de retorno (glosas, pagamentos)                   │
+│  [ ] Portal do prestador (acesso manual)                       │
+│                                                                  │
+│  FINANCEIRO                                                     │
+│  [ ] Tabela de procedimentos aceita (TUSS, CBHPM, própria)     │
+│  [ ] Valores de reembolso                                       │
+│  [ ] Prazo de pagamento                                         │
+│  [ ] Processo de contestação de glosas                         │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-#### 8.3 Workflow de Faturamento
+#### 8.4 Pesquisa - Certificação Digital
+
+**Requisitos de certificado:**
+- [ ] Tipo de certificado exigido (e-CPF, e-CNPJ, ICP-Brasil)
+- [ ] Cadeia de certificação válida
+- [ ] Autoridades certificadoras aceitas
+- [ ] Processo de assinatura XML (XMLDSig, XAdES)
+- [ ] Renovação e validade
+
+**Perguntas a responder:**
+- O certificado do médico (e-CPF) é suficiente ou precisa do e-CNPJ da clínica?
+- Cada profissional precisa de certificado individual?
+- Como funciona a delegação de assinatura?
+
+#### 8.5 Pesquisa - UNIMED (Prioridade Máxima)
+
+**Estrutura UNIMED:**
+- [ ] Entender federação (UNIMED local vs nacional)
+- [ ] Cada UNIMED local tem requisitos diferentes?
+- [ ] Portal Unimed Prestador: funcionalidades
+- [ ] API/Webservice Unimed: documentação
+- [ ] Intercâmbio entre UNIMEDs
+
+**Contatos a buscar:**
+- [ ] Departamento de credenciamento UNIMED local
+- [ ] Suporte técnico para integrações
+- [ ] Documentação técnica oficial
+
+#### 8.6 Pesquisa - Convênios Federais (GEAP, CASSI, etc.)
+
+**Particularidades setor público:**
+- [ ] Processo licitatório para credenciamento?
+- [ ] Requisitos adicionais de compliance
+- [ ] Sistemas específicos (SIAPE, etc.)
+- [ ] Regras de ressarcimento ao SUS
+
+#### 8.7 Deliverables da Pesquisa
+
+**Ao final desta fase, ter documentado:**
+
+1. **Relatório de Viabilidade**
+   - Complexidade técnica real
+   - Esforço estimado de implementação
+   - Riscos identificados
+   - Recomendação go/no-go
+
+2. **Matriz de Requisitos por Operadora**
+   - Tabela comparativa
+   - Campos obrigatórios
+   - Diferenças entre operadoras
+
+3. **Arquitetura Técnica Proposta**
+   - Baseada em requisitos REAIS pesquisados
+   - Não em suposições
+
+4. **Roadmap de Implementação**
+   - Faseamento por operadora
+   - MVP: qual operadora primeiro?
+   - Critérios de sucesso
+
+5. **Contatos e Recursos**
+   - Lista de contatos em cada operadora
+   - Documentação coletada
+   - Acessos a portais de homologação
+
+#### 8.8 Fontes de Pesquisa
+
+**Oficiais:**
+- ANS: https://www.gov.br/ans/
+- TISS: https://www.gov.br/ans/pt-br/assuntos/prestadores/padrao-tiss
+- DATASUS: https://datasus.saude.gov.br/
+
+**Operadoras:**
+- UNIMED Brasil: https://www.unimed.coop.br/
+- GEAP: https://www.geap.org.br/
+- CASSI: https://www.cassi.com.br/
+
+**Comunidade/Técnico:**
+- Grupos de desenvolvedores de sistemas de saúde
+- GitHub: projetos open-source de TISS
+- Stack Overflow: questões sobre integração
+
+**Consultorias especializadas:**
+- Empresas que já fazem integração TISS
+- Contadores especializados em saúde
+- Advogados de direito em saúde
+
+#### 8.9 Timeline de Pesquisa
+
 ```
-1. Consulta finalizada
+Semana 1-2: Legislação ANS e padrão TISS atual
+Semana 3-4: Pesquisa UNIMED (maior prioridade)
+Semana 5-6: Pesquisa GEAP e convênios federais
+Semana 7-8: Outras operadoras + consolidação
+Semana 9-10: Relatório final + arquitetura proposta
+```
+
+#### 8.10 Critérios de Sucesso da Pesquisa
+
+- [ ] Documentação completa do padrão TISS atual
+- [ ] Requisitos técnicos de pelo menos 3 operadoras
+- [ ] Acesso a ambiente de homologação de 1+ operadora
+- [ ] Arquitetura técnica validada com especialista
+- [ ] Estimativa realista de esforço de implementação
+- [ ] Decisão informada sobre escopo do MVP
+
+---
+
+### FASE 9: N8N WORKFLOW AUTOMATION (Sprint 10)
+**Objetivo:** Automação de processos e integrações externas via n8n
+
+#### 9.1 Arquitetura de Integração
+**n8n como hub central de automações**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        n8n Workflow Engine                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐      │
+│  │  Triggers    │    │  Processors  │    │  Actions     │      │
+│  │  ──────────  │    │  ──────────  │    │  ──────────  │      │
+│  │  • Webhook   │───▶│  • Transform │───▶│  • Firebase  │      │
+│  │  • Schedule  │    │  • Filter    │    │  • WhatsApp  │      │
+│  │  • Firestore │    │  • AI/LLM    │    │  • Email     │      │
+│  │  • HTTP      │    │  • Validate  │    │  • Slack     │      │
+│  └──────────────┘    └──────────────┘    └──────────────┘      │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+         │                    │                    │
+         ▼                    ▼                    ▼
+┌─────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│  Firestore  │    │  Cloud Functions │    │  External APIs  │
+│  (eventos)  │    │  (processamento) │    │  (integrações)  │
+└─────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+#### 9.2 Workflows Prioritários
+
+**1. Agendamento Inteligente**
+```
+Trigger: Novo agendamento no Firestore
    ↓
-2. Formulário TISS preenchido (já existe)
+Verificar conflitos de horário
    ↓
-3. Validação dos campos obrigatórios
+Enriquecer dados do paciente
    ↓
-4. Geração XML conforme schema ANS
+Enviar confirmação (WhatsApp + Email)
    ↓
-5. Validação XML contra XSD
+Criar evento no Google Calendar
    ↓
-6. Hash MD5 do arquivo
+Notificar profissional (Slack/Push)
+```
+
+**2. Follow-up Pós-Consulta**
+```
+Trigger: Consulta finalizada (status = FINISHED)
    ↓
-7. Download ou envio direto
+Aguardar 24h (delay node)
    ↓
-8. Registro no histórico
+Enviar pesquisa NPS (WhatsApp)
+   ↓
+Coletar resposta via webhook
+   ↓
+Atualizar score no Firestore
+   ↓
+Se NPS < 7: Alertar gestor
+```
+
+**3. Lembretes de Retorno**
+```
+Trigger: Schedule (diário às 9h)
+   ↓
+Buscar pacientes sem consulta há 90+ dias
+   ↓
+Filtrar por condições crônicas
+   ↓
+Enviar lembrete personalizado
+   ↓
+Registrar contato no histórico
+```
+
+**4. Integração com Labs**
+```
+Trigger: Webhook do laboratório
+   ↓
+Validar assinatura/origem
+   ↓
+Fazer parse do resultado (HL7/PDF)
+   ↓
+Anexar ao prontuário do paciente
+   ↓
+Notificar médico se valores críticos
+   ↓
+Notificar paciente que resultado chegou
+```
+
+**5. Sincronização de Agenda**
+```
+Trigger: Mudança em appointment
+   ↓
+Sync bidirecional Google Calendar
+   ↓
+Atualizar disponibilidade
+   ↓
+Recalcular slots livres
+```
+
+**6. Backup e Auditoria**
+```
+Trigger: Schedule (diário às 2h)
+   ↓
+Export dados críticos
+   ↓
+Criptografar e enviar para storage
+   ↓
+Gerar log de auditoria
+   ↓
+Notificar admin se falha
+```
+
+#### 9.3 Setup Técnico
+
+**Opção A: n8n Cloud (Recomendado para MVP)**
+```bash
+# Criar conta em n8n.io
+# Configurar webhooks apontando para:
+https://[n8n-instance].n8n.cloud/webhook/[workflow-id]
+```
+
+**Opção B: n8n Self-Hosted (Docker)**
+```yaml
+# docker-compose.yml
+version: '3.8'
+services:
+  n8n:
+    image: n8nio/n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=secure_password
+      - WEBHOOK_URL=https://n8n.clinicagenesis.com.br
+    volumes:
+      - n8n_data:/home/node/.n8n
+```
+
+**Opção C: Cloud Run (GCP)**
+```bash
+gcloud run deploy n8n \
+  --image n8nio/n8n \
+  --port 5678 \
+  --memory 1Gi \
+  --allow-unauthenticated
+```
+
+#### 9.4 Integrações Disponíveis
+
+| Categoria | Serviço | Uso no Genesis |
+|-----------|---------|----------------|
+| **Comunicação** | WhatsApp Business | Lembretes, confirmações |
+| | Twilio SMS | Fallback SMS |
+| | SendGrid/Mailgun | Emails transacionais |
+| | Slack | Alertas internos |
+| **Calendário** | Google Calendar | Sync agenda |
+| | Cal.com | Booking público |
+| **Pagamentos** | Stripe | Webhooks de pagamento |
+| | Pix (bancos) | Confirmação automática |
+| **Storage** | Google Cloud Storage | Backup, arquivos |
+| | Firebase Storage | Anexos |
+| **AI/ML** | OpenAI | Processamento NLP |
+| | Vertex AI | Análise de exames |
+| **Healthcare** | HL7 FHIR | Interoperabilidade |
+| | Labs APIs | Resultados de exames |
+
+#### 9.5 Segurança
+
+**Credenciais:**
+- [ ] Usar n8n Credentials para armazenar secrets
+- [ ] Nunca expor tokens em workflows
+- [ ] Rotacionar API keys regularmente
+
+**Webhooks:**
+- [ ] Validar origem das requisições
+- [ ] Implementar HMAC signature
+- [ ] Rate limiting por IP
+
+**Dados Sensíveis:**
+- [ ] Não logar dados de pacientes
+- [ ] Criptografar payloads sensíveis
+- [ ] Compliance LGPD/HIPAA
+
+#### 9.6 Arquivos
+
+**Cloud Functions (triggers para n8n):**
+```
+functions/src/n8n/
+├── webhooks.ts          # Receber callbacks do n8n
+├── triggers.ts          # Enviar eventos para n8n
+└── validators.ts        # Validação de requests
+```
+
+**Frontend (configuração):**
+```
+src/components/settings/
+├── N8NSettings.tsx      # UI de configuração
+└── WorkflowStatus.tsx   # Status dos workflows
 ```
 
 **Features:**
-- [ ] Validação prévia (antes de gerar)
-- [ ] Geração XML compliant ANS 4.01.00
-- [ ] Validador integrado (XSD)
-- [ ] Preview da guia (visual)
-- [ ] Download XML + PDF
-- [ ] Histórico de envios
-- [ ] Controle de glosas
-- [ ] Integração com convênios (webservice)
+- [ ] Trigger de eventos para n8n via Cloud Functions
+- [ ] Webhook receiver para callbacks
+- [ ] UI de configuração de workflows
+- [ ] Dashboard de status/logs
+- [ ] Templates de workflows prontos
+- [ ] Documentação de integrações
 
 ---
 
@@ -490,13 +846,18 @@ cd functions && npm run deploy
 | Fase 1: Fundação Premium | ✅ COMPLETO (22/12/2024) | 🔴 CRÍTICA |
 | Fase 2: Experiência Paciente | ✅ COMPLETO (22/12/2024) | 🔴 CRÍTICA |
 | Fase 3: Documentação AI | ✅ COMPLETO (22/12/2024) | 🟡 ALTA |
-| Fase 4: Design System | ⏳ PENDENTE | 🟡 ALTA |
-| Fase 5: Analytics | ⏳ PENDENTE | 🟢 MÉDIA |
-| Fase 6: WhatsApp Business API | ✅ CÓDIGO PRONTO (falta deploy) | 🔴 CRÍTICA |
-| Fase 7: Portal do Paciente | ⏳ PENDENTE | 🔴 CRÍTICA |
-| Fase 8: TISS XML Real | ⏳ PENDENTE | 🟡 ALTA |
+| Fase 4: Design System | ✅ COMPLETO (22/12/2024) | 🟡 ALTA |
+| Fase 5: Analytics | ✅ COMPLETO (22/12/2024) | 🟢 MÉDIA |
+| Fase 6: WhatsApp Business API | ✅ COMPLETO (22/12/2024) | 🔴 CRÍTICA |
+| Fase 7: Portal do Paciente | ✅ COMPLETO (22/12/2024) | 🔴 CRÍTICA |
+| Fase 8: Convênios/TISS - PESQUISA | 🔴 REQUER PESQUISA PROFUNDA | 🔴 CRÍTICA |
+| Fase 9: n8n Workflow Automation | ⏳ PENDENTE | 🟡 ALTA |
 
-**Progresso Geral:** 3/8 fases completas (37.5%)
+**Progresso Geral:** 7/9 fases completas (77.8%)
+
+> ⚠️ **NOTA FASE 8:** Convênios brasileiros (UNIMED, GEAP, etc.) exigem pesquisa profunda
+> de legislação ANS, TISS, certificação digital e requisitos específicos de cada operadora.
+> NÃO implementar sem documentação completa.
 
 ---
 
@@ -514,6 +875,14 @@ cd functions && npm run deploy
 - [Healthie Nutrition Platform](https://www.gethealthie.com/nutrition)
 - [athenahealth Summer 2025](https://www.athenahealth.com/resources/blog/athenaone-summer-2025-update)
 
+### n8n & Workflow Automation
+- [n8n Official Docs](https://docs.n8n.io/)
+- [n8n Healthcare Templates](https://n8n.io/workflows/?categories=Healthcare)
+- [n8n Firebase Integration](https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.firebase/)
+- [n8n WhatsApp Integration](https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.whatsapp/)
+- [n8n Webhook Security](https://docs.n8n.io/hosting/security/)
+- [n8n Self-Hosting Guide](https://docs.n8n.io/hosting/)
+
 ### UX/UI Design
 - [Healthcare UX Trends 2025](https://www.webstacks.com/blog/healthcare-ux-design)
 - [50 Healthcare UX/UI Examples](https://www.koruux.com/50-examples-of-healthcare-UI/)
@@ -529,9 +898,26 @@ cd functions && npm run deploy
 - [WhatsApp for Healthcare Guide](https://www.wati.io/blog/whatsapp-for-healthcare-how-medical-institutions-can-use-it/)
 - [97% médicos Brasil usam WhatsApp](https://respond.io/blog/whatsapp-for-healthcare)
 
-### TISS Brasil
-- [Padrão TISS ANS Oficial](https://www.gov.br/ans/pt-br/assuntos/prestadores/padrao-para-troca-de-informacao-de-saude-suplementar-2013-tiss)
-- [TISS Janeiro 2025](https://www.gov.br/ans/pt-br/assuntos/prestadores/padrao-para-troca-de-informacao-de-saude-suplementar-2013-tiss/padrao-tiss-janeiro-2025)
+### Convênios Brasil - Legislação e TISS (PESQUISA OBRIGATÓRIA)
+**ANS (Agência Nacional de Saúde Suplementar):**
+- [Portal ANS Oficial](https://www.gov.br/ans/)
+- [Padrão TISS ANS](https://www.gov.br/ans/pt-br/assuntos/prestadores/padrao-tiss)
+- [Terminologia TUSS](https://www.gov.br/ans/pt-br/assuntos/prestadores/tuss)
+- [Resoluções Normativas](https://www.gov.br/ans/pt-br/regulacao)
+
+**Operadoras Prioritárias:**
+- [UNIMED Brasil](https://www.unimed.coop.br/)
+- [GEAP Autogestão](https://www.geap.org.br/)
+- [CASSI](https://www.cassi.com.br/)
+
+**Certificação Digital ICP-Brasil:**
+- [ITI - Instituto Nacional de TI](https://www.gov.br/iti/)
+- [Certificados e-CPF/e-CNPJ](https://www.gov.br/iti/pt-br/assuntos/certificado-digital)
+
+**Ferramentas e Cadastros:**
+- [DATASUS](https://datasus.saude.gov.br/)
+- [CNES - Cadastro Nacional](https://cnes.datasus.gov.br/)
+- [Validador TISS](https://www.validadortiss.com.br/)
 
 ---
 

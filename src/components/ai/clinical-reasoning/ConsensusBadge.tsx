@@ -50,7 +50,7 @@ const COLOR_CLASSES = {
   blue: 'bg-[#DBEAFE] text-[#1D4ED8] border-[#BFDBFE]',
   amber: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
   red: 'bg-[#FEE2E2] text-[#B91C1C] border-[#FECACA]',
-  gray: 'bg-gray-100 text-gray-600 border-gray-200',
+  gray: 'bg-genesis-hover text-genesis-medium border-genesis-border',
 };
 
 /**
@@ -110,21 +110,21 @@ export function ModelComparison({ gemini, gpt4o }: ModelComparisonProps) {
   if (!gemini && !gpt4o) return null;
 
   return (
-    <div className="mt-2 pt-2 border-t border-gray-100">
-      <p className="text-xs text-gray-500 uppercase mb-1">Detalhes por modelo</p>
+    <div className="mt-2 pt-2 border-t border-genesis-border-subtle">
+      <p className="text-xs text-genesis-muted uppercase mb-1">Detalhes por modelo</p>
       <div className="flex gap-4 text-xs">
         {gemini && (
           <div className="flex items-center gap-1">
-            <span className="text-gray-400">Gemini:</span>
+            <span className="text-genesis-subtle">Gemini:</span>
             <span className="font-medium">#{gemini.rank}</span>
-            <span className="text-gray-400">({gemini.confidence}%)</span>
+            <span className="text-genesis-subtle">({gemini.confidence}%)</span>
           </div>
         )}
         {gpt4o && (
           <div className="flex items-center gap-1">
-            <span className="text-gray-400">GPT-4o:</span>
+            <span className="text-genesis-subtle">GPT-4o:</span>
             <span className="font-medium">#{gpt4o.rank}</span>
-            <span className="text-gray-400">({gpt4o.confidence}%)</span>
+            <span className="text-genesis-subtle">({gpt4o.confidence}%)</span>
           </div>
         )}
       </div>

@@ -70,9 +70,9 @@ export const MedicationForm: FC<MedicationFormProps> = ({
   onRemove,
 }) => {
   return (
-    <div className="p-4 border border-gray-200 rounded-xl space-y-4">
+    <div className="p-4 border border-genesis-border rounded-xl space-y-4">
       <div className="flex items-start justify-between">
-        <span className="text-sm font-medium text-gray-500">
+        <span className="text-sm font-medium text-genesis-muted">
           Medicamento {index + 1}
         </span>
         <button
@@ -104,7 +104,7 @@ export const MedicationForm: FC<MedicationFormProps> = ({
       {/* Dosage & Frequency */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-genesis-text mb-1">
             Posologia
           </label>
           <input
@@ -112,11 +112,11 @@ export const MedicationForm: FC<MedicationFormProps> = ({
             value={medication.dosage}
             onChange={(e) => onUpdate(index, 'dosage', e.target.value)}
             placeholder="Ex: 1 comprimido"
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-genesis-text mb-1">
             Frequência
           </label>
           <input
@@ -124,7 +124,7 @@ export const MedicationForm: FC<MedicationFormProps> = ({
             value={medication.frequency}
             onChange={(e) => onUpdate(index, 'frequency', e.target.value)}
             placeholder="Ex: 8 em 8 horas"
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -132,7 +132,7 @@ export const MedicationForm: FC<MedicationFormProps> = ({
       {/* Duration & Quantity */}
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-genesis-text mb-1">
             Duração
           </label>
           <input
@@ -140,11 +140,11 @@ export const MedicationForm: FC<MedicationFormProps> = ({
             value={medication.duration}
             onChange={(e) => onUpdate(index, 'duration', e.target.value)}
             placeholder="Ex: 7 dias"
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-genesis-text mb-1">
             Quantidade
           </label>
           <input
@@ -152,17 +152,17 @@ export const MedicationForm: FC<MedicationFormProps> = ({
             min="1"
             value={medication.quantity}
             onChange={(e) => onUpdate(index, 'quantity', parseInt(e.target.value) || 1)}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-genesis-text mb-1">
             Unidade
           </label>
           <select
             value={medication.unit}
             onChange={(e) => onUpdate(index, 'unit', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {UNITS.map((unit) => (
               <option key={unit} value={unit}>
@@ -176,13 +176,13 @@ export const MedicationForm: FC<MedicationFormProps> = ({
       {/* Route & Options */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-genesis-text mb-1">
             Via de Administração
           </label>
           <select
             value={medication.route}
             onChange={(e) => onUpdate(index, 'route', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {ROUTES.map((route) => (
               <option key={route} value={route}>
@@ -197,16 +197,16 @@ export const MedicationForm: FC<MedicationFormProps> = ({
               type="checkbox"
               checked={medication.continuousUse}
               onChange={(e) => onUpdate(index, 'continuousUse', e.target.checked)}
-              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+              className="w-4 h-4 text-blue-600 rounded border-genesis-border focus:ring-blue-500"
             />
-            <span className="text-sm text-gray-700">Uso contínuo</span>
+            <span className="text-sm text-genesis-text">Uso contínuo</span>
           </label>
         </div>
       </div>
 
       {/* Instructions */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-genesis-text mb-1">
           Instruções adicionais (opcional)
         </label>
         <input
@@ -214,7 +214,7 @@ export const MedicationForm: FC<MedicationFormProps> = ({
           value={medication.instructions || ''}
           onChange={(e) => onUpdate(index, 'instructions', e.target.value)}
           placeholder="Ex: Tomar com água, após as refeições"
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
     </div>

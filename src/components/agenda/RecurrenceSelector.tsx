@@ -130,8 +130,8 @@ export function RecurrenceSelector({
         onClick={toggleRecurrence}
         className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
           isEnabled
-            ? 'bg-genesis-blue text-white shadow-lg shadow-blue-200'
-            : 'bg-gray-100 text-genesis-medium hover:bg-gray-200'
+            ? 'bg-genesis-primary text-white shadow-lg shadow-blue-200'
+            : 'bg-genesis-hover text-genesis-medium hover:bg-genesis-border-subtle'
         }`}
       >
         <Repeat className={`w-4 h-4 ${isEnabled ? 'animate-pulse' : ''}`} />
@@ -154,8 +154,8 @@ export function RecurrenceSelector({
                   onClick={() => updateFrequency(option.value)}
                   className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                     value.frequency === option.value
-                      ? 'bg-genesis-blue text-white shadow-md'
-                      : 'bg-white text-genesis-medium hover:bg-gray-50 border border-gray-200'
+                      ? 'bg-genesis-primary text-white shadow-md'
+                      : 'bg-genesis-surface text-genesis-medium hover:bg-genesis-soft border border-genesis-border'
                   }`}
                 >
                   {option.label}
@@ -181,8 +181,8 @@ export function RecurrenceSelector({
                       title={day.fullLabel}
                       className={`w-9 h-9 rounded-lg text-xs font-bold transition-all ${
                         isSelected
-                          ? 'bg-genesis-blue text-white shadow-md'
-                          : 'bg-white text-genesis-medium hover:bg-gray-50 border border-gray-200'
+                          ? 'bg-genesis-primary text-white shadow-md'
+                          : 'bg-genesis-surface text-genesis-medium hover:bg-genesis-soft border border-genesis-border'
                       }`}
                     >
                       {day.label}
@@ -206,7 +206,7 @@ export function RecurrenceSelector({
                   value={value.endDate || ''}
                   onChange={(e) => updateEndDate(e.target.value || null)}
                   min={format(new Date(), 'yyyy-MM-dd')}
-                  className="w-full pl-10 pr-4 py-2.5 text-sm font-medium bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-genesis-blue focus:border-transparent outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 text-sm font-medium bg-genesis-surface border border-genesis-border rounded-xl focus:ring-2 focus:ring-genesis-primary focus:border-transparent outline-none transition-all"
                 />
               </div>
               {value.endDate && (
@@ -230,7 +230,7 @@ export function RecurrenceSelector({
           {/* Preview */}
           <div className="pt-3 border-t border-blue-200/50">
             <p className="text-xs text-genesis-dark font-medium">
-              <span className="text-genesis-blue font-bold">Resumo:</span>{' '}
+              <span className="text-genesis-primary font-bold">Resumo:</span>{' '}
               {getRecurrenceSummary(value, appointmentDate)}
             </p>
           </div>

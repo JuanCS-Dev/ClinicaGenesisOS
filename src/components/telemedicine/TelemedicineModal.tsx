@@ -207,13 +207,13 @@ export function TelemedicineModal({
   if (error) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-        <div className="bg-white rounded-2xl p-8 max-w-md text-center">
+        <div className="bg-genesis-surface rounded-2xl p-8 max-w-md text-center">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Erro na Teleconsulta</h2>
-          <p className="text-gray-600 mb-6">{error.message}</p>
+          <h2 className="text-xl font-bold text-genesis-dark mb-2">Erro na Teleconsulta</h2>
+          <p className="text-genesis-medium mb-6">{error.message}</p>
           <button
             onClick={onClose}
-            className="px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-medium"
+            className="px-6 py-3 bg-gray-900 hover:bg-genesis-dark/90 text-white rounded-xl font-medium"
           >
             Fechar
           </button>
@@ -232,7 +232,7 @@ export function TelemedicineModal({
             <span className="text-white font-medium text-sm">Teleconsulta</span>
           </div>
           {session && (
-            <span className="text-gray-400 text-sm">
+            <span className="text-genesis-subtle text-sm">
               {session.patientName}
             </span>
           )}
@@ -240,7 +240,7 @@ export function TelemedicineModal({
 
         <button
           onClick={handleCancel}
-          className="p-2 hover:bg-white/10 rounded-full transition-colors"
+          className="p-2 hover:bg-genesis-surface/10 rounded-full transition-colors"
           title="Fechar"
         >
           <X className="w-6 h-6 text-white" />
@@ -279,14 +279,14 @@ export function TelemedicineModal({
             </h2>
 
             {session?.durationSeconds && (
-              <p className="text-gray-400 mb-8">
+              <p className="text-genesis-subtle mb-8">
                 Duração: {formatDuration(session.durationSeconds)}
               </p>
             )}
 
             {isProfessional && (
               <div className="w-full mb-6">
-                <label className="block text-gray-300 text-sm mb-2">
+                <label className="block text-genesis-subtle text-sm mb-2">
                   Notas da consulta (opcional)
                 </label>
                 <textarea

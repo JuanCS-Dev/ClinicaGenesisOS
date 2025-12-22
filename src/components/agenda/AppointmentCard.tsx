@@ -20,7 +20,7 @@ export const STATUS_COLORS: Record<Status, { bg: string; text: string; dot: stri
   [Status.PENDING]: { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' },
   [Status.ARRIVED]: { bg: 'bg-sky-50', text: 'text-sky-700', dot: 'bg-sky-500' },
   [Status.IN_PROGRESS]: { bg: 'bg-violet-50', text: 'text-violet-700', dot: 'bg-violet-500' },
-  [Status.FINISHED]: { bg: 'bg-gray-100', text: 'text-gray-500', dot: 'bg-gray-400' },
+  [Status.FINISHED]: { bg: 'bg-genesis-hover', text: 'text-genesis-muted', dot: 'bg-genesis-subtle' },
   [Status.CANCELED]: { bg: 'bg-red-50', text: 'text-red-600', dot: 'bg-red-400' },
   [Status.NO_SHOW]: { bg: 'bg-orange-50', text: 'text-orange-600', dot: 'bg-orange-500' },
 };
@@ -101,9 +101,9 @@ export function AppointmentCard({
         <div className="flex items-center justify-between gap-1">
           <div className="flex items-center gap-1 min-w-0">
             {isRecurring && (
-              <Repeat className="w-3 h-3 text-genesis-blue shrink-0" />
+              <Repeat className="w-3 h-3 text-genesis-primary shrink-0" />
             )}
-            <span className={`text-xs font-bold truncate ${isDimmed ? 'text-gray-500' : 'text-genesis-dark'} ${isCanceled ? 'line-through' : ''}`}>
+            <span className={`text-xs font-bold truncate ${isDimmed ? 'text-genesis-muted' : 'text-genesis-dark'} ${isCanceled ? 'line-through' : ''}`}>
               {app.patientName}
             </span>
           </div>
@@ -127,9 +127,9 @@ export function AppointmentCard({
       <div className="flex justify-between items-start mb-2">
         <div className="flex items-center gap-2">
           {isRecurring && (
-            <Repeat className="w-4 h-4 text-genesis-blue shrink-0" title="Consulta recorrente" />
+            <Repeat className="w-4 h-4 text-genesis-primary shrink-0" title="Consulta recorrente" />
           )}
-          <span className={`font-bold text-sm tracking-tight ${isDimmed ? 'text-gray-500' : 'text-genesis-dark'} ${isCanceled ? 'line-through' : ''}`}>
+          <span className={`font-bold text-sm tracking-tight ${isDimmed ? 'text-genesis-muted' : 'text-genesis-dark'} ${isCanceled ? 'line-through' : ''}`}>
             {app.patientName}
           </span>
         </div>
@@ -146,7 +146,7 @@ export function AppointmentCard({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className={`w-1.5 h-1.5 rounded-full ${specialtyColors.border.replace('border-', 'bg-')}`} />
-          <p className={`text-xs font-medium transition-colors ${isDimmed ? 'text-gray-400' : 'text-genesis-medium group-hover/card:text-genesis-dark'}`}>
+          <p className={`text-xs font-medium transition-colors ${isDimmed ? 'text-genesis-subtle' : 'text-genesis-medium group-hover/card:text-genesis-dark'}`}>
             {app.procedure}
           </p>
         </div>
@@ -162,7 +162,7 @@ export function AppointmentCard({
               <span className="hidden sm:inline">Teleconsulta</span>
             </button>
           )}
-          <span className="text-[10px] font-bold text-genesis-dark/50 bg-white/80 px-2 py-0.5 rounded-lg">
+          <span className="text-[10px] font-bold text-genesis-dark/50 bg-genesis-surface/80 px-2 py-0.5 rounded-lg">
             {app.durationMin}min
           </span>
         </div>

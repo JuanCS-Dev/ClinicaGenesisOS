@@ -11,7 +11,7 @@ const EventIcon = ({ type }: { type: TimelineEventType }) => {
     case TimelineEventType.PRESCRIPTION: return <Pill className="w-3.5 h-3.5 text-white" />;
     case TimelineEventType.PHOTO: return <Camera className="w-3.5 h-3.5 text-white" />;
     case TimelineEventType.PAYMENT: return <DollarSign className="w-3.5 h-3.5 text-white" />;
-    default: return <div className="w-2 h-2 bg-white rounded-full" />;
+    default: return <div className="w-2 h-2 bg-genesis-surface rounded-full" />;
   }
 };
 
@@ -21,7 +21,7 @@ const EventGradient = (type: TimelineEventType) => {
     case TimelineEventType.EXAM: return 'from-cyan-400 to-cyan-500 shadow-cyan-200';
     case TimelineEventType.PRESCRIPTION: return 'from-purple-500 to-purple-600 shadow-purple-200';
     case TimelineEventType.PHOTO: return 'from-orange-400 to-orange-500 shadow-orange-200';
-    case TimelineEventType.PAYMENT: return 'from-gray-500 to-gray-600 shadow-gray-200';
+    case TimelineEventType.PAYMENT: return 'from-gray-500 to-gray-600 shadow-genesis-medium/20';
     default: return 'from-gray-400 to-gray-500';
   }
 };
@@ -49,17 +49,17 @@ export const Timeline: React.FC<TimelineProps> = ({ events }) => {
             </div>
 
             {/* Content Card - Minimalist */}
-            <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-float transition-all duration-300 cursor-pointer ml-2 group-hover:border-blue-100/50">
+            <div className="bg-genesis-surface border border-genesis-border-subtle rounded-2xl p-5 shadow-sm hover:shadow-float transition-all duration-300 cursor-pointer ml-2 group-hover:border-blue-100/50">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-[11px] font-bold text-genesis-medium uppercase tracking-widest">
                   {format(event.date, "dd MMM yyyy", { locale: ptBR })}
                 </span>
-                <span className="text-[10px] font-semibold text-genesis-medium/70 uppercase border border-gray-100 bg-gray-50 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-semibold text-genesis-medium/70 uppercase border border-genesis-border-subtle bg-genesis-soft px-2 py-0.5 rounded-full">
                   {event.type}
                 </span>
               </div>
               
-              <h4 className="text-base font-bold text-genesis-dark mb-1.5 flex items-center gap-2 group-hover:text-genesis-blue transition-colors">
+              <h4 className="text-base font-bold text-genesis-dark mb-1.5 flex items-center gap-2 group-hover:text-genesis-primary transition-colors">
                 {event.title}
                 <ChevronRight className="w-4 h-4 text-genesis-medium opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
               </h4>
@@ -68,7 +68,7 @@ export const Timeline: React.FC<TimelineProps> = ({ events }) => {
               </p>
 
               {event.type === TimelineEventType.PHOTO && event.details && (
-                <div className="mt-4 overflow-hidden rounded-xl border border-gray-100 shadow-sm relative group/img">
+                <div className="mt-4 overflow-hidden rounded-xl border border-genesis-border-subtle shadow-sm relative group/img">
                   <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-colors z-10" />
                   <img src={event.details} alt="Evolução" className="w-40 h-28 object-cover transform group-hover/img:scale-105 transition-transform duration-500" />
                 </div>

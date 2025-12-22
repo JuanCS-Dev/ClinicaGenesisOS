@@ -122,7 +122,7 @@ export const MetricsDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-genesis-subtle" />
       </div>
     );
   }
@@ -132,25 +132,25 @@ export const MetricsDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-xl font-bold text-genesis-dark">
             Métricas AI Scribe
           </h2>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-genesis-muted">
             SCRIBE Framework - Avaliação de Qualidade
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           {/* Date range selector */}
-          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex items-center gap-1 bg-genesis-hover rounded-lg p-1">
             {(['7d', '30d', '90d'] as const).map((range) => (
               <button
                 key={range}
                 onClick={() => setDateRange(range)}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                   dateRange === range
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-genesis-surface text-genesis-dark shadow-sm'
+                    : 'text-genesis-medium hover:text-genesis-dark'
                 }`}
               >
                 {range === '7d' ? '7 dias' : range === '30d' ? '30 dias' : '90 dias'}
@@ -160,9 +160,9 @@ export const MetricsDashboard: React.FC = () => {
 
           <button
             onClick={() => window.location.reload()}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-genesis-hover rounded-lg transition-colors"
           >
-            <RefreshCw className="w-4 h-4 text-gray-500" />
+            <RefreshCw className="w-4 h-4 text-genesis-muted" />
           </button>
         </div>
       </div>
@@ -201,18 +201,18 @@ export const MetricsDashboard: React.FC = () => {
       {/* Feedback summary */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Thumbs ratio */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Satisfação</h3>
+        <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle p-6">
+          <h3 className="font-semibold text-genesis-dark mb-4">Satisfação</h3>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-green-100 rounded-lg">
                 <ThumbsUp className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-genesis-dark">
                   {totals.thumbsUp}
                 </p>
-                <p className="text-xs text-gray-500">Positivos</p>
+                <p className="text-xs text-genesis-muted">Positivos</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -220,10 +220,10 @@ export const MetricsDashboard: React.FC = () => {
                 <ThumbsDown className="w-5 h-5 text-red-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-genesis-dark">
                   {totals.thumbsDown}
                 </p>
-                <p className="text-xs text-gray-500">Negativos</p>
+                <p className="text-xs text-genesis-muted">Negativos</p>
               </div>
             </div>
           </div>
@@ -231,7 +231,7 @@ export const MetricsDashboard: React.FC = () => {
           {/* Ratio bar */}
           {(totals.thumbsUp + totals.thumbsDown) > 0 && (
             <div className="mt-4">
-              <div className="h-3 bg-gray-100 rounded-full overflow-hidden flex">
+              <div className="h-3 bg-genesis-hover rounded-full overflow-hidden flex">
                 <div
                   className="bg-green-500"
                   style={{
@@ -245,7 +245,7 @@ export const MetricsDashboard: React.FC = () => {
                   }}
                 />
               </div>
-              <p className="mt-2 text-sm text-gray-500 text-center">
+              <p className="mt-2 text-sm text-genesis-muted text-center">
                 {((totals.thumbsUp / (totals.thumbsUp + totals.thumbsDown)) * 100).toFixed(0)}%
                 satisfação
               </p>
@@ -254,8 +254,8 @@ export const MetricsDashboard: React.FC = () => {
         </div>
 
         {/* Most edited fields */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Campos Mais Editados</h3>
+        <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle p-6">
+          <h3 className="font-semibold text-genesis-dark mb-4">Campos Mais Editados</h3>
           <div className="space-y-3">
             {Object.entries(aggregate.mostEditedFields)
               .sort(([, a], [, b]) => b - a)
@@ -265,16 +265,16 @@ export const MetricsDashboard: React.FC = () => {
 
                 return (
                   <div key={field} className="flex items-center gap-3">
-                    <span className="w-24 text-sm text-gray-600">
+                    <span className="w-24 text-sm text-genesis-medium">
                       {SOAP_FIELD_LABELS[field as keyof typeof SOAP_FIELD_LABELS]}
                     </span>
-                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="flex-1 h-2 bg-genesis-hover rounded-full overflow-hidden">
                       <div
                         className="h-full bg-purple-500"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
-                    <span className="text-sm text-gray-500 w-8 text-right">
+                    <span className="text-sm text-genesis-muted w-8 text-right">
                       {count}
                     </span>
                   </div>
@@ -285,11 +285,11 @@ export const MetricsDashboard: React.FC = () => {
       </div>
 
       {/* Recent feedback */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6">
-        <h3 className="font-semibold text-gray-900 mb-4">Feedback Recente</h3>
+      <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle p-6">
+        <h3 className="font-semibold text-genesis-dark mb-4">Feedback Recente</h3>
         
         {recentFeedback.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">
+          <p className="text-center text-genesis-muted py-8">
             Nenhum feedback recebido ainda
           </p>
         ) : (
@@ -297,7 +297,7 @@ export const MetricsDashboard: React.FC = () => {
             {recentFeedback.slice(0, 10).map((feedback) => (
               <div
                 key={feedback.id}
-                className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl"
+                className="flex items-start gap-3 p-3 bg-genesis-soft rounded-xl"
               >
                 <div
                   className={`p-2 rounded-lg ${
@@ -314,11 +314,11 @@ export const MetricsDashboard: React.FC = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-genesis-dark">
                       {feedback.rating}/5
                     </span>
-                    <span className="text-gray-400">•</span>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-genesis-subtle">•</span>
+                    <span className="text-sm text-genesis-muted">
                       {formatDate(feedback.createdAt)}
                     </span>
                   </div>
@@ -327,7 +327,7 @@ export const MetricsDashboard: React.FC = () => {
                       {feedback.categories.map((cat) => (
                         <span
                           key={cat}
-                          className="px-2 py-0.5 bg-gray-200 text-gray-600 rounded-full text-xs"
+                          className="px-2 py-0.5 bg-genesis-border-subtle text-genesis-medium rounded-full text-xs"
                         >
                           {FEEDBACK_CATEGORY_LABELS[cat]}
                         </span>
@@ -335,12 +335,12 @@ export const MetricsDashboard: React.FC = () => {
                     </div>
                   )}
                   {feedback.comment && (
-                    <p className="mt-1 text-sm text-gray-600 truncate">
+                    <p className="mt-1 text-sm text-genesis-medium truncate">
                       {feedback.comment}
                     </p>
                   )}
                 </div>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-genesis-subtle">
                   {feedback.totalEditPercentage.toFixed(0)}% editado
                 </span>
               </div>
@@ -372,14 +372,14 @@ function StatCard({ icon, label, value, suffix, color }: StatCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-4">
+    <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle p-4">
       <div className={`w-10 h-10 rounded-xl ${colorClasses[color]} flex items-center justify-center mb-3`}>
         {icon}
       </div>
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="text-2xl font-bold text-gray-900">
+      <p className="text-sm text-genesis-muted">{label}</p>
+      <p className="text-2xl font-bold text-genesis-dark">
         {value}
-        {suffix && <span className="text-lg text-gray-400">{suffix}</span>}
+        {suffix && <span className="text-lg text-genesis-subtle">{suffix}</span>}
       </p>
     </div>
   );

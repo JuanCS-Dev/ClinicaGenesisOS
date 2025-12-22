@@ -93,7 +93,7 @@ function getTypeColor(type: SearchResultType): {
     case 'transaction':
       return { bg: 'bg-emerald-100', text: 'text-emerald-600' };
     default:
-      return { bg: 'bg-gray-100', text: 'text-gray-600' };
+      return { bg: 'bg-genesis-hover', text: 'text-genesis-medium' };
   }
 }
 
@@ -174,34 +174,34 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       {/* Modal */}
       <div className="fixed left-1/2 top-[10%] -translate-x-1/2 w-full max-w-2xl">
         <div
-          className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
+          className="bg-genesis-surface rounded-2xl shadow-2xl border border-genesis-border overflow-hidden"
           onKeyDown={handleKeyDown}
         >
           {/* Search input */}
-          <div className="flex items-center gap-3 p-4 border-b border-gray-100">
-            <Search className="w-5 h-5 text-gray-400" />
+          <div className="flex items-center gap-3 p-4 border-b border-genesis-border-subtle">
+            <Search className="w-5 h-5 text-genesis-subtle" />
             <input
               ref={inputRef}
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar pacientes, consultas, prontuários..."
-              className="flex-1 text-lg outline-none placeholder:text-gray-400"
+              className="flex-1 text-lg outline-none placeholder:text-genesis-subtle"
               autoComplete="off"
             />
             {loading && (
-              <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+              <Loader2 className="w-5 h-5 text-genesis-subtle animate-spin" />
             )}
-            <div className="flex items-center gap-1 text-xs text-gray-400">
-              <kbd className="px-1.5 py-0.5 bg-gray-100 rounded text-xs font-mono">
+            <div className="flex items-center gap-1 text-xs text-genesis-subtle">
+              <kbd className="px-1.5 py-0.5 bg-genesis-hover rounded text-xs font-mono">
                 ESC
               </kbd>
             </div>
             <button
               onClick={handleClose}
-              className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-1.5 hover:bg-genesis-hover rounded-lg transition-colors"
             >
-              <X className="w-5 h-5 text-gray-400" />
+              <X className="w-5 h-5 text-genesis-subtle" />
             </button>
           </div>
 
@@ -210,19 +210,19 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             {/* Empty state */}
             {!hasSearched && (
               <div className="p-8 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-2xl flex items-center justify-center">
-                  <Command className="w-8 h-8 text-gray-400" />
+                <div className="w-16 h-16 mx-auto mb-4 bg-genesis-hover rounded-2xl flex items-center justify-center">
+                  <Command className="w-8 h-8 text-genesis-subtle" />
                 </div>
-                <p className="text-gray-500">
+                <p className="text-genesis-muted">
                   Digite para buscar pacientes, consultas e mais...
                 </p>
-                <div className="mt-4 flex items-center justify-center gap-4 text-xs text-gray-400">
+                <div className="mt-4 flex items-center justify-center gap-4 text-xs text-genesis-subtle">
                   <span className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 bg-gray-100 rounded">↑↓</kbd>
+                    <kbd className="px-1.5 py-0.5 bg-genesis-hover rounded">↑↓</kbd>
                     Navegar
                   </span>
                   <span className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 bg-gray-100 rounded">Enter</kbd>
+                    <kbd className="px-1.5 py-0.5 bg-genesis-hover rounded">Enter</kbd>
                     Selecionar
                   </span>
                 </div>
@@ -231,7 +231,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
             {/* No results */}
             {hasSearched && !loading && results.length === 0 && (
-              <div className="p-8 text-center text-gray-500">
+              <div className="p-8 text-center text-genesis-muted">
                 Nenhum resultado encontrado para "{query}"
               </div>
             )}
@@ -242,7 +242,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               return (
                 <div key={type} className="py-2">
                   <div className="px-4 py-2">
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <span className="text-xs font-medium text-genesis-muted uppercase tracking-wider">
                       {getTypeLabel(type)}
                     </span>
                   </div>
@@ -250,7 +250,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     <button
                       key={`${result.type}-${result.id}`}
                       onClick={() => handleSelect(result.path)}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left group"
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-genesis-soft transition-colors text-left group"
                     >
                       <div
                         className={`w-10 h-10 rounded-xl ${colors.bg} ${colors.text} flex items-center justify-center flex-shrink-0`}
@@ -258,16 +258,16 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                         {getTypeIcon(result.type)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 truncate">
+                        <p className="font-medium text-genesis-dark truncate">
                           {result.title}
                         </p>
                         {result.subtitle && (
-                          <p className="text-sm text-gray-500 truncate">
+                          <p className="text-sm text-genesis-muted truncate">
                             {result.subtitle}
                           </p>
                         )}
                       </div>
-                      <ArrowRight className="w-5 h-5 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowRight className="w-5 h-5 text-genesis-subtle opacity-0 group-hover:opacity-100 transition-opacity" />
                     </button>
                   ))}
                 </div>
@@ -277,11 +277,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
           {/* Footer */}
           {hasSearched && results.length > 0 && (
-            <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
-              <div className="flex items-center justify-between text-xs text-gray-500">
+            <div className="px-4 py-3 border-t border-genesis-border-subtle bg-genesis-soft">
+              <div className="flex items-center justify-between text-xs text-genesis-muted">
                 <span>{results.length} resultados</span>
                 <span className="flex items-center gap-2">
-                  <kbd className="px-1.5 py-0.5 bg-white border border-gray-200 rounded">
+                  <kbd className="px-1.5 py-0.5 bg-genesis-surface border border-genesis-border rounded">
                     Tab
                   </kbd>
                   para ações rápidas

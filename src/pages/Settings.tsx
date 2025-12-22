@@ -17,12 +17,14 @@ import {
   Brain,
   Building,
   Bell,
+  MessageCircle,
 } from 'lucide-react';
 import { PixSettings } from '@/components/settings/PixSettings';
 import { DataExportRequest } from '@/components/consent/DataExportRequest';
 import { CertificateSetup } from '@/components/prescription/CertificateSetup';
 import { MetricsDashboard } from '@/components/ai/scribe/MetricsDashboard';
 import { NotificationPreferences } from '@/components/notifications';
+import { WhatsAppSettings } from '@/components/settings/WhatsAppSettings';
 import { useClinicContext } from '@/contexts/ClinicContext';
 
 /**
@@ -40,6 +42,12 @@ const TABS = [
     label: 'Notificações',
     icon: Bell,
     description: 'Preferências de lembretes e alertas',
+  },
+  {
+    id: 'whatsapp',
+    label: 'WhatsApp',
+    icon: MessageCircle,
+    description: 'Integração WhatsApp Business API',
   },
   {
     id: 'pix',
@@ -195,6 +203,13 @@ export function Settings(): React.ReactElement {
               </div>
             </div>
             <NotificationPreferences />
+          </div>
+        )}
+
+        {/* WhatsApp Settings Tab */}
+        {activeTab === 'whatsapp' && (
+          <div className="animate-in fade-in zoom-in-95">
+            <WhatsAppSettings />
           </div>
         )}
 

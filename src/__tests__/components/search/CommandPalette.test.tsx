@@ -137,7 +137,7 @@ describe('CommandPalette', () => {
     it('calls onClose when ESC key pressed on container', () => {
       renderPalette();
 
-      const container = document.querySelector('.bg-white.rounded-2xl');
+      const container = document.querySelector('.bg-genesis-surface.rounded-2xl');
       if (container) {
         fireEvent.keyDown(container, { key: 'Escape' });
       }

@@ -43,7 +43,7 @@ const STATUS_CONFIG: Record<
   processing: { color: 'text-blue-600', bgColor: 'bg-blue-50', label: 'Processando' },
   completed: { color: 'text-green-600', bgColor: 'bg-green-50', label: 'Concluído' },
   failed: { color: 'text-red-600', bgColor: 'bg-red-50', label: 'Falhou' },
-  expired: { color: 'text-gray-600', bgColor: 'bg-gray-50', label: 'Expirado' },
+  expired: { color: 'text-genesis-medium', bgColor: 'bg-genesis-soft', label: 'Expirado' },
 };
 
 /**
@@ -170,16 +170,16 @@ export const DataExportRequest: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* New Request Form */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6">
+      <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-[#4F46E5]/10 flex items-center justify-center">
             <Download className="w-5 h-5 text-[#4F46E5]" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">
+            <h3 className="font-semibold text-genesis-dark">
               Solicitar Meus Dados
             </h3>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-genesis-muted">
               LGPD Art. 18 - Direitos do Titular
             </p>
           </div>
@@ -188,7 +188,7 @@ export const DataExportRequest: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Request type */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-genesis-text mb-2">
               Tipo de Solicitação
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -200,10 +200,10 @@ export const DataExportRequest: React.FC = () => {
                   className={`p-3 rounded-xl border text-left transition-all ${
                     selectedType === type
                       ? 'border-[#4F46E5] bg-[#4F46E5]/5 ring-1 ring-[#4F46E5]'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-genesis-border hover:border-genesis-border'
                   }`}
                 >
-                  <span className="font-medium text-gray-900 text-sm">
+                  <span className="font-medium text-genesis-dark text-sm">
                     {RIGHT_LABELS[type]}
                   </span>
                 </button>
@@ -213,7 +213,7 @@ export const DataExportRequest: React.FC = () => {
 
           {/* Data categories */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-genesis-text mb-2">
               Categorias de Dados
             </label>
             <div className="flex flex-wrap gap-2">
@@ -225,7 +225,7 @@ export const DataExportRequest: React.FC = () => {
                   className={`px-3 py-1.5 rounded-full text-sm transition-all ${
                     selectedCategories.includes(category)
                       ? 'bg-[#4F46E5] text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-genesis-hover text-genesis-medium hover:bg-genesis-border-subtle'
                   }`}
                 >
                   {DATA_CATEGORY_LABELS[category]}
@@ -236,7 +236,7 @@ export const DataExportRequest: React.FC = () => {
 
           {/* Format */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-genesis-text mb-2">
               Formato
             </label>
             <div className="flex gap-2">
@@ -248,7 +248,7 @@ export const DataExportRequest: React.FC = () => {
                   className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all ${
                     format === f
                       ? 'border-[#4F46E5] bg-[#4F46E5]/5 text-[#4F46E5]'
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                      : 'border-genesis-border text-genesis-medium hover:border-genesis-border'
                   }`}
                 >
                   {f.toUpperCase()}
@@ -259,7 +259,7 @@ export const DataExportRequest: React.FC = () => {
 
           {/* Reason (optional) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-genesis-text mb-1">
               Motivo (opcional)
             </label>
             <textarea
@@ -267,7 +267,7 @@ export const DataExportRequest: React.FC = () => {
               onChange={(e) => setReason(e.target.value)}
               rows={2}
               placeholder="Descreva o motivo da solicitação..."
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] resize-none"
+              className="w-full px-4 py-2 border border-genesis-border rounded-xl focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] resize-none"
             />
           </div>
 
@@ -310,26 +310,26 @@ export const DataExportRequest: React.FC = () => {
       </div>
 
       {/* Previous Requests */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6">
+      <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-gray-900">
+          <h3 className="font-semibold text-genesis-dark">
             Minhas Solicitações
           </h3>
           <button
             onClick={() => window.location.reload()}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-genesis-hover rounded-lg transition-colors"
           >
-            <RefreshCw className="w-4 h-4 text-gray-500" />
+            <RefreshCw className="w-4 h-4 text-genesis-muted" />
           </button>
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+            <Loader2 className="w-6 h-6 animate-spin text-genesis-subtle" />
           </div>
         ) : requests.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <Clock className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+          <div className="text-center py-8 text-genesis-muted">
+            <Clock className="w-12 h-12 text-genesis-subtle mx-auto mb-3" />
             <p>Nenhuma solicitação ainda</p>
           </div>
         ) : (
@@ -337,15 +337,15 @@ export const DataExportRequest: React.FC = () => {
             {requests.map((request) => (
               <div
                 key={request.id}
-                className="p-4 border border-gray-100 rounded-xl"
+                className="p-4 border border-genesis-border-subtle rounded-xl"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-genesis-dark">
                       {RIGHT_LABELS[request.type]}
                     </span>
-                    <span className="text-gray-400 mx-2">•</span>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-genesis-subtle mx-2">•</span>
+                    <span className="text-sm text-genesis-muted">
                       {request.format.toUpperCase()}
                     </span>
                   </div>
@@ -358,7 +358,7 @@ export const DataExportRequest: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="mt-2 text-xs text-gray-400">
+                <div className="mt-2 text-xs text-genesis-subtle">
                   Solicitado em {formatDate(request.createdAt)}
                 </div>
 
