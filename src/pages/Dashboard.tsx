@@ -2,6 +2,13 @@
  * Dashboard Page
  *
  * Main overview page showing KPIs, upcoming appointments, and tasks.
+ * Inspired by athenahealth Executive Summary and Elation three-panel console.
+ *
+ * Features:
+ * - Real-time KPIs with temporal comparisons
+ * - Visual occupancy gauge
+ * - Upcoming appointments timeline
+ * - Priority task list
  */
 
 import React from 'react';
@@ -9,231 +16,380 @@ import {
   Users,
   Calendar,
   Wallet,
-  TrendingUp,
   MoreHorizontal,
   Clock,
-  CheckCircle2,
   ArrowRight,
   Loader2,
+  AlertCircle,
+  CheckCircle2,
+  CalendarPlus,
 } from 'lucide-react';
 import { Status } from '../types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { useClinicContext } from '../contexts/ClinicContext';
-import { usePatients } from '../hooks/usePatients';
 import { useAppointments } from '../hooks/useAppointments';
+import { useDashboardMetrics } from '../hooks/useDashboardMetrics';
+import { KPICard, OccupancyBar } from '../components/dashboard';
 
-interface KpiCardProps {
-  title: string;
-  value: string | number;
-  sub: string;
-  icon: React.ElementType;
-  colorClass: string;
-  iconBg: string;
+/**
+ * Status badge configuration.
+ */
+function getStatusConfig(status: Status) {
+  switch (status) {
+    case Status.CONFIRMED:
+      return {
+        bg: 'bg-emerald-50 dark:bg-emerald-900/30',
+        text: 'text-emerald-600 dark:text-emerald-400',
+        border: 'border-emerald-100 dark:border-emerald-800',
+      };
+    case Status.PENDING:
+      return {
+        bg: 'bg-amber-50 dark:bg-amber-900/30',
+        text: 'text-amber-600 dark:text-amber-400',
+        border: 'border-amber-100 dark:border-amber-800',
+      };
+    case Status.IN_PROGRESS:
+      return {
+        bg: 'bg-purple-50 dark:bg-purple-900/30',
+        text: 'text-purple-600 dark:text-purple-400',
+        border: 'border-purple-100 dark:border-purple-800',
+      };
+    case Status.ARRIVED:
+      return {
+        bg: 'bg-blue-50 dark:bg-blue-900/30',
+        text: 'text-blue-600 dark:text-blue-400',
+        border: 'border-blue-100 dark:border-blue-800',
+      };
+    case Status.FINISHED:
+      return {
+        bg: 'bg-genesis-soft dark:bg-genesis-border',
+        text: 'text-genesis-medium',
+        border: 'border-genesis-border-subtle',
+      };
+    default:
+      return {
+        bg: 'bg-genesis-hover',
+        text: 'text-genesis-muted',
+        border: 'border-genesis-border-subtle',
+      };
+  }
 }
 
-function KpiCard({ title, value, sub, icon: Icon, colorClass, iconBg }: KpiCardProps) {
-  return (
-    <div className="group bg-white p-6 rounded-2xl border border-white shadow-soft hover:shadow-float hover:-translate-y-1 transition-all duration-300 ease-out">
-      <div className="flex justify-between items-start mb-5">
-        <div
-          className={`p-3 rounded-xl ${iconBg} text-opacity-100 transition-transform duration-300 group-hover:scale-110`}
-        >
-          <Icon className={`w-5 h-5 ${colorClass}`} strokeWidth={2.5} />
-        </div>
-        <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full flex items-center gap-1 border border-emerald-100">
-          <TrendingUp className="w-3 h-3" />
-        </span>
-      </div>
-      <div className="space-y-1">
-        <h3 className="text-3xl font-bold text-genesis-dark tracking-tight">{value}</h3>
-        <p className="text-[13px] font-medium text-genesis-medium">{title}</p>
-      </div>
-      <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <span className="text-[10px] text-genesis-medium">{sub}</span>
-        <ArrowRight className="w-3 h-3 text-genesis-blue" />
-      </div>
-    </div>
-  );
+/**
+ * Format currency for display.
+ */
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+/**
+ * Get contextual greeting based on time of day.
+ */
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Bom dia';
+  if (hour < 18) return 'Boa tarde';
+  return 'Boa noite';
 }
 
 export function Dashboard() {
   const navigate = useNavigate();
   const { userProfile } = useClinicContext();
-  const { patients, loading: patientsLoading } = usePatients();
-  const { appointments, todaysAppointments, loading: appointmentsLoading } = useAppointments();
-
-  const loading = patientsLoading || appointmentsLoading;
-
-  // Calculate KPIs
-  const activePatients = patients.length;
-  const estimatedRevenue =
-    appointments.filter((a) => a.status === Status.FINISHED).length * 350;
+  const { appointments } = useAppointments();
+  const metrics = useDashboardMetrics();
 
   // Get user's display name
-  const userName = userProfile?.displayName || 'Profissional';
+  const userName = userProfile?.displayName?.split(' ')[0] || 'Profissional';
 
-  if (loading) {
+  // Loading state
+  if (metrics.loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 text-genesis-blue animate-spin" />
+        <Loader2 className="w-8 h-8 text-genesis-primary animate-spin" />
       </div>
     );
   }
 
+  // Get upcoming appointments (sorted by date, limit to 5)
+  const upcomingAppointments = [...appointments]
+    .filter((apt) => new Date(apt.date) >= new Date())
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, 5);
+
   return (
     <div className="space-y-8 animate-enter">
-      <div className="flex justify-between items-end">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <h1 className="text-2xl font-bold text-genesis-dark tracking-tight mb-1">
-            Olá, {userName}
+            {getGreeting()}, {userName}
           </h1>
           <p className="text-genesis-medium text-sm font-medium">
             Resumo operacional de hoje, {format(new Date(), "d 'de' MMMM", { locale: ptBR })}.
           </p>
         </div>
-        <button className="bg-genesis-dark text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-black transition-colors shadow-lg shadow-gray-200">
+        <button
+          onClick={() => navigate('/financeiro')}
+          className="bg-genesis-primary text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-genesis-primary-dark transition-colors shadow-lg hover:shadow-xl hover:-translate-y-0.5 transform"
+        >
           Relatório Completo
         </button>
       </div>
 
       {/* KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <KpiCard
+        <KPICard
           title="Consultas Hoje"
-          value={todaysAppointments.length}
-          sub="Agenda do dia"
+          value={metrics.todayAppointments.value}
           icon={Calendar}
-          colorClass="text-genesis-blue"
-          iconBg="bg-blue-50"
+          iconColor="text-genesis-primary"
+          iconBg="bg-genesis-primary/10"
+          trend={metrics.todayAppointments.trend}
+          comparison={metrics.todayAppointments.comparisonText}
+          subLabel="Agenda do dia"
+          onClick={() => navigate('/agenda')}
         />
-        <KpiCard
-          title="Pacientes Totais"
-          value={activePatients}
-          sub="Base ativa"
+
+        <KPICard
+          title="Pacientes Ativos"
+          value={metrics.activePatients.value}
           icon={Users}
-          colorClass="text-specialty-odonto"
-          iconBg="bg-cyan-50"
+          iconColor="text-info"
+          iconBg="bg-info/10"
+          trend={metrics.activePatients.trend}
+          comparison={metrics.activePatients.comparisonText}
+          subLabel="Base cadastrada"
+          onClick={() => navigate('/pacientes')}
         />
-        <KpiCard
-          title="Faturamento Est."
-          value={`R$ ${estimatedRevenue}`}
-          sub="Baseado em finalizados"
+
+        <KPICard
+          title="Faturamento Mês"
+          value={formatCurrency(metrics.revenue.value)}
           icon={Wallet}
-          colorClass="text-specialty-nutri"
-          iconBg="bg-green-50"
+          iconColor="text-success"
+          iconBg="bg-success/10"
+          trend={metrics.revenue.trend}
+          comparison={metrics.revenue.comparisonText}
+          subLabel={`${metrics.revenue.completedCount} consultas finalizadas`}
+          onClick={() => navigate('/financeiro')}
         />
-        <KpiCard
-          title="Taxa de Ocupação"
-          value="85%"
-          sub="Excelente"
-          icon={CheckCircle2}
-          colorClass="text-specialty-fisio"
-          iconBg="bg-purple-50"
-        />
+
+        {/* Occupancy Card */}
+        <div className="bg-genesis-surface p-6 rounded-2xl border border-genesis-border-subtle shadow-soft hover:shadow-float hover:-translate-y-1 transition-all duration-300">
+          <div className="flex justify-between items-start mb-4">
+            <div className="p-3 rounded-xl bg-clinical-soft">
+              <CheckCircle2 className="w-5 h-5 text-clinical-start" strokeWidth={2.5} />
+            </div>
+          </div>
+
+          <div className="space-y-1 mb-4">
+            <h3 className="text-3xl font-bold text-genesis-dark tracking-tight">
+              {metrics.occupancy.rate}%
+            </h3>
+            <p className="text-[13px] font-medium text-genesis-muted">Taxa de Ocupação</p>
+          </div>
+
+          <OccupancyBar metrics={metrics.occupancy} />
+        </div>
       </div>
 
-      {/* Content Grid */}
+      {/* Content Grid: Appointments + Tasks */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Next Appointments */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-white shadow-soft overflow-hidden flex flex-col">
-          <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-white">
-            <h3 className="font-semibold text-genesis-dark text-base">Próximas Consultas</h3>
+        {/* Upcoming Appointments */}
+        <div className="lg:col-span-2 bg-genesis-surface rounded-2xl border border-genesis-border-subtle shadow-soft overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-genesis-border-subtle flex justify-between items-center">
+            <div>
+              <h3 className="font-semibold text-genesis-dark text-base">Próximas Consultas</h3>
+              <p className="text-xs text-genesis-muted mt-0.5">
+                {upcomingAppointments.length} agendadas
+              </p>
+            </div>
             <button
               onClick={() => navigate('/agenda')}
-              className="text-xs text-genesis-blue font-semibold hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
+              className="text-xs text-genesis-primary font-semibold hover:bg-genesis-primary/10 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
             >
               Ver Agenda
+              <ArrowRight className="w-3 h-3" />
             </button>
           </div>
+
           <div className="flex-1 overflow-auto max-h-[400px]">
-            {appointments.length === 0 ? (
-              <div className="p-8 text-center text-genesis-medium text-sm">
-                Nenhuma consulta agendada.
+            {upcomingAppointments.length === 0 ? (
+              <div className="p-8 text-center">
+                <CalendarPlus className="w-12 h-12 text-genesis-muted mx-auto mb-3 opacity-50" />
+                <p className="text-genesis-muted text-sm font-medium">
+                  Nenhuma consulta agendada.
+                </p>
+                <button
+                  onClick={() => navigate('/agenda')}
+                  className="mt-4 text-sm text-genesis-primary font-semibold hover:underline"
+                >
+                  Agendar consulta
+                </button>
               </div>
             ) : (
-              appointments
-                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                .map((app) => (
+              upcomingAppointments.map((apt) => {
+                const statusConfig = getStatusConfig(apt.status);
+                const isToday =
+                  format(new Date(apt.date), 'yyyy-MM-dd') ===
+                  format(new Date(), 'yyyy-MM-dd');
+
+                return (
                   <div
-                    key={app.id}
-                    className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between group cursor-pointer border-b border-gray-50/50 last:border-0"
+                    key={apt.id}
+                    className="p-4 hover:bg-genesis-hover transition-colors flex items-center justify-between group cursor-pointer border-b border-genesis-border-subtle last:border-0"
+                    onClick={() => navigate('/agenda')}
                   >
                     <div className="flex items-center gap-4">
-                      <div className="flex flex-col items-center justify-center w-12 h-12 bg-genesis-soft rounded-xl text-genesis-dark border border-gray-100 group-hover:border-genesis-blue/30 group-hover:bg-white transition-all shadow-sm">
-                        <span className="text-[10px] font-bold text-genesis-medium uppercase">
-                          {format(new Date(app.date), 'MMM', { locale: ptBR })}
+                      {/* Date Badge */}
+                      <div
+                        className={`
+                          flex flex-col items-center justify-center w-12 h-12 rounded-xl
+                          border shadow-sm group-hover:border-genesis-primary/30 transition-all
+                          ${
+                            isToday
+                              ? 'bg-genesis-primary/10 border-genesis-primary/20 text-genesis-primary'
+                              : 'bg-genesis-soft border-genesis-border-subtle text-genesis-dark'
+                          }
+                        `}
+                      >
+                        <span className="text-[10px] font-bold uppercase opacity-70">
+                          {isToday ? 'Hoje' : format(new Date(apt.date), 'MMM', { locale: ptBR })}
                         </span>
-                        <span className="text-lg font-bold text-genesis-dark leading-none">
-                          {format(new Date(app.date), 'dd')}
+                        <span className="text-lg font-bold leading-none">
+                          {format(new Date(apt.date), 'dd')}
                         </span>
                       </div>
+
+                      {/* Patient Info */}
                       <div>
                         <h4 className="font-semibold text-genesis-dark text-sm mb-0.5">
-                          {app.patientName}
+                          {apt.patientName}
                         </h4>
-                        <div className="flex items-center gap-2 text-xs text-genesis-medium">
+                        <div className="flex items-center gap-2 text-xs text-genesis-muted">
                           <Clock className="w-3 h-3" />
                           <span className="font-medium">
-                            {format(new Date(app.date), 'HH:mm')}
+                            {format(new Date(apt.date), 'HH:mm')}
                           </span>
-                          <span className="text-gray-300">•</span>
-                          <span>{app.procedure}</span>
+                          <span className="text-genesis-subtle">•</span>
+                          <span>{apt.procedure}</span>
                         </div>
                       </div>
                     </div>
+
+                    {/* Status + Actions */}
                     <div className="flex items-center gap-4">
                       <span
-                        className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border
-                        ${
-                          app.status === Status.CONFIRMED
-                            ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                            : app.status === Status.PENDING
-                              ? 'bg-amber-50 text-amber-600 border-amber-100'
-                              : app.status === Status.IN_PROGRESS
-                                ? 'bg-purple-50 text-purple-600 border-purple-100'
-                                : 'bg-gray-50 text-gray-600 border-gray-100'
-                        }`}
+                        className={`
+                          px-2.5 py-1 rounded-full text-[11px] font-semibold border
+                          ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border}
+                        `}
                       >
-                        {app.status}
+                        {apt.status}
                       </span>
-                      <button className="p-2 text-gray-300 hover:text-genesis-dark hover:bg-white rounded-full transition-all">
+                      <button className="p-2 text-genesis-subtle hover:text-genesis-dark hover:bg-genesis-hover rounded-full transition-all opacity-0 group-hover:opacity-100">
                         <MoreHorizontal className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
-                ))
+                );
+              })
             )}
           </div>
         </div>
 
-        {/* Quick Tasks */}
-        <div className="bg-white rounded-2xl border border-white shadow-soft p-6 flex flex-col h-full">
-          <h3 className="font-semibold text-genesis-dark mb-6 text-base">Tarefas Pendentes</h3>
-          <div className="space-y-4 flex-1">
-            <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-red-100 transition-all cursor-pointer group">
-              <div className="w-2 h-2 mt-1.5 bg-red-500 rounded-full flex-shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.4)]" />
-              <div>
-                <p className="text-sm font-medium text-genesis-dark group-hover:text-red-600 transition-colors">
+        {/* Tasks Panel */}
+        <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle shadow-soft p-6 flex flex-col h-full">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h3 className="font-semibold text-genesis-dark text-base">Tarefas Pendentes</h3>
+              <p className="text-xs text-genesis-muted mt-0.5">Ações prioritárias</p>
+            </div>
+            <span className="text-[10px] font-bold text-genesis-muted bg-genesis-soft px-2 py-1 rounded-full">
+              2 itens
+            </span>
+          </div>
+
+          <div className="space-y-3 flex-1">
+            {/* Urgent Task */}
+            <div className="flex items-start gap-3 p-4 bg-genesis-surface rounded-xl border border-genesis-border-subtle shadow-sm hover:shadow-md hover:border-red-500/30 transition-all cursor-pointer group">
+              <div className="w-2 h-2 mt-1.5 bg-red-500 rounded-full flex-shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.4)] animate-pulse" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-genesis-dark group-hover:text-red-500 transition-colors">
                   Finalizar Prontuário
                 </p>
-                <p className="text-[11px] text-genesis-medium mt-1">João Santos • Ontem às 16:00</p>
+                <p className="text-[11px] text-genesis-muted mt-1">
+                  João Santos • Ontem às 16:00
+                </p>
               </div>
+              <AlertCircle className="w-4 h-4 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-300 transition-all cursor-pointer group">
-              <div className="w-2 h-2 mt-1.5 bg-gray-400 rounded-full flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-genesis-dark group-hover:text-black transition-colors">
+
+            {/* Normal Task */}
+            <div className="flex items-start gap-3 p-4 bg-genesis-surface rounded-xl border border-genesis-border-subtle shadow-sm hover:shadow-md hover:border-genesis-border transition-all cursor-pointer group">
+              <div className="w-2 h-2 mt-1.5 bg-amber-500 rounded-full flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-genesis-dark group-hover:text-genesis-primary transition-colors">
                   Confirmar agenda
                 </p>
-                <p className="text-[11px] text-genesis-medium mt-1">3 pacientes para amanhã</p>
+                <p className="text-[11px] text-genesis-muted mt-1">
+                  3 pacientes para amanhã
+                </p>
+              </div>
+            </div>
+
+            {/* Low Priority */}
+            <div className="flex items-start gap-3 p-4 bg-genesis-surface rounded-xl border border-genesis-border-subtle shadow-sm hover:shadow-md transition-all cursor-pointer group">
+              <div className="w-2 h-2 mt-1.5 bg-genesis-subtle rounded-full flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-genesis-dark group-hover:text-genesis-primary transition-colors">
+                  Enviar resultados
+                </p>
+                <p className="text-[11px] text-genesis-muted mt-1">
+                  2 exames pendentes
+                </p>
               </div>
             </div>
           </div>
-          <button className="w-full mt-4 py-2.5 border border-dashed border-gray-300 text-genesis-medium rounded-xl text-xs font-semibold hover:bg-gray-50 hover:border-genesis-medium transition-all uppercase tracking-wide">
+
+          <button className="w-full mt-4 py-2.5 border border-dashed border-genesis-border text-genesis-muted rounded-xl text-xs font-semibold hover:bg-genesis-hover hover:border-genesis-primary/50 hover:text-genesis-primary transition-all uppercase tracking-wide">
             + Adicionar Tarefa
           </button>
+        </div>
+      </div>
+
+      {/* Quick Stats Bar */}
+      <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle shadow-soft p-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 divide-x divide-genesis-border-subtle">
+          <div className="text-center px-4">
+            <span className="text-2xl font-bold text-emerald-600">
+              {metrics.breakdown.confirmed}
+            </span>
+            <p className="text-[11px] text-genesis-muted font-medium mt-0.5">Confirmados</p>
+          </div>
+          <div className="text-center px-4">
+            <span className="text-2xl font-bold text-amber-600">
+              {metrics.breakdown.pending}
+            </span>
+            <p className="text-[11px] text-genesis-muted font-medium mt-0.5">Pendentes</p>
+          </div>
+          <div className="text-center px-4">
+            <span className="text-2xl font-bold text-genesis-primary">
+              {metrics.breakdown.completed}
+            </span>
+            <p className="text-[11px] text-genesis-muted font-medium mt-0.5">Finalizados</p>
+          </div>
+          <div className="text-center px-4">
+            <span className="text-2xl font-bold text-red-600">{metrics.breakdown.noShow}</span>
+            <p className="text-[11px] text-genesis-muted font-medium mt-0.5">Faltas</p>
+          </div>
         </div>
       </div>
     </div>

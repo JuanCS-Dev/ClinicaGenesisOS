@@ -5,6 +5,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { AuthProvider } from './contexts/AuthContext';
 import { ClinicProvider, useClinicContext } from './contexts/ClinicContext';
 import { ConsentProvider } from './contexts/ConsentContext';
+import { PageProvider } from './contexts/PageContext';
 import { ThemeProvider, SkipLink } from './design-system';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { Sidebar } from './components/layout/Sidebar';
@@ -30,7 +31,13 @@ const WhatsAppMetrics = lazy(() => import('./pages/WhatsAppMetrics').then(m => (
 const NewPatient = lazy(() => import('./pages/NewPatient').then(m => ({ default: m.NewPatient })));
 const EditPatient = lazy(() => import('./pages/EditPatient').then(m => ({ default: m.EditPatient })));
 const Settings = lazy(() => import('./pages/Settings').then(m => ({ default: m.Settings })));
+const Billing = lazy(() => import('./pages/Billing').then(m => ({ default: m.Billing })));
+const Help = lazy(() => import('./pages/Help').then(m => ({ default: m.Help })));
 const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
+
+// Public pages (no auth required)
+const BookAppointment = lazy(() => import('./pages/public/BookAppointment'));
+const ClinicProfile = lazy(() => import('./pages/public/ClinicProfile'));
 
 /**
  * Loading spinner component for async operations.
@@ -39,7 +46,7 @@ function LoadingSpinner() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-genesis-soft">
       <div className="flex flex-col items-center gap-4">
-        <Loader2 className="w-10 h-10 text-genesis-blue animate-spin" />
+        <Loader2 className="w-10 h-10 text-genesis-primary animate-spin" />
         <span className="text-genesis-medium font-medium">Carregando...</span>
       </div>
     </div>
@@ -83,19 +90,23 @@ function OnboardingGuard({ children }: { children: React.ReactNode }) {
 
 /**
  * Layout for the internal app (Sidebar + Header).
+ * Wrapped with PageProvider for contextual header support.
  */
 function AppLayout() {
   return (
-    <div className="min-h-screen bg-[var(--color-genesis-soft)] flex font-sans text-[var(--color-genesis-text)] selection:bg-[var(--color-genesis-primary)]/20 selection:text-[var(--color-genesis-primary)]">
-      <SkipLink />
-      <Sidebar />
-      <div className="flex-1 ml-64 flex flex-col min-w-0 transition-all duration-300">
-        <Header />
-        <main id="main-content" tabIndex={-1} className="flex-1 p-8 overflow-y-auto custom-scrollbar focus:outline-none">
-          <Outlet />
-        </main>
+    <PageProvider>
+      <div className="min-h-screen bg-[var(--color-genesis-soft)] flex font-sans text-[var(--color-genesis-text)] selection:bg-[var(--color-genesis-primary)]/20 selection:text-[var(--color-genesis-primary)]">
+        <SkipLink />
+        <InstallPrompt />
+        <Sidebar />
+        <div className="flex-1 ml-64 flex flex-col min-w-0 transition-all duration-300">
+          <Header />
+          <main id="main-content" tabIndex={-1} className="flex-1 p-8 overflow-y-auto custom-scrollbar focus:outline-none">
+            <Outlet />
+          </main>
+        </div>
       </div>
-    </div>
+    </PageProvider>
   );
 }
 
@@ -127,7 +138,6 @@ function App() {
             <ConsentProvider>
               <Toaster richColors position="top-right" />
               <OfflineIndicator />
-              <InstallPrompt />
               <UpdatePrompt />
               <ConsentBanner />
               <Router>
@@ -138,6 +148,10 @@ function App() {
 
             {/* Public Application Page (Premium) */}
             <Route path="/apply" element={<Application />} />
+
+            {/* Public Booking Pages (no auth required) */}
+            <Route path="/agendar/:clinicSlug" element={<BookAppointment />} />
+            <Route path="/clinica/:clinicSlug" element={<ClinicProfile />} />
 
             {/* Auth Routes */}
             <Route path="/login" element={<Login />} />
@@ -184,15 +198,9 @@ function App() {
               <Route path="/finance" element={<Finance />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/whatsapp" element={<WhatsAppMetrics />} />
+              <Route path="/billing" element={<Billing />} />
               <Route path="/settings" element={<Settings />} />
-              <Route
-                path="/help"
-                element={
-                  <div className="flex items-center justify-center h-full text-genesis-medium font-medium">
-                    Ajuda & Suporte
-                  </div>
-                }
-              />
+              <Route path="/help" element={<Help />} />
             </Route>
 
             {/* Catch all */}

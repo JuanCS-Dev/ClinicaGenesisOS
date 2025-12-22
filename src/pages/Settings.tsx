@@ -16,11 +16,13 @@ import {
   Shield,
   Brain,
   Building,
+  Bell,
 } from 'lucide-react';
 import { PixSettings } from '@/components/settings/PixSettings';
 import { DataExportRequest } from '@/components/consent/DataExportRequest';
 import { CertificateSetup } from '@/components/prescription/CertificateSetup';
 import { MetricsDashboard } from '@/components/ai/scribe/MetricsDashboard';
+import { NotificationPreferences } from '@/components/notifications';
 import { useClinicContext } from '@/contexts/ClinicContext';
 
 /**
@@ -32,6 +34,12 @@ const TABS = [
     label: 'Clínica',
     icon: Building,
     description: 'Informações básicas da clínica',
+  },
+  {
+    id: 'notifications',
+    label: 'Notificações',
+    icon: Bell,
+    description: 'Preferências de lembretes e alertas',
   },
   {
     id: 'pix',
@@ -80,7 +88,7 @@ export function Settings(): React.ReactElement {
       {/* Header */}
       <div className="flex items-center gap-4">
         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-          <SettingsIcon className="w-6 h-6 text-gray-600" />
+          <SettingsIcon className="w-6 h-6 text-genesis-medium" />
         </div>
         <div>
           <h1 className="text-2xl font-bold text-genesis-dark tracking-tight">
@@ -93,7 +101,7 @@ export function Settings(): React.ReactElement {
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex gap-2 bg-white p-1.5 rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
+      <div className="flex gap-2 bg-genesis-surface p-1.5 rounded-2xl border border-genesis-border-subtle shadow-sm overflow-x-auto">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -108,7 +116,7 @@ export function Settings(): React.ReactElement {
                 ${
                   isActive
                     ? 'bg-genesis-dark text-white shadow-lg'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    : 'text-genesis-medium hover:bg-genesis-hover'
                 }
               `}
             >
@@ -123,16 +131,16 @@ export function Settings(): React.ReactElement {
       <div className="min-h-[500px]">
         {/* Clinic Info Tab */}
         {activeTab === 'clinic' && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 animate-in fade-in zoom-in-95">
+          <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle p-6 animate-in fade-in zoom-in-95">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
                 <Building className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">
+                <h3 className="font-semibold text-genesis-dark">
                   Informações da Clínica
                 </h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-genesis-muted">
                   Dados básicos e configurações gerais
                 </p>
               </div>
@@ -140,33 +148,53 @@ export function Settings(): React.ReactElement {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-genesis-text mb-1">
                   Nome da Clínica
                 </label>
                 <input
                   type="text"
                   value={clinic?.name || ''}
                   readOnly
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-gray-700"
+                  className="w-full px-4 py-2.5 border border-genesis-border rounded-xl bg-genesis-soft text-genesis-text"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-genesis-text mb-1">
                   Tipo
                 </label>
                 <input
                   type="text"
                   value="Clínica Médica"
                   readOnly
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-gray-700"
+                  className="w-full px-4 py-2.5 border border-genesis-border rounded-xl bg-genesis-soft text-genesis-text"
                 />
               </div>
 
-              <div className="pt-4 text-center text-sm text-gray-400">
+              <div className="pt-4 text-center text-sm text-genesis-subtle">
                 <p>Para alterar informações da clínica, entre em contato com o suporte.</p>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Notifications Tab */}
+        {activeTab === 'notifications' && (
+          <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle p-6 animate-in fade-in zoom-in-95">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
+                <Bell className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-genesis-dark">
+                  Preferências de Notificação
+                </h3>
+                <p className="text-sm text-genesis-muted">
+                  Configure como você deseja receber lembretes e alertas
+                </p>
+              </div>
+            </div>
+            <NotificationPreferences />
           </div>
         )}
 
@@ -180,16 +208,16 @@ export function Settings(): React.ReactElement {
         {/* Certificate Tab */}
         {activeTab === 'certificate' && (
           <div className="animate-in fade-in zoom-in-95">
-            <div className="bg-white rounded-2xl border border-gray-100 p-6">
+            <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
                   <FileText className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold text-genesis-dark">
                     Certificado Digital
                   </h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-genesis-muted">
                     Configure seu certificado e-CPF para assinatura digital
                   </p>
                 </div>
@@ -204,7 +232,7 @@ export function Settings(): React.ReactElement {
 
               {showCertificateModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                  <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                  <div className="bg-genesis-surface rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
                     <CertificateSetup
                       onCertificateConfigured={handleCertificateConfigured}
                       onClose={() => setShowCertificateModal(false)}

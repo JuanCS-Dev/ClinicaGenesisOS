@@ -13,13 +13,12 @@
  * @module plugins/medicina/SoapEditor
  */
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { CheckCircle2, Mic, Bot } from 'lucide-react';
+import { CheckCircle2, Mic, Bot, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { RecordType, EditorRecordData, AIScribeResult } from '../../types';
-import { RecordingControls } from '../../components/ai/RecordingControls';
-import { SOAPReview } from '../../components/ai/SOAPReview';
+import { RecordingControls, SOAPReview, SpecialtyTemplates } from '../../components/ai';
 import { useAIScribe } from '../../hooks/useAIScribe';
 
 interface SoapData {
@@ -56,7 +55,7 @@ const SoapField = ({
       {label}
     </label>
     <textarea
-      className="w-full p-3 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all text-sm resize-none"
+      className="w-full p-3 bg-genesis-soft border border-transparent rounded-xl focus:bg-genesis-surface focus:ring-2 focus:ring-blue-100 outline-none transition-all text-sm resize-none"
       style={{ height: rows === 4 ? '8rem' : '6rem' }}
       placeholder={placeholder}
       value={value}
@@ -70,7 +69,26 @@ export function SoapEditor({ onSave }: SoapEditorProps) {
   const [soap, setSoap] = useState<SoapData>({ s: '', o: '', a: '', p: '' });
   const [showAIScribe, setShowAIScribe] = useState(false);
   const [showReview, setShowReview] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
   const [aiResult, setAiResult] = useState<AIScribeResult | null>(null);
+
+  // Check if SOAP has content (for template overwrite warning)
+  const hasContent = Boolean(soap.s || soap.o || soap.a || soap.p);
+
+  // Handle template selection
+  const handleTemplateSelect = useCallback(
+    (template: { subjective: string; objective: string; assessment: string; plan: string }) => {
+      setSoap({
+        s: template.subjective,
+        o: template.objective,
+        a: template.assessment,
+        p: template.plan,
+      });
+      setShowTemplates(false);
+      toast.success('Template aplicado');
+    },
+    []
+  );
 
   const {
     status,
@@ -138,26 +156,52 @@ export function SoapEditor({ onSave }: SoapEditorProps) {
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-left-2">
-      {/* AI Scribe Toggle */}
-      <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+      {/* Tools Bar */}
+      <div className="flex flex-wrap items-center gap-3 pb-4 border-b border-genesis-border-subtle">
+        {/* AI Scribe Toggle */}
         <div className="flex items-center gap-2">
           <Bot className="w-4 h-4 text-blue-500" />
-          <span className="text-xs font-medium text-gray-600">
-            AI Scribe: Grave a consulta e gere SOAP automaticamente
-          </span>
+          <button
+            onClick={handleToggleAIScribe}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              showAIScribe
+                ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+            }`}
+          >
+            <Mic className="w-4 h-4" />
+            {showAIScribe ? 'Fechar Gravação' : 'AI Scribe'}
+          </button>
         </div>
+
+        {/* Templates Toggle */}
         <button
-          onClick={handleToggleAIScribe}
+          onClick={() => setShowTemplates(!showTemplates)}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-            showAIScribe
-              ? 'bg-red-100 text-red-700 hover:bg-red-200'
-              : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+            showTemplates
+              ? 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+              : 'bg-genesis-soft text-genesis-medium hover:bg-genesis-hover'
           }`}
         >
-          <Mic className="w-4 h-4" />
-          {showAIScribe ? 'Fechar Gravação' : 'Gravar Consulta'}
+          <FileText className="w-4 h-4" />
+          Templates
+          {showTemplates ? (
+            <ChevronUp className="w-3 h-3" />
+          ) : (
+            <ChevronDown className="w-3 h-3" />
+          )}
         </button>
       </div>
+
+      {/* Templates Panel */}
+      {showTemplates && (
+        <div className="p-4 bg-genesis-soft rounded-xl border border-genesis-border-subtle animate-in fade-in slide-in-from-top-2">
+          <SpecialtyTemplates
+            onSelectTemplate={handleTemplateSelect}
+            hasExistingContent={hasContent}
+          />
+        </div>
+      )}
 
       {/* AI Scribe Recording Controls */}
       {showAIScribe && (
