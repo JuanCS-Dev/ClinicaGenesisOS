@@ -36,29 +36,37 @@ describe('guiaService', () => {
     tipo: 'consulta',
     status: 'rascunho',
     registroANS: '123456',
+    nomeOperadora: 'UNIMED',
     patientId: mockPatientId,
-    dataExecucao: '2024-12-20',
-    procedimentos: [
-      {
-        codigo: '10101012',
-        descricao: 'Consulta em consultório',
-        quantidade: 1,
-        valorUnitario: 150,
-        valorTotal: 150,
-      },
-    ],
+    dataAtendimento: '2024-12-20',
     valorTotal: 150,
-    dadosBeneficiario: {
-      numeroCarteira: 'CART-123',
-      validadeCarteira: '2025-12-31',
-      nome: 'Maria Silva',
-      cpf: '12345678900',
-      dataNascimento: '1990-05-15',
-    },
-    dadosContratado: {
-      cnpj: '12345678000190',
-      nome: 'Clínica Genesis',
-      cnes: '1234567',
+    dadosGuia: {
+      registroANS: '123456',
+      numeroGuiaPrestador: '',
+      dadosBeneficiario: {
+        numeroCarteira: 'CART-123',
+        validadeCarteira: '2025-12-31',
+        nomeBeneficiario: 'Maria Silva',
+        dataNascimento: '1990-05-15',
+      },
+      contratadoSolicitante: {
+        codigoPrestadorNaOperadora: 'PREST-001',
+        nomeContratado: 'Clínica Genesis',
+        cnes: '1234567',
+        cnpj: '12345678000190',
+      },
+      profissionalSolicitante: {
+        nomeProfissional: 'Dr. João Silva',
+        conselhoProfissional: '1', // CRM
+        numeroConselhoProfissional: '12345',
+        uf: 'SP',
+        cbo: '225120',
+      },
+      tipoConsulta: '1',
+      dataAtendimento: '2024-12-20',
+      codigoTabela: '22',
+      codigoProcedimento: '10101012',
+      valorProcedimento: 150,
     },
   };
 
@@ -67,8 +75,8 @@ describe('guiaService', () => {
     clinicId: mockClinicId,
     numeroGuiaPrestador: 'GUIA-2024-001',
     ...mockGuiaData,
-    createdAt: createMockTimestamp(),
-    updatedAt: createMockTimestamp(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     createdBy: mockUserId,
     updatedBy: mockUserId,
   };

@@ -49,6 +49,9 @@ describe('operadoraService', () => {
     },
     webservice: {
       tipoIntegracao: 'portal',
+      usarHomologacao: false,
+      timeoutMs: 30000,
+      tentativasRetry: 3,
     },
   };
 
@@ -56,8 +59,8 @@ describe('operadoraService', () => {
     id: mockOperadoraId,
     clinicId: mockClinicId,
     ...mockOperadoraData,
-    createdAt: createMockTimestamp(),
-    updatedAt: createMockTimestamp(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     createdBy: mockUserId,
     updatedBy: mockUserId,
   };

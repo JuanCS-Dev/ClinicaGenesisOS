@@ -61,9 +61,12 @@ function createMockOperadora(overrides: Partial<OperadoraFirestore> = {}): Opera
     },
     webservice: {
       tipoIntegracao: 'portal',
+      usarHomologacao: false,
+      timeoutMs: 30000,
+      tentativasRetry: 3,
     },
-    createdAt: { toDate: () => new Date() } as OperadoraFirestore['createdAt'],
-    updatedAt: { toDate: () => new Date() } as OperadoraFirestore['updatedAt'],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     createdBy: mockUserId,
     updatedBy: mockUserId,
     ...overrides,
@@ -71,7 +74,7 @@ function createMockOperadora(overrides: Partial<OperadoraFirestore> = {}): Opera
 }
 
 describe('useOperadoras', () => {
-  let mockUnsubscribe: ReturnType<typeof vi.fn>;
+  let mockUnsubscribe: () => void;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -85,7 +88,7 @@ describe('useOperadoras', () => {
       user: { uid: mockUserId },
     } as ReturnType<typeof useAuth>);
 
-    vi.mocked(operadoraService.subscribe).mockReturnValue(mockUnsubscribe as () => void);
+    vi.mocked(operadoraService.subscribe).mockReturnValue(mockUnsubscribe);
   });
 
   afterEach(() => {
@@ -184,7 +187,7 @@ describe('useOperadoras', () => {
         createMockOperadora({ id: 'op-3', ativa: true }),
       ];
 
-      vi.mocked(operadoraService.subscribe).mockImplementation((_, onData) => {
+      vi.mocked(operadoraService.subscribe).mockImplementation((_clinicId, onData) => {
         onData(mockOperadoras);
         return mockUnsubscribe;
       });
@@ -216,6 +219,9 @@ describe('useOperadoras', () => {
         },
         webservice: {
           tipoIntegracao: 'portal',
+          usarHomologacao: false,
+          timeoutMs: 30000,
+          tentativasRetry: 3,
         },
       };
 
@@ -304,7 +310,7 @@ describe('useOperadoras', () => {
         createMockOperadora({ id: 'op-2', registroANS: '654321' }),
       ];
 
-      vi.mocked(operadoraService.subscribe).mockImplementation((_, onData) => {
+      vi.mocked(operadoraService.subscribe).mockImplementation((_clinicId, onData) => {
         onData(mockOperadoras);
         return mockUnsubscribe;
       });
@@ -322,7 +328,7 @@ describe('useOperadoras', () => {
     it('returns undefined when ANS not found', async () => {
       const mockOperadoras = [createMockOperadora({ registroANS: '123456' })];
 
-      vi.mocked(operadoraService.subscribe).mockImplementation((_, onData) => {
+      vi.mocked(operadoraService.subscribe).mockImplementation((_clinicId, onData) => {
         onData(mockOperadoras);
         return mockUnsubscribe;
       });

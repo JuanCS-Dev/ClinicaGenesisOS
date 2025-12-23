@@ -46,35 +46,42 @@ function createMockGuia(overrides: Partial<GuiaFirestore> = {}): GuiaFirestore {
     tipo: 'consulta',
     status: 'rascunho',
     registroANS: '123456',
+    nomeOperadora: 'UNIMED',
     numeroGuiaPrestador: 'GUIA-2024-001',
     patientId: 'patient-001',
-    dataExecucao: '2024-12-20',
-    procedimentos: [
-      {
-        codigo: '10101012',
-        descricao: 'Consulta',
-        quantidade: 1,
-        valorUnitario: 150,
-        valorTotal: 150,
-      },
-    ],
+    dataAtendimento: '2024-12-20',
     valorTotal: 150,
     valorGlosado: 0,
     valorPago: 0,
-    dadosBeneficiario: {
-      numeroCarteira: 'CART-123',
-      validadeCarteira: '2025-12-31',
-      nome: 'Test Patient',
-      cpf: '12345678900',
-      dataNascimento: '1990-05-15',
+    dadosGuia: {
+      registroANS: '123456',
+      numeroGuiaPrestador: 'GUIA-2024-001',
+      dadosBeneficiario: {
+        numeroCarteira: 'CART-123',
+        validadeCarteira: '2025-12-31',
+        nomeBeneficiario: 'Test Patient',
+        dataNascimento: '1990-05-15',
+      },
+      contratadoSolicitante: {
+        codigoPrestadorNaOperadora: 'PREST-001',
+        nomeContratado: 'Test Clinic',
+        cnes: '1234567',
+      },
+      profissionalSolicitante: {
+        conselhoProfissional: '1', // CRM
+        numeroConselhoProfissional: '12345',
+        uf: 'SP',
+        nomeProfissional: 'Dr. João Silva',
+        cbo: '225120',
+      },
+      tipoConsulta: '1',
+      dataAtendimento: '2024-12-20',
+      codigoTabela: '22',
+      codigoProcedimento: '10101012',
+      valorProcedimento: 150,
     },
-    dadosContratado: {
-      cnpj: '12345678000190',
-      nome: 'Test Clinic',
-      cnes: '1234567',
-    },
-    createdAt: { toDate: () => new Date() } as GuiaFirestore['createdAt'],
-    updatedAt: { toDate: () => new Date() } as GuiaFirestore['updatedAt'],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     createdBy: mockUserId,
     updatedBy: mockUserId,
     ...overrides,
@@ -82,7 +89,7 @@ function createMockGuia(overrides: Partial<GuiaFirestore> = {}): GuiaFirestore {
 }
 
 describe('useGuias', () => {
-  let mockUnsubscribe: ReturnType<typeof vi.fn>;
+  let mockUnsubscribe: () => void;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -96,7 +103,7 @@ describe('useGuias', () => {
       user: { uid: mockUserId },
     } as ReturnType<typeof useAuth>);
 
-    vi.mocked(guiaService.subscribe).mockReturnValue(mockUnsubscribe as () => void);
+    vi.mocked(guiaService.subscribe).mockReturnValue(mockUnsubscribe);
   });
 
   afterEach(() => {
@@ -164,7 +171,7 @@ describe('useGuias', () => {
     it('updates guias when subscription receives data', async () => {
       const mockGuias = [createMockGuia()];
 
-      vi.mocked(guiaService.subscribe).mockImplementation((_, onData) => {
+      vi.mocked(guiaService.subscribe).mockImplementation((_clinicId, onData) => {
         onData(mockGuias);
         return mockUnsubscribe;
       });
@@ -182,7 +189,7 @@ describe('useGuias', () => {
     it('sets error when subscription fails', async () => {
       const mockError = new Error('Subscription failed');
 
-      vi.mocked(guiaService.subscribe).mockImplementation((_, __, onError) => {
+      vi.mocked(guiaService.subscribe).mockImplementation((_clinicId, _onData, onError) => {
         if (onError) onError(mockError);
         return mockUnsubscribe;
       });
@@ -206,7 +213,7 @@ describe('useGuias', () => {
         createMockGuia({ id: 'g-6', status: 'glosada_total', valorTotal: 100, valorGlosado: 100, valorPago: 0 }),
       ];
 
-      vi.mocked(guiaService.subscribe).mockImplementation((_, onData) => {
+      vi.mocked(guiaService.subscribe).mockImplementation((_clinicId, onData) => {
         onData(mockGuias);
         return mockUnsubscribe;
       });
@@ -230,7 +237,7 @@ describe('useGuias', () => {
         createMockGuia({ id: 'g-1', status: 'em_analise', valorTotal: 100 }),
       ];
 
-      vi.mocked(guiaService.subscribe).mockImplementation((_, onData) => {
+      vi.mocked(guiaService.subscribe).mockImplementation((_clinicId, onData) => {
         onData(mockGuias);
         return mockUnsubscribe;
       });
@@ -249,21 +256,36 @@ describe('useGuias', () => {
         tipo: 'consulta' as TipoGuia,
         status: 'rascunho' as StatusGuia,
         registroANS: '123456',
+        nomeOperadora: 'UNIMED',
         patientId: 'patient-001',
-        dataExecucao: '2024-12-20',
-        procedimentos: [],
+        dataAtendimento: '2024-12-20',
         valorTotal: 150,
-        dadosBeneficiario: {
-          numeroCarteira: 'CART-123',
-          validadeCarteira: '2025-12-31',
-          nome: 'Test Patient',
-          cpf: '12345678900',
-          dataNascimento: '1990-05-15',
-        },
-        dadosContratado: {
-          cnpj: '12345678000190',
-          nome: 'Test Clinic',
-          cnes: '1234567',
+        dadosGuia: {
+          registroANS: '123456',
+          numeroGuiaPrestador: '',
+          dadosBeneficiario: {
+            numeroCarteira: 'CART-123',
+            validadeCarteira: '2025-12-31',
+            nomeBeneficiario: 'Test Patient',
+            dataNascimento: '1990-05-15',
+          },
+          contratadoSolicitante: {
+            codigoPrestadorNaOperadora: 'PREST-001',
+            nomeContratado: 'Test Clinic',
+            cnes: '1234567',
+          },
+          profissionalSolicitante: {
+            conselhoProfissional: '1' as const, // CRM
+            numeroConselhoProfissional: '12345',
+            uf: 'SP' as const,
+            nomeProfissional: 'Dr. João Silva',
+            cbo: '225120',
+          },
+          tipoConsulta: '1' as const,
+          dataAtendimento: '2024-12-20',
+          codigoTabela: '22' as const,
+          codigoProcedimento: '10101012',
+          valorProcedimento: 150,
         },
       };
 
@@ -332,7 +354,7 @@ describe('useGuias', () => {
     ];
 
     beforeEach(() => {
-      vi.mocked(guiaService.subscribe).mockImplementation((_, onData) => {
+      vi.mocked(guiaService.subscribe).mockImplementation((_clinicId, onData) => {
         onData(mockGuias);
         return mockUnsubscribe;
       });
