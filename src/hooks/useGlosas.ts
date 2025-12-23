@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useClinic } from '@/contexts/ClinicContext';
+import { useClinicContext } from '@/contexts/ClinicContext';
 import {
   getGlosas,
   getGlosaById,
@@ -50,7 +50,7 @@ export interface UseGlosasResult {
 
 export function useGlosas(options: UseGlosasOptions = {}): UseGlosasResult {
   const { realtime = true, filters, enabled = true } = options;
-  const { clinic } = useClinic();
+  const { clinic } = useClinicContext();
   const clinicId = clinic?.id;
 
   const [glosas, setGlosas] = useState<GlosaFirestore[]>([]);

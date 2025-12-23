@@ -1039,215 +1039,529 @@ npm run test:coverage # Gera relatório de cobertura
 
 ---
 
-### FASE 9: N8N WORKFLOW AUTOMATION (Sprint 10)
-**Objetivo:** Automação de processos e integrações externas via n8n
+### FASE 9: WORKFLOW AUTOMATION (Sprint 10) ✅ COMPLETO
+**Objetivo:** Automação de processos e integrações externas via Cloud Functions nativas
+**Status:** ✅ COMPLETO (23/12/2024)
 
-#### 9.1 Arquitetura de Integração
-**n8n como hub central de automações**
+> **Decisão Arquitetural:** Após auditoria do sistema, optou-se por implementar os workflows
+> como Cloud Functions nativas em vez de n8n externo. Motivos:
+> - Sistema já tinha WhatsApp e Glosa triggers implementados
+> - Menos dependência externa
+> - Melhor controle e debugging
+> - Custo zero adicional (já no Firebase)
+
+#### 9.1 Arquitetura Implementada
+**Cloud Functions nativas para automação**
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        n8n Workflow Engine                       │
+│                     WORKFLOWS CLOUD FUNCTIONS                    │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐      │
-│  │  Triggers    │    │  Processors  │    │  Actions     │      │
-│  │  ──────────  │    │  ──────────  │    │  ──────────  │      │
-│  │  • Webhook   │───▶│  • Transform │───▶│  • Firebase  │      │
-│  │  • Schedule  │    │  • Filter    │    │  • WhatsApp  │      │
-│  │  • Firestore │    │  • AI/LLM    │    │  • Email     │      │
-│  │  • HTTP      │    │  • Validate  │    │  • Slack     │      │
-│  └──────────────┘    └──────────────┘    └──────────────┘      │
+│  ┌──────────────────┐    ┌──────────────────┐                   │
+│  │    SCHEDULERS    │    │     TRIGGERS     │                   │
+│  │  ──────────────  │    │  ──────────────  │                   │
+│  │  • Follow-up 2h  │    │  • onAppointment │                   │
+│  │  • NPS Survey 1h │    │  • onGlosa       │                   │
+│  │  • Return 10:00  │    │  • Webhooks      │                   │
+│  └──────────────────┘    └──────────────────┘                   │
+│             │                    │                               │
+│             └────────┬───────────┘                               │
+│                      ▼                                           │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │                     WhatsApp API                           │  │
+│  │  • Templates aprovados (confirmation, reminder_24h, etc)   │  │
+│  │  • Free-form messages (within 24h window)                  │  │
+│  └───────────────────────────────────────────────────────────┘  │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
-         │                    │                    │
-         ▼                    ▼                    ▼
-┌─────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  Firestore  │    │  Cloud Functions │    │  External APIs  │
-│  (eventos)  │    │  (processamento) │    │  (integrações)  │
-└─────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-#### 9.2 Workflows Prioritários
+#### 9.2 Workflows Implementados ✅
 
-**1. Agendamento Inteligente**
-```
-Trigger: Novo agendamento no Firestore
-   ↓
-Verificar conflitos de horário
-   ↓
-Enriquecer dados do paciente
-   ↓
-Enviar confirmação (WhatsApp + Email)
-   ↓
-Criar evento no Google Calendar
-   ↓
-Notificar profissional (Slack/Push)
-```
+**1. Follow-up Pós-Consulta** ✅
+- Cloud Function: `sendFollowUpMessages`
+- Schedule: A cada 2 horas
+- Envia mensagem de acompanhamento 24h após consulta finalizada
+- Configurável por clínica (delay em horas)
 
-**2. Follow-up Pós-Consulta**
-```
-Trigger: Consulta finalizada (status = FINISHED)
-   ↓
-Aguardar 24h (delay node)
-   ↓
-Enviar pesquisa NPS (WhatsApp)
-   ↓
-Coletar resposta via webhook
-   ↓
-Atualizar score no Firestore
-   ↓
-Se NPS < 7: Alertar gestor
-```
+**2. Pesquisa NPS** ✅
+- Cloud Functions: `sendNPSSurveys`, `npsResponseWebhook`
+- Schedule: A cada 1 hora
+- Envia pesquisa de satisfação (0-10) 2h após consulta
+- Calcula NPS score automaticamente
+- Alerta em detractors (score < 7)
 
-**3. Lembretes de Retorno**
+**3. Lembrete de Retorno** ✅
+- Cloud Function: `sendPatientReturnReminders`
+- Schedule: Diário às 10:00
+- Identifica pacientes inativos (90+ dias por padrão)
+- Limite: 50 lembretes/dia/clínica (anti-spam)
+- Frequência configurável por clínica
+
+**4. Integração com Labs** ✅
+- Cloud Function: `labsResultWebhook`
+- Webhook para receber resultados de laboratórios externos
+- Valida HMAC signature
+- Notifica paciente quando resultado disponível
+- Alerta médico se valores críticos
+- Suporta HL7/JSON payloads
+
+#### 9.3 Arquivos Criados
+
+**Cloud Functions:**
 ```
-Trigger: Schedule (diário às 9h)
-   ↓
-Buscar pacientes sem consulta há 90+ dias
-   ↓
-Filtrar por condições crônicas
-   ↓
-Enviar lembrete personalizado
-   ↓
-Registrar contato no histórico
+functions/src/workflows/
+├── index.ts              # Exports
+├── types.ts              # Tipos e interfaces
+├── follow-up.ts          # Follow-up pós-consulta
+├── nps.ts                # Pesquisa NPS
+├── patient-return.ts     # Lembrete de retorno
+└── labs-webhook.ts       # Integração laboratórios
 ```
 
-**4. Integração com Labs**
-```
-Trigger: Webhook do laboratório
-   ↓
-Validar assinatura/origem
-   ↓
-Fazer parse do resultado (HL7/PDF)
-   ↓
-Anexar ao prontuário do paciente
-   ↓
-Notificar médico se valores críticos
-   ↓
-Notificar paciente que resultado chegou
-```
-
-**5. Sincronização de Agenda**
-```
-Trigger: Mudança em appointment
-   ↓
-Sync bidirecional Google Calendar
-   ↓
-Atualizar disponibilidade
-   ↓
-Recalcular slots livres
-```
-
-**6. Backup e Auditoria**
-```
-Trigger: Schedule (diário às 2h)
-   ↓
-Export dados críticos
-   ↓
-Criptografar e enviar para storage
-   ↓
-Gerar log de auditoria
-   ↓
-Notificar admin se falha
-```
-
-#### 9.3 Setup Técnico
-
-**Opção A: n8n Cloud (Recomendado para MVP)**
-```bash
-# Criar conta em n8n.io
-# Configurar webhooks apontando para:
-https://[n8n-instance].n8n.cloud/webhook/[workflow-id]
-```
-
-**Opção B: n8n Self-Hosted (Docker)**
-```yaml
-# docker-compose.yml
-version: '3.8'
-services:
-  n8n:
-    image: n8nio/n8n
-    ports:
-      - "5678:5678"
-    environment:
-      - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=admin
-      - N8N_BASIC_AUTH_PASSWORD=secure_password
-      - WEBHOOK_URL=https://n8n.clinicagenesis.com.br
-    volumes:
-      - n8n_data:/home/node/.n8n
-```
-
-**Opção C: Cloud Run (GCP)**
-```bash
-gcloud run deploy n8n \
-  --image n8nio/n8n \
-  --port 5678 \
-  --memory 1Gi \
-  --allow-unauthenticated
-```
-
-#### 9.4 Integrações Disponíveis
-
-| Categoria | Serviço | Uso no Genesis |
-|-----------|---------|----------------|
-| **Comunicação** | WhatsApp Business | Lembretes, confirmações |
-| | Twilio SMS | Fallback SMS |
-| | SendGrid/Mailgun | Emails transacionais |
-| | Slack | Alertas internos |
-| **Calendário** | Google Calendar | Sync agenda |
-| | Cal.com | Booking público |
-| **Pagamentos** | Stripe | Webhooks de pagamento |
-| | Pix (bancos) | Confirmação automática |
-| **Storage** | Google Cloud Storage | Backup, arquivos |
-| | Firebase Storage | Anexos |
-| **AI/ML** | OpenAI | Processamento NLP |
-| | Vertex AI | Análise de exames |
-| **Healthcare** | HL7 FHIR | Interoperabilidade |
-| | Labs APIs | Resultados de exames |
-
-#### 9.5 Segurança
-
-**Credenciais:**
-- [ ] Usar n8n Credentials para armazenar secrets
-- [ ] Nunca expor tokens em workflows
-- [ ] Rotacionar API keys regularmente
-
-**Webhooks:**
-- [ ] Validar origem das requisições
-- [ ] Implementar HMAC signature
-- [ ] Rate limiting por IP
-
-**Dados Sensíveis:**
-- [ ] Não logar dados de pacientes
-- [ ] Criptografar payloads sensíveis
-- [ ] Compliance LGPD/HIPAA
-
-#### 9.6 Arquivos
-
-**Cloud Functions (triggers para n8n):**
-```
-functions/src/n8n/
-├── webhooks.ts          # Receber callbacks do n8n
-├── triggers.ts          # Enviar eventos para n8n
-└── validators.ts        # Validação de requests
-```
-
-**Frontend (configuração):**
+**Frontend:**
 ```
 src/components/settings/
-├── N8NSettings.tsx      # UI de configuração
-└── WorkflowStatus.tsx   # Status dos workflows
+└── WorkflowSettings.tsx  # UI de configuração de workflows
 ```
 
-**Features:**
-- [ ] Trigger de eventos para n8n via Cloud Functions
-- [ ] Webhook receiver para callbacks
-- [ ] UI de configuração de workflows
-- [ ] Dashboard de status/logs
-- [ ] Templates de workflows prontos
-- [ ] Documentação de integrações
+**Settings Page:**
+- Nova tab "Automações" em Settings
+- Toggle on/off por workflow
+- Configurações personalizáveis (delays, frequências)
+- Webhook URL para integração com labs
+
+#### 9.4 Configuração por Clínica
+
+Cada clínica pode habilitar/configurar independentemente:
+
+| Workflow | Parâmetros Configuráveis |
+|----------|--------------------------|
+| Follow-up | `delayHours` (default: 24) |
+| NPS | `delayHours` (default: 2) |
+| Patient Return | `inactiveDays` (90), `reminderFrequencyDays` (30) |
+| Labs Integration | `notifyPatient`, `notifyDoctor`, `webhookSecret` |
+
+```typescript
+// Firestore: clinics/{clinicId}/settings/workflows
+{
+  followUp: { enabled: true, delayHours: 24 },
+  nps: { enabled: true, delayHours: 2 },
+  patientReturn: { enabled: false, inactiveDays: 90 },
+  labsIntegration: { enabled: false, notifyPatient: true }
+}
+```
+
+#### 9.5 Workflows Existentes (Pré-FASE 9)
+
+Já implementados em fases anteriores:
+- [x] Confirmação de agendamento (WhatsApp) - `onAppointmentCreated`
+- [x] Lembrete 24h antes (WhatsApp) - `sendReminders24h`
+- [x] Lembrete 2h antes (WhatsApp) - `sendReminders2h`
+- [x] Notificação de glosa - `onGlosaCreated`
+- [x] Alerta prazo recurso - `checkGlosaDeadlines`
+- [x] Webhooks Stripe (pagamentos) - `stripeWebhook`
+
+#### 9.6 Métricas e Logs
+
+Todos os workflows geram logs em:
+```
+clinics/{clinicId}/workflowLogs/
+├── workflowType: 'follow_up' | 'nps' | 'patient_return' | 'lab_result'
+├── targetId: appointmentId | patientId | labResultId
+├── status: 'pending' | 'sent' | 'delivered' | 'failed'
+├── channel: 'whatsapp' | 'email' | 'in_app'
+├── messageId?: string
+├── error?: string
+└── createdAt: timestamp
+```
+
+---
+
+### FASE 10: UI/UX PREMIUM POLISH (Sprint 11-12) 🚧 EM ANDAMENTO
+**Objetivo:** Elevar Genesis OS ao padrão de REFERÊNCIA em software para clínicas médicas
+**Status:** 🚧 IMPLEMENTAÇÃO EM PROGRESSO (23/12/2024) - Sprint 1-2 Completos (19/38 itens - 50%)
+**Completados:** Patient Portal (10), Telemedicina (4), STATUS_CONFIG (4), Micro-interações Portal (1)
+
+> **VISÃO:** Ser a REFERÊNCIA ABSOLUTA em software para clínicas médicas.
+> Mostrar TUDO que implementamos de forma fluida, intuitiva, bonita, leve e otimizada.
+
+---
+
+#### 10.1 Stack Técnica Atual (Dezembro 2025)
+
+| Tecnologia | Versão | Documentação |
+|------------|--------|--------------|
+| **Tailwind CSS** | v4.1.18 | [tailwindcss.com/docs](https://tailwindcss.com/docs/theme) |
+| **React** | v19.2.3 | [react.dev](https://react.dev) |
+| **Vite** | v6.2.0 | [vite.dev](https://vite.dev) |
+| **TypeScript** | v5.8.2 | [typescriptlang.org](https://www.typescriptlang.org) |
+| **PostCSS** | v8.5.6 | Via @tailwindcss/postcss |
+
+---
+
+#### 10.2 Arquitetura Tailwind CSS v4 do Projeto
+
+> **IMPORTANTE:** Tailwind v4 usa configuração CSS-first. NÃO existe `tailwind.config.js`.
+> Toda configuração está em `index.css` usando a diretiva `@theme`.
+
+**Referências oficiais consultadas:**
+- [Tailwind CSS v4 Theme Variables](https://tailwindcss.com/docs/theme)
+- [Tailwind CSS v4 Dark Mode](https://tailwindcss.com/docs/dark-mode)
+- [Tailwind CSS v4 Functions and Directives](https://tailwindcss.com/docs/functions-and-directives)
+
+##### Estrutura do `index.css`:
+
+```css
+/* 1. Import do Tailwind (substitui @tailwind base/components/utilities) */
+@import "tailwindcss";
+
+/* 2. Diretiva @theme - Define tokens que geram utility classes */
+@theme {
+  /* Cores: --color-* gera bg-*, text-*, border-* automaticamente */
+  --color-genesis-primary: #0f766e;
+  --color-genesis-surface: #ffffff;
+  --color-genesis-soft: #f8fafc;
+  /* ... */
+}
+
+/* 3. Dark mode - Override das variáveis com seletor .dark */
+.dark {
+  --color-genesis-primary: #14b8a6;
+  --color-genesis-surface: #0f172a;
+  --color-genesis-soft: #1e293b;
+  /* ... */
+}
+```
+
+##### Como funciona o @theme no Tailwind v4:
+
+| Namespace CSS Variable | Classes Geradas | Exemplo |
+|------------------------|-----------------|---------|
+| `--color-*` | `bg-*`, `text-*`, `border-*` | `--color-genesis-primary` → `bg-genesis-primary` |
+| `--font-*` | `font-*` | `--font-sans` → `font-sans` |
+| `--spacing-*` | `p-*`, `m-*`, `gap-*` | `--spacing-4` → `p-4` |
+| `--radius-*` | `rounded-*` | `--radius-lg` → `rounded-lg` |
+
+##### Dark Mode no Tailwind v4:
+
+```css
+/* Opção 1: Media query (padrão) - Respeita prefers-color-scheme */
+/* Não precisa configuração adicional */
+
+/* Opção 2: Classe .dark (nosso caso) - Override manual */
+/* Definido em index.css com seletor .dark { } */
+```
+
+**CRÍTICO:** Em Tailwind v4, as variáveis CSS definidas em `@theme` são automaticamente
+atualizadas quando `.dark` é aplicado no `<html>`. Por isso, usar `bg-genesis-surface`
+funciona corretamente em AMBOS os modos (light/dark).
+
+---
+
+#### 10.3 Mapeamento de Tokens - Guia de Correção
+
+> **REGRA:** NUNCA usar cores hardcoded. SEMPRE usar tokens genesis-*.
+
+##### Cores de Superfície:
+
+| ❌ ERRADO | ✅ CORRETO | Razão |
+|-----------|------------|-------|
+| `bg-white` | `bg-genesis-surface` | Adapta: #ffffff (light) → #0f172a (dark) |
+| `bg-gray-50` | `bg-genesis-soft` | Adapta: #f8fafc (light) → #1e293b (dark) |
+| `bg-gray-100` | `bg-genesis-hover` | Adapta: #f1f5f9 (light) → #334155 (dark) |
+
+##### Cores de Texto:
+
+| ❌ ERRADO | ✅ CORRETO | Razão |
+|-----------|------------|-------|
+| `text-gray-900` | `text-genesis-dark` | Adapta: #0f172a (light) → #f1f5f9 (dark) |
+| `text-gray-700` | `text-genesis-text` | Adapta: #1e293b (light) → #e2e8f0 (dark) |
+| `text-gray-500` | `text-genesis-muted` | Adapta: #64748b (light) → #94a3b8 (dark) |
+| `text-gray-400` | `text-genesis-subtle` | Adapta: #94a3b8 (light) → #64748b (dark) |
+
+##### Cores de Borda:
+
+| ❌ ERRADO | ✅ CORRETO | Razão |
+|-----------|------------|-------|
+| `border-gray-100` | `border-genesis-border-subtle` | Adapta para dark |
+| `border-gray-200` | `border-genesis-border` | Adapta para dark |
+| `border-white` | `border-genesis-surface` | Adapta para dark |
+
+##### Cores Semânticas (Status):
+
+| ❌ ERRADO | ✅ CORRETO | Uso |
+|-----------|------------|-----|
+| `bg-green-100 text-green-600` | `bg-success-soft text-success` | Sucesso, pago, aprovado |
+| `bg-red-100 text-red-600` | `bg-danger-soft text-danger` | Erro, glosado, cancelado |
+| `bg-amber-100 text-amber-600` | `bg-warning-soft text-warning` | Alerta, pendente |
+| `bg-blue-100 text-blue-600` | `bg-info-soft text-info` | Info, enviado, em análise |
+
+##### Focus Ring:
+
+| ❌ ERRADO | ✅ CORRETO |
+|-----------|------------|
+| `focus:ring-blue-500` | `focus:ring-genesis-primary` |
+| `focus:ring-purple-500` | `focus:ring-genesis-primary` |
+
+---
+
+#### 10.4 Resultados da Auditoria UI/UX (23/12/2024)
+
+##### Resumo Executivo:
+
+| Área | Score Atual | Score Meta | Gap |
+|------|-------------|------------|-----|
+| Design System Core | 95/100 | 98/100 | 3% |
+| **Dark Mode** | **65/100** | **98/100** | **33%** |
+| Micro-interações | 78/100 | 95/100 | 17% |
+| Acessibilidade | 75/100 | 95/100 | 20% |
+| **Cores Hardcoded** | **70/100** | **100/100** | **30%** |
+| Loading/Empty States | 85/100 | 95/100 | 10% |
+| **GERAL** | **78/100** | **97/100** | **19%** |
+
+##### Violações Encontradas:
+
+| Tipo de Violação | Quantidade | Severidade |
+|------------------|------------|------------|
+| `bg-white` sem dark mode | 37 instâncias | 🔴 CRÍTICA |
+| Cores gray-* hardcoded | 30+ instâncias | 🔴 CRÍTICA |
+| Focus ring incorreto | 50+ instâncias | 🟡 ALTA |
+| Micro-interações faltando | 50+ instâncias | 🟡 ALTA |
+| ARIA attributes faltando | 20+ instâncias | 🟢 MÉDIA |
+
+---
+
+#### 10.5 Arquivos Críticos para Correção
+
+##### TIER 1: Patient Portal (CRÍTICO - Face pública)
+
+| # | Arquivo | Violações | Problema |
+|---|---------|-----------|----------|
+| 1 | `src/pages/patient-portal/Login.tsx` | 2x `bg-white` | **AUTH QUEBRADA NO DARK** |
+| 2 | `src/pages/patient-portal/Dashboard.tsx` | 6x `bg-white` | Dashboard ilegível |
+| 3 | `src/components/patient-portal/PatientPortalLayout.tsx` | 4x `bg-white` | Layout base quebrado |
+| 4 | `src/pages/patient-portal/Messages.tsx` | 4x `bg-white` | Chat ilegível |
+| 5 | `src/pages/patient-portal/LabResults.tsx` | 4x `bg-white` | Resultados quebrados |
+| 6 | `src/pages/patient-portal/Appointments.tsx` | 3x `bg-white` | Agenda quebrada |
+| 7 | `src/pages/patient-portal/Prescriptions.tsx` | 3x `bg-white` | Receitas quebradas |
+
+##### TIER 2: Telemedicina (CRÍTICO - Video calls)
+
+| # | Arquivo | Violações | Problema |
+|---|---------|-----------|----------|
+| 8 | `src/components/telemedicine/WaitingRoom.tsx` | 6x gray hardcoded | Sala de espera não adapta |
+| 9 | `src/components/telemedicine/VideoRoom.tsx` | 3x gray hardcoded | Video room quebrado |
+| 10 | `src/components/telemedicine/TelemedicineModal.tsx` | 2x gray | Modal quebrado |
+
+##### TIER 3: Billing/TISS (ALTO - Revenue critical)
+
+| # | Arquivo | Violações | Problema |
+|---|---------|-----------|----------|
+| 11 | `src/pages/Billing.tsx` | STATUS_CONFIG hardcoded | Status colors não adaptam |
+| 12 | `src/components/billing/LoteCard.tsx` | STATUS_CONFIG hardcoded | Lotes não adaptam |
+| 13 | `src/components/billing/TissConsultaForm.tsx` | 5x focus:ring-blue | Focus incorreto |
+| 14 | `src/components/billing/TissSADTForm.tsx` | 2x focus:ring-purple | Focus incorreto |
+| 15 | `src/components/billing/ProcedimentoItem.tsx` | 9x focus:ring-purple | Focus incorreto |
+| 16 | `src/components/billing/TissFormSections.tsx` | 8x focus:ring-purple | Focus incorreto |
+
+##### TIER 4: Settings/Analytics (MÉDIO)
+
+| # | Arquivo | Violações | Problema |
+|---|---------|-----------|----------|
+| 17 | `src/components/settings/WorkflowSettings.tsx` | 2x gray + 1x bg-white | Toggle quebrado |
+| 18 | `src/components/settings/ConvenioSettings.tsx` | 2x gray | Badges quebrados |
+| 19 | `src/components/analytics/PatientInsights.tsx` | 3x gray | NPS cards quebrados |
+
+---
+
+#### 10.6 Checklist de Implementação
+
+##### SPRINT 1: Dark Mode Critical (2-3 dias)
+
+**Prioridade 1 - Patient Portal:**
+- [x] **10.6.1** Corrigir `Login.tsx` - Substituir `bg-white` por `bg-genesis-surface` ✅
+- [x] **10.6.2** Corrigir `Dashboard.tsx` - 6 substituições ✅
+- [x] **10.6.3** Corrigir `PatientPortalLayout.tsx` - 4 substituições ✅
+- [x] **10.6.4** Corrigir `Messages.tsx` - 4 substituições ✅
+- [x] **10.6.5** Corrigir `LabResults.tsx` - 4 substituições ✅
+- [x] **10.6.6** Corrigir `Appointments.tsx` - 3 substituições ✅
+- [x] **10.6.7** Corrigir `Prescriptions.tsx` - 3 substituições ✅
+- [x] **10.6.8** Corrigir `History.tsx` - 2 substituições ✅
+- [x] **10.6.9** Corrigir `Telehealth.tsx` - 2 substituições ✅
+- [x] **10.6.10** Corrigir `Billing.tsx` (portal) - 1 substituição ✅
+
+**Prioridade 2 - Telemedicina:**
+- [x] **10.6.11** Corrigir `WaitingRoom.tsx` - 6 substituições gray → genesis ✅
+- [x] **10.6.12** Corrigir `VideoRoom.tsx` - 3 substituições ✅
+- [x] **10.6.13** Corrigir `TelemedicineModal.tsx` - 2 substituições ✅
+- [x] **10.6.13b** Corrigir `TelemedicineButton.tsx` - tokens + micro-interações ✅
+
+##### SPRINT 2: Tokens Semânticos (1-2 dias)
+
+**Criar tokens de status em `index.css`:**
+- [ ] **10.6.14** Adicionar tokens status-* em @theme
+  ```css
+  @theme {
+    /* Status tokens - mapeiam para cores semânticas */
+    --color-status-draft: var(--color-genesis-muted);
+    --color-status-draft-bg: var(--color-genesis-soft);
+    --color-status-sent: var(--color-info);
+    --color-status-sent-bg: var(--color-info-soft);
+    --color-status-approved: var(--color-success);
+    --color-status-approved-bg: var(--color-success-soft);
+    --color-status-denied: var(--color-danger);
+    --color-status-denied-bg: var(--color-danger-soft);
+    --color-status-pending: var(--color-warning);
+    --color-status-pending-bg: var(--color-warning-soft);
+  }
+  ```
+
+**Atualizar STATUS_CONFIG:**
+- [x] **10.6.15** Refatorar `Billing.tsx` STATUS_CONFIG ✅
+- [x] **10.6.16** Refatorar `LoteCard.tsx` STATUS_CONFIG ✅
+- [ ] **10.6.17** Refatorar `ReportComponents.tsx` STATUS_COLORS
+- [x] **10.6.18** Refatorar `guia-constants.ts` ✅
+- [x] **10.6.18b** Refatorar `certificate-utils.ts` getStatusDisplay ✅
+
+##### SPRINT 3: Focus Rings (1 dia)
+
+**Buscar e substituir em TODOS os arquivos:**
+- [ ] **10.6.19** `focus:ring-blue-500` → `focus:ring-genesis-primary`
+- [ ] **10.6.20** `focus:ring-purple-500` → `focus:ring-genesis-primary`
+- [ ] **10.6.21** `focus:ring-blue-600` → `focus:ring-genesis-primary`
+
+**Arquivos principais:**
+- [ ] **10.6.22** TissConsultaForm.tsx (5 instâncias)
+- [ ] **10.6.23** TissSADTForm.tsx (2 instâncias)
+- [ ] **10.6.24** ProcedimentoItem.tsx (9 instâncias)
+- [ ] **10.6.25** TissFormSections.tsx (8 instâncias)
+
+##### SPRINT 4: Micro-interações (1-2 dias)
+
+**Padrão obrigatório para TODOS os botões CTA:**
+```tsx
+className="... hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200"
+```
+
+- [ ] **10.6.26** Adicionar micro-interações em `BookAppointment.tsx`
+- [ ] **10.6.27** Adicionar micro-interações em `TissConsultaForm.tsx`
+- [x] **10.6.28** Adicionar micro-interações em Patient Portal CTAs ✅
+- [ ] **10.6.29** Verificar consistência em todos os botões primários
+
+##### SPRINT 5: Acessibilidade (1-2 dias)
+
+**Tabs com ARIA:**
+- [ ] **10.6.30** Adicionar `role="tablist"` em `SOAPReview.tsx`
+- [ ] **10.6.31** Adicionar `role="tablist"` em `ClinicalReasoningPanel.tsx`
+- [ ] **10.6.32** Adicionar `aria-selected` em tabs
+
+**Cards clicáveis:**
+- [ ] **10.6.33** Adicionar `aria-label` em `ProfessionalSelector.tsx`
+- [ ] **10.6.34** Adicionar `role="region"` em `LabUploadPanel.tsx` drag area
+
+##### SPRINT 6: Responsividade (1 dia)
+
+**Corrigir grids fixos:**
+- [ ] **10.6.35** `GuiaDetail.tsx:120` - `grid-cols-4` → `grid-cols-1 md:grid-cols-2 lg:grid-cols-4`
+- [ ] **10.6.36** `LoteCard.tsx:262` - mesmo padrão
+
+---
+
+#### 10.7 Padrões de Código Obrigatórios
+
+##### 10.7.1 Cores - SEMPRE usar tokens:
+```tsx
+// ❌ PROIBIDO
+<div className="bg-white border-gray-200 text-gray-900">
+
+// ✅ OBRIGATÓRIO
+<div className="bg-genesis-surface border-genesis-border text-genesis-dark">
+```
+
+##### 10.7.2 Botões - SEMPRE com micro-interações:
+```tsx
+// ❌ PROIBIDO
+<button className="bg-genesis-primary text-white px-4 py-2 rounded-lg">
+
+// ✅ OBRIGATÓRIO
+<button className="bg-genesis-primary text-white px-4 py-2 rounded-lg
+  hover:bg-genesis-primary-dark hover:scale-[1.02] hover:-translate-y-0.5
+  active:scale-[0.98] transition-all duration-200">
+```
+
+##### 10.7.3 Focus - SEMPRE genesis-primary:
+```tsx
+// ❌ PROIBIDO
+<input className="focus:ring-blue-500 focus:border-blue-500">
+
+// ✅ OBRIGATÓRIO
+<input className="focus:ring-genesis-primary focus:border-genesis-primary">
+```
+
+##### 10.7.4 Status badges - SEMPRE semântico:
+```tsx
+// ❌ PROIBIDO
+const STATUS = {
+  success: 'bg-green-100 text-green-600',
+  error: 'bg-red-100 text-red-600',
+};
+
+// ✅ OBRIGATÓRIO
+const STATUS = {
+  success: 'bg-success-soft text-success',
+  error: 'bg-danger-soft text-danger',
+};
+```
+
+---
+
+#### 10.8 Validação e Testes
+
+##### Checklist de Validação:
+- [ ] **10.8.1** Dark mode testado em TODAS as páginas patient portal
+- [ ] **10.8.2** Dark mode testado em TODAS as páginas admin
+- [ ] **10.8.3** Dark mode testado em telemedicina
+- [ ] **10.8.4** Mobile responsivo testado (iPhone SE, iPad, Desktop)
+- [ ] **10.8.5** Keyboard navigation funcional em todos os forms
+- [ ] **10.8.6** Screen reader testado (VoiceOver/NVDA)
+
+##### Testes Automatizados:
+- [ ] **10.8.7** Criar teste de acessibilidade com axe-core
+- [ ] **10.8.8** Verificar contraste de cores (WCAG 2.1 AA)
+- [ ] **10.8.9** Rodar lint e typecheck
+
+---
+
+#### 10.9 Métricas de Sucesso
+
+| Métrica | Atual | Meta | Status |
+|---------|-------|------|--------|
+| Violações dark mode | 67 | 0 | ⏳ |
+| Cores hardcoded | 30+ | 0 | ⏳ |
+| Focus rings incorretos | 50+ | 0 | ⏳ |
+| Micro-interações faltando | 50+ | 0 | ⏳ |
+| ARIA attributes faltando | 20+ | 0 | ⏳ |
+| Score UX/UI geral | 78/100 | 97/100 | ⏳ |
+
+---
+
+#### 10.10 Referências Técnicas
+
+**Tailwind CSS v4:**
+- [Theme Variables - @theme Directive](https://tailwindcss.com/docs/theme)
+- [Dark Mode Configuration](https://tailwindcss.com/docs/dark-mode)
+- [Functions and Directives](https://tailwindcss.com/docs/functions-and-directives)
+- [Tailwind CSS v4.0 Announcement](https://tailwindcss.com/blog/tailwindcss-v4)
+
+**Design System Premium:**
+- [shadcn/ui Tailwind v4 Guide](https://ui.shadcn.com/docs/tailwind-v4)
+- [Multi-Theme with Tailwind v4](https://medium.com/render-beyond/build-a-flawless-multi-theme-ui-using-new-tailwind-css-v4-react-dca2b3c95510)
+
+**Acessibilidade:**
+- [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
+- [WAI-ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/)
 
 ---
 
@@ -1264,9 +1578,10 @@ src/components/settings/
 | Fase 7: Portal do Paciente | ✅ COMPLETO (22/12/2024) | 🔴 CRÍTICA |
 | Fase 8: Convênios/TISS - PESQUISA | ✅ PESQUISA COMPLETA (22/12/2024) | 🔴 CRÍTICA |
 | Fase 8b: Convênios/TISS - IMPLEMENTAÇÃO | ✅ COMPLETO (23/12/2024) | 🔴 CRÍTICA |
-| Fase 9: n8n Workflow Automation | ⏳ PENDENTE | 🟡 ALTA |
+| Fase 9: Workflow Automation | ✅ COMPLETO (23/12/2024) | 🟡 ALTA |
+| **Fase 10: UI/UX Premium Polish** | **🚧 50% IMPLEMENTADO (23/12/2024)** | **🔴 CRÍTICA** |
 
-**Progresso Geral:** 9.5/10 fases completas (95%)
+**Progresso Geral:** 10/11 fases completas (91%) - FASE 10 em andamento
 
 > ✅ **FASE 8 PESQUISA CONCLUÍDA:** Documento completo em `docs/research/CONVENIOS_TISS_RESEARCH.md`
 > Inclui: legislação ANS, padrão TISS 4.01, TUSS, certificação ICP-Brasil, requisitos de 7 operadoras
@@ -1278,8 +1593,24 @@ src/components/settings/
 > - ✅ ETAPA 6: Recebimento de Respostas (response-handler, glosa-triggers, demonstrativo-parser)
 > - ✅ ETAPA 7: Recurso de Glosa (createRecurso, sendRecurso, recurso-xml)
 > - ✅ ETAPA 8: Relatórios e Analytics (GlosasAnalysis, ReportsTab, export utilities)
+>
+> ✅ **FASE 9 COMPLETA (23/12/2024):**
+> - ✅ Follow-up Pós-Consulta (sendFollowUpMessages)
+> - ✅ Pesquisa NPS (sendNPSSurveys, npsResponseWebhook, calculateNPSScore)
+> - ✅ Lembrete de Retorno (sendPatientReturnReminders)
+> - ✅ Integração Labs (labsResultWebhook)
+> - ✅ UI de Configuração (WorkflowSettings.tsx, nova tab em Settings)
 > - ✅ Testes: 138 Cloud Functions + 1159 Frontend = **1297 tests**
 > - ✅ CODE_CONSTITUTION: Validação completa (todos arquivos < 500 linhas)
+>
+> 🚧 **FASE 10 EM PROGRESSO (23/12/2024) - 50%:**
+> - ✅ Sprint 1: Patient Portal (10 arquivos) - Dark mode tokens
+> - ✅ Sprint 1: Telemedicina (4 arquivos) - Tokens semânticos + micro-interações
+> - ✅ Sprint 2: STATUS_CONFIG (4 arquivos) - Billing, LoteCard, guia-constants, certificate-utils
+> - ✅ Fix: patient-return.ts - sendTemplateMessage signature
+> - ✅ Fix: tsconfig.json - Exclusão de arquivos de teste do build
+> - 🔲 Sprint 3: Focus Rings (7 itens)
+> - 🔲 Sprint 4-6: Micro-interações, Acessibilidade, Responsividade (12 itens)
 
 ---
 

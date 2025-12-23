@@ -19,6 +19,7 @@ import {
   Bell,
   MessageCircle,
   HeartPulse,
+  Zap,
 } from 'lucide-react';
 import { PixSettings } from '@/components/settings/PixSettings';
 import { DataExportRequest } from '@/components/consent/DataExportRequest';
@@ -27,6 +28,7 @@ import { MetricsDashboard } from '@/components/ai/scribe/MetricsDashboard';
 import { NotificationPreferences } from '@/components/notifications';
 import { WhatsAppSettings } from '@/components/settings/WhatsAppSettings';
 import { ConvenioSettings } from '@/components/settings/ConvenioSettings';
+import { WorkflowSettings } from '@/components/settings/WorkflowSettings';
 import { useClinicContext } from '@/contexts/ClinicContext';
 
 /**
@@ -56,6 +58,12 @@ const TABS = [
     label: 'WhatsApp',
     icon: MessageCircle,
     description: 'Integração WhatsApp Business API',
+  },
+  {
+    id: 'workflows',
+    label: 'Automações',
+    icon: Zap,
+    description: 'Workflows automáticos',
   },
   {
     id: 'pix',
@@ -227,6 +235,13 @@ export function Settings(): React.ReactElement {
         {activeTab === 'whatsapp' && (
           <div className="animate-in fade-in zoom-in-95">
             <WhatsAppSettings />
+          </div>
+        )}
+
+        {/* Workflows Tab */}
+        {activeTab === 'workflows' && (
+          <div className="animate-in fade-in zoom-in-95">
+            <WorkflowSettings />
           </div>
         )}
 

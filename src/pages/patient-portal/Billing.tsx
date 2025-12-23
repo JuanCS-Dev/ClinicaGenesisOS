@@ -65,17 +65,17 @@ const MOCK_INVOICES = [
 const STATUS_CONFIG = {
   paid: {
     label: 'Pago',
-    color: 'text-green-600 bg-green-50',
+    color: 'text-success bg-success-soft',
     icon: CheckCircle2,
   },
   pending: {
     label: 'Pendente',
-    color: 'text-amber-600 bg-amber-50',
+    color: 'text-warning bg-warning-soft',
     icon: Clock,
   },
   overdue: {
     label: 'Vencido',
-    color: 'text-red-600 bg-red-50',
+    color: 'text-danger bg-danger-soft',
     icon: AlertCircle,
   },
 };
@@ -193,13 +193,13 @@ export function PatientBilling(): React.ReactElement {
                     </div>
 
                     {invoice.status === 'pending' && (
-                      <button className="px-3 py-1.5 rounded-lg bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark transition-colors">
+                      <button className="px-3 py-1.5 rounded-lg bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
                         Pagar
                       </button>
                     )}
 
                     {invoice.status === 'paid' && (
-                      <button className="p-2 rounded-lg text-genesis-muted hover:bg-genesis-hover transition-colors">
+                      <button className="p-2 rounded-lg text-genesis-muted hover:bg-genesis-hover hover:scale-[1.05] active:scale-[0.95] transition-all duration-200">
                         <Download className="w-4 h-4" />
                       </button>
                     )}

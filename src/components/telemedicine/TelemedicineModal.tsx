@@ -196,7 +196,7 @@ export function TelemedicineModal({
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
         <div className="text-center text-white">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-16 h-16 border-4 border-genesis-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-lg">Preparando teleconsulta...</p>
         </div>
       </div>
@@ -208,12 +208,12 @@ export function TelemedicineModal({
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
         <div className="bg-genesis-surface rounded-2xl p-8 max-w-md text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <AlertCircle className="w-16 h-16 text-danger mx-auto mb-4" />
           <h2 className="text-xl font-bold text-genesis-dark mb-2">Erro na Teleconsulta</h2>
           <p className="text-genesis-medium mb-6">{error.message}</p>
           <button
             onClick={onClose}
-            className="px-6 py-3 bg-gray-900 hover:bg-genesis-dark/90 text-white rounded-xl font-medium"
+            className="px-6 py-3 bg-genesis-dark hover:bg-genesis-dark/90 text-white rounded-xl font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
           >
             Fechar
           </button>
@@ -227,7 +227,7 @@ export function TelemedicineModal({
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-gradient-to-b from-black/80 to-transparent">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 rounded-lg">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-genesis-primary rounded-lg">
             <Video className="w-4 h-4 text-white" />
             <span className="text-white font-medium text-sm">Teleconsulta</span>
           </div>
@@ -270,7 +270,7 @@ export function TelemedicineModal({
 
         {modalState === 'ended' && (
           <div className="flex flex-col items-center justify-center h-full max-w-lg mx-auto">
-            <div className="w-20 h-20 rounded-full bg-emerald-600 flex items-center justify-center mb-6">
+            <div className="w-20 h-20 rounded-full bg-success flex items-center justify-center mb-6">
               <Video className="w-10 h-10 text-white" />
             </div>
 
@@ -293,14 +293,14 @@ export function TelemedicineModal({
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Adicione observações sobre a teleconsulta..."
-                  className="w-full h-32 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full h-32 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-genesis-primary resize-none"
                 />
               </div>
             )}
 
             <button
               onClick={handleSaveAndClose}
-              className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold transition-colors"
+              className="px-8 py-3 bg-genesis-primary hover:bg-genesis-primary-dark text-white rounded-xl font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
             >
               {isProfessional ? 'Salvar e Fechar' : 'Fechar'}
             </button>

@@ -184,7 +184,7 @@ function NotificationsCard() {
           <Bell className="w-5 h-5 text-genesis-primary" />
           <h3 className="font-semibold text-genesis-dark">Notificações</h3>
           {unreadCount > 0 && (
-            <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-xs font-medium">
+            <span className="px-2 py-0.5 rounded-full bg-danger-soft text-danger text-xs font-medium">
               {unreadCount}
             </span>
           )}

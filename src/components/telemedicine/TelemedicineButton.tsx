@@ -75,10 +75,10 @@ export function TelemedicineButton({
         ${loading ? 'cursor-wait' : 'cursor-pointer'}
         ${
           hasActiveSession
-            ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-200'
-            : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-200'
+            ? 'bg-success hover:bg-success/90 text-white shadow-success/20'
+            : 'bg-genesis-primary hover:bg-genesis-primary-dark text-white shadow-genesis-primary/20'
         }
-        hover:scale-105 hover:shadow-md
+        hover:scale-[1.05] active:scale-[0.98] hover:shadow-md
       `}
       title={hasActiveSession ? 'Entrar na teleconsulta' : 'Iniciar teleconsulta'}
     >

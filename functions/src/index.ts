@@ -62,3 +62,18 @@ export {
   sendLote,
   retrySendLote,
 } from './tiss/index.js';
+
+// ============================================
+// Workflows - Automation (9)
+// ============================================
+export {
+  // Follow-up after appointments
+  sendFollowUpMessages,
+  // NPS surveys
+  sendNPSSurveys,
+  npsResponseWebhook,
+  // Patient return reminders
+  sendPatientReturnReminders,
+  // Labs integration
+  labsResultWebhook,
+} from './workflows/index.js';

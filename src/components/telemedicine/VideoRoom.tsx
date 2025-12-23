@@ -119,12 +119,12 @@ export function VideoRoom({
   if (connectionError) {
     return (
       <div className="flex flex-col items-center justify-center h-full bg-gray-900 text-white p-8">
-        <AlertCircle className="w-16 h-16 text-red-400 mb-4" />
+        <AlertCircle className="w-16 h-16 text-danger mb-4" />
         <h2 className="text-xl font-semibold mb-2">Erro de Conexão</h2>
         <p className="text-genesis-subtle text-center mb-6">{connectionError}</p>
         <button
           onClick={() => window.location.reload()}
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl font-medium transition-colors"
+          className="px-6 py-3 bg-genesis-primary hover:bg-genesis-primary-dark rounded-xl font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
         >
           Tentar Novamente
         </button>
@@ -137,7 +137,7 @@ export function VideoRoom({
       {/* Loading overlay */}
       {isLoading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-10">
-          <Loader2 className="w-12 h-12 text-blue-400 animate-spin mb-4" />
+          <Loader2 className="w-12 h-12 text-genesis-primary animate-spin mb-4" />
           <p className="text-white text-lg">Conectando à teleconsulta...</p>
           <p className="text-genesis-subtle text-sm mt-2">
             Preparando ambiente seguro de vídeo
@@ -228,7 +228,7 @@ export function VideoRoom({
         <div className="absolute bottom-4 right-4 z-20">
           <button
             onClick={handleEndCall}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium shadow-lg transition-all hover:scale-105"
+            className="flex items-center gap-2 px-4 py-2 bg-danger hover:bg-danger/90 text-white rounded-xl font-medium shadow-lg transition-all duration-200 hover:scale-[1.05] active:scale-[0.98]"
             title="Encerrar consulta"
           >
             <PhoneOff className="w-5 h-5" />

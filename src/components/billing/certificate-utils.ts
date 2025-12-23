@@ -56,26 +56,26 @@ export function getStatusDisplay(status: CertificateStatus): StatusDisplay {
   switch (status) {
     case 'valid':
       return {
-        color: 'text-emerald-600',
-        bgColor: 'bg-emerald-50 border-emerald-200',
+        color: 'text-success',
+        bgColor: 'bg-success-soft border-success/30',
         label: 'Válido',
       };
     case 'expiring_soon':
       return {
-        color: 'text-amber-600',
-        bgColor: 'bg-amber-50 border-amber-200',
+        color: 'text-warning',
+        bgColor: 'bg-warning-soft border-warning/30',
         label: 'Expirando em breve',
       };
     case 'expired':
       return {
-        color: 'text-red-600',
-        bgColor: 'bg-red-50 border-red-200',
+        color: 'text-danger',
+        bgColor: 'bg-danger-soft border-danger/30',
         label: 'Expirado',
       };
     default:
       return {
-        color: 'text-gray-500',
-        bgColor: 'bg-gray-50 border-gray-200',
+        color: 'text-genesis-muted',
+        bgColor: 'bg-genesis-soft border-genesis-border',
         label: 'Não configurado',
       };
   }

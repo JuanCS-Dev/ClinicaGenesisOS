@@ -41,8 +41,9 @@ export function generateCSV<T extends Record<string, unknown>>(
   const rows = data.map((row) => {
     return columns
       .map((col) => {
-        const value = col.key.includes('.')
-          ? getNestedValue(row, col.key as string)
+        const keyStr = String(col.key);
+        const value = keyStr.includes('.')
+          ? getNestedValue(row, keyStr)
           : row[col.key as keyof T];
 
         const formatted = col.format ? col.format(value, row) : String(value ?? '');
@@ -94,8 +95,9 @@ export function generatePrintHTML<T extends Record<string, unknown>>(
     .map((row) => {
       const cells = columns
         .map((col) => {
-          const value = col.key.includes('.')
-            ? getNestedValue(row, col.key as string)
+          const keyStr = String(col.key);
+          const value = keyStr.includes('.')
+            ? getNestedValue(row, keyStr)
             : row[col.key as keyof T];
 
           const formatted = col.format ? col.format(value, row) : String(value ?? '');
@@ -306,7 +308,7 @@ export function exportGuiasToCSV(guias: GuiaFirestore[], filename: string): void
     { key: 'createdAt', label: 'Criado Em' },
   ];
 
-  downloadCSV(guias, columns, { filename });
+  downloadCSV(guias as unknown as Record<string, unknown>[], columns as unknown as ExportColumn<Record<string, unknown>>[], { filename });
 }
 
 /**
@@ -330,7 +332,7 @@ export function exportGuiasToPDF(guias: GuiaFirestore[], options: { title: strin
     { key: 'status', label: 'Status' },
   ];
 
-  exportToPDF(guias, columns, {
+  exportToPDF(guias as unknown as Record<string, unknown>[], columns as unknown as ExportColumn<Record<string, unknown>>[], {
     filename: 'guias',
     title: options.title,
     subtitle: `Total: ${guias.length} guias`,

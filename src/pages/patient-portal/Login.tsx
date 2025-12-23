@@ -40,9 +40,9 @@ export function PatientLogin(): React.ReactElement {
     return (
       <div className="min-h-screen bg-gradient-to-br from-genesis-soft to-white flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-3xl shadow-xl p-8 text-center">
-            <div className="w-16 h-16 mx-auto rounded-full bg-green-100 flex items-center justify-center mb-6">
-              <CheckCircle2 className="w-8 h-8 text-green-600" />
+          <div className="bg-genesis-surface rounded-3xl shadow-xl p-8 text-center">
+            <div className="w-16 h-16 mx-auto rounded-full bg-success-soft flex items-center justify-center mb-6">
+              <CheckCircle2 className="w-8 h-8 text-success" />
             </div>
             <h1 className="text-2xl font-bold text-genesis-dark mb-2">
               Link enviado!
@@ -90,7 +90,7 @@ export function PatientLogin(): React.ReactElement {
         </div>
 
         {/* Login Card */}
-        <div className="bg-white rounded-3xl shadow-xl p-8">
+        <div className="bg-genesis-surface rounded-3xl shadow-xl p-8">
           <div className="text-center mb-6">
             <h2 className="text-xl font-semibold text-genesis-dark">
               Acesse seu portal
@@ -126,7 +126,7 @@ export function PatientLogin(): React.ReactElement {
             </div>
 
             {error && (
-              <div className="bg-red-50 text-red-700 text-sm rounded-xl p-3 border border-red-100">
+              <div className="bg-danger-soft text-danger text-sm rounded-xl p-3 border border-danger/20">
                 {error}
               </div>
             )}
@@ -134,7 +134,7 @@ export function PatientLogin(): React.ReactElement {
             <button
               type="submit"
               disabled={loading || !email}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-genesis-primary text-white font-medium hover:bg-genesis-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-genesis-primary text-white font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:translate-y-0"
             >
               {loading ? (
                 <>

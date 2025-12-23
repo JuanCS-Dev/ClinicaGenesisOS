@@ -68,10 +68,10 @@ function DeviceCheck() {
       <div className="flex justify-center gap-4">
         <button
           onClick={() => setVideoEnabled(!videoEnabled)}
-          className={`p-4 rounded-xl transition-colors ${
+          className={`p-4 rounded-xl transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] ${
             videoEnabled
               ? 'bg-genesis-primary text-white'
-              : 'bg-red-500 text-white'
+              : 'bg-danger text-white'
           }`}
         >
           {videoEnabled ? (
@@ -83,10 +83,10 @@ function DeviceCheck() {
 
         <button
           onClick={() => setAudioEnabled(!audioEnabled)}
-          className={`p-4 rounded-xl transition-colors ${
+          className={`p-4 rounded-xl transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] ${
             audioEnabled
               ? 'bg-genesis-primary text-white'
-              : 'bg-red-500 text-white'
+              : 'bg-danger text-white'
           }`}
         >
           {audioEnabled ? (
@@ -100,15 +100,15 @@ function DeviceCheck() {
       {/* Status */}
       <div className="mt-4 space-y-2">
         <div className="flex items-center gap-2 text-sm">
-          <CheckCircle2 className="w-4 h-4 text-green-500" />
+          <CheckCircle2 className="w-4 h-4 text-success" />
           <span className="text-genesis-medium">Câmera funcionando</span>
         </div>
         <div className="flex items-center gap-2 text-sm">
-          <CheckCircle2 className="w-4 h-4 text-green-500" />
+          <CheckCircle2 className="w-4 h-4 text-success" />
           <span className="text-genesis-medium">Microfone funcionando</span>
         </div>
         <div className="flex items-center gap-2 text-sm">
-          <CheckCircle2 className="w-4 h-4 text-green-500" />
+          <CheckCircle2 className="w-4 h-4 text-success" />
           <span className="text-genesis-medium">Conexão estável</span>
         </div>
       </div>
@@ -153,7 +153,7 @@ function AppointmentInfo({ appointment }: { appointment: typeof MOCK_TELECONSULT
       </div>
 
       {canJoin ? (
-        <button className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-green-500 text-white font-medium hover:bg-green-600 transition-colors">
+        <button className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-success text-white font-medium hover:bg-success/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
           <Video className="w-5 h-5" />
           Entrar na Sala
         </button>

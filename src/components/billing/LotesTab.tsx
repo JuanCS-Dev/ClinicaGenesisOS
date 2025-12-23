@@ -148,21 +148,21 @@ export function LotesTab({
         </div>
 
         <div className="p-4 bg-genesis-surface rounded-xl border border-genesis-border-subtle">
-          <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 mb-1">
+          <div className="flex items-center gap-2 text-warning mb-1">
             <Clock className="w-4 h-4" />
             <span className="text-sm">Pendentes</span>
           </div>
-          <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+          <p className="text-2xl font-bold text-warning">
             {lotes.filter((l) => l.status === 'rascunho' || l.status === 'pronto').length}
           </p>
         </div>
 
         <div className="p-4 bg-genesis-surface rounded-xl border border-genesis-border-subtle">
-          <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-1">
+          <div className="flex items-center gap-2 text-success mb-1">
             <Send className="w-4 h-4" />
             <span className="text-sm">Enviados</span>
           </div>
-          <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+          <p className="text-2xl font-bold text-success">
             {lotes.filter((l) => l.status === 'enviado' || l.status === 'processado').length}
           </p>
         </div>

@@ -8,7 +8,7 @@
 export { TissConsultaForm } from './TissConsultaForm';
 export type { TissConsultaFormData } from './TissConsultaForm';
 export { TissSADTForm } from './TissSADTForm';
-export { TissFormSections } from './TissFormSections';
+export { OperadoraSection, BeneficiarioSection, SolicitacaoSection } from './TissFormSections';
 export { ProcedimentoItem } from './ProcedimentoItem';
 
 // Preview and Detail

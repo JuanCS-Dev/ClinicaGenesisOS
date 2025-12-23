@@ -108,22 +108,22 @@ const STATUS_CONFIG: Record<
 > = {
   confirmed: {
     label: 'Confirmada',
-    color: 'text-green-600 bg-green-50',
+    color: 'text-success bg-success-soft',
     icon: CheckCircle2,
   },
   pending: {
     label: 'Pendente',
-    color: 'text-amber-600 bg-amber-50',
+    color: 'text-warning bg-warning-soft',
     icon: AlertCircle,
   },
   completed: {
     label: 'Realizada',
-    color: 'text-blue-600 bg-blue-50',
+    color: 'text-info bg-info-soft',
     icon: CheckCircle2,
   },
   cancelled: {
     label: 'Cancelada',
-    color: 'text-red-600 bg-red-50',
+    color: 'text-danger bg-danger-soft',
     icon: XCircle,
   },
 };
@@ -205,15 +205,15 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment }) => {
       {upcoming && appointment.status !== 'cancelled' && (
         <div className="flex gap-2 mt-4 pt-4 border-t border-genesis-border">
           {appointment.type === 'teleconsulta' && (
-            <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark transition-colors">
+            <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
               <Video className="w-4 h-4" />
               Entrar
             </button>
           )}
-          <button className="flex-1 py-2 rounded-xl border border-genesis-border text-genesis-medium text-sm font-medium hover:bg-genesis-hover transition-colors">
+          <button className="flex-1 py-2 rounded-xl border border-genesis-border text-genesis-medium text-sm font-medium hover:bg-genesis-hover hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
             Remarcar
           </button>
-          <button className="py-2 px-4 rounded-xl text-red-600 text-sm font-medium hover:bg-red-50 transition-colors">
+          <button className="py-2 px-4 rounded-xl text-danger text-sm font-medium hover:bg-danger-soft hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
             Cancelar
           </button>
         </div>
@@ -254,7 +254,7 @@ export function PatientAppointments(): React.ReactElement {
           </p>
         </div>
 
-        <button className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-genesis-primary text-white font-medium hover:bg-genesis-primary-dark transition-colors">
+        <button className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-genesis-primary text-white font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200">
           <Plus className="w-5 h-5" />
           Nova Consulta
         </button>

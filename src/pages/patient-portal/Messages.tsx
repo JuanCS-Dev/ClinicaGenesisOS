@@ -259,7 +259,7 @@ function ChatView({ conversation }: { conversation: Conversation }) {
           <button
             onClick={handleSend}
             disabled={!message.trim()}
-            className="p-2.5 rounded-xl bg-genesis-primary text-white hover:bg-genesis-primary-dark transition-colors disabled:opacity-50"
+            className="p-2.5 rounded-xl bg-genesis-primary text-white hover:bg-genesis-primary-dark hover:scale-[1.05] active:scale-[0.95] transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100"
           >
             <Send className="w-5 h-5" />
           </button>
@@ -309,7 +309,7 @@ export function PatientMessages(): React.ReactElement {
           </p>
         </div>
 
-        <button className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-genesis-primary text-white font-medium hover:bg-genesis-primary-dark transition-colors">
+        <button className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-genesis-primary text-white font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200">
           <Plus className="w-5 h-5" />
           Nova Mensagem
         </button>

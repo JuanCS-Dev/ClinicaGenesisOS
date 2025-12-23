@@ -149,23 +149,23 @@ const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ prescription }) => 
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
             {isExpired ? (
-              <div className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-600 flex items-center gap-1">
+              <div className="px-2.5 py-1 rounded-lg text-xs font-medium bg-danger-soft text-danger flex items-center gap-1">
                 <AlertTriangle className="w-3 h-3" />
                 Expirada
               </div>
             ) : isExpiringSoon ? (
-              <div className="px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 flex items-center gap-1">
+              <div className="px-2.5 py-1 rounded-lg text-xs font-medium bg-warning-soft text-warning flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 Expira em {daysLeft} dia{daysLeft !== 1 ? 's' : ''}
               </div>
             ) : (
-              <div className="px-2.5 py-1 rounded-lg text-xs font-medium bg-green-50 text-green-600 flex items-center gap-1">
+              <div className="px-2.5 py-1 rounded-lg text-xs font-medium bg-success-soft text-success flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3" />
                 Ativa
               </div>
             )}
             {prescription.hasDigitalSignature && (
-              <div className="px-2.5 py-1 rounded-lg text-xs font-medium bg-blue-50 text-blue-600 flex items-center gap-1">
+              <div className="px-2.5 py-1 rounded-lg text-xs font-medium bg-info-soft text-info flex items-center gap-1">
                 <QrCode className="w-3 h-3" />
                 Digital
               </div>
@@ -210,12 +210,12 @@ const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ prescription }) => 
 
       {/* Actions */}
       <div className="p-4 pt-0 flex gap-2">
-        <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark transition-colors">
+        <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
           <Download className="w-4 h-4" />
           Baixar PDF
         </button>
         {!isExpired && (
-          <button className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-genesis-border text-genesis-medium text-sm font-medium hover:bg-genesis-hover transition-colors">
+          <button className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-genesis-border text-genesis-medium text-sm font-medium hover:bg-genesis-hover hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
             <RefreshCw className="w-4 h-4" />
           </button>
         )}

@@ -155,10 +155,10 @@ export function WaitingRoom({
       case 'checking':
         return <Loader2 className="w-4 h-4 animate-spin text-genesis-subtle" />;
       case 'granted':
-        return <CheckCircle className="w-4 h-4 text-emerald-500" />;
+        return <CheckCircle className="w-4 h-4 text-success" />;
       case 'denied':
       case 'error':
-        return <XCircle className="w-4 h-4 text-red-500" />;
+        return <XCircle className="w-4 h-4 text-danger" />;
     }
   };
 
@@ -212,10 +212,10 @@ export function WaitingRoom({
       <div className="flex items-center gap-4 mb-8">
         <button
           onClick={toggleVideo}
-          className={`flex items-center gap-2 px-4 py-3 rounded-xl font-medium transition-all ${
+          className={`flex items-center gap-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
             videoEnabled
               ? 'bg-gray-700 hover:bg-gray-600 text-white'
-              : 'bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/50'
+              : 'bg-danger/20 hover:bg-danger/30 text-danger border border-danger/50'
           }`}
           disabled={deviceStatus.camera === 'denied'}
         >
@@ -229,10 +229,10 @@ export function WaitingRoom({
 
         <button
           onClick={toggleAudio}
-          className={`flex items-center gap-2 px-4 py-3 rounded-xl font-medium transition-all ${
+          className={`flex items-center gap-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
             audioEnabled
               ? 'bg-gray-700 hover:bg-gray-600 text-white'
-              : 'bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/50'
+              : 'bg-danger/20 hover:bg-danger/30 text-danger border border-danger/50'
           }`}
           disabled={deviceStatus.microphone === 'denied'}
         >
@@ -259,9 +259,9 @@ export function WaitingRoom({
 
       {/* Waiting indicator */}
       {!isProfessional && (
-        <div className="flex items-center gap-3 px-4 py-2 bg-blue-600/20 border border-blue-600/30 rounded-xl mb-8">
-          <Clock className="w-5 h-5 text-blue-400" />
-          <span className="text-blue-300">
+        <div className="flex items-center gap-3 px-4 py-2 bg-info/20 border border-info/30 rounded-xl mb-8">
+          <Clock className="w-5 h-5 text-info" />
+          <span className="text-info">
             Aguardando há {formatTime(waitingTime)}
           </span>
         </div>
@@ -271,7 +271,7 @@ export function WaitingRoom({
       <div className="flex items-center gap-4">
         <button
           onClick={onCancel}
-          className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-medium transition-colors"
+          className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
         >
           Cancelar
         </button>
@@ -279,9 +279,9 @@ export function WaitingRoom({
         <button
           onClick={onReady}
           disabled={!canJoin}
-          className={`px-8 py-3 rounded-xl font-semibold transition-all ${
+          className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${
             canJoin
-              ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 hover:scale-105'
+              ? 'bg-success hover:bg-success/90 text-white shadow-lg shadow-success/30 hover:scale-[1.05] active:scale-[0.98]'
               : 'bg-gray-600 text-genesis-subtle cursor-not-allowed'
           }`}
         >
@@ -291,8 +291,8 @@ export function WaitingRoom({
 
       {/* Permission warning */}
       {(deviceStatus.camera === 'denied' || deviceStatus.microphone === 'denied') && (
-        <div className="mt-6 p-4 bg-amber-600/20 border border-amber-600/30 rounded-xl max-w-md text-center">
-          <p className="text-amber-300 text-sm">
+        <div className="mt-6 p-4 bg-warning/20 border border-warning/30 rounded-xl max-w-md text-center">
+          <p className="text-warning text-sm">
             Para participar da teleconsulta, você precisa permitir o acesso à
             câmera e microfone nas configurações do seu navegador.
           </p>

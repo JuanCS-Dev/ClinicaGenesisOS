@@ -69,7 +69,7 @@ export function PatientHistory(): React.ReactElement {
           </p>
         </div>
 
-        <button className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-genesis-border text-genesis-medium font-medium hover:bg-genesis-hover transition-colors">
+        <button className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-genesis-border text-genesis-medium font-medium hover:bg-genesis-hover hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
           <Download className="w-5 h-5" />
           Exportar Histórico
         </button>
@@ -92,7 +92,7 @@ export function PatientHistory(): React.ReactElement {
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-blue-50 text-blue-600">
+                    <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-info-soft text-info">
                       {record.type}
                     </span>
                     <span className="text-xs text-genesis-muted flex items-center gap-1">

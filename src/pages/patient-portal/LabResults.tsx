@@ -101,17 +101,17 @@ const STATUS_CONFIG: Record<
 > = {
   ready: {
     label: 'Disponível',
-    color: 'text-green-600 bg-green-50',
+    color: 'text-success bg-success-soft',
     icon: CheckCircle2,
   },
   pending: {
     label: 'Aguardando',
-    color: 'text-amber-600 bg-amber-50',
+    color: 'text-warning bg-warning-soft',
     icon: Clock,
   },
   partial: {
     label: 'Parcial',
-    color: 'text-blue-600 bg-blue-50',
+    color: 'text-info bg-info-soft',
     icon: Clock,
   },
 };
@@ -148,7 +148,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
             {statusConfig.label}
           </div>
           {result.hasAbnormal && (
-            <div className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-600 flex items-center gap-1">
+            <div className="px-2.5 py-1 rounded-lg text-xs font-medium bg-danger-soft text-danger flex items-center gap-1">
               <AlertTriangle className="w-3 h-3" />
               Atenção
             </div>
@@ -176,11 +176,11 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
 
       {result.status === 'ready' && (
         <div className="flex gap-2">
-          <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark transition-colors">
+          <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
             <Eye className="w-4 h-4" />
             Visualizar
           </button>
-          <button className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-genesis-border text-genesis-medium text-sm font-medium hover:bg-genesis-hover transition-colors">
+          <button className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-genesis-border text-genesis-medium text-sm font-medium hover:bg-genesis-hover hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
             <Download className="w-4 h-4" />
           </button>
         </div>
@@ -193,7 +193,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
       )}
 
       {result.status === 'partial' && (
-        <button className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-genesis-border text-genesis-medium text-sm font-medium hover:bg-genesis-hover transition-colors">
+        <button className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-genesis-border text-genesis-medium text-sm font-medium hover:bg-genesis-hover hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
           <Eye className="w-4 h-4" />
           Ver Parcial
         </button>
