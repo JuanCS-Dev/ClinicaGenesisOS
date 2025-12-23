@@ -26,16 +26,23 @@ import { toast } from 'sonner';
 import { useOperadoras } from '@/hooks/useOperadoras';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { OperadoraForm } from './OperadoraForm';
+import { CertificadoUpload, type CertificadoInfo } from '@/components/billing/CertificadoUpload';
 import type { OperadoraFirestore, CreateOperadoraInput } from '@/types';
 
 interface ConvenioSettingsProps {
   cnes?: string;
   cnpj?: string;
+  certificado?: CertificadoInfo;
+  onCertificateConfigured?: (info: CertificadoInfo) => void;
+  onCertificateRemoved?: () => void;
 }
 
 export function ConvenioSettings({
   cnes,
   cnpj,
+  certificado,
+  onCertificateConfigured,
+  onCertificateRemoved,
 }: ConvenioSettingsProps): React.ReactElement {
   const {
     operadoras,
@@ -202,6 +209,15 @@ export function ConvenioSettings({
           </div>
         )}
       </div>
+
+      {/* Certificate Upload Section */}
+      {onCertificateConfigured && (
+        <CertificadoUpload
+          certificado={certificado}
+          onCertificateConfigured={onCertificateConfigured}
+          onCertificateRemoved={onCertificateRemoved}
+        />
+      )}
 
       {/* Operadoras Section */}
       <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle p-6">
