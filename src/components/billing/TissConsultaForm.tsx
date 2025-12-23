@@ -9,8 +9,6 @@ import React, { useState, useCallback, useMemo } from 'react';
 import {
   FileText,
   Search,
-  User,
-  Building2,
   Calendar,
   DollarSign,
   AlertCircle,
@@ -23,6 +21,7 @@ import type {
   CodigoTUSS,
 } from '@/types';
 import { searchTussCodes, getConsultaCodes } from '@/services/tiss';
+import { OperadoraSection, BeneficiarioSection } from './TissFormSections';
 
 // =============================================================================
 // TYPES
@@ -209,92 +208,26 @@ export function TissConsultaForm({
       </div>
 
       {/* Operadora Section */}
-      <div className="bg-genesis-soft rounded-xl p-4 space-y-4">
-        <div className="flex items-center gap-2 text-genesis-text">
-          <Building2 className="w-4 h-4" />
-          <span className="font-medium">Operadora / Convênio</span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-genesis-text mb-1">
-              Registro ANS *
-            </label>
-            <input
-              type="text"
-              value={registroANS}
-              onChange={(e) => setRegistroANS(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              placeholder="000000"
-              maxLength={6}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.registroANS ? 'border-red-300' : 'border-genesis-border'
-              }`}
-            />
-            {errors.registroANS && (
-              <p className="text-xs text-red-500 mt-1">{errors.registroANS}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-genesis-text mb-1">
-              Nome da Operadora *
-            </label>
-            <input
-              type="text"
-              value={nomeOperadora}
-              onChange={(e) => setNomeOperadora(e.target.value)}
-              placeholder="Ex: Unimed, Bradesco Saúde"
-              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-      </div>
+      <OperadoraSection
+        registroANS={registroANS}
+        nomeOperadora={nomeOperadora}
+        onRegistroANSChange={setRegistroANS}
+        onNomeOperadoraChange={setNomeOperadora}
+        errors={{ registroANS: errors.registroANS }}
+      />
 
       {/* Beneficiário Section */}
-      <div className="bg-genesis-soft rounded-xl p-4 space-y-4">
-        <div className="flex items-center gap-2 text-genesis-text">
-          <User className="w-4 h-4" />
-          <span className="font-medium">Dados do Beneficiário</span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-genesis-text mb-1">
-              Número da Carteira *
-            </label>
-            <input
-              type="text"
-              value={numeroCarteira}
-              onChange={(e) => setNumeroCarteira(e.target.value.replace(/\D/g, ''))}
-              placeholder="00000000000000000"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.numeroCarteira ? 'border-red-300' : 'border-genesis-border'
-              }`}
-            />
-            {errors.numeroCarteira && (
-              <p className="text-xs text-red-500 mt-1">{errors.numeroCarteira}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-genesis-text mb-1">
-              Nome do Beneficiário *
-            </label>
-            <input
-              type="text"
-              value={nomeBeneficiario}
-              onChange={(e) => setNomeBeneficiario(e.target.value)}
-              placeholder="Nome completo"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.nomeBeneficiario ? 'border-red-300' : 'border-genesis-border'
-              }`}
-            />
-            {errors.nomeBeneficiario && (
-              <p className="text-xs text-red-500 mt-1">{errors.nomeBeneficiario}</p>
-            )}
-          </div>
-        </div>
-      </div>
+      <BeneficiarioSection
+        numeroCarteira={numeroCarteira}
+        nomeBeneficiario={nomeBeneficiario}
+        onNumeroCarteiraChange={setNumeroCarteira}
+        onNomeBeneficiarioChange={setNomeBeneficiario}
+        errors={{
+          numeroCarteira: errors.numeroCarteira,
+          nomeBeneficiario: errors.nomeBeneficiario,
+        }}
+        compact
+      />
 
       {/* Atendimento Section */}
       <div className="bg-genesis-soft rounded-xl p-4 space-y-4">

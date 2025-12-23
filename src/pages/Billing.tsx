@@ -12,16 +12,12 @@ import {
   Plus,
   Download,
   AlertTriangle,
-  CheckCircle,
   Clock,
-  Filter,
   Search,
   Eye,
   Send,
-  DollarSign,
   TrendingUp,
   Calendar,
-  ChevronRight,
   RefreshCw,
 } from 'lucide-react';
 import { TissConsultaForm } from '@/components/billing';

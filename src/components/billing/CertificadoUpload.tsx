@@ -18,34 +18,19 @@ import {
   Loader2,
   HelpCircle,
   X,
-  FileKey,
-  Calendar,
-  Building2,
-  RefreshCw,
-  Trash2,
   Eye,
   EyeOff,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  type CertificadoInfo,
+  getStatusDisplay,
+  mockValidateCertificate,
+} from './certificate-utils';
+import { CertificateDisplay } from './CertificateDisplay';
 
-/**
- * Certificate status type
- */
-type CertificateStatus = 'not_configured' | 'valid' | 'expiring_soon' | 'expired';
-
-/**
- * Certificate info stored for the clinic
- */
-export interface CertificadoInfo {
-  configurado: boolean;
-  tipo: 'A1' | 'A3';
-  nomeArquivo?: string;
-  razaoSocial?: string;
-  cnpj?: string;
-  emissor?: string;
-  validoAte?: string;
-  status: CertificateStatus;
-}
+// Re-export for backwards compatibility
+export type { CertificadoInfo } from './certificate-utils';
 
 interface CertificadoUploadProps {
   /** Current certificate info (if configured) */
@@ -54,86 +39,6 @@ interface CertificadoUploadProps {
   onCertificateConfigured: (info: CertificadoInfo) => void;
   /** Callback when certificate is removed */
   onCertificateRemoved?: () => void;
-}
-
-/**
- * Calculate certificate status based on expiry date.
- */
-function getCertificateStatus(validoAte?: string): CertificateStatus {
-  if (!validoAte) return 'not_configured';
-
-  const expiryDate = new Date(validoAte);
-  const now = new Date();
-  const daysUntilExpiry = Math.floor(
-    (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-  );
-
-  if (daysUntilExpiry < 0) return 'expired';
-  if (daysUntilExpiry < 30) return 'expiring_soon';
-  return 'valid';
-}
-
-/**
- * Get status color and label.
- */
-function getStatusDisplay(status: CertificateStatus): { color: string; label: string; bgColor: string } {
-  switch (status) {
-    case 'valid':
-      return {
-        color: 'text-emerald-600',
-        bgColor: 'bg-emerald-50 border-emerald-200',
-        label: 'Válido',
-      };
-    case 'expiring_soon':
-      return {
-        color: 'text-amber-600',
-        bgColor: 'bg-amber-50 border-amber-200',
-        label: 'Expirando em breve',
-      };
-    case 'expired':
-      return {
-        color: 'text-red-600',
-        bgColor: 'bg-red-50 border-red-200',
-        label: 'Expirado',
-      };
-    default:
-      return {
-        color: 'text-gray-500',
-        bgColor: 'bg-gray-50 border-gray-200',
-        label: 'Não configurado',
-      };
-  }
-}
-
-/**
- * Mock certificate validation - simulates reading certificate info.
- * In production, this would use a Cloud Function to securely parse the .pfx
- */
-async function mockValidateCertificate(
-  _file: File,
-  _password: string
-): Promise<CertificadoInfo> {
-  // Simulate server validation delay
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-
-  // Simulate 10% chance of wrong password
-  if (Math.random() < 0.1) {
-    throw new Error('Senha incorreta ou certificado inválido');
-  }
-
-  // Return mock certificate info
-  const validoAte = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
-
-  return {
-    configurado: true,
-    tipo: 'A1',
-    nomeArquivo: _file.name,
-    razaoSocial: 'Clínica Exemplo LTDA',
-    cnpj: '12.345.678/0001-90',
-    emissor: 'AC SERASA RFB V5',
-    validoAte,
-    status: getCertificateStatus(validoAte),
-  };
 }
 
 /**
@@ -286,106 +191,15 @@ export function CertificadoUpload({
       <div className="p-6">
         {/* Current Certificate Display */}
         {certificado?.configurado && !showUploadForm && (
-          <div className={`p-4 rounded-xl border ${statusDisplay.bgColor}`}>
-            <div className="flex items-start justify-between">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className={`w-5 h-5 ${statusDisplay.color} flex-shrink-0 mt-0.5`} />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-genesis-dark">
-                      Certificado configurado
-                    </span>
-                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusDisplay.color} ${statusDisplay.bgColor}`}>
-                      {statusDisplay.label}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 space-y-2 text-sm">
-                    {certificado.razaoSocial && (
-                      <div className="flex items-center gap-2 text-genesis-muted">
-                        <Building2 className="w-4 h-4" />
-                        {certificado.razaoSocial}
-                      </div>
-                    )}
-                    {certificado.cnpj && (
-                      <div className="flex items-center gap-2 text-genesis-muted">
-                        <FileKey className="w-4 h-4" />
-                        CNPJ: {certificado.cnpj}
-                      </div>
-                    )}
-                    {certificado.validoAte && (
-                      <div className="flex items-center gap-2 text-genesis-muted">
-                        <Calendar className="w-4 h-4" />
-                        Válido até: {new Date(certificado.validoAte).toLocaleDateString('pt-BR')}
-                      </div>
-                    )}
-                    {certificado.emissor && (
-                      <div className="text-xs text-genesis-subtle mt-2">
-                        Emissor: {certificado.emissor}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setShowUploadForm(true)}
-                  className="p-2 rounded-lg hover:bg-white/50 text-genesis-muted hover:text-genesis-dark transition-colors"
-                  title="Atualizar certificado"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                </button>
-
-                {confirmRemove ? (
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={handleRemove}
-                      className="p-2 rounded-lg bg-danger text-white hover:bg-danger/90 transition-colors"
-                      title="Confirmar remoção"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setConfirmRemove(false)}
-                      className="p-2 rounded-lg hover:bg-white/50 text-genesis-muted transition-colors"
-                      title="Cancelar"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setConfirmRemove(true)}
-                    className="p-2 rounded-lg hover:bg-red-100 text-genesis-muted hover:text-danger transition-colors"
-                    title="Remover certificado"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Warning for expiring/expired */}
-            {certificado.status === 'expiring_soon' && (
-              <div className="mt-4 p-3 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-amber-800 dark:text-amber-200">
-                  Seu certificado expira em breve. Renove-o para evitar interrupções no faturamento.
-                </p>
-              </div>
-            )}
-
-            {certificado.status === 'expired' && (
-              <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-800 dark:text-red-200">
-                  Seu certificado expirou! Faça upload de um novo certificado para continuar enviando guias.
-                </p>
-              </div>
-            )}
-          </div>
+          <CertificateDisplay
+            certificado={certificado}
+            statusDisplay={statusDisplay}
+            confirmRemove={confirmRemove}
+            onUpdateClick={() => setShowUploadForm(true)}
+            onRemoveClick={() => setConfirmRemove(true)}
+            onConfirmRemove={handleRemove}
+            onCancelRemove={() => setConfirmRemove(false)}
+          />
         )}
 
         {/* Upload Form */}

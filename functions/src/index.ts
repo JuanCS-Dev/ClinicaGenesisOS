@@ -44,3 +44,21 @@ export {
   // Webhook
   stripeWebhook,
 } from './stripe/index.js';
+
+// ============================================
+// TISS - Convênios & Billing (8b)
+// ============================================
+export {
+  // Certificate management
+  validateCertificate,
+  storeCertificate,
+  deleteCertificate,
+  // Lote (batch) management
+  createLote,
+  deleteLote,
+  // XML signing
+  signXml,
+  // Sending to operadoras
+  sendLote,
+  retrySendLote,
+} from './tiss/index.js';

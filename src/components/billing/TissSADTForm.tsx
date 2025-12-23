@@ -3,55 +3,48 @@
  *
  * Form for creating a TISS Guia SP/SADT (Serviço Profissional /
  * Serviço Auxiliar de Diagnóstico e Terapia).
- *
- * This is used for procedures, exams, and therapies - more complex
- * than the simple consultation guide.
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
 import {
   FileText,
-  Search,
-  User,
-  Building2,
-  Calendar,
   DollarSign,
   AlertCircle,
   CheckCircle,
   Loader2,
   Plus,
-  Trash2,
   Stethoscope,
-  Clock,
 } from 'lucide-react';
 import type {
   CaraterAtendimento,
-  TipoTabela,
   DadosBeneficiario,
   ProcedimentoRealizado,
-  CodigoTUSS,
 } from '@/types';
-import { searchTussCodes } from '@/services/tiss';
+import {
+  ProcedimentoItem,
+  createEmptyProcedimento,
+  type ProcedimentoFormItem,
+} from './ProcedimentoItem';
+import {
+  OperadoraSection,
+  BeneficiarioSection,
+  SolicitacaoSection,
+} from './TissFormSections';
 
 // =============================================================================
 // TYPES
 // =============================================================================
 
 interface TissSADTFormProps {
-  /** Pre-filled patient data */
   patient?: {
     name: string;
     insuranceNumber?: string;
     insurance?: string;
     birthDate?: string;
   };
-  /** Appointment date */
   appointmentDate?: string;
-  /** Callback when form is submitted */
   onSubmit: (data: TissSADTFormData) => Promise<void>;
-  /** Callback when form is cancelled */
   onCancel: () => void;
-  /** Loading state */
   isLoading?: boolean;
 }
 
@@ -69,49 +62,15 @@ export interface TissSADTFormData {
   valorTotalGeral: number;
 }
 
-interface ProcedimentoFormItem {
-  id: string;
-  dataRealizacao: string;
-  horaInicial: string;
-  horaFinal: string;
-  codigoTabela: TipoTabela;
-  codigoProcedimento: string;
-  descricaoProcedimento: string;
-  quantidadeRealizada: string;
-  valorUnitario: string;
-}
-
 // =============================================================================
-// CONSTANTS
+// HELPERS
 // =============================================================================
 
-const CARATER_ATENDIMENTO_OPTIONS: Array<{ value: CaraterAtendimento; label: string }> = [
-  { value: '1', label: 'Eletivo' },
-  { value: '2', label: 'Urgência/Emergência' },
-];
-
-const TIPO_TABELA_OPTIONS: Array<{ value: TipoTabela; label: string }> = [
-  { value: '22', label: 'TUSS' },
-  { value: '18', label: 'Tabela Própria Prestador' },
-  { value: '19', label: 'Tabela Própria Operadora' },
-  { value: '20', label: 'Pacote' },
-];
-
-/**
- * Create empty procedure for the form
- */
-function createEmptyProcedimento(): ProcedimentoFormItem {
-  return {
-    id: crypto.randomUUID(),
-    dataRealizacao: new Date().toISOString().split('T')[0],
-    horaInicial: '',
-    horaFinal: '',
-    codigoTabela: '22',
-    codigoProcedimento: '',
-    descricaoProcedimento: '',
-    quantidadeRealizada: '1',
-    valorUnitario: '',
-  };
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(value);
 }
 
 // =============================================================================
@@ -150,11 +109,6 @@ export function TissSADTForm({
   const [valorTaxas, setValorTaxas] = useState('');
   const [valorMateriais, setValorMateriais] = useState('');
 
-  // TUSS search state (for currently editing procedure)
-  const [tussSearch, setTussSearch] = useState('');
-  const [showTussDropdown, setShowTussDropdown] = useState(false);
-  const [editingProcedureId, setEditingProcedureId] = useState<string | null>(null);
-
   // Validation state
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -173,51 +127,20 @@ export function TissSADTForm({
     return valorTotalProcedimentos + taxas + materiais;
   }, [valorTotalProcedimentos, valorTaxas, valorMateriais]);
 
-  // TUSS search results
-  const tussResults = useMemo(() => {
-    if (tussSearch.length < 2) return [];
-    return searchTussCodes(tussSearch, 10);
-  }, [tussSearch]);
-
-  // Handle TUSS code selection
-  const handleSelectTuss = useCallback((tuss: CodigoTUSS) => {
-    if (!editingProcedureId) return;
-
-    setProcedimentos((prev) =>
-      prev.map((proc) =>
-        proc.id === editingProcedureId
-          ? {
-              ...proc,
-              codigoProcedimento: tuss.codigo,
-              descricaoProcedimento: tuss.descricao,
-              valorUnitario: tuss.valorReferencia?.toFixed(2) || '',
-            }
-          : proc
-      )
-    );
-    setTussSearch('');
-    setShowTussDropdown(false);
-    setEditingProcedureId(null);
-  }, [editingProcedureId]);
-
   // Update a specific procedure field
   const updateProcedimento = useCallback(
     (id: string, field: keyof ProcedimentoFormItem, value: string) => {
       setProcedimentos((prev) =>
-        prev.map((proc) =>
-          proc.id === id ? { ...proc, [field]: value } : proc
-        )
+        prev.map((proc) => (proc.id === id ? { ...proc, [field]: value } : proc))
       );
     },
     []
   );
 
-  // Add new procedure
   const addProcedimento = useCallback(() => {
     setProcedimentos((prev) => [...prev, createEmptyProcedimento()]);
   }, []);
 
-  // Remove procedure
   const removeProcedimento = useCallback((id: string) => {
     setProcedimentos((prev) => {
       if (prev.length <= 1) return prev;
@@ -232,24 +155,19 @@ export function TissSADTForm({
     if (!registroANS || registroANS.length !== 6) {
       newErrors.registroANS = 'Registro ANS deve ter 6 dígitos';
     }
-
     if (!numeroCarteira || numeroCarteira.length < 10) {
       newErrors.numeroCarteira = 'Número da carteira inválido';
     }
-
     if (!nomeBeneficiario) {
       newErrors.nomeBeneficiario = 'Nome do beneficiário é obrigatório';
     }
-
     if (!dataSolicitacao) {
       newErrors.dataSolicitacao = 'Data da solicitação é obrigatória';
     }
-
     if (!indicacaoClinica) {
       newErrors.indicacaoClinica = 'Indicação clínica é obrigatória para SP/SADT';
     }
 
-    // Validate each procedure
     const invalidProcs = procedimentos.filter(
       (proc) =>
         !proc.codigoProcedimento ||
@@ -282,12 +200,8 @@ export function TissSADTForm({
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
+      if (!validateForm()) return;
 
-      if (!validateForm()) {
-        return;
-      }
-
-      // Convert form items to ProcedimentoRealizado
       const procedimentosRealizados: ProcedimentoRealizado[] = procedimentos.map((proc) => ({
         dataRealizacao: proc.dataRealizacao,
         horaInicial: proc.horaInicial || undefined,
@@ -339,13 +253,6 @@ export function TissSADTForm({
     ]
   );
 
-  // Format currency for display
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Header */}
@@ -362,166 +269,41 @@ export function TissSADTForm({
       </div>
 
       {/* Operadora Section */}
-      <div className="bg-genesis-soft rounded-xl p-4 space-y-4">
-        <div className="flex items-center gap-2 text-genesis-text">
-          <Building2 className="w-4 h-4" />
-          <span className="font-medium">Operadora / Convênio</span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-genesis-text mb-1">
-              Registro ANS *
-            </label>
-            <input
-              type="text"
-              value={registroANS}
-              onChange={(e) => setRegistroANS(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              placeholder="000000"
-              maxLength={6}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface ${
-                errors.registroANS ? 'border-red-300' : 'border-genesis-border'
-              }`}
-            />
-            {errors.registroANS && (
-              <p className="text-xs text-red-500 mt-1">{errors.registroANS}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-genesis-text mb-1">
-              Nome da Operadora *
-            </label>
-            <input
-              type="text"
-              value={nomeOperadora}
-              onChange={(e) => setNomeOperadora(e.target.value)}
-              placeholder="Ex: Unimed, Bradesco Saúde"
-              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface"
-            />
-          </div>
-        </div>
-      </div>
+      <OperadoraSection
+        registroANS={registroANS}
+        nomeOperadora={nomeOperadora}
+        onRegistroANSChange={setRegistroANS}
+        onNomeOperadoraChange={setNomeOperadora}
+        errors={{ registroANS: errors.registroANS }}
+      />
 
       {/* Beneficiário Section */}
-      <div className="bg-genesis-soft rounded-xl p-4 space-y-4">
-        <div className="flex items-center gap-2 text-genesis-text">
-          <User className="w-4 h-4" />
-          <span className="font-medium">Dados do Beneficiário</span>
-        </div>
+      <BeneficiarioSection
+        numeroCarteira={numeroCarteira}
+        nomeBeneficiario={nomeBeneficiario}
+        dataNascimento={dataNascimento}
+        onNumeroCarteiraChange={setNumeroCarteira}
+        onNomeBeneficiarioChange={setNomeBeneficiario}
+        onDataNascimentoChange={setDataNascimento}
+        errors={{
+          numeroCarteira: errors.numeroCarteira,
+          nomeBeneficiario: errors.nomeBeneficiario,
+        }}
+      />
 
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-genesis-text mb-1">
-              Número da Carteira *
-            </label>
-            <input
-              type="text"
-              value={numeroCarteira}
-              onChange={(e) => setNumeroCarteira(e.target.value.replace(/\D/g, ''))}
-              placeholder="00000000000000000"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface ${
-                errors.numeroCarteira ? 'border-red-300' : 'border-genesis-border'
-              }`}
-            />
-            {errors.numeroCarteira && (
-              <p className="text-xs text-red-500 mt-1">{errors.numeroCarteira}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-genesis-text mb-1">
-              Nome do Beneficiário *
-            </label>
-            <input
-              type="text"
-              value={nomeBeneficiario}
-              onChange={(e) => setNomeBeneficiario(e.target.value)}
-              placeholder="Nome completo"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface ${
-                errors.nomeBeneficiario ? 'border-red-300' : 'border-genesis-border'
-              }`}
-            />
-            {errors.nomeBeneficiario && (
-              <p className="text-xs text-red-500 mt-1">{errors.nomeBeneficiario}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-genesis-text mb-1">
-              Data de Nascimento
-            </label>
-            <input
-              type="date"
-              value={dataNascimento}
-              onChange={(e) => setDataNascimento(e.target.value)}
-              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Atendimento Section */}
-      <div className="bg-genesis-soft rounded-xl p-4 space-y-4">
-        <div className="flex items-center gap-2 text-genesis-text">
-          <Calendar className="w-4 h-4" />
-          <span className="font-medium">Dados da Solicitação</span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-genesis-text mb-1">
-              Caráter do Atendimento *
-            </label>
-            <select
-              value={caraterAtendimento}
-              onChange={(e) => setCaraterAtendimento(e.target.value as CaraterAtendimento)}
-              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface"
-            >
-              {CARATER_ATENDIMENTO_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-genesis-text mb-1">
-              Data da Solicitação *
-            </label>
-            <input
-              type="date"
-              value={dataSolicitacao}
-              onChange={(e) => setDataSolicitacao(e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface ${
-                errors.dataSolicitacao ? 'border-red-300' : 'border-genesis-border'
-              }`}
-            />
-            {errors.dataSolicitacao && (
-              <p className="text-xs text-red-500 mt-1">{errors.dataSolicitacao}</p>
-            )}
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-genesis-text mb-1">
-            Indicação Clínica / CID *
-          </label>
-          <textarea
-            value={indicacaoClinica}
-            onChange={(e) => setIndicacaoClinica(e.target.value)}
-            placeholder="Descreva a indicação clínica, diagnóstico ou CID..."
-            rows={2}
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface resize-none ${
-              errors.indicacaoClinica ? 'border-red-300' : 'border-genesis-border'
-            }`}
-          />
-          {errors.indicacaoClinica && (
-            <p className="text-xs text-red-500 mt-1">{errors.indicacaoClinica}</p>
-          )}
-        </div>
-      </div>
+      {/* Solicitação Section */}
+      <SolicitacaoSection
+        caraterAtendimento={caraterAtendimento}
+        dataSolicitacao={dataSolicitacao}
+        indicacaoClinica={indicacaoClinica}
+        onCaraterAtendimentoChange={setCaraterAtendimento}
+        onDataSolicitacaoChange={setDataSolicitacao}
+        onIndicacaoClinicaChange={setIndicacaoClinica}
+        errors={{
+          dataSolicitacao: errors.dataSolicitacao,
+          indicacaoClinica: errors.indicacaoClinica,
+        }}
+      />
 
       {/* Procedimentos Section */}
       <div className="bg-genesis-soft rounded-xl p-4 space-y-4">
@@ -549,223 +331,14 @@ export function TissSADTForm({
 
         <div className="space-y-4">
           {procedimentos.map((proc, index) => (
-            <div
+            <ProcedimentoItem
               key={proc.id}
-              className="p-4 bg-genesis-surface rounded-lg border border-genesis-border space-y-3"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-genesis-muted">
-                  Procedimento {index + 1}
-                </span>
-                {procedimentos.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeProcedimento(proc.id)}
-                    className="p-1 text-genesis-muted hover:text-danger transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-
-              {/* TUSS Search */}
-              <div className="relative">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-genesis-subtle" />
-                  <input
-                    type="text"
-                    value={editingProcedureId === proc.id ? tussSearch : ''}
-                    onChange={(e) => {
-                      setTussSearch(e.target.value);
-                      setEditingProcedureId(proc.id);
-                      setShowTussDropdown(e.target.value.length >= 2);
-                    }}
-                    onFocus={() => {
-                      setEditingProcedureId(proc.id);
-                      setShowTussDropdown(tussSearch.length >= 2);
-                    }}
-                    onBlur={() => setTimeout(() => setShowTussDropdown(false), 200)}
-                    placeholder="Buscar procedimento TUSS..."
-                    className="w-full pl-10 pr-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-soft text-sm"
-                  />
-                </div>
-
-                {/* Search Results Dropdown */}
-                {showTussDropdown &&
-                  editingProcedureId === proc.id &&
-                  tussResults.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-genesis-surface border border-genesis-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                      {tussResults.map((tuss) => (
-                        <button
-                          key={tuss.codigo}
-                          type="button"
-                          onClick={() => handleSelectTuss(tuss)}
-                          className="w-full px-3 py-2 text-left hover:bg-genesis-soft border-b border-genesis-border-subtle last:border-0"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-mono text-xs text-purple-600 dark:text-purple-400">
-                              {tuss.codigo}
-                            </span>
-                            {tuss.valorReferencia && (
-                              <span className="text-xs text-green-600 dark:text-green-400">
-                                R$ {tuss.valorReferencia.toFixed(2)}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-genesis-text truncate">{tuss.descricao}</p>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-              </div>
-
-              {/* Procedure details */}
-              <div className="grid grid-cols-4 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-genesis-muted mb-1">
-                    Código TUSS *
-                  </label>
-                  <input
-                    type="text"
-                    value={proc.codigoProcedimento}
-                    onChange={(e) =>
-                      updateProcedimento(proc.id, 'codigoProcedimento', e.target.value)
-                    }
-                    placeholder="00000000"
-                    className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono bg-genesis-soft"
-                  />
-                </div>
-
-                <div className="col-span-2">
-                  <label className="block text-xs font-medium text-genesis-muted mb-1">
-                    Descrição
-                  </label>
-                  <input
-                    type="text"
-                    value={proc.descricaoProcedimento}
-                    onChange={(e) =>
-                      updateProcedimento(proc.id, 'descricaoProcedimento', e.target.value)
-                    }
-                    placeholder="Descrição do procedimento"
-                    className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-soft"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-genesis-muted mb-1">
-                    Tabela
-                  </label>
-                  <select
-                    value={proc.codigoTabela}
-                    onChange={(e) =>
-                      updateProcedimento(proc.id, 'codigoTabela', e.target.value)
-                    }
-                    className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-soft"
-                  >
-                    {TIPO_TABELA_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-5 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-genesis-muted mb-1">
-                    Data *
-                  </label>
-                  <input
-                    type="date"
-                    value={proc.dataRealizacao}
-                    onChange={(e) =>
-                      updateProcedimento(proc.id, 'dataRealizacao', e.target.value)
-                    }
-                    className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-soft"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-genesis-muted mb-1">
-                    <Clock className="inline w-3 h-3 mr-1" />
-                    Início
-                  </label>
-                  <input
-                    type="time"
-                    value={proc.horaInicial}
-                    onChange={(e) =>
-                      updateProcedimento(proc.id, 'horaInicial', e.target.value)
-                    }
-                    className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-soft"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-genesis-muted mb-1">
-                    <Clock className="inline w-3 h-3 mr-1" />
-                    Fim
-                  </label>
-                  <input
-                    type="time"
-                    value={proc.horaFinal}
-                    onChange={(e) =>
-                      updateProcedimento(proc.id, 'horaFinal', e.target.value)
-                    }
-                    className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-soft"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-genesis-muted mb-1">
-                    Qtd *
-                  </label>
-                  <input
-                    type="text"
-                    value={proc.quantidadeRealizada}
-                    onChange={(e) =>
-                      updateProcedimento(
-                        proc.id,
-                        'quantidadeRealizada',
-                        e.target.value.replace(/\D/g, '')
-                      )
-                    }
-                    placeholder="1"
-                    className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-soft text-center"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-genesis-muted mb-1">
-                    Valor Unit. (R$) *
-                  </label>
-                  <input
-                    type="text"
-                    value={proc.valorUnitario}
-                    onChange={(e) =>
-                      updateProcedimento(
-                        proc.id,
-                        'valorUnitario',
-                        e.target.value.replace(/[^\d.,]/g, '').replace(',', '.')
-                      )
-                    }
-                    placeholder="0.00"
-                    className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-soft text-right"
-                  />
-                </div>
-              </div>
-
-              {/* Line total */}
-              <div className="text-right text-sm">
-                <span className="text-genesis-muted">Subtotal: </span>
-                <span className="font-medium text-genesis-dark">
-                  {formatCurrency(
-                    (parseFloat(proc.quantidadeRealizada) || 0) *
-                      (parseFloat(proc.valorUnitario) || 0)
-                  )}
-                </span>
-              </div>
-            </div>
+              procedimento={proc}
+              index={index}
+              canRemove={procedimentos.length > 1}
+              onUpdate={(field, value) => updateProcedimento(proc.id, field, value)}
+              onRemove={() => removeProcedimento(proc.id)}
+            />
           ))}
         </div>
       </div>
@@ -818,17 +391,13 @@ export function TissSADTForm({
           {parseFloat(valorTaxas) > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-genesis-muted">Taxas:</span>
-              <span className="text-genesis-dark">
-                {formatCurrency(parseFloat(valorTaxas) || 0)}
-              </span>
+              <span className="text-genesis-dark">{formatCurrency(parseFloat(valorTaxas))}</span>
             </div>
           )}
           {parseFloat(valorMateriais) > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-genesis-muted">Materiais:</span>
-              <span className="text-genesis-dark">
-                {formatCurrency(parseFloat(valorMateriais) || 0)}
-              </span>
+              <span className="text-genesis-dark">{formatCurrency(parseFloat(valorMateriais))}</span>
             </div>
           )}
           <div className="flex justify-between text-base font-semibold pt-2 border-t border-purple-200 dark:border-purple-700">
@@ -839,9 +408,7 @@ export function TissSADTForm({
           </div>
         </div>
 
-        {errors.valorTotal && (
-          <p className="text-xs text-red-500">{errors.valorTotal}</p>
-        )}
+        {errors.valorTotal && <p className="text-xs text-red-500">{errors.valorTotal}</p>}
       </div>
 
       {/* Validation Summary */}
