@@ -2028,11 +2028,11 @@ const q = query(
 | 3 | manualChunks config | `vite.config.ts` | Parallel loading |
 | 4 | Context splitting | `App.tsx` | -50% re-renders |
 
-- [ ] **SPRINT2.1** Instalar @tanstack/react-virtual
-- [ ] **SPRINT2.2** Implementar virtualização em PatientList
-- [ ] **SPRINT2.3** Implementar virtualização em AppointmentList
-- [ ] **SPRINT2.4** Configurar manualChunks no Vite
-- [ ] **SPRINT2.5** Audit re-renders com why-did-you-render
+- [x] **SPRINT2.1** Instalar @tanstack/react-virtual ✅
+- [x] **SPRINT2.2** Implementar virtualização em PatientList ✅ (Patients.tsx)
+- [ ] **SPRINT2.3** Implementar virtualização em AppointmentList - Futuro
+- [x] **SPRINT2.4** Configurar manualChunks no Vite ✅ (6 vendor chunks)
+- [ ] **SPRINT2.5** Audit re-renders com why-did-you-render - Futuro
 
 ##### SPRINT 3: NETWORK & FIRESTORE (🟢 MÉDIO)
 **Meta:** -70% Firestore costs, offline-first
@@ -2167,13 +2167,20 @@ const q = query(
 > - ✅ Plano de execução HEROICO em 4 sprints
 > - ✅ Métricas e metas definidas (Lighthouse >90, bundle -50%, reads -70%)
 >
-> ✅ **FASE 11 SPRINT 1 - EM PROGRESSO (23/12/2024):**
+> ✅ **FASE 11 SPRINT 1 - COMPLETO (23/12/2024):**
 > - ✅ Dynamic imports para xlsx/jspdf (bundle lazy load)
 > - ✅ Single-pass aggregation em useDashboardMetrics (12 filters → 1 loop)
 > - ✅ useMemo em Dashboard.tsx (upcomingAppointments)
 > - ⏳ Paginação Firestore (requer mudanças de arquitetura - Sprint futuro)
 >
-> **Próximo passo:** Executar SPRINT 2 - Virtualização & TanStack
+> ✅ **FASE 11 SPRINT 2 - COMPLETO (23/12/2024):**
+> - ✅ @tanstack/react-virtual instalado
+> - ✅ Patients.tsx virtualizado (2000+ DOM nodes → ~50 visíveis)
+> - ✅ manualChunks otimizado (6 vendor chunks separados)
+>   - react-vendor: 354KB | firebase-vendor: 517KB | charts-vendor: 513KB
+>   - utils-vendor: 31KB | export-vendor: 1MB (lazy) | index: 114KB
+>
+> **Próximo passo:** Executar SPRINT 3 - Network & Firestore ou SPRINT 4 - Monitoring
 
 ---
 
