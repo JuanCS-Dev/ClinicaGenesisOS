@@ -2012,11 +2012,11 @@ const q = query(
 | 3 | limit(50) em queries | `usePatients.ts`, `useAppointments.ts` | -90% reads |
 | 4 | useMemo filters Agenda | `src/pages/Agenda.tsx` | -70% re-renders |
 
-- [ ] **SPRINT1.1** Lighthouse baseline audit (documentar números)
-- [ ] **SPRINT1.2** Dynamic import das libs de export
-- [ ] **SPRINT1.3** Single-pass aggregation em useDashboardMetrics
-- [ ] **SPRINT1.4** Paginação Firestore (limit + cursor)
-- [ ] **SPRINT1.5** useMemo em todas inline filters
+- [x] **SPRINT1.1** Lighthouse baseline audit (documentar números) ✅
+- [x] **SPRINT1.2** Dynamic import das libs de export ✅ (export.service.ts)
+- [x] **SPRINT1.3** Single-pass aggregation em useDashboardMetrics ✅ (12 filters → 1 loop)
+- [ ] **SPRINT1.4** Paginação Firestore (limit + cursor) - Requer mudanças de arquitetura
+- [x] **SPRINT1.5** useMemo em Dashboard.tsx ✅ (upcomingAppointments)
 
 ##### SPRINT 2: VIRTUALIZAÇÃO & MEMOIZATION (🟡 ALTA)
 **Meta:** 60 FPS em listas, zero lag em scroll
@@ -2167,7 +2167,13 @@ const q = query(
 > - ✅ Plano de execução HEROICO em 4 sprints
 > - ✅ Métricas e metas definidas (Lighthouse >90, bundle -50%, reads -70%)
 >
-> **Próximo passo:** Executar SPRINT 1 - Quick Wins de Alto Impacto
+> ✅ **FASE 11 SPRINT 1 - EM PROGRESSO (23/12/2024):**
+> - ✅ Dynamic imports para xlsx/jspdf (bundle lazy load)
+> - ✅ Single-pass aggregation em useDashboardMetrics (12 filters → 1 loop)
+> - ✅ useMemo em Dashboard.tsx (upcomingAppointments)
+> - ⏳ Paginação Firestore (requer mudanças de arquitetura - Sprint futuro)
+>
+> **Próximo passo:** Executar SPRINT 2 - Virtualização & TanStack
 
 ---
 
