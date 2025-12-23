@@ -1,5 +1,71 @@
-# PLANO PROSPERIDADE - Clínica Genesis OS
+# PLANO PROSPERIDADE - Genesis OS
 ## Elevando ao Nível das Melhores Plataformas de Healthcare dos EUA
+
+---
+
+## ⚠️ DEFINIÇÃO DO PRODUTO - LEIA PRIMEIRO
+
+### O QUE É O GENESIS OS
+
+> **Genesis OS é uma PLATAFORMA SaaS (Software as a Service) de gestão para clínicas médicas e centros de apoio diagnóstico.**
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           ARQUITETURA DO NEGÓCIO                         │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│   ┌─────────────────────────────────────────────────────────────────┐   │
+│   │                    GENESIS OS (NÓS)                              │   │
+│   │         Plataforma SaaS Multi-Tenant de Healthcare               │   │
+│   │                                                                  │   │
+│   │  • Fornecemos a infraestrutura e o software                     │   │
+│   │  • Mantemos e evoluímos a plataforma                            │   │
+│   │  • Garantimos segurança, compliance e uptime                    │   │
+│   │  • NÃO somos uma clínica, NÃO atendemos pacientes               │   │
+│   └─────────────────────────────────────────────────────────────────┘   │
+│                                    │                                     │
+│                                    ▼                                     │
+│   ┌─────────────────────────────────────────────────────────────────┐   │
+│   │              CLÍNICAS CLIENTES (TENANTS)                         │   │
+│   │                                                                  │   │
+│   │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │   │
+│   │  │  Clínica A   │  │  Clínica B   │  │  Clínica C   │  ...      │   │
+│   │  │              │  │              │  │              │           │   │
+│   │  │ • Seu CNES   │  │ • Seu CNES   │  │ • Seu CNES   │           │   │
+│   │  │ • Seu CNPJ   │  │ • Seu CNPJ   │  │ • Seu CNPJ   │           │   │
+│   │  │ • Seu e-CNPJ │  │ • Seu e-CNPJ │  │ • Seu e-CNPJ │           │   │
+│   │  │ • Convênios  │  │ • Convênios  │  │ • Convênios  │           │   │
+│   │  │ • Pacientes  │  │ • Pacientes  │  │ • Pacientes  │           │   │
+│   │  └──────────────┘  └──────────────┘  └──────────────┘           │   │
+│   └─────────────────────────────────────────────────────────────────┘   │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### O QUE CADA CLÍNICA CLIENTE FAZ (NÃO NÓS)
+
+| Responsabilidade | Quem Faz | Onde no Sistema |
+|------------------|----------|-----------------|
+| Obter CNES | A clínica | DATASUS |
+| Ter CNPJ ativo | A clínica | Receita Federal |
+| Comprar certificado e-CNPJ | A clínica | Certisign, Serasa, etc. |
+| **Upload do certificado** | A clínica | Settings → Convênios |
+| Credenciar-se com operadoras | A clínica | Cada operadora |
+| Cadastrar operadoras no sistema | A clínica | Settings → Convênios |
+| Criar guias TISS | A clínica | Faturamento |
+| Gerenciar glosas | A clínica | Faturamento → Glosas |
+
+### O QUE NÓS (GENESIS OS) FORNECEMOS
+
+| Funcionalidade | Descrição |
+|----------------|-----------|
+| Interface para upload de certificado | UI segura para a clínica subir seu .pfx |
+| Armazenamento criptografado | Guardamos o certificado com segurança |
+| Geração de XML TISS | Geramos XML no padrão ANS 4.02.00 |
+| Assinatura digital | Assinamos XML com o certificado DA CLÍNICA |
+| Envio para operadoras | Enviamos via WebService usando credenciais DA CLÍNICA |
+| Gestão de guias | CRUD completo de guias para A CLÍNICA |
+| Relatórios | Analytics do faturamento DA CLÍNICA |
 
 ---
 
@@ -471,11 +537,21 @@ cd functions && npm run deploy
 **Objetivo:** Módulo completo de faturamento TISS para clínicas (multi-tenant)
 **Status:** 🚧 EM PROGRESSO (Etapas 1-4 concluídas + Validação CODE_CONSTITUTION ✅)
 
-> **IMPORTANTE:** Genesis OS é um SaaS. Cada clínica (tenant) configura seus próprios:
-> - CNES, CNPJ, dados cadastrais
-> - Certificado digital (e-CNPJ)
-> - Credenciamentos com operadoras
-> - Tabelas de preços
+> ⚠️ **LEMBRETE CRÍTICO: NÓS SOMOS O PROVEDOR DA PLATAFORMA**
+>
+> Genesis OS é um **SaaS multi-tenant**. Nós **NÃO** somos uma clínica.
+>
+> **O que NÓS fazemos:**
+> - Criamos as INTERFACES para as clínicas configurarem seus dados
+> - Fornecemos a INFRAESTRUTURA para upload seguro de certificados
+> - Implementamos a LÓGICA de geração de XML TISS
+> - Criamos as TELAS de gestão de guias, lotes e glosas
+>
+> **O que CADA CLÍNICA CLIENTE faz (usando nossa plataforma):**
+> - Faz upload do SEU certificado e-CNPJ (que ELA comprou)
+> - Cadastra SUAS operadoras/convênios (que ELA tem contrato)
+> - Cria SUAS guias TISS (para SEUS pacientes)
+> - Gerencia SUAS glosas (das SUAS guias)
 
 #### 8b.1 Arquitetura Multi-Tenant para Convênios
 
@@ -531,29 +607,32 @@ Genesis OS (SaaS)
 - [x] **1.6** Expandir `tiss.types.ts` com Lote, WebServiceConfig (refatorado em módulos)
 
 **ETAPA 2: Configuração da Clínica (Settings)** ✅
+> *Interfaces para que A CLÍNICA CLIENTE configure seus dados*
 - [x] **2.1** Criar tab "Convênios" em Settings
-- [x] **2.2** Form de dados cadastrais (CNES, CNPJ) - visualização
-- [ ] **2.3** Upload de certificado digital (.pfx/.p12)
-- [ ] **2.4** Validação e armazenamento seguro do certificado
-- [x] **2.5** Lista de operadoras credenciadas (CRUD)
-- [x] **2.6** Form de nova operadora (OperadoraForm.tsx) com wizard multi-step
+- [x] **2.2** Form para clínica inserir dados cadastrais (CNES, CNPJ)
+- [ ] **2.3** Componente `CertificadoUpload.tsx` - UI para clínica subir SEU .pfx/.p12
+- [ ] **2.4** Cloud Function para validar e armazenar certificado DA CLÍNICA (criptografado)
+- [x] **2.5** Lista de operadoras credenciadas (CRUD para a clínica gerenciar)
+- [x] **2.6** Form de nova operadora (OperadoraForm.tsx) - clínica cadastra SEUS convênios
 
 **ETAPA 3: Criação de Guias** ✅
+> *Interfaces para que A CLÍNICA crie guias para SEUS pacientes*
 - [x] **3.1** Criar `useGuias()` hook (CRUD + real-time + stats)
 - [x] **3.2** Completar integração `TissConsultaForm` → Firestore
 - [ ] **3.3** Criar `TissSADTForm` para guias SP/SADT
 - [x] **3.4** Seletor de operadora no form (filtra por clínica)
 - [x] **3.5** Autocomplete de código TUSS (já existe base)
-- [ ] **3.6** Validação XSD antes de salvar
-- [ ] **3.7** Preview XML gerado
+- [ ] **3.6** Validação XSD antes de salvar (nós validamos, clínica corrige se necessário)
+- [ ] **3.7** Preview XML gerado (clínica pode revisar antes de enviar)
 
 **ETAPA 4: Gestão de Guias** ✅
+> *Telas para A CLÍNICA gerenciar SUAS guias*
 - [x] **4.1** Refatorar página `/billing` com tabs premium
 - [x] **4.2** Tab "Nova Guia" - forms de criação
 - [x] **4.3** Tab "Histórico" - lista com filtros (operadora, status, busca)
-- [ ] **4.4** Tab "Lotes" - agrupamento para envio
-- [x] **4.5** Tab "Glosas" - lista de guias glosadas
-- [ ] **4.6** Tab "Relatórios" - resumo faturamento
+- [ ] **4.4** Tab "Lotes" - clínica agrupa guias para envio em lote
+- [x] **4.5** Tab "Glosas" - clínica vê suas guias glosadas
+- [ ] **4.6** Tab "Relatórios" - analytics do faturamento da clínica
 - [x] **4.7** Componente `GuiaListItem` com status visual
 - [ ] **4.8** Componente `GuiaDetail` modal/drawer
 
@@ -584,14 +663,16 @@ src/__tests__/hooks/useGuias.test.ts (21 tests)
 ---
 
 **ETAPA 5: Envio para Operadoras**
-- [ ] **5.1** Cloud Function `createLote` - agrupa guias
-- [ ] **5.2** Cloud Function `enviarLote` - POST WebService
-- [ ] **5.3** Assinatura XML com certificado da clínica
-- [ ] **5.4** Salvar protocolo e resposta
-- [ ] **5.5** Atualizar status das guias
-- [ ] **5.6** Retry automático em caso de falha
+> *Backend que NÓS fornecemos para enviar guias DA CLÍNICA usando credenciais DA CLÍNICA*
+- [ ] **5.1** Cloud Function `createLote` - agrupa guias da clínica
+- [ ] **5.2** Cloud Function `enviarLote` - envia usando WebService/credenciais da clínica
+- [ ] **5.3** Assinatura XML com certificado DA CLÍNICA (que ela fez upload)
+- [ ] **5.4** Salvar protocolo e resposta no Firestore da clínica
+- [ ] **5.5** Atualizar status das guias da clínica
+- [ ] **5.6** Retry automático em caso de falha (transparente para a clínica)
 
 **ETAPA 6: Recebimento de Respostas**
+> *Backend que NÓS fornecemos para processar respostas das operadoras*
 - [ ] **6.1** Webhook para receber retorno das operadoras
 - [ ] **6.2** Parser de XML de glosa
 - [ ] **6.3** Criar registros de Glosa automaticamente
