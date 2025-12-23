@@ -215,7 +215,7 @@ export function ClinicalReasoningPanel({
         {/* Tab Navigation - Only show when we have results */}
         {displayResult && !showHistory && (
           <div className="px-6 pb-0">
-            <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-1 overflow-x-auto scrollbar-hide" role="tablist" aria-label="Seções do raciocínio clínico">
               {TABS.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -223,18 +223,20 @@ export function ClinicalReasoningPanel({
                 return (
                   <button
                     key={tab.id}
+                    role="tab"
+                    aria-selected={isActive}
                     onClick={() => setActiveTab(tab.id)}
                     className={`
                       flex items-center gap-2 px-4 py-3 rounded-t-xl text-sm font-medium
                       border-b-2 transition-all duration-200 whitespace-nowrap
                       ${
                         isActive
-                          ? 'border-[#4F46E5] text-[#4338CA] bg-[#EEF2FF]/50'
+                          ? 'border-genesis-primary text-genesis-primary bg-genesis-primary/5'
                           : 'border-transparent text-genesis-muted hover:text-genesis-text hover:bg-genesis-soft'
                       }
                     `}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-[#4F46E5]' : ''}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-genesis-primary' : ''}`} />
                     <span>{tab.label}</span>
                   </button>
                 );

@@ -130,13 +130,15 @@ export function LabUploadPanel({
         {/* Main Upload Area */}
         <div
           {...getRootProps()}
+          role="region"
+          aria-label="Área de upload de exames laboratoriais"
           className={`
             relative overflow-hidden rounded-2xl border-2 border-dashed
             transition-all duration-300 ease-out
             ${
               isDragActive || isDragHovering
-                ? 'border-[#818CF8] bg-[#EEF2FF]/50 scale-[1.01]'
-                : 'border-genesis-border bg-gradient-to-b from-white to-gray-50/50 hover:border-genesis-border hover:shadow-lg'
+                ? 'border-genesis-primary bg-genesis-primary/5 scale-[1.01]'
+                : 'border-genesis-border bg-gradient-to-b from-genesis-surface to-genesis-soft/50 hover:border-genesis-primary/30 hover:shadow-lg'
             }
           `}
         >

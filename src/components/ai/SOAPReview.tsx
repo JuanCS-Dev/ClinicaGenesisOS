@@ -286,12 +286,14 @@ export function SOAPReview({
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b px-6">
+        <div className="flex border-b px-6" role="tablist" aria-label="Seções da nota">
           <button
+            role="tab"
+            aria-selected={activeTab === 'soap'}
             onClick={() => setActiveTab('soap')}
             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'soap'
-                ? 'border-blue-500 text-blue-600'
+                ? 'border-genesis-primary text-genesis-primary'
                 : 'border-transparent text-genesis-muted hover:text-genesis-text'
             }`}
           >
@@ -301,10 +303,12 @@ export function SOAPReview({
             </span>
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'transcription'}
             onClick={() => setActiveTab('transcription')}
             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'transcription'
-                ? 'border-blue-500 text-blue-600'
+                ? 'border-genesis-primary text-genesis-primary'
                 : 'border-transparent text-genesis-muted hover:text-genesis-text'
             }`}
           >
@@ -427,7 +431,7 @@ export function SOAPReview({
             <button
               onClick={handleApprove}
               disabled={isSaving}
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-2 bg-genesis-primary hover:bg-genesis-primary-dark text-white rounded-lg font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-genesis-primary/20 disabled:opacity-50 disabled:hover:scale-100"
             >
               <Check className="w-4 h-4" />
               {isSaving ? 'Salvando...' : 'Aprovar e Salvar'}

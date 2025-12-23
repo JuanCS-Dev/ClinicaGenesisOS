@@ -259,7 +259,7 @@ export const LoteCard: React.FC<LoteCardProps> = ({
       {/* Expanded Content */}
       {expanded && (
         <div className="border-t border-genesis-border-subtle">
-          <div className="p-4 bg-genesis-soft/50 grid grid-cols-4 gap-4 text-sm">
+          <div className="p-4 bg-genesis-soft/50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
             <div>
               <span className="text-genesis-muted">Data Geração</span>
               <p className="font-medium text-genesis-dark">{formatDate(lote.dataGeracao)}</p>

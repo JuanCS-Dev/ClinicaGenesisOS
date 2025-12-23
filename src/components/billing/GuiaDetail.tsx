@@ -117,7 +117,7 @@ export function GuiaDetail({
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Valor Summary */}
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-4 bg-genesis-soft rounded-xl">
               <div className="flex items-center gap-2 text-genesis-muted mb-1">
                 <Receipt className="w-4 h-4" />

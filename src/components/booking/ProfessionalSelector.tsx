@@ -83,6 +83,8 @@ const ProfessionalCard: React.FC<{
   return (
     <button
       onClick={onSelect}
+      aria-label={`Selecionar ${professional.name}, ${SPECIALTY_LABELS[professional.specialty]}`}
+      aria-pressed={isSelected}
       className={`
         w-full text-left p-4 rounded-2xl border-2 transition-all duration-200
         ${
