@@ -1,7 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './src/App';
+import { initWebVitals } from './src/services/web-vitals';
 import './index.css';
+
+// Initialize Web Vitals tracking for performance monitoring
+initWebVitals();
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
