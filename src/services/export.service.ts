@@ -13,7 +13,6 @@
 // Dynamic imports - loaded only when export is triggered
 // This saves ~909KB from the initial bundle!
 type XLSX = typeof import('xlsx');
-type jsPDF = import('jspdf').jsPDF;
 
 let xlsxModule: XLSX | null = null;
 let jsPDFModule: typeof import('jspdf') | null = null;

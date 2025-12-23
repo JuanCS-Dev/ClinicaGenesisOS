@@ -49,6 +49,7 @@ function logMetric(metric: Metric): void {
   const color = rating === 'good' ? '#10b981' : rating === 'needs-improvement' ? '#f59e0b' : '#ef4444';
 
   if (import.meta.env.DEV) {
+    // eslint-disable-next-line no-console
     console.log(
       `%c${emoji} ${metric.name}: ${metric.value.toFixed(2)}ms (${rating})`,
       `color: ${color}; font-weight: bold;`
@@ -72,6 +73,7 @@ function sendToAnalytics(metric: Metric): void {
     // });
 
     // For now, just log to console in production for debugging
+    // eslint-disable-next-line no-console
     console.debug(`[Web Vitals] ${metric.name}: ${metric.value}`);
   }
 }
@@ -108,6 +110,7 @@ export function initWebVitals(): void {
   onTTFB(handleMetric);
 
   if (import.meta.env.DEV) {
+    // eslint-disable-next-line no-console
     console.log('%c🔍 Web Vitals tracking initialized', 'color: #8b5cf6; font-weight: bold;');
   }
 }
