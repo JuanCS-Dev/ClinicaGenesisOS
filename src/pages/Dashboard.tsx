@@ -11,7 +11,7 @@
  * - Priority task list
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Users,
   Calendar,
@@ -108,6 +108,16 @@ export function Dashboard() {
   // Get user's display name
   const userName = userProfile?.displayName?.split(' ')[0] || 'Profissional';
 
+  // Memoize upcoming appointments to avoid recalculating on every render
+  // PERF: This was previously inline .filter().sort() causing unnecessary work
+  const upcomingAppointments = useMemo(() => {
+    const now = new Date();
+    return [...appointments]
+      .filter((apt) => new Date(apt.date) >= now)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(0, 5);
+  }, [appointments]);
+
   // Loading state
   if (metrics.loading) {
     return (
@@ -116,12 +126,6 @@ export function Dashboard() {
       </div>
     );
   }
-
-  // Get upcoming appointments (sorted by date, limit to 5)
-  const upcomingAppointments = [...appointments]
-    .filter((apt) => new Date(apt.date) >= new Date())
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .slice(0, 5);
 
   return (
     <div className="space-y-8 animate-enter">
