@@ -19,6 +19,18 @@ export default defineConfig({
         '**/*.d.ts',
         '**/*.config.*',
         '**/vitest.setup.ts',
+        // Type-only files (no executable code)
+        'src/types/tiss/base.ts',
+        'src/types/tiss/enums.ts',
+        'src/types/tiss/glosas.ts',
+        'src/types/tiss/guias.ts',
+        'src/types/tiss/lotes.ts',
+        'src/types/tiss/operadoras.ts',
+        'src/types/tiss/reports.ts',
+        'src/types/tiss/service.ts',
+        'src/types/prescription.ts',
+        // Re-export index files
+        'src/design-system/components/index.ts',
       ],
     },
   },

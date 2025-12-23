@@ -6,7 +6,6 @@
 
 import React, { useState, useMemo } from 'react';
 import {
-  Package,
   Send,
   CheckCircle2,
   Clock,

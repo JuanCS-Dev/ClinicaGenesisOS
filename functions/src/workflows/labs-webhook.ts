@@ -69,7 +69,7 @@ async function findPatient(
   const db = getFirestore();
 
   // Try to find by CPF
-  let patientSnapshot = await db
+  const patientSnapshot = await db
     .collection('clinics')
     .doc(clinicId)
     .collection('patients')

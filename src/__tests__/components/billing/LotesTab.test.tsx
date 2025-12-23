@@ -145,6 +145,174 @@ describe('LotesTab', () => {
 
     expect(screen.getByText('Criar Novo Lote')).toBeInTheDocument();
   });
+
+  it('should handle send lote successfully', async () => {
+    const lotes = [createMockLote()];
+    const guias = [createMockGuia()];
+    const onSendLote = vi.fn().mockResolvedValue(undefined);
+    const { toast: mockToast } = await import('sonner');
+
+    render(
+      <LotesTab
+        {...defaultProps}
+        lotes={lotes}
+        guias={guias}
+        onSendLote={onSendLote}
+      />
+    );
+
+    fireEvent.click(screen.getByText('Enviar'));
+
+    await waitFor(() => {
+      expect(onSendLote).toHaveBeenCalledWith('lote-1');
+    });
+
+    await waitFor(() => {
+      expect(mockToast.success).toHaveBeenCalledWith('Lote enviado com sucesso');
+    });
+  });
+
+  it('should handle send lote error', async () => {
+    const lotes = [createMockLote()];
+    const guias = [createMockGuia()];
+    const onSendLote = vi.fn().mockRejectedValue(new Error('Network error'));
+    const { toast: mockToast } = await import('sonner');
+
+    render(
+      <LotesTab
+        {...defaultProps}
+        lotes={lotes}
+        guias={guias}
+        onSendLote={onSendLote}
+      />
+    );
+
+    fireEvent.click(screen.getByText('Enviar'));
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('Erro ao enviar lote');
+    });
+  });
+
+  it('should handle delete lote successfully', async () => {
+    const lotes = [createMockLote()];
+    const guias = [createMockGuia()];
+    const onDeleteLote = vi.fn().mockResolvedValue(undefined);
+    const { toast: mockToast } = await import('sonner');
+
+    render(
+      <LotesTab
+        {...defaultProps}
+        lotes={lotes}
+        guias={guias}
+        onDeleteLote={onDeleteLote}
+      />
+    );
+
+    // Click delete button
+    fireEvent.click(screen.getByTitle('Excluir'));
+    // Confirm deletion
+    fireEvent.click(screen.getByTitle('Confirmar'));
+
+    await waitFor(() => {
+      expect(onDeleteLote).toHaveBeenCalledWith('lote-1');
+    });
+
+    await waitFor(() => {
+      expect(mockToast.success).toHaveBeenCalledWith('Lote excluído');
+    });
+  });
+
+  it('should handle delete lote error', async () => {
+    const lotes = [createMockLote()];
+    const guias = [createMockGuia()];
+    const onDeleteLote = vi.fn().mockRejectedValue(new Error('Delete failed'));
+    const { toast: mockToast } = await import('sonner');
+
+    render(
+      <LotesTab
+        {...defaultProps}
+        lotes={lotes}
+        guias={guias}
+        onDeleteLote={onDeleteLote}
+      />
+    );
+
+    // Click delete button
+    fireEvent.click(screen.getByTitle('Excluir'));
+    // Confirm deletion
+    fireEvent.click(screen.getByTitle('Confirmar'));
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('Erro ao excluir lote');
+    });
+  });
+
+  it('should pass onViewGuia callback to LoteCard', () => {
+    const lotes = [createMockLote()];
+    const guias = [createMockGuia()];
+    const onViewGuia = vi.fn();
+
+    render(
+      <LotesTab
+        {...defaultProps}
+        lotes={lotes}
+        guias={guias}
+        onViewGuia={onViewGuia}
+      />
+    );
+
+    // LoteCard should be rendered with the callback
+    expect(screen.getByText(/Lote L-2024-001/)).toBeInTheDocument();
+  });
+
+  it('should pass onDownloadXml callback to LoteCard', () => {
+    const lotes = [createMockLote({ xmlContent: '<xml>test</xml>' })];
+    const guias = [createMockGuia()];
+    const onDownloadXml = vi.fn();
+
+    render(
+      <LotesTab
+        {...defaultProps}
+        lotes={lotes}
+        guias={guias}
+        onDownloadXml={onDownloadXml}
+      />
+    );
+
+    expect(screen.getByTitle('Baixar XML')).toBeInTheDocument();
+  });
+
+  it('should sort lotes by date descending', () => {
+    const lotes = [
+      createMockLote({ id: 'lote-1', dataGeracao: '2024-01-10T10:00:00Z', numeroLote: 'L-2024-001' }),
+      createMockLote({ id: 'lote-2', dataGeracao: '2024-01-15T10:00:00Z', numeroLote: 'L-2024-002' }),
+    ];
+    const guias = [createMockGuia()];
+
+    render(<LotesTab {...defaultProps} lotes={lotes} guias={guias} />);
+
+    const loteTexts = screen.getAllByText(/Lote L-2024-/);
+    // Should be sorted newest first
+    expect(loteTexts[0]).toHaveTextContent('L-2024-002');
+  });
+
+  it('should close create modal when onClose is called', async () => {
+    const guias = [createMockGuia({ status: 'rascunho' })];
+
+    render(<LotesTab {...defaultProps} guias={guias} />);
+
+    // Open modal
+    fireEvent.click(screen.getByText(/Criar Lote/));
+    expect(screen.getByText('Criar Novo Lote')).toBeInTheDocument();
+
+    // Close modal
+    fireEvent.click(screen.getByText('Cancelar'));
+
+    await waitFor(() => {
+      expect(screen.queryByText('Criar Novo Lote')).not.toBeInTheDocument();
+    });
+  });
 });
 
 describe('LoteCard', () => {

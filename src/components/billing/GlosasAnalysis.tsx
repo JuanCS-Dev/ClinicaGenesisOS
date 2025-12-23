@@ -261,7 +261,7 @@ export function GlosasAnalysis({ glosas, stats, loading = false }: GlosasAnalysi
             </div>
           ) : (
             <div className="space-y-3">
-              {stats.principaisMotivos.slice(0, 5).map((item, index) => {
+              {stats.principaisMotivos.slice(0, 5).map((item) => {
                 const maxValor = stats.principaisMotivos[0]?.valor || 1;
                 const percent = (item.valor / maxValor) * 100;
 

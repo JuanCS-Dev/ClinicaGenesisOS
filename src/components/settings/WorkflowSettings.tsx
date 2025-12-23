@@ -17,11 +17,9 @@ import {
   Settings,
   CheckCircle2,
   Clock,
-  AlertTriangle,
   Save,
   RefreshCw,
   Copy,
-  ExternalLink,
   Info,
 } from 'lucide-react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';

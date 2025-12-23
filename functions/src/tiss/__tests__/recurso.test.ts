@@ -22,11 +22,11 @@ vi.mock('firebase-functions', () => {
     },
     https: {
       HttpsError,
-      onCall: (fn: Function) => fn,
+      onCall: (fn: (...args: unknown[]) => unknown) => fn,
     },
     runWith: () => ({
       https: {
-        onCall: (fn: Function) => fn,
+        onCall: (fn: (...args: unknown[]) => unknown) => fn,
       },
     }),
   };
