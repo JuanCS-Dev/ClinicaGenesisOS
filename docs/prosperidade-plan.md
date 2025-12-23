@@ -1565,6 +1565,202 @@ const STATUS = {
 
 ---
 
+### FASE 11: BENCHMARK & PERFORMANCE OPTIMIZATION (Sprint 13-14)
+**Objetivo:** Garantir que Genesis OS seja o software de clínica médica mais rápido e eficiente do mercado
+**Status:** 🔲 PENDENTE
+**Prioridade:** 🟡 ALTA
+
+> **VISÃO:** Performance é feature. Cada milissegundo conta na experiência do usuário.
+> Um software lento transmite falta de profissionalismo. Queremos ser REFERÊNCIA em velocidade.
+
+---
+
+#### 11.1 Métricas Core Web Vitals (Metas)
+
+| Métrica | Descrição | Meta | Ferramenta |
+|---------|-----------|------|------------|
+| **LCP** | Largest Contentful Paint | < 2.5s | Lighthouse |
+| **FID** | First Input Delay | < 100ms | Lighthouse |
+| **CLS** | Cumulative Layout Shift | < 0.1 | Lighthouse |
+| **TTFB** | Time to First Byte | < 600ms | WebPageTest |
+| **FCP** | First Contentful Paint | < 1.8s | Lighthouse |
+| **TTI** | Time to Interactive | < 3.8s | Lighthouse |
+
+---
+
+#### 11.2 Bundle Optimization
+
+##### 11.2.1 Análise de Bundle
+- [ ] **11.2.1** Executar `npm run build -- --analyze` e documentar tamanhos
+- [ ] **11.2.2** Identificar dependências pesadas (>100KB gzipped)
+- [ ] **11.2.3** Mapear código duplicado entre chunks
+
+##### 11.2.2 Code Splitting Estratégico
+- [ ] **11.2.4** Lazy load de rotas admin (Settings, Billing, Reports)
+- [ ] **11.2.5** Lazy load de rotas patient-portal
+- [ ] **11.2.6** Lazy load de componentes pesados (Charts, PDF viewers, Editors)
+- [ ] **11.2.7** Implementar `React.lazy()` com `Suspense` e skeleton fallbacks
+
+##### 11.2.3 Tree Shaking & Dead Code
+- [ ] **11.2.8** Verificar imports específicos (não `import * from`)
+- [ ] **11.2.9** Remover código morto identificado
+- [ ] **11.2.10** Configurar `sideEffects: false` onde aplicável
+
+##### 11.2.4 Dependências
+- [ ] **11.2.11** Substituir moment.js por date-fns (se existir)
+- [ ] **11.2.12** Avaliar alternativas leves para lodash
+- [ ] **11.2.13** Verificar duplicação de bibliotecas de ícones
+
+---
+
+#### 11.3 Runtime Performance
+
+##### 11.3.1 React Optimization
+- [ ] **11.3.1** Audit de re-renders desnecessários com React DevTools Profiler
+- [ ] **11.3.2** Implementar `React.memo()` em componentes de lista
+- [ ] **11.3.3** Usar `useMemo` para cálculos pesados
+- [ ] **11.3.4** Usar `useCallback` para handlers passados como props
+- [ ] **11.3.5** Implementar virtualização em listas longas (react-window)
+
+##### 11.3.2 State Management
+- [ ] **11.3.6** Otimizar Context providers (evitar re-renders globais)
+- [ ] **11.3.7** Considerar state colocation (estado próximo de onde é usado)
+- [ ] **11.3.8** Implementar selectors para Firestore queries
+
+##### 11.3.3 Images & Assets
+- [ ] **11.3.9** Converter imagens para WebP/AVIF
+- [ ] **11.3.10** Implementar lazy loading de imagens
+- [ ] **11.3.11** Otimizar SVGs (SVGO)
+- [ ] **11.3.12** Configurar responsive images com srcset
+
+---
+
+#### 11.4 Network & Caching
+
+##### 11.4.1 Firestore Optimization
+- [ ] **11.4.1** Implementar paginação em todas as queries de lista
+- [ ] **11.4.2** Usar `onSnapshot` com cache local onde faz sentido
+- [ ] **11.4.3** Implementar indexes compostos para queries complexas
+- [ ] **11.4.4** Otimizar estrutura de dados (denormalização estratégica)
+
+##### 11.4.2 Service Worker & PWA
+- [ ] **11.4.5** Configurar estratégias de cache (stale-while-revalidate)
+- [ ] **11.4.6** Pre-cache assets críticos
+- [ ] **11.4.7** Implementar offline-first para dados essenciais
+
+##### 11.4.3 API Calls
+- [ ] **11.4.8** Implementar request deduplication
+- [ ] **11.4.9** Usar HTTP/2 multiplexing
+- [ ] **11.4.10** Configurar compression (Brotli/gzip)
+
+---
+
+#### 11.5 Cloud Functions Optimization
+
+##### 11.5.1 Cold Start Reduction
+- [ ] **11.5.1** Manter funções críticas "warm" com scheduled pings
+- [ ] **11.5.2** Minimizar dependências em cada função
+- [ ] **11.5.3** Usar imports dinâmicos dentro das funções
+
+##### 11.5.2 Execution Time
+- [ ] **11.5.4** Paralelizar operações independentes com Promise.all
+- [ ] **11.5.5** Implementar connection pooling para external APIs
+- [ ] **11.5.6** Cache de dados frequentes (in-memory ou Redis)
+
+##### 11.5.3 Memory & Scaling
+- [ ] **11.5.7** Ajustar memory allocation por função (256MB-1GB)
+- [ ] **11.5.8** Configurar minInstances para funções críticas
+- [ ] **11.5.9** Implementar rate limiting para proteção
+
+---
+
+#### 11.6 Monitoring & Benchmarking
+
+##### 11.6.1 Ferramentas de Análise
+- [ ] **11.6.1** Configurar Lighthouse CI no pipeline
+- [ ] **11.6.2** Implementar Web Vitals tracking (analytics)
+- [ ] **11.6.3** Configurar Firebase Performance Monitoring
+- [ ] **11.6.4** Criar dashboard de métricas de performance
+
+##### 11.6.2 Benchmarks Comparativos
+- [ ] **11.6.5** Benchmark vs SimplePractice
+- [ ] **11.6.6** Benchmark vs DrChrono
+- [ ] **11.6.7** Benchmark vs Jane App
+- [ ] **11.6.8** Documentar resultados e gaps
+
+##### 11.6.3 Regression Prevention
+- [ ] **11.6.9** Configurar bundle size budget
+- [ ] **11.6.10** Alertas para degradação de Core Web Vitals
+- [ ] **11.6.11** Performance tests em CI/CD
+
+---
+
+#### 11.7 Checklist de Implementação
+
+##### SPRINT 1: Análise & Quick Wins (2-3 dias)
+- [ ] **11.7.1** Executar Lighthouse audit completo
+- [ ] **11.7.2** Analisar bundle com webpack-bundle-analyzer
+- [ ] **11.7.3** Identificar top 5 problemas de performance
+- [ ] **11.7.4** Implementar lazy loading de rotas
+- [ ] **11.7.5** Otimizar imports (tree shaking)
+
+##### SPRINT 2: React Optimization (2-3 dias)
+- [ ] **11.7.6** React DevTools Profiler audit
+- [ ] **11.7.7** Implementar React.memo em componentes críticos
+- [ ] **11.7.8** Otimizar Context providers
+- [ ] **11.7.9** Virtualização de listas longas
+
+##### SPRINT 3: Network & Backend (2-3 dias)
+- [ ] **11.7.10** Otimizar Firestore queries
+- [ ] **11.7.11** Implementar caching strategies
+- [ ] **11.7.12** Otimizar Cloud Functions cold starts
+- [ ] **11.7.13** Configurar CDN para assets estáticos
+
+##### SPRINT 4: Monitoring & Validation (1-2 dias)
+- [ ] **11.7.14** Configurar performance monitoring
+- [ ] **11.7.15** Executar benchmarks finais
+- [ ] **11.7.16** Documentar melhorias alcançadas
+- [ ] **11.7.17** Configurar alertas de regressão
+
+---
+
+#### 11.8 Métricas de Sucesso
+
+| Métrica | Baseline | Meta | Status |
+|---------|----------|------|--------|
+| Lighthouse Performance | TBD | > 90 | ⏳ |
+| Bundle Size (main) | ~850KB | < 500KB | ⏳ |
+| Bundle Size (total) | TBD | < 2MB | ⏳ |
+| Time to Interactive | TBD | < 3s | ⏳ |
+| First Contentful Paint | TBD | < 1.5s | ⏳ |
+| Firestore reads/user/day | TBD | -30% | ⏳ |
+| Cloud Function cold start | TBD | < 500ms | ⏳ |
+
+---
+
+#### 11.9 Referências Técnicas
+
+**Performance Optimization:**
+- [React Performance Optimization](https://react.dev/learn/render-and-commit)
+- [Web Vitals Guide](https://web.dev/vitals/)
+- [Vite Build Optimization](https://vitejs.dev/guide/build.html)
+
+**Bundle Analysis:**
+- [rollup-plugin-visualizer](https://github.com/btd/rollup-plugin-visualizer)
+- [Source Map Explorer](https://github.com/danvk/source-map-explorer)
+
+**Firebase Performance:**
+- [Firestore Best Practices](https://firebase.google.com/docs/firestore/best-practices)
+- [Cloud Functions Performance](https://firebase.google.com/docs/functions/tips)
+- [Firebase Performance Monitoring](https://firebase.google.com/docs/perf-mon)
+
+**React Optimization:**
+- [React Profiler](https://react.dev/reference/react/Profiler)
+- [react-window (Virtualization)](https://github.com/bvaughn/react-window)
+- [useMemo & useCallback Guide](https://react.dev/reference/react/useMemo)
+
+---
+
 ## CRONOGRAMA E PROGRESSO
 
 | Fase | Status | Prioridade |
@@ -1580,8 +1776,9 @@ const STATUS = {
 | Fase 8b: Convênios/TISS - IMPLEMENTAÇÃO | ✅ COMPLETO (23/12/2024) | 🔴 CRÍTICA |
 | Fase 9: Workflow Automation | ✅ COMPLETO (23/12/2024) | 🟡 ALTA |
 | **Fase 10: UI/UX Premium Polish** | **🚧 50% IMPLEMENTADO (23/12/2024)** | **🔴 CRÍTICA** |
+| Fase 11: Benchmark & Performance | 🔲 PENDENTE | 🟡 ALTA |
 
-**Progresso Geral:** 10/11 fases completas (91%) - FASE 10 em andamento
+**Progresso Geral:** 10/12 fases completas (83%) - FASE 10 em andamento, FASE 11 pendente
 
 > ✅ **FASE 8 PESQUISA CONCLUÍDA:** Documento completo em `docs/research/CONVENIOS_TISS_RESEARCH.md`
 > Inclui: legislação ANS, padrão TISS 4.01, TUSS, certificação ICP-Brasil, requisitos de 7 operadoras
