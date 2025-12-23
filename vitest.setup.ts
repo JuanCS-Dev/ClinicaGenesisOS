@@ -44,6 +44,11 @@ class MockTimestamp {
 // Mock Firebase Firestore
 vi.mock('firebase/firestore', () => ({
   getFirestore: vi.fn(() => ({})),
+  // PERF: New initialization functions for offline persistence
+  initializeFirestore: vi.fn(() => ({})),
+  persistentLocalCache: vi.fn(() => ({})),
+  persistentMultipleTabManager: vi.fn(() => ({})),
+  CACHE_SIZE_UNLIMITED: -1,
   collection: vi.fn(),
   doc: vi.fn(),
   getDoc: vi.fn(),

@@ -168,14 +168,12 @@ describe('ClinicContext', () => {
       });
     });
 
-    it('subscribes to existing user profile', async () => {
+    it('loads existing user profile with getById (PERF: no subscription)', async () => {
+      // PERF: ClinicContext uses getById instead of subscribe to reduce Firestore costs
       const profile = createMockUserProfile();
+      const clinic = createMockClinic();
       vi.mocked(userService.getById).mockResolvedValue(profile);
-      vi.mocked(userService.subscribe).mockImplementation((_, callback) => {
-        callback(profile);
-        return mockUserUnsubscribe as () => void;
-      });
-      vi.mocked(clinicService.subscribe).mockReturnValue(mockClinicUnsubscribe as () => void);
+      vi.mocked(clinicService.getById).mockResolvedValue(clinic);
 
       const { result } = renderHook(() => useClinicContext(), { wrapper });
 
@@ -183,22 +181,17 @@ describe('ClinicContext', () => {
         expect(result.current.userProfile).toEqual(profile);
       });
 
-      expect(userService.subscribe).toHaveBeenCalledWith('user-123', expect.any(Function));
+      // Verify getById was used instead of subscribe
+      expect(userService.getById).toHaveBeenCalledWith('user-123');
+      expect(userService.subscribe).not.toHaveBeenCalled();
     });
 
-    it('subscribes to clinic when user has clinicId', async () => {
+    it('loads clinic when user has clinicId', async () => {
       const profile = createMockUserProfile({ clinicId: 'clinic-123' });
       const clinic = createMockClinic();
 
       vi.mocked(userService.getById).mockResolvedValue(profile);
-      vi.mocked(userService.subscribe).mockImplementation((_, callback) => {
-        callback(profile);
-        return mockUserUnsubscribe as () => void;
-      });
-      vi.mocked(clinicService.subscribe).mockImplementation((_, callback) => {
-        callback(clinic);
-        return mockClinicUnsubscribe as () => void;
-      });
+      vi.mocked(clinicService.getById).mockResolvedValue(clinic);
 
       const { result } = renderHook(() => useClinicContext(), { wrapper });
 
@@ -206,7 +199,9 @@ describe('ClinicContext', () => {
         expect(result.current.clinic).toEqual(clinic);
       });
 
-      expect(clinicService.subscribe).toHaveBeenCalledWith('clinic-123', expect.any(Function));
+      // Verify getById was used instead of subscribe
+      expect(clinicService.getById).toHaveBeenCalledWith('clinic-123');
+      expect(clinicService.subscribe).not.toHaveBeenCalled();
     });
   });
 
@@ -215,10 +210,6 @@ describe('ClinicContext', () => {
       const profileWithoutClinic = createMockUserProfile({ clinicId: undefined });
 
       vi.mocked(userService.getById).mockResolvedValue(profileWithoutClinic);
-      vi.mocked(userService.subscribe).mockImplementation((_, callback) => {
-        callback(profileWithoutClinic);
-        return mockUserUnsubscribe as () => void;
-      });
 
       const { result } = renderHook(() => useClinicContext(), { wrapper });
 
@@ -234,14 +225,7 @@ describe('ClinicContext', () => {
       const clinic = createMockClinic();
 
       vi.mocked(userService.getById).mockResolvedValue(profileWithClinic);
-      vi.mocked(userService.subscribe).mockImplementation((_, callback) => {
-        callback(profileWithClinic);
-        return mockUserUnsubscribe as () => void;
-      });
-      vi.mocked(clinicService.subscribe).mockImplementation((_, callback) => {
-        callback(clinic);
-        return mockClinicUnsubscribe as () => void;
-      });
+      vi.mocked(clinicService.getById).mockResolvedValue(clinic);
 
       const { result } = renderHook(() => useClinicContext(), { wrapper });
 
@@ -268,10 +252,6 @@ describe('ClinicContext', () => {
     beforeEach(() => {
       const profile = createMockUserProfile({ clinicId: undefined });
       vi.mocked(userService.getById).mockResolvedValue(profile);
-      vi.mocked(userService.subscribe).mockImplementation((_, callback) => {
-        callback(profile);
-        return mockUserUnsubscribe as () => void;
-      });
     });
 
     it('creates clinic and associates user as owner', async () => {
@@ -351,19 +331,15 @@ describe('ClinicContext', () => {
   });
 
   describe('updateClinicSettings', () => {
-    it('updates clinic settings', async () => {
+    it('updates clinic settings and refreshes data', async () => {
       const profile = createMockUserProfile({ clinicId: 'clinic-123' });
       const clinic = createMockClinic();
+      const updatedClinic = createMockClinic({ settings: { ...clinic.settings, defaultAppointmentDuration: 45 } });
 
       vi.mocked(userService.getById).mockResolvedValue(profile);
-      vi.mocked(userService.subscribe).mockImplementation((_, callback) => {
-        callback(profile);
-        return mockUserUnsubscribe as () => void;
-      });
-      vi.mocked(clinicService.subscribe).mockImplementation((_, callback) => {
-        callback(clinic);
-        return mockClinicUnsubscribe as () => void;
-      });
+      vi.mocked(clinicService.getById)
+        .mockResolvedValueOnce(clinic)
+        .mockResolvedValueOnce(updatedClinic);
       vi.mocked(clinicService.updateSettings).mockResolvedValue();
 
       const { result } = renderHook(() => useClinicContext(), { wrapper });
@@ -379,6 +355,8 @@ describe('ClinicContext', () => {
       expect(clinicService.updateSettings).toHaveBeenCalledWith('clinic-123', {
         defaultAppointmentDuration: 45,
       });
+      // Verify data was refreshed after update
+      expect(clinicService.getById).toHaveBeenCalledTimes(2);
     });
 
     it('throws when no clinic', async () => {
@@ -396,15 +374,15 @@ describe('ClinicContext', () => {
   });
 
   describe('updateUserProfile', () => {
-    it('updates user profile', async () => {
+    it('updates user profile and refreshes data', async () => {
       const profile = createMockUserProfile();
+      const clinic = createMockClinic();
+      const updatedProfile = createMockUserProfile({ displayName: 'New Name' });
 
-      vi.mocked(userService.getById).mockResolvedValue(profile);
-      vi.mocked(userService.subscribe).mockImplementation((_, callback) => {
-        callback(profile);
-        return mockUserUnsubscribe as () => void;
-      });
-      vi.mocked(clinicService.subscribe).mockReturnValue(mockClinicUnsubscribe as () => void);
+      vi.mocked(userService.getById)
+        .mockResolvedValueOnce(profile)
+        .mockResolvedValueOnce(updatedProfile);
+      vi.mocked(clinicService.getById).mockResolvedValue(clinic);
       vi.mocked(userService.update).mockResolvedValue();
 
       const { result } = renderHook(() => useClinicContext(), { wrapper });
@@ -418,6 +396,8 @@ describe('ClinicContext', () => {
       });
 
       expect(userService.update).toHaveBeenCalledWith('user-123', { displayName: 'New Name' });
+      // Verify data was refreshed after update
+      expect(userService.getById).toHaveBeenCalledTimes(2);
     });
 
     it('throws when no user', async () => {
@@ -438,17 +418,12 @@ describe('ClinicContext', () => {
     it('refreshes clinic data', async () => {
       const profile = createMockUserProfile({ clinicId: 'clinic-123' });
       const clinic = createMockClinic();
+      const updatedClinic = createMockClinic({ name: 'Updated Clinic' });
 
       vi.mocked(userService.getById).mockResolvedValue(profile);
-      vi.mocked(userService.subscribe).mockImplementation((_, callback) => {
-        callback(profile);
-        return mockUserUnsubscribe as () => void;
-      });
-      vi.mocked(clinicService.subscribe).mockImplementation((_, callback) => {
-        callback(clinic);
-        return mockClinicUnsubscribe as () => void;
-      });
-      vi.mocked(clinicService.getById).mockResolvedValue(clinic);
+      vi.mocked(clinicService.getById)
+        .mockResolvedValueOnce(clinic)
+        .mockResolvedValueOnce(updatedClinic);
 
       const { result } = renderHook(() => useClinicContext(), { wrapper });
 
@@ -461,22 +436,21 @@ describe('ClinicContext', () => {
       });
 
       expect(clinicService.getById).toHaveBeenCalledWith('clinic-123');
+      expect(clinicService.getById).toHaveBeenCalledTimes(2);
     });
 
     it('does nothing when no clinicId', async () => {
       const profile = createMockUserProfile({ clinicId: undefined });
 
       vi.mocked(userService.getById).mockResolvedValue(profile);
-      vi.mocked(userService.subscribe).mockImplementation((_, callback) => {
-        callback(profile);
-        return mockUserUnsubscribe as () => void;
-      });
 
       const { result } = renderHook(() => useClinicContext(), { wrapper });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
       });
+
+      vi.clearAllMocks();
 
       await act(async () => {
         await result.current.refreshClinic();
@@ -487,30 +461,27 @@ describe('ClinicContext', () => {
   });
 
   describe('cleanup', () => {
-    it('unsubscribes on unmount', async () => {
+    it('does not make additional requests after unmount', async () => {
+      // PERF: ClinicContext now uses getDoc instead of subscribe for efficiency
+      // This test verifies that unmount cancels any pending requests
       const profile = createMockUserProfile({ clinicId: 'clinic-123' });
       const clinic = createMockClinic();
 
       vi.mocked(userService.getById).mockResolvedValue(profile);
-      vi.mocked(userService.subscribe).mockImplementation((_, callback) => {
-        callback(profile);
-        return mockUserUnsubscribe as () => void;
-      });
-      vi.mocked(clinicService.subscribe).mockImplementation((_, callback) => {
-        callback(clinic);
-        return mockClinicUnsubscribe as () => void;
-      });
+      vi.mocked(clinicService.getById).mockResolvedValue(clinic);
 
       const { unmount } = renderHook(() => useClinicContext(), { wrapper });
 
+      // Wait for initial load
       await waitFor(() => {
-        expect(userService.subscribe).toHaveBeenCalled();
+        expect(userService.getById).toHaveBeenCalled();
       });
 
       unmount();
 
-      expect(mockUserUnsubscribe).toHaveBeenCalled();
-      expect(mockClinicUnsubscribe).toHaveBeenCalled();
+      // Verify no subscriptions were used (PERF optimization)
+      expect(userService.subscribe).not.toHaveBeenCalled();
+      expect(clinicService.subscribe).not.toHaveBeenCalled();
     });
   });
 
