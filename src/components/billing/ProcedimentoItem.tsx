@@ -135,7 +135,7 @@ export const ProcedimentoItem: React.FC<ProcedimentoItemProps> = ({
             onFocus={() => setShowDropdown(tussSearch.length >= 2)}
             onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
             placeholder="Buscar procedimento TUSS..."
-            className="w-full pl-10 pr-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-soft text-sm"
+            className="w-full pl-10 pr-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-soft text-sm"
           />
         </div>
 
@@ -176,7 +176,7 @@ export const ProcedimentoItem: React.FC<ProcedimentoItemProps> = ({
             value={proc.codigoProcedimento}
             onChange={(e) => onUpdate('codigoProcedimento', e.target.value)}
             placeholder="00000000"
-            className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono bg-genesis-soft"
+            className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary font-mono bg-genesis-soft"
           />
         </div>
 
@@ -189,7 +189,7 @@ export const ProcedimentoItem: React.FC<ProcedimentoItemProps> = ({
             value={proc.descricaoProcedimento}
             onChange={(e) => onUpdate('descricaoProcedimento', e.target.value)}
             placeholder="Descrição do procedimento"
-            className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-soft"
+            className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-soft"
           />
         </div>
 
@@ -200,7 +200,7 @@ export const ProcedimentoItem: React.FC<ProcedimentoItemProps> = ({
           <select
             value={proc.codigoTabela}
             onChange={(e) => onUpdate('codigoTabela', e.target.value)}
-            className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-soft"
+            className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-soft"
           >
             {TIPO_TABELA_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -221,7 +221,7 @@ export const ProcedimentoItem: React.FC<ProcedimentoItemProps> = ({
             type="date"
             value={proc.dataRealizacao}
             onChange={(e) => onUpdate('dataRealizacao', e.target.value)}
-            className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-soft"
+            className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-soft"
           />
         </div>
 
@@ -234,7 +234,7 @@ export const ProcedimentoItem: React.FC<ProcedimentoItemProps> = ({
             type="time"
             value={proc.horaInicial}
             onChange={(e) => onUpdate('horaInicial', e.target.value)}
-            className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-soft"
+            className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-soft"
           />
         </div>
 
@@ -247,7 +247,7 @@ export const ProcedimentoItem: React.FC<ProcedimentoItemProps> = ({
             type="time"
             value={proc.horaFinal}
             onChange={(e) => onUpdate('horaFinal', e.target.value)}
-            className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-soft"
+            className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-soft"
           />
         </div>
 
@@ -260,7 +260,7 @@ export const ProcedimentoItem: React.FC<ProcedimentoItemProps> = ({
             value={proc.quantidadeRealizada}
             onChange={(e) => onUpdate('quantidadeRealizada', e.target.value.replace(/\D/g, ''))}
             placeholder="1"
-            className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-soft text-center"
+            className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-soft text-center"
           />
         </div>
 
@@ -275,7 +275,7 @@ export const ProcedimentoItem: React.FC<ProcedimentoItemProps> = ({
               onUpdate('valorUnitario', e.target.value.replace(/[^\d.,]/g, '').replace(',', '.'))
             }
             placeholder="0.00"
-            className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-soft text-right"
+            className="w-full px-2 py-1.5 text-sm border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-soft text-right"
           />
         </div>
       </div>

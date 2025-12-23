@@ -124,7 +124,7 @@ export const Application: React.FC = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full bg-genesis-surface/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
+                    className="w-full bg-genesis-surface/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-genesis-primary/50 focus:border-genesis-primary transition-all font-medium"
                     placeholder="Dr. Seu Nome"
                   />
                </div>
@@ -138,7 +138,7 @@ export const Application: React.FC = () => {
                         name="clinicName"
                         value={formData.clinicName}
                         onChange={handleChange}
-                        className="w-full bg-genesis-surface/5 border border-white/10 rounded-xl pl-12 pr-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
+                        className="w-full bg-genesis-surface/5 border border-white/10 rounded-xl pl-12 pr-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-genesis-primary/50 focus:border-genesis-primary transition-all font-medium"
                         placeholder="Nome da sua estrutura"
                     />
                   </div>
@@ -152,7 +152,7 @@ export const Application: React.FC = () => {
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
-                        className="w-full bg-genesis-surface/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
+                        className="w-full bg-genesis-surface/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-genesis-primary/50 focus:border-genesis-primary transition-all font-medium"
                         placeholder="(DDD) 99999..."
                       />
                   </div>
@@ -165,7 +165,7 @@ export const Application: React.FC = () => {
                             type="number"
                             value={formData.professionals}
                             onChange={handleChange}
-                            className="w-full bg-genesis-surface/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
+                            className="w-full bg-genesis-surface/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-genesis-primary/50 focus:border-genesis-primary transition-all font-medium"
                             placeholder="Qtd. Profissionais"
                         />
                       </div>
@@ -180,7 +180,7 @@ export const Application: React.FC = () => {
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full bg-genesis-surface/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
+                    className="w-full bg-genesis-surface/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-genesis-primary/50 focus:border-genesis-primary transition-all font-medium"
                     placeholder="voce@suaclinica.com"
                   />
                </div>

@@ -362,7 +362,7 @@ export function TissSADTForm({
                 setValorTaxas(e.target.value.replace(/[^\d.,]/g, '').replace(',', '.'))
               }
               placeholder="0.00"
-              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface text-right"
+              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-surface text-right"
             />
           </div>
 
@@ -377,7 +377,7 @@ export function TissSADTForm({
                 setValorMateriais(e.target.value.replace(/[^\d.,]/g, '').replace(',', '.'))
               }
               placeholder="0.00"
-              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface text-right"
+              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-surface text-right"
             />
           </div>
         </div>

@@ -244,7 +244,7 @@ export function TissConsultaForm({
             <select
               value={tipoConsulta}
               onChange={(e) => setTipoConsulta(e.target.value as TipoConsulta)}
-              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary"
             >
               {TIPO_CONSULTA_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -262,7 +262,7 @@ export function TissConsultaForm({
               type="date"
               value={dataAtendimento}
               onChange={(e) => setDataAtendimento(e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary ${
                 errors.dataAtendimento ? 'border-red-300' : 'border-genesis-border'
               }`}
             />
@@ -281,7 +281,7 @@ export function TissConsultaForm({
             value={indicacaoClinica}
             onChange={(e) => setIndicacaoClinica(e.target.value)}
             placeholder="Ex: Hipertensão arterial - I10"
-            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary"
           />
         </div>
       </div>
@@ -333,7 +333,7 @@ export function TissConsultaForm({
               onFocus={() => setShowTussDropdown(tussSearch.length >= 2)}
               onBlur={() => setTimeout(() => setShowTussDropdown(false), 200)}
               placeholder="Digite código ou descrição..."
-              className="w-full pl-10 pr-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary"
             />
           </div>
 
@@ -373,7 +373,7 @@ export function TissConsultaForm({
               value={codigoProcedimento}
               onChange={(e) => setCodigoProcedimento(e.target.value)}
               placeholder="00000000"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono ${
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary font-mono ${
                 errors.codigoProcedimento ? 'border-red-300' : 'border-genesis-border'
               }`}
             />
@@ -391,7 +391,7 @@ export function TissConsultaForm({
               value={descricaoProcedimento}
               onChange={(e) => setDescricaoProcedimento(e.target.value)}
               placeholder="Descrição do procedimento"
-              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary"
             />
           </div>
         </div>
@@ -408,7 +408,7 @@ export function TissConsultaForm({
               setValorProcedimento(value);
             }}
             placeholder="0.00"
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary ${
               errors.valorProcedimento ? 'border-red-300' : 'border-genesis-border'
             }`}
           />
@@ -439,14 +439,14 @@ export function TissConsultaForm({
           type="button"
           onClick={onCancel}
           disabled={isLoading}
-          className="px-4 py-2 text-genesis-text bg-genesis-surface border border-genesis-border rounded-lg hover:bg-genesis-soft transition-colors disabled:opacity-50"
+          className="px-4 py-2 text-genesis-text bg-genesis-surface border border-genesis-border rounded-lg hover:bg-genesis-soft transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
         >
           Cancelar
         </button>
         <button
           type="submit"
           disabled={isLoading}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-genesis-primary text-white rounded-lg hover:bg-genesis-primary-dark transition-all duration-200 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] shadow-lg shadow-genesis-primary/20 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:translate-y-0"
         >
           {isLoading ? (
             <>

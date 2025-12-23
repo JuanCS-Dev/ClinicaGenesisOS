@@ -293,7 +293,7 @@ export function CertificateSetup({
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Digite a senha"
-                    className="w-full pl-10 pr-4 py-3 border border-genesis-border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-10 pr-4 py-3 border border-genesis-border rounded-xl focus:outline-none focus:ring-2 focus:ring-genesis-primary"
                   />
                 </div>
               </div>

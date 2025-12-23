@@ -80,7 +80,7 @@ export function OperadoraSection({
             onChange={(e) => onRegistroANSChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
             placeholder="000000"
             maxLength={6}
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface ${
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-surface ${
               errors.registroANS ? 'border-red-300' : 'border-genesis-border'
             }`}
           />
@@ -98,7 +98,7 @@ export function OperadoraSection({
             value={nomeOperadora}
             onChange={(e) => onNomeOperadoraChange(e.target.value)}
             placeholder="Ex: Unimed, Bradesco Saúde"
-            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-surface"
           />
         </div>
       </div>
@@ -140,7 +140,7 @@ export function BeneficiarioSection({
             value={numeroCarteira}
             onChange={(e) => onNumeroCarteiraChange(e.target.value.replace(/\D/g, ''))}
             placeholder="00000000000000000"
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface ${
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-surface ${
               errors.numeroCarteira ? 'border-red-300' : 'border-genesis-border'
             }`}
           />
@@ -158,7 +158,7 @@ export function BeneficiarioSection({
             value={nomeBeneficiario}
             onChange={(e) => onNomeBeneficiarioChange(e.target.value)}
             placeholder="Nome completo"
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface ${
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-surface ${
               errors.nomeBeneficiario ? 'border-red-300' : 'border-genesis-border'
             }`}
           />
@@ -176,7 +176,7 @@ export function BeneficiarioSection({
               type="date"
               value={dataNascimento || ''}
               onChange={(e) => onDataNascimentoChange(e.target.value)}
-              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface"
+              className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-surface"
             />
           </div>
         )}
@@ -213,7 +213,7 @@ export function SolicitacaoSection({
           <select
             value={caraterAtendimento}
             onChange={(e) => onCaraterAtendimentoChange(e.target.value as CaraterAtendimento)}
-            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-surface"
           >
             {CARATER_ATENDIMENTO_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -231,7 +231,7 @@ export function SolicitacaoSection({
             type="date"
             value={dataSolicitacao}
             onChange={(e) => onDataSolicitacaoChange(e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface ${
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-surface ${
               errors.dataSolicitacao ? 'border-red-300' : 'border-genesis-border'
             }`}
           />
@@ -250,7 +250,7 @@ export function SolicitacaoSection({
           onChange={(e) => onIndicacaoClinicaChange(e.target.value)}
           placeholder="Descreva a indicação clínica, diagnóstico ou CID..."
           rows={2}
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-genesis-surface resize-none ${
+          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary bg-genesis-surface resize-none ${
             errors.indicacaoClinica ? 'border-red-300' : 'border-genesis-border'
           }`}
         />

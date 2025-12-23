@@ -272,7 +272,7 @@ export const AccuracyFeedback: React.FC<AccuracyFeedbackProps> = ({
             onChange={(e) => setComment(e.target.value)}
             placeholder="Comentário adicional (opcional)..."
             rows={2}
-            className="w-full px-3 py-2 border border-genesis-border rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg text-sm resize-none focus:ring-2 focus:ring-genesis-primary/20 focus:border-genesis-primary"
           />
 
           {/* Submit button */}

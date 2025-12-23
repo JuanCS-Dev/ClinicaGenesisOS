@@ -129,7 +129,7 @@ const SOAPFieldEditor: React.FC<SOAPFieldEditorProps> = ({
         value={state.current}
         onChange={(e) => onChange(e.target.value)}
         rows={rows}
-        className="w-full px-3 py-2 border border-genesis-border rounded-lg bg-genesis-bg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-sm"
+        className="w-full px-3 py-2 border border-genesis-border rounded-lg bg-genesis-bg focus:ring-2 focus:ring-genesis-primary focus:border-genesis-primary resize-none text-sm"
         placeholder={placeholder}
       />
       {children}

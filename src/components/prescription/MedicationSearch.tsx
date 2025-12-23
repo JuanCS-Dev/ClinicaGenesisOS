@@ -249,7 +249,7 @@ export function MedicationSearch({
           onFocus={() => results.length > 0 && setIsOpen(true)}
           placeholder={placeholder}
           disabled={disabled}
-          className="w-full pl-10 pr-10 py-3 border border-genesis-border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-genesis-hover disabled:cursor-not-allowed"
+          className="w-full pl-10 pr-10 py-3 border border-genesis-border rounded-xl focus:outline-none focus:ring-2 focus:ring-genesis-primary focus:border-transparent disabled:bg-genesis-hover disabled:cursor-not-allowed"
         />
         {loading && (
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-500 animate-spin" />

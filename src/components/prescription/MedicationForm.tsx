@@ -112,7 +112,7 @@ export const MedicationForm: FC<MedicationFormProps> = ({
             value={medication.dosage}
             onChange={(e) => onUpdate(index, 'dosage', e.target.value)}
             placeholder="Ex: 1 comprimido"
-            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary"
           />
         </div>
         <div>
@@ -124,7 +124,7 @@ export const MedicationForm: FC<MedicationFormProps> = ({
             value={medication.frequency}
             onChange={(e) => onUpdate(index, 'frequency', e.target.value)}
             placeholder="Ex: 8 em 8 horas"
-            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary"
           />
         </div>
       </div>
@@ -140,7 +140,7 @@ export const MedicationForm: FC<MedicationFormProps> = ({
             value={medication.duration}
             onChange={(e) => onUpdate(index, 'duration', e.target.value)}
             placeholder="Ex: 7 dias"
-            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary"
           />
         </div>
         <div>
@@ -152,7 +152,7 @@ export const MedicationForm: FC<MedicationFormProps> = ({
             min="1"
             value={medication.quantity}
             onChange={(e) => onUpdate(index, 'quantity', parseInt(e.target.value) || 1)}
-            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary"
           />
         </div>
         <div>
@@ -162,7 +162,7 @@ export const MedicationForm: FC<MedicationFormProps> = ({
           <select
             value={medication.unit}
             onChange={(e) => onUpdate(index, 'unit', e.target.value)}
-            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary"
           >
             {UNITS.map((unit) => (
               <option key={unit} value={unit}>
@@ -182,7 +182,7 @@ export const MedicationForm: FC<MedicationFormProps> = ({
           <select
             value={medication.route}
             onChange={(e) => onUpdate(index, 'route', e.target.value)}
-            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary"
           >
             {ROUTES.map((route) => (
               <option key={route} value={route}>
@@ -197,7 +197,7 @@ export const MedicationForm: FC<MedicationFormProps> = ({
               type="checkbox"
               checked={medication.continuousUse}
               onChange={(e) => onUpdate(index, 'continuousUse', e.target.checked)}
-              className="w-4 h-4 text-blue-600 rounded border-genesis-border focus:ring-blue-500"
+              className="w-4 h-4 text-blue-600 rounded border-genesis-border focus:ring-genesis-primary"
             />
             <span className="text-sm text-genesis-text">Uso contínuo</span>
           </label>
@@ -214,7 +214,7 @@ export const MedicationForm: FC<MedicationFormProps> = ({
           value={medication.instructions || ''}
           onChange={(e) => onUpdate(index, 'instructions', e.target.value)}
           placeholder="Ex: Tomar com água, após as refeições"
-          className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-genesis-border rounded-lg focus:outline-none focus:ring-2 focus:ring-genesis-primary"
         />
       </div>
     </div>

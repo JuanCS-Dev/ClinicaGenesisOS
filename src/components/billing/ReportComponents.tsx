@@ -18,14 +18,14 @@ import type { GuiaFirestore, StatusGuia } from '@/types';
 // =============================================================================
 
 export const STATUS_COLORS: Record<StatusGuia, string> = {
-  rascunho: 'bg-gray-400',
-  enviada: 'bg-blue-400',
-  em_analise: 'bg-amber-400',
-  autorizada: 'bg-emerald-400',
-  glosada_parcial: 'bg-orange-400',
-  glosada_total: 'bg-red-400',
-  paga: 'bg-green-400',
-  recurso: 'bg-purple-400',
+  rascunho: 'bg-genesis-muted',
+  enviada: 'bg-info',
+  em_analise: 'bg-warning',
+  autorizada: 'bg-success',
+  glosada_parcial: 'bg-warning',
+  glosada_total: 'bg-danger',
+  paga: 'bg-success',
+  recurso: 'bg-genesis-primary',
 };
 
 export const STATUS_LABELS: Record<StatusGuia, string> = {

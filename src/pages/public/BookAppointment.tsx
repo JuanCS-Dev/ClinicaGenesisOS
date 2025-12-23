@@ -310,11 +310,11 @@ export function BookAppointment(): React.ReactElement {
               onClick={goToPreviousStep}
               disabled={step === 'professional'}
               className={`
-                flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all
+                flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200
                 ${
                   step === 'professional'
                     ? 'text-genesis-subtle cursor-not-allowed'
-                    : 'text-genesis-dark hover:bg-genesis-hover'
+                    : 'text-genesis-dark hover:bg-genesis-hover hover:scale-[1.02] active:scale-[0.98]'
                 }
               `}
             >
@@ -326,10 +326,10 @@ export function BookAppointment(): React.ReactElement {
               onClick={goToNextStep}
               disabled={!canGoNext() || submitting}
               className={`
-                flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all
+                flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200
                 ${
                   canGoNext() && !submitting
-                    ? 'bg-genesis-primary text-white hover:bg-genesis-primary-dark'
+                    ? 'bg-genesis-primary text-white hover:bg-genesis-primary-dark hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] shadow-lg shadow-genesis-primary/20'
                     : 'bg-genesis-soft text-genesis-subtle cursor-not-allowed'
                 }
               `}
