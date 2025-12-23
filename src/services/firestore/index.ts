@@ -29,3 +29,7 @@ export { telemedicineService } from './telemedicine.service';
 export { prescriptionService } from './prescription.service';
 
 export { seedClinicData, removeDemoData } from './seed.service';
+
+export { operadoraService } from './operadora.service';
+
+export { guiaService } from './guia.service';

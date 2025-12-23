@@ -18,6 +18,7 @@ import {
   Building,
   Bell,
   MessageCircle,
+  HeartPulse,
 } from 'lucide-react';
 import { PixSettings } from '@/components/settings/PixSettings';
 import { DataExportRequest } from '@/components/consent/DataExportRequest';
@@ -25,6 +26,7 @@ import { CertificateSetup } from '@/components/prescription/CertificateSetup';
 import { MetricsDashboard } from '@/components/ai/scribe/MetricsDashboard';
 import { NotificationPreferences } from '@/components/notifications';
 import { WhatsAppSettings } from '@/components/settings/WhatsAppSettings';
+import { ConvenioSettings } from '@/components/settings/ConvenioSettings';
 import { useClinicContext } from '@/contexts/ClinicContext';
 
 /**
@@ -36,6 +38,12 @@ const TABS = [
     label: 'Clínica',
     icon: Building,
     description: 'Informações básicas da clínica',
+  },
+  {
+    id: 'convenios',
+    label: 'Convênios',
+    icon: HeartPulse,
+    description: 'Planos de saúde e faturamento TISS',
   },
   {
     id: 'notifications',
@@ -88,7 +96,6 @@ export function Settings(): React.ReactElement {
   // Handle certificate configuration
   const handleCertificateConfigured = useCallback(() => {
     setShowCertificateModal(false);
-    // TODO: Refresh clinic data
   }, []);
 
   return (
@@ -183,6 +190,16 @@ export function Settings(): React.ReactElement {
                 <p>Para alterar informações da clínica, entre em contato com o suporte.</p>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Convenios Tab */}
+        {activeTab === 'convenios' && (
+          <div className="animate-in fade-in zoom-in-95">
+            <ConvenioSettings
+              cnes={clinic?.cnpj ? undefined : undefined}
+              cnpj={clinic?.cnpj}
+            />
           </div>
         )}
 

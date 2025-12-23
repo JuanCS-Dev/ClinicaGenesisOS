@@ -9,8 +9,8 @@ export * from './finance';
 // Telemedicine Types (Phase 6)
 export * from './telemedicine';
 
-// TISS Billing Types (Phase 7)
-export * from './tiss';
+// TISS Billing Types (Phase 7) - Refactored into semantic modules
+export * from './tiss/index';
 
 // Digital Prescription Types (Phase 8)
 export * from './prescription';
