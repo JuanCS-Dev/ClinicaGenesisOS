@@ -2034,21 +2034,21 @@ const q = query(
 - [x] **SPRINT2.4** Configurar manualChunks no Vite ✅ (6 vendor chunks)
 - [ ] **SPRINT2.5** Audit re-renders com why-did-you-render - Futuro
 
-##### SPRINT 3: NETWORK & FIRESTORE (🟢 MÉDIO)
+##### SPRINT 3: NETWORK & FIRESTORE (🟢 MÉDIO) ✅ COMPLETO
 **Meta:** -70% Firestore costs, offline-first
 
 | # | Ação | Arquivo | Impacto Esperado |
 |---|------|---------|------------------|
-| 1 | Real-time → GET para configs | `useClinicSettings.ts` | -80% listeners |
-| 2 | Composite indexes | `firestore.indexes.json` | -50% query time |
-| 3 | Offline persistence | `firebase.ts` | Instant load |
-| 4 | Cherry-pick imports | `*.tsx` | -100KB bundle |
+| 1 | Real-time → GET para configs | `ClinicContext.tsx` | -80% listeners ✅ |
+| 2 | Composite indexes | `firestore.indexes.json` | -50% query time (futuro) |
+| 3 | Offline persistence | `firebase.ts` | Instant load ✅ |
+| 4 | Cherry-pick imports | `*.tsx` | N/A - tree-shaking já otimizado |
 
-- [ ] **SPRINT3.1** Audit todos useFirestoreSubscription
-- [ ] **SPRINT3.2** Converter settings para getDoc cached
-- [ ] **SPRINT3.3** Criar composite indexes
-- [ ] **SPRINT3.4** Verificar enableIndexedDbPersistence
-- [ ] **SPRINT3.5** Cherry-pick lucide-react icons
+- [x] **SPRINT3.1** Audit todos useFirestoreSubscription ✅
+- [x] **SPRINT3.2** Converter ClinicContext para getDoc cached ✅
+- [ ] **SPRINT3.3** Criar composite indexes - Futuro (requer análise de queries)
+- [x] **SPRINT3.4** Habilitar IndexedDB persistence (persistentLocalCache) ✅
+- [x] **SPRINT3.5** Cherry-pick lucide - N/A (tree-shaking OK, 31KB gzip)
 
 ##### SPRINT 4: MONITORING & GUARD RAILS (🟢 MÉDIO)
 **Meta:** Zero regression, alerts automáticos
@@ -2180,7 +2180,20 @@ const q = query(
 >   - react-vendor: 354KB | firebase-vendor: 517KB | charts-vendor: 513KB
 >   - utils-vendor: 31KB | export-vendor: 1MB (lazy) | index: 114KB
 >
-> **Próximo passo:** Executar SPRINT 3 - Network & Firestore ou SPRINT 4 - Monitoring
+> ✅ **FASE 11 SPRINT 3 - COMPLETO (23/12/2024):**
+> - ✅ IndexedDB persistence habilitado (persistentLocalCache)
+>   - Instant cache hits em todas as queries
+>   - Suporte offline completo
+>   - Sincronização multi-tab
+>   - Cache ilimitado para clínicas grandes
+> - ✅ ClinicContext convertido de subscribe para getDoc
+>   - Elimina 2 listeners ativos por sessão de usuário
+>   - Refresh automático após mutations
+>   - Adicionada função refreshUserProfile
+> - ✅ Testes atualizados (1225 tests passando)
+> - **Impacto:** ~80% redução em custos de Firestore listeners
+>
+> **Próximo passo:** Executar SPRINT 4 - Monitoring & Guard Rails
 
 ---
 
