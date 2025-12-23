@@ -130,11 +130,11 @@ export const Reports: React.FC = () => {
     useReports();
   const [exporting, setExporting] = useState(false);
 
-  // Handle export
-  const handleExport = () => {
+  // Handle export (async due to dynamic imports for bundle optimization)
+  const handleExport = async () => {
     setExporting(true);
     try {
-      exportReportToPDF(
+      await exportReportToPDF(
         {
           totalPatients: metrics?.totalPatients || 0,
           activePatients: metrics?.activePatients || 0,

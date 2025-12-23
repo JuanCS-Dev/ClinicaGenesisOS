@@ -54,15 +54,15 @@ export const Finance: React.FC = () => {
     description?: string;
   }>({});
 
-  // Handle export
-  const handleExportPDF = () => {
-    exportTransactionsToPDF(transactions, summary, 'Clínica Genesis');
+  // Handle export (async due to dynamic imports for bundle optimization)
+  const handleExportPDF = async () => {
     setShowExportMenu(false);
+    await exportTransactionsToPDF(transactions, summary, 'Clínica Genesis');
   };
 
-  const handleExportExcel = () => {
-    exportTransactionsToExcel(transactions);
+  const handleExportExcel = async () => {
     setShowExportMenu(false);
+    await exportTransactionsToExcel(transactions);
   };
 
   // Convert monthly data for chart (from cents to currency)

@@ -179,158 +179,148 @@ export function useDashboardMetrics(): DashboardMetrics {
   const metrics = useMemo(() => {
     const now = new Date();
     const today = startOfDay(now);
+    const todayEnd = endOfDay(today);
     const yesterday = subDays(today, 1);
+    const yesterdayEnd = endOfDay(yesterday);
     const thisMonth = startOfMonth(now);
     const lastMonth = subMonths(thisMonth, 1);
     const lastMonthEnd = endOfMonth(lastMonth);
     const thisWeekStart = startOfWeek(now, { weekStartsOn: 1 }); // Monday
 
-    // ============================================
-    // TODAY'S APPOINTMENTS
-    // ============================================
-    const todayAppts = appointments.filter((apt) => {
-      const aptDate = parseISO(apt.date);
-      return isWithinInterval(aptDate, {
-        start: today,
-        end: endOfDay(today),
-      });
-    });
-
-    const yesterdayAppts = appointments.filter((apt) => {
-      const aptDate = parseISO(apt.date);
-      return isWithinInterval(aptDate, {
-        start: yesterday,
-        end: endOfDay(yesterday),
-      });
-    });
-
-    const todayCount = todayAppts.length;
-    const yesterdayCount = yesterdayAppts.length;
-    const todayChange =
-      yesterdayCount > 0
-        ? ((todayCount - yesterdayCount) / yesterdayCount) * 100
-        : todayCount > 0
-          ? 100
-          : 0;
-
-    // ============================================
-    // ACTIVE PATIENTS
-    // ============================================
-    const activePatientCount = patients.length;
-
-    // Estimate last month's patient count (simplified)
-    const patientsLastMonth = new Set(
-      appointments
-        .filter((apt) => {
-          const aptDate = parseISO(apt.date);
-          return isWithinInterval(aptDate, {
-            start: lastMonth,
-            end: lastMonthEnd,
-          });
-        })
-        .map((apt) => apt.patientId)
-    ).size;
-
-    const patientChange =
-      patientsLastMonth > 0
-        ? ((activePatientCount - patientsLastMonth) / patientsLastMonth) * 100
-        : activePatientCount > 0
-          ? 100
-          : 0;
-
-    // ============================================
-    // REVENUE
-    // ============================================
-    const completedThisMonth = appointments.filter((apt) => {
-      const aptDate = parseISO(apt.date);
-      return (
-        apt.status === Status.FINISHED &&
-        isWithinInterval(aptDate, {
-          start: thisMonth,
-          end: now,
-        })
-      );
-    });
-
-    const completedLastMonth = appointments.filter((apt) => {
-      const aptDate = parseISO(apt.date);
-      return (
-        apt.status === Status.FINISHED &&
-        isWithinInterval(aptDate, {
-          start: lastMonth,
-          end: lastMonthEnd,
-        })
-      );
-    });
-
-    const revenueThisMonth = completedThisMonth.length * AVERAGE_TICKET;
-    const revenueLastMonth = completedLastMonth.length * AVERAGE_TICKET;
-    const revenueChange =
-      revenueLastMonth > 0
-        ? ((revenueThisMonth - revenueLastMonth) / revenueLastMonth) * 100
-        : revenueThisMonth > 0
-          ? 100
-          : 0;
-
-    // ============================================
-    // OCCUPANCY
-    // ============================================
-    // Calculate week's available slots
-    let totalWeekSlots = 0;
-    let bookedWeekSlots = 0;
-
+    // Pre-calculate week day boundaries for occupancy
+    const weekDays: Array<{ start: Date; end: Date; slots: number }> = [];
     for (let i = 0; i < 7; i++) {
       const day = new Date(thisWeekStart);
       day.setDate(day.getDate() + i);
-      const daySlots = calculateDaySlots(day);
-      totalWeekSlots += daySlots;
-
-      // Count appointments for this day
-      const dayAppts = appointments.filter((apt) => {
-        const aptDate = parseISO(apt.date);
-        return isWithinInterval(aptDate, {
-          start: startOfDay(day),
-          end: endOfDay(day),
-        });
+      weekDays.push({
+        start: startOfDay(day),
+        end: endOfDay(day),
+        slots: calculateDaySlots(day),
       });
-
-      // Calculate slots used (based on duration)
-      const slotsUsed = dayAppts.reduce((sum, apt) => {
-        const slotsForAppt = Math.ceil(apt.durationMin / WORKING_HOURS.slotDurationMin);
-        return sum + slotsForAppt;
-      }, 0);
-
-      bookedWeekSlots += Math.min(slotsUsed, daySlots);
     }
 
-    const occupancyRate = totalWeekSlots > 0 ? (bookedWeekSlots / totalWeekSlots) * 100 : 0;
+    // ============================================
+    // SINGLE-PASS AGGREGATION
+    // Instead of 12+ filter passes, we do ONE pass through appointments
+    // ============================================
+    const aggregated = {
+      todayCount: 0,
+      yesterdayCount: 0,
+      completedThisMonth: 0,
+      completedLastMonth: 0,
+      patientsLastMonth: new Set<string>(),
+      weekSlots: new Array(7).fill(0), // slots used per day
+      // Today's breakdown by status
+      todayByStatus: {
+        [Status.CONFIRMED]: 0,
+        [Status.PENDING]: 0,
+        [Status.FINISHED]: 0,
+        [Status.NO_SHOW]: 0,
+        [Status.CANCELED]: 0,
+      } as Record<Status, number>,
+    };
 
+    // Single pass through all appointments
+    for (const apt of appointments) {
+      const aptDate = parseISO(apt.date);
+
+      // Today's appointments
+      if (isWithinInterval(aptDate, { start: today, end: todayEnd })) {
+        aggregated.todayCount++;
+        // Count by status for breakdown
+        if (apt.status in aggregated.todayByStatus) {
+          aggregated.todayByStatus[apt.status]++;
+        }
+      }
+
+      // Yesterday's appointments
+      if (isWithinInterval(aptDate, { start: yesterday, end: yesterdayEnd })) {
+        aggregated.yesterdayCount++;
+      }
+
+      // Completed this month
+      if (apt.status === Status.FINISHED && isWithinInterval(aptDate, { start: thisMonth, end: now })) {
+        aggregated.completedThisMonth++;
+      }
+
+      // Completed last month
+      if (apt.status === Status.FINISHED && isWithinInterval(aptDate, { start: lastMonth, end: lastMonthEnd })) {
+        aggregated.completedLastMonth++;
+      }
+
+      // Patients from last month (for patient growth calculation)
+      if (isWithinInterval(aptDate, { start: lastMonth, end: lastMonthEnd })) {
+        aggregated.patientsLastMonth.add(apt.patientId);
+      }
+
+      // Week occupancy - check each day
+      for (let i = 0; i < 7; i++) {
+        if (isWithinInterval(aptDate, { start: weekDays[i].start, end: weekDays[i].end })) {
+          const slotsForAppt = Math.ceil(apt.durationMin / WORKING_HOURS.slotDurationMin);
+          aggregated.weekSlots[i] += slotsForAppt;
+          break; // An appointment can only be on one day
+        }
+      }
+    }
+
+    // ============================================
+    // CALCULATE METRICS FROM AGGREGATED DATA
+    // ============================================
+
+    // Today's appointments change
+    const todayChange =
+      aggregated.yesterdayCount > 0
+        ? ((aggregated.todayCount - aggregated.yesterdayCount) / aggregated.yesterdayCount) * 100
+        : aggregated.todayCount > 0 ? 100 : 0;
+
+    // Active patients
+    const activePatientCount = patients.length;
+    const patientsLastMonthCount = aggregated.patientsLastMonth.size;
+    const patientChange =
+      patientsLastMonthCount > 0
+        ? ((activePatientCount - patientsLastMonthCount) / patientsLastMonthCount) * 100
+        : activePatientCount > 0 ? 100 : 0;
+
+    // Revenue
+    const revenueThisMonth = aggregated.completedThisMonth * AVERAGE_TICKET;
+    const revenueLastMonth = aggregated.completedLastMonth * AVERAGE_TICKET;
+    const revenueChange =
+      revenueLastMonth > 0
+        ? ((revenueThisMonth - revenueLastMonth) / revenueLastMonth) * 100
+        : revenueThisMonth > 0 ? 100 : 0;
+
+    // Occupancy
+    let totalWeekSlots = 0;
+    let bookedWeekSlots = 0;
+    for (let i = 0; i < 7; i++) {
+      totalWeekSlots += weekDays[i].slots;
+      bookedWeekSlots += Math.min(aggregated.weekSlots[i], weekDays[i].slots);
+    }
+    const occupancyRate = totalWeekSlots > 0 ? (bookedWeekSlots / totalWeekSlots) * 100 : 0;
     const occupancyTarget = 85;
     const occupancyStatus: OccupancyMetrics['status'] =
       occupancyRate >= 80 ? 'excellent' : occupancyRate >= 60 ? 'good' : 'needs-attention';
 
-    // ============================================
-    // APPOINTMENT BREAKDOWN
-    // ============================================
+    // Breakdown (from aggregated today data)
     const breakdown: AppointmentBreakdown = {
-      confirmed: todayAppts.filter((a) => a.status === Status.CONFIRMED).length,
-      pending: todayAppts.filter((a) => a.status === Status.PENDING).length,
-      completed: todayAppts.filter((a) => a.status === Status.FINISHED).length,
-      noShow: todayAppts.filter((a) => a.status === Status.NO_SHOW).length,
-      canceled: todayAppts.filter((a) => a.status === Status.CANCELED).length,
+      confirmed: aggregated.todayByStatus[Status.CONFIRMED] || 0,
+      pending: aggregated.todayByStatus[Status.PENDING] || 0,
+      completed: aggregated.todayByStatus[Status.FINISHED] || 0,
+      noShow: aggregated.todayByStatus[Status.NO_SHOW] || 0,
+      canceled: aggregated.todayByStatus[Status.CANCELED] || 0,
     };
 
     return {
       todayAppointments: {
-        value: todayCount,
-        previousValue: yesterdayCount,
+        value: aggregated.todayCount,
+        previousValue: aggregated.yesterdayCount,
         changePercent: todayChange,
         trend: getTrendDirection(todayChange),
         comparisonText: formatComparison(todayChange, 'ontem'),
       },
       activePatients: {
         value: activePatientCount,
-        previousValue: patientsLastMonth,
+        previousValue: patientsLastMonthCount,
         changePercent: patientChange,
         trend: getTrendDirection(patientChange),
         comparisonText: formatComparison(patientChange, 'mês ant.'),
@@ -342,7 +332,7 @@ export function useDashboardMetrics(): DashboardMetrics {
         trend: getTrendDirection(revenueChange),
         comparisonText: formatComparison(revenueChange, 'mês ant.'),
         averageTicket: AVERAGE_TICKET,
-        completedCount: completedThisMonth.length,
+        completedCount: aggregated.completedThisMonth,
       },
       occupancy: {
         rate: Math.round(occupancyRate),

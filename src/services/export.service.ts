@@ -5,12 +5,43 @@
  * Provides PDF and Excel export functionality for financial and report data.
  * Uses jsPDF for PDF generation and xlsx for Excel export.
  *
+ * PERFORMANCE: Libraries are loaded dynamically to avoid 909KB in initial bundle.
+ *
  * Fase 4: Financeiro & Relatórios
  */
 
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
+// Dynamic imports - loaded only when export is triggered
+// This saves ~909KB from the initial bundle!
+type XLSX = typeof import('xlsx');
+type jsPDF = import('jspdf').jsPDF;
+
+let xlsxModule: XLSX | null = null;
+let jsPDFModule: typeof import('jspdf') | null = null;
+let autoTableModule: typeof import('jspdf-autotable') | null = null;
+
+async function loadXLSX(): Promise<XLSX> {
+  if (!xlsxModule) {
+    xlsxModule = await import('xlsx');
+  }
+  return xlsxModule;
+}
+
+async function loadPDFLibs(): Promise<{
+  jsPDF: typeof import('jspdf').default;
+  autoTable: typeof import('jspdf-autotable').default;
+}> {
+  if (!jsPDFModule || !autoTableModule) {
+    [jsPDFModule, autoTableModule] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
+  }
+  return {
+    jsPDF: jsPDFModule.default,
+    autoTable: autoTableModule.default,
+  };
+}
+
 import {
   formatCurrency,
   DEFAULT_CATEGORIES,
@@ -41,11 +72,15 @@ function getCategoryName(categoryId: string): string {
 
 /**
  * Export transactions to Excel.
+ * Note: This function is async due to dynamic import of xlsx library.
  */
-export function exportTransactionsToExcel(
+export async function exportTransactionsToExcel(
   transactions: Transaction[],
   filename: string = 'transacoes'
-): void {
+): Promise<void> {
+  // Load XLSX dynamically (first call loads ~500KB, subsequent calls are cached)
+  const XLSX = await loadXLSX();
+
   // Prepare data for Excel
   const data = transactions.map((t) => ({
     Data: formatDate(t.date),
@@ -83,13 +118,16 @@ export function exportTransactionsToExcel(
 
 /**
  * Export transactions to PDF.
+ * Note: This function is async due to dynamic import of jspdf library.
  */
-export function exportTransactionsToPDF(
+export async function exportTransactionsToPDF(
   transactions: Transaction[],
   summary: FinancialSummary | null,
   clinicName: string = 'Clínica Genesis',
   filename: string = 'relatorio-financeiro'
-): void {
+): Promise<void> {
+  // Load PDF libs dynamically (first call loads ~400KB, subsequent calls are cached)
+  const { jsPDF, autoTable } = await loadPDFLibs();
   const doc = new jsPDF();
 
   // Header
@@ -185,8 +223,9 @@ export function exportTransactionsToPDF(
 
 /**
  * Export report data to PDF.
+ * Note: This function is async due to dynamic import of jspdf library.
  */
-export function exportReportToPDF(
+export async function exportReportToPDF(
   data: {
     totalPatients: number;
     activePatients: number;
@@ -200,7 +239,9 @@ export function exportReportToPDF(
   },
   clinicName: string = 'Clínica Genesis',
   filename: string = 'relatorio-clinico'
-): void {
+): Promise<void> {
+  // Load PDF libs dynamically
+  const { jsPDF, autoTable } = await loadPDFLibs();
   const doc = new jsPDF();
 
   // Header
