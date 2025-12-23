@@ -1569,91 +1569,394 @@ const STATUS = {
 
 ### FASE 11: BENCHMARK & PERFORMANCE OPTIMIZATION (Sprint 13-14)
 **Objetivo:** Garantir que Genesis OS seja o software de clínica médica mais rápido e eficiente do mercado
-**Status:** 🔲 PENDENTE
-**Prioridade:** 🟡 ALTA
+**Status:** 🟡 EM PLANEJAMENTO (Audit concluído 23/12/2024)
+**Prioridade:** 🔴 CRÍTICA
 
 > **VISÃO:** Performance é feature. Cada milissegundo conta na experiência do usuário.
 > Um software lento transmite falta de profissionalismo. Queremos ser REFERÊNCIA em velocidade.
+>
+> **"Performance isn't just about speed - it's about respect for your users' time"** - Addy Osmani
+
+---
+
+#### 11.0 🔍 AUDIT BRUTAL - DIAGNÓSTICO REAL (23/12/2024)
+
+##### O QUE ESTÁ BOM ✅
+| Área | Status | Evidência |
+|------|--------|-----------|
+| Lazy Loading de Rotas | ✅ Implementado | `src/routes/` usa `React.lazy()` com Suspense |
+| Code Splitting | ✅ Parcial | Rotas separadas, mas vendor bundle ainda grande |
+| Cleanup de Effects | ✅ Correto | `useFirestoreSubscription` retorna unsubscribe |
+| Skeleton Loading | ✅ Consistente | Design system com `<Skeleton />` |
+| Debounce em Search | ✅ Implementado | `useDebouncedCallback` em buscas |
+
+##### O QUE ESTÁ RUIM ❌ (PROBLEMAS IDENTIFICADOS)
+
+| Problema | Arquivo | Linha | Impacto | Solução |
+|----------|---------|-------|---------|---------|
+| **8 filter iterations** por render | `useDashboardMetrics.ts` | 191-321 | CPU spike a cada render | Single-pass aggregation |
+| **Inline .filter/.sort** em JSX | `Agenda.tsx` | 69-125 | Re-cálculo em cada render | `useMemo` |
+| **Bundle 888KB** carregado eager | `vite.config.ts` | export-vendor | TTI +2-3s | Dynamic import |
+| **Sem paginação** Firestore | `usePatients.ts` | * | 500+ docs loaded | `limit(100)` + cursor |
+| **5 Context providers** aninhados | `App.tsx` | root | Re-render cascade | Context splitting |
+| **useMemo ausentes** em cálculos | `DashboardPage.tsx` | metrics | Re-cálculo desnecessário | Memoization |
+| **Listas sem virtualização** | `PatientList.tsx` | render | DOM bloat 1000+ nodes | TanStack Virtual |
+| **Real-time listeners** excessivos | `useFirestoreSubscription` | * | Reads $$ + bandwidth | Batch/poll híbrido |
+
+##### BUNDLES ATUAIS (vite build)
+```
+export-vendor.js    888 KB  ⚠️ CRÍTICO - PDF/Excel libs
+vendor.js           450 KB  ⚠️ ALTO - React + Firebase
+main.js             320 KB  ✓ Aceitável
+```
 
 ---
 
 #### 11.1 Métricas Core Web Vitals (Metas)
 
-| Métrica | Descrição | Meta | Ferramenta |
-|---------|-----------|------|------------|
-| **LCP** | Largest Contentful Paint | < 2.5s | Lighthouse |
-| **FID** | First Input Delay | < 100ms | Lighthouse |
-| **CLS** | Cumulative Layout Shift | < 0.1 | Lighthouse |
-| **TTFB** | Time to First Byte | < 600ms | WebPageTest |
-| **FCP** | First Contentful Paint | < 1.8s | Lighthouse |
-| **TTI** | Time to Interactive | < 3.8s | Lighthouse |
+| Métrica | Descrição | Atual* | Meta | Ferramenta |
+|---------|-----------|--------|------|------------|
+| **LCP** | Largest Contentful Paint | ~3.5s | < 2.5s | Lighthouse |
+| **INP** | Interaction to Next Paint | ~250ms | < 200ms | Lighthouse |
+| **CLS** | Cumulative Layout Shift | ~0.15 | < 0.1 | Lighthouse |
+| **TTFB** | Time to First Byte | ~400ms | < 600ms | WebPageTest |
+| **FCP** | First Contentful Paint | ~2.2s | < 1.8s | Lighthouse |
+| **TTI** | Time to Interactive | ~5.0s | < 3.8s | Lighthouse |
+
+*Estimativas baseadas no audit - medir com Lighthouse CI
 
 ---
 
-#### 11.2 Bundle Optimization
+#### 11.2 Bundle Optimization (WEB RESEARCH 2025)
 
-##### 11.2.1 Análise de Bundle
-- [ ] **11.2.1** Executar `npm run build -- --analyze` e documentar tamanhos
-- [ ] **11.2.2** Identificar dependências pesadas (>100KB gzipped)
-- [ ] **11.2.3** Mapear código duplicado entre chunks
+> **Fonte:** [Vite Build Options 2025](https://vite.dev/config/build-options) | [Bundle Splitting Deep Dive](https://briandouglas.me/posts/2025/08/23/optimizing-bundle-splitting/)
 
-##### 11.2.2 Code Splitting Estratégico
-- [ ] **11.2.4** Lazy load de rotas admin (Settings, Billing, Reports)
-- [ ] **11.2.5** Lazy load de rotas patient-portal
-- [ ] **11.2.6** Lazy load de componentes pesados (Charts, PDF viewers, Editors)
-- [ ] **11.2.7** Implementar `React.lazy()` com `Suspense` e skeleton fallbacks
+##### 11.2.1 AÇÃO CRÍTICA: Dynamic Import do Export Bundle (888KB)
 
-##### 11.2.3 Tree Shaking & Dead Code
-- [ ] **11.2.8** Verificar imports específicos (não `import * from`)
-- [ ] **11.2.9** Remover código morto identificado
-- [ ] **11.2.10** Configurar `sideEffects: false` onde aplicável
+**Problema:** O bundle `export-vendor.js` (888KB) contém PDF/Excel libs carregados SEMPRE, mesmo que usuário nunca exporte.
 
-##### 11.2.4 Dependências
-- [ ] **11.2.11** Substituir moment.js por date-fns (se existir)
-- [ ] **11.2.12** Avaliar alternativas leves para lodash
-- [ ] **11.2.13** Verificar duplicação de bibliotecas de ícones
+```typescript
+// ❌ ATUAL - src/utils/export.ts
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+
+// ✅ SOLUÇÃO - Dynamic imports
+export const exportToExcel = async (data: unknown[]) => {
+  const XLSX = await import('xlsx');
+  // ...
+};
+
+export const exportToPDF = async (data: unknown[]) => {
+  const { default: jsPDF } = await import('jspdf');
+  // ...
+};
+```
+
+**Impacto esperado:** -888KB no bundle inicial, TTI -2s
+
+- [ ] **11.2.1** Converter `xlsx` para dynamic import em `src/utils/export.ts`
+- [ ] **11.2.2** Converter `jspdf` para dynamic import
+- [ ] **11.2.3** Adicionar loading spinner no botão de export
+- [ ] **11.2.4** Testar export em produção após mudança
+
+##### 11.2.2 Configurar manualChunks Otimizado (Vite 2025)
+
+```typescript
+// vite.config.ts - PROPOSTA
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-core': ['react', 'react-dom', 'react-router-dom'],
+          'firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+          'charts': ['recharts'],
+          'ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          // export-vendor será eliminado com dynamic imports
+        }
+      }
+    }
+  }
+});
+```
+
+- [ ] **11.2.5** Implementar `manualChunks` no vite.config.ts
+- [ ] **11.2.6** Separar Firebase em chunk próprio (lazy load em auth)
+- [ ] **11.2.7** Separar Recharts (só carrega em Dashboard/Reports)
+
+##### 11.2.3 Tree Shaking & Cherry-Pick Imports
+
+```typescript
+// ❌ ERRADO - Importa tudo
+import { Button, Input, Select, Dialog, ... } from '@radix-ui/themes';
+
+// ✅ CERTO - Cherry-pick
+import { Button } from '@radix-ui/react-button';
+import { Input } from '@radix-ui/react-input';
+```
+
+- [ ] **11.2.8** Audit de imports `*` no codebase
+- [ ] **11.2.9** Cherry-pick imports de lucide-react (só ícones usados)
+- [ ] **11.2.10** Configurar `sideEffects: false` em package.json
+
+##### 11.2.4 Substituições de Dependências Pesadas
+
+| Atual | Tamanho | Alternativa | Economia |
+|-------|---------|-------------|----------|
+| date-fns (se full) | ~75KB | date-fns/esm cherry-pick | -60KB |
+| lodash (se full) | ~70KB | lodash-es cherry-pick | -60KB |
+| xlsx | ~500KB | SheetJS mini ou dynamic | -500KB |
+
+- [ ] **11.2.11** Verificar se lodash é usado (se sim, cherry-pick)
+- [ ] **11.2.12** Verificar imports de date-fns (cherry-pick se necessário)
 
 ---
 
-#### 11.3 Runtime Performance
+#### 11.3 Runtime Performance (WEB RESEARCH 2025)
 
-##### 11.3.1 React Optimization
-- [ ] **11.3.1** Audit de re-renders desnecessários com React DevTools Profiler
-- [ ] **11.3.2** Implementar `React.memo()` em componentes de lista
-- [ ] **11.3.3** Usar `useMemo` para cálculos pesados
-- [ ] **11.3.4** Usar `useCallback` para handlers passados como props
-- [ ] **11.3.5** Implementar virtualização em listas longas (react-window)
+> **Fonte:** [React 19 Compiler](https://react.dev/learn/react-compiler) | [TanStack Virtual](https://tanstack.com/virtual/latest) | [React Scan](https://github.com/aidenybai/react-scan)
 
-##### 11.3.2 State Management
-- [ ] **11.3.6** Otimizar Context providers (evitar re-renders globais)
-- [ ] **11.3.7** Considerar state colocation (estado próximo de onde é usado)
-- [ ] **11.3.8** Implementar selectors para Firestore queries
+##### 11.3.1 AÇÃO CRÍTICA: Fix useDashboardMetrics (8 iterações → 1)
 
-##### 11.3.3 Images & Assets
-- [ ] **11.3.9** Converter imagens para WebP/AVIF
-- [ ] **11.3.10** Implementar lazy loading de imagens
-- [ ] **11.3.11** Otimizar SVGs (SVGO)
-- [ ] **11.3.12** Configurar responsive images com srcset
+**Problema atual em `src/hooks/useDashboardMetrics.ts:191-321`:**
+```typescript
+// ❌ ATUAL - 8 filter passes separados
+const pending = appointments.filter(a => a.status === 'pending');
+const confirmed = appointments.filter(a => a.status === 'confirmed');
+const cancelled = appointments.filter(a => a.status === 'cancelled');
+const today = appointments.filter(a => isToday(a.date));
+// ... mais 4 filters
+```
+
+**Solução - Single-pass aggregation:**
+```typescript
+// ✅ OTIMIZADO - 1 pass com reduce
+const metrics = useMemo(() => {
+  return appointments.reduce((acc, apt) => {
+    acc.total++;
+    acc[apt.status] = (acc[apt.status] || 0) + 1;
+    if (isToday(apt.date)) acc.today++;
+    if (apt.revenue) acc.revenue += apt.revenue;
+    return acc;
+  }, { total: 0, pending: 0, confirmed: 0, cancelled: 0, today: 0, revenue: 0 });
+}, [appointments]);
+```
+
+- [ ] **11.3.1** Refatorar `useDashboardMetrics.ts` para single-pass
+- [ ] **11.3.2** Adicionar `useMemo` no aggregation
+- [ ] **11.3.3** Benchmark antes/depois com React Profiler
+
+##### 11.3.2 Fix Inline Filters em Agenda.tsx
+
+**Problema em `src/pages/Agenda.tsx:69-125`:**
+```typescript
+// ❌ ATUAL - Recalcula em cada render
+return (
+  <div>
+    {appointments.filter(a => a.date === selectedDate).sort((a, b) => ...)}
+  </div>
+);
+```
+
+**Solução:**
+```typescript
+// ✅ OTIMIZADO
+const filteredAppointments = useMemo(() =>
+  appointments
+    .filter(a => a.date === selectedDate)
+    .sort((a, b) => a.time.localeCompare(b.time)),
+  [appointments, selectedDate]
+);
+```
+
+- [ ] **11.3.4** Extrair filters inline para `useMemo` em `Agenda.tsx`
+- [ ] **11.3.5** Fazer o mesmo em `DashboardPage.tsx`
+- [ ] **11.3.6** Audit de outros componentes com .filter/.sort inline
+
+##### 11.3.3 Virtualização de Listas Longas (TanStack Virtual)
+
+**Problema:** `PatientList.tsx` renderiza 500+ items, criando 2000+ DOM nodes.
+
+```typescript
+// ✅ SOLUÇÃO com @tanstack/react-virtual
+import { useVirtualizer } from '@tanstack/react-virtual';
+
+const PatientList = ({ patients }) => {
+  const parentRef = useRef(null);
+  const virtualizer = useVirtualizer({
+    count: patients.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 72, // altura do item
+    overscan: 5,
+  });
+
+  return (
+    <div ref={parentRef} style={{ height: '600px', overflow: 'auto' }}>
+      <div style={{ height: virtualizer.getTotalSize() }}>
+        {virtualizer.getVirtualItems().map(virtualRow => (
+          <PatientCard key={patients[virtualRow.index].id} {...} />
+        ))}
+      </div>
+    </div>
+  );
+};
+```
+
+**Impacto:** De 2000+ nodes para ~20 nodes visíveis. 60 FPS garantido.
+
+- [ ] **11.3.7** Instalar `@tanstack/react-virtual`
+- [ ] **11.3.8** Implementar em `PatientList.tsx`
+- [ ] **11.3.9** Implementar em lista de appointments
+- [ ] **11.3.10** Testar scroll performance com React Profiler
+
+##### 11.3.4 Context Splitting (Evitar Re-render Cascade)
+
+**Problema em `App.tsx`:** 5 providers aninhados causam re-renders em cascata.
+
+```typescript
+// ❌ ATUAL
+<AuthProvider>
+  <ClinicProvider>
+    <PageProvider>
+      <ThemeProvider>
+        <ToastProvider>
+          {children}
+        </ToastProvider>
+      </ThemeProvider>
+    </PageProvider>
+  </ClinicProvider>
+</AuthProvider>
+```
+
+**Solução:** Separar contexts que mudam frequentemente dos estáveis.
+
+- [ ] **11.3.11** Audit de re-renders com `why-did-you-render`
+- [ ] **11.3.12** Separar `PageContext` (muda frequente) dos outros
+- [ ] **11.3.13** Considerar `use-context-selector` para granularidade
+
+##### 11.3.5 React 19 Compiler (FUTURO - Quando Estável)
+
+> **Nota:** React Compiler (v19) auto-memoiza componentes, eliminando necessidade de
+> `useMemo`, `useCallback`, `React.memo` manuais. Monitorar para adoção em 2025.
+
+- [ ] **11.3.14** Testar React Compiler em branch experimental
+- [ ] **11.3.15** Documentar compatibilidade com código atual
 
 ---
 
-#### 11.4 Network & Caching
+#### 11.4 Network & Caching (WEB RESEARCH 2025)
 
-##### 11.4.1 Firestore Optimization
-- [ ] **11.4.1** Implementar paginação em todas as queries de lista
-- [ ] **11.4.2** Usar `onSnapshot` com cache local onde faz sentido
-- [ ] **11.4.3** Implementar indexes compostos para queries complexas
-- [ ] **11.4.4** Otimizar estrutura de dados (denormalização estratégica)
+> **Fonte:** [Firestore Best Practices](https://firebase.google.com/docs/firestore/best-practices) | [Real-time Queries at Scale](https://firebase.google.com/docs/firestore/real-time_queries_at_scale)
 
-##### 11.4.2 Service Worker & PWA
-- [ ] **11.4.5** Configurar estratégias de cache (stale-while-revalidate)
-- [ ] **11.4.6** Pre-cache assets críticos
-- [ ] **11.4.7** Implementar offline-first para dados essenciais
+##### 11.4.1 AÇÃO CRÍTICA: Paginação Firestore
 
-##### 11.4.3 API Calls
-- [ ] **11.4.8** Implementar request deduplication
-- [ ] **11.4.9** Usar HTTP/2 multiplexing
-- [ ] **11.4.10** Configurar compression (Brotli/gzip)
+**Problema:** `usePatients.ts` carrega TODOS os pacientes (500+) de uma vez.
+
+```typescript
+// ❌ ATUAL - Carrega tudo
+const q = query(collection(db, 'patients'), where('clinicId', '==', clinicId));
+
+// ✅ OTIMIZADO - Cursor pagination
+const q = query(
+  collection(db, 'patients'),
+  where('clinicId', '==', clinicId),
+  orderBy('createdAt', 'desc'),
+  limit(50)
+);
+
+// Load more com cursor
+const loadMore = async (lastDoc) => {
+  const next = query(
+    collection(db, 'patients'),
+    where('clinicId', '==', clinicId),
+    orderBy('createdAt', 'desc'),
+    startAfter(lastDoc),
+    limit(50)
+  );
+};
+```
+
+**Impacto:** -90% reads iniciais, -70% bandwidth, faster initial load
+
+- [ ] **11.4.1** Implementar `limit(50)` em `usePatients.ts`
+- [ ] **11.4.2** Adicionar `startAfter` cursor para load more
+- [ ] **11.4.3** Implementar infinite scroll com intersection observer
+- [ ] **11.4.4** Repetir para `useAppointments.ts`
+
+##### 11.4.2 Otimização de Real-time Listeners
+
+**Problema:** Listeners ativos em dados que raramente mudam aumentam custos.
+
+```typescript
+// ❌ Real-time para tudo
+const { data: settings } = useFirestoreSubscription('clinicSettings');
+
+// ✅ Real-time SÓ para dados que mudam frequentemente
+// Settings: GET once (muda raramente)
+const settings = await getDoc(doc(db, 'clinicSettings', clinicId));
+
+// Appointments do dia: Real-time (muda frequente)
+const { data: todayAppointments } = useFirestoreSubscription(
+  query(appointments, where('date', '==', today))
+);
+```
+
+**Regra:** Real-time para dados que mudam em minutos. GET para dados que mudam em dias.
+
+- [ ] **11.4.5** Audit de todos `useFirestoreSubscription`
+- [ ] **11.4.6** Converter settings/configs para `getDoc()` cached
+- [ ] **11.4.7** Manter real-time só para: appointments, chat, notifications
+
+##### 11.4.3 Composite Indexes
+
+**Queries complexas precisam de indexes para performance:**
+
+```
+// firestore.indexes.json
+{
+  "indexes": [
+    {
+      "collectionGroup": "appointments",
+      "fields": [
+        { "fieldPath": "clinicId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    }
+  ]
+}
+```
+
+- [ ] **11.4.8** Criar index para appointments (clinicId + date + status)
+- [ ] **11.4.9** Criar index para patients (clinicId + name)
+- [ ] **11.4.10** Deploy indexes com `firebase deploy --only firestore:indexes`
+
+##### 11.4.4 Offline Persistence & Caching
+
+```typescript
+// ✅ Habilitar persistence (já deve estar)
+import { enableIndexedDbPersistence } from 'firebase/firestore';
+enableIndexedDbPersistence(db);
+
+// ✅ Cache hints para queries frequentes
+const q = query(
+  collection(db, 'patients'),
+  where('clinicId', '==', clinicId)
+).withConverter(patientConverter);
+```
+
+- [ ] **11.4.11** Verificar se `enableIndexedDbPersistence` está ativo
+- [ ] **11.4.12** Implementar converters para type safety + cache efficiency
+
+##### 11.4.5 Traffic Ramping (500/50/5 Rule)
+
+> **IMPORTANTE:** Para novas collections, seguir regra Firebase:
+> - Máx 500 ops/s iniciais
+> - Aumentar 50% a cada 5 minutos
+> - Nunca picos súbitos em collections novas
+
+- [ ] **11.4.13** Documentar rule para novas collections
+- [ ] **11.4.14** Implementar rate limiting em batch operations
 
 ---
 
@@ -1697,69 +2000,104 @@ const STATUS = {
 
 ---
 
-#### 11.7 Checklist de Implementação
+#### 11.7 🚀 PLANO DE EXECUÇÃO HEROICO (Ordem de Impacto)
 
-##### SPRINT 1: Análise & Quick Wins (2-3 dias)
-- [ ] **11.7.1** Executar Lighthouse audit completo
-- [ ] **11.7.2** Analisar bundle com webpack-bundle-analyzer
-- [ ] **11.7.3** Identificar top 5 problemas de performance
-- [ ] **11.7.4** Implementar lazy loading de rotas
-- [ ] **11.7.5** Otimizar imports (tree shaking)
+##### SPRINT 1: QUICK WINS DE ALTO IMPACTO (🔴 CRÍTICO)
+**Meta:** -50% bundle size, -2s TTI
 
-##### SPRINT 2: React Optimization (2-3 dias)
-- [ ] **11.7.6** React DevTools Profiler audit
-- [ ] **11.7.7** Implementar React.memo em componentes críticos
-- [ ] **11.7.8** Otimizar Context providers
-- [ ] **11.7.9** Virtualização de listas longas
+| # | Ação | Arquivo | Impacto Esperado |
+|---|------|---------|------------------|
+| 1 | Dynamic import xlsx/jspdf | `src/utils/export.ts` | -888KB bundle |
+| 2 | useMemo em useDashboardMetrics | `src/hooks/useDashboardMetrics.ts` | -80% CPU |
+| 3 | limit(50) em queries | `usePatients.ts`, `useAppointments.ts` | -90% reads |
+| 4 | useMemo filters Agenda | `src/pages/Agenda.tsx` | -70% re-renders |
 
-##### SPRINT 3: Network & Backend (2-3 dias)
-- [ ] **11.7.10** Otimizar Firestore queries
-- [ ] **11.7.11** Implementar caching strategies
-- [ ] **11.7.12** Otimizar Cloud Functions cold starts
-- [ ] **11.7.13** Configurar CDN para assets estáticos
+- [ ] **SPRINT1.1** Lighthouse baseline audit (documentar números)
+- [ ] **SPRINT1.2** Dynamic import das libs de export
+- [ ] **SPRINT1.3** Single-pass aggregation em useDashboardMetrics
+- [ ] **SPRINT1.4** Paginação Firestore (limit + cursor)
+- [ ] **SPRINT1.5** useMemo em todas inline filters
 
-##### SPRINT 4: Monitoring & Validation (1-2 dias)
-- [ ] **11.7.14** Configurar performance monitoring
-- [ ] **11.7.15** Executar benchmarks finais
-- [ ] **11.7.16** Documentar melhorias alcançadas
-- [ ] **11.7.17** Configurar alertas de regressão
+##### SPRINT 2: VIRTUALIZAÇÃO & MEMOIZATION (🟡 ALTA)
+**Meta:** 60 FPS em listas, zero lag em scroll
+
+| # | Ação | Arquivo | Impacto Esperado |
+|---|------|---------|------------------|
+| 1 | TanStack Virtual | `PatientList.tsx` | -95% DOM nodes |
+| 2 | TanStack Virtual | Lista de appointments | -95% DOM nodes |
+| 3 | manualChunks config | `vite.config.ts` | Parallel loading |
+| 4 | Context splitting | `App.tsx` | -50% re-renders |
+
+- [ ] **SPRINT2.1** Instalar @tanstack/react-virtual
+- [ ] **SPRINT2.2** Implementar virtualização em PatientList
+- [ ] **SPRINT2.3** Implementar virtualização em AppointmentList
+- [ ] **SPRINT2.4** Configurar manualChunks no Vite
+- [ ] **SPRINT2.5** Audit re-renders com why-did-you-render
+
+##### SPRINT 3: NETWORK & FIRESTORE (🟢 MÉDIO)
+**Meta:** -70% Firestore costs, offline-first
+
+| # | Ação | Arquivo | Impacto Esperado |
+|---|------|---------|------------------|
+| 1 | Real-time → GET para configs | `useClinicSettings.ts` | -80% listeners |
+| 2 | Composite indexes | `firestore.indexes.json` | -50% query time |
+| 3 | Offline persistence | `firebase.ts` | Instant load |
+| 4 | Cherry-pick imports | `*.tsx` | -100KB bundle |
+
+- [ ] **SPRINT3.1** Audit todos useFirestoreSubscription
+- [ ] **SPRINT3.2** Converter settings para getDoc cached
+- [ ] **SPRINT3.3** Criar composite indexes
+- [ ] **SPRINT3.4** Verificar enableIndexedDbPersistence
+- [ ] **SPRINT3.5** Cherry-pick lucide-react icons
+
+##### SPRINT 4: MONITORING & GUARD RAILS (🟢 MÉDIO)
+**Meta:** Zero regression, alerts automáticos
+
+- [ ] **SPRINT4.1** Configurar Lighthouse CI no GitHub Actions
+- [ ] **SPRINT4.2** Bundle size budget (fail if > 1.5MB)
+- [ ] **SPRINT4.3** Web Vitals tracking (Firebase Analytics)
+- [ ] **SPRINT4.4** Benchmark vs concorrentes
+- [ ] **SPRINT4.5** Documentar resultados finais
 
 ---
 
 #### 11.8 Métricas de Sucesso
 
-| Métrica | Baseline | Meta | Status |
-|---------|----------|------|--------|
-| Lighthouse Performance | TBD | > 90 | ⏳ |
-| Bundle Size (main) | ~850KB | < 500KB | ⏳ |
-| Bundle Size (total) | TBD | < 2MB | ⏳ |
-| Time to Interactive | TBD | < 3s | ⏳ |
-| First Contentful Paint | TBD | < 1.5s | ⏳ |
-| Firestore reads/user/day | TBD | -30% | ⏳ |
-| Cloud Function cold start | TBD | < 500ms | ⏳ |
+| Métrica | Baseline (Est.) | Meta | Impacto Business |
+|---------|-----------------|------|------------------|
+| Lighthouse Performance | ~65 | **> 90** | SEO + UX |
+| Bundle Size (initial) | ~1.6MB | **< 800KB** | -50% load time |
+| Bundle Size (export) | 888KB | **0KB (lazy)** | -2s TTI |
+| Time to Interactive | ~5.0s | **< 3s** | -40% bounce |
+| First Contentful Paint | ~2.2s | **< 1.5s** | Perceived speed |
+| Firestore reads/user/day | ~500 | **< 150 (-70%)** | -70% costs |
+| DOM Nodes (listas) | ~2000 | **< 50** | 60 FPS scroll |
+| Re-renders/interaction | ~15 | **< 5** | Smooth UX |
 
 ---
 
-#### 11.9 Referências Técnicas
+#### 11.9 Referências Técnicas (PESQUISA WEB DEZ/2025)
 
-**Performance Optimization:**
-- [React Performance Optimization](https://react.dev/learn/render-and-commit)
-- [Web Vitals Guide](https://web.dev/vitals/)
-- [Vite Build Optimization](https://vitejs.dev/guide/build.html)
+**React Performance 2025:**
+- [React 19 Compiler](https://react.dev/learn/react-compiler) - Auto-memoização
+- [TanStack Virtual](https://tanstack.com/virtual/latest) - Virtualização de listas
+- [React Scan](https://github.com/aidenybai/react-scan) - Debug de renders
+- [why-did-you-render](https://github.com/welldone-software/why-did-you-render) - Re-render tracking
 
-**Bundle Analysis:**
-- [rollup-plugin-visualizer](https://github.com/btd/rollup-plugin-visualizer)
-- [Source Map Explorer](https://github.com/danvk/source-map-explorer)
+**Vite & Bundle 2025:**
+- [Vite Build Options](https://vite.dev/config/build-options) - manualChunks
+- [Bundle Splitting Deep Dive](https://briandouglas.me/posts/2025/08/23/optimizing-bundle-splitting/)
+- [Taming Large Chunks Vite](https://www.mykolaaleksandrov.dev/posts/2025/11/taming-large-chunks-vite-react/)
 
-**Firebase Performance:**
+**Firebase Performance 2025:**
 - [Firestore Best Practices](https://firebase.google.com/docs/firestore/best-practices)
-- [Cloud Functions Performance](https://firebase.google.com/docs/functions/tips)
-- [Firebase Performance Monitoring](https://firebase.google.com/docs/perf-mon)
+- [Real-time Queries at Scale](https://firebase.google.com/docs/firestore/real-time_queries_at_scale)
+- [Firestore Query Performance](https://estuary.dev/blog/firestore-query-best-practices/)
+- [Pagination with Real-time](https://medium.com/firebase-tips-tricks/how-to-create-a-clean-firestore-pagination-with-real-time-updates-ce05a87bb902)
 
-**React Optimization:**
-- [React Profiler](https://react.dev/reference/react/Profiler)
-- [react-window (Virtualization)](https://github.com/bvaughn/react-window)
-- [useMemo & useCallback Guide](https://react.dev/reference/react/useMemo)
+**Tools:**
+- [rollup-plugin-visualizer](https://github.com/btd/rollup-plugin-visualizer)
+- [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci)
 
 ---
 
@@ -1778,9 +2116,9 @@ const STATUS = {
 | Fase 8b: Convênios/TISS - IMPLEMENTAÇÃO | ✅ COMPLETO (23/12/2024) | 🔴 CRÍTICA |
 | Fase 9: Workflow Automation | ✅ COMPLETO (23/12/2024) | 🟡 ALTA |
 | **Fase 10: UI/UX Premium Polish** | **✅ 100% COMPLETO (23/12/2024)** | **🔴 CRÍTICA** |
-| Fase 11: Benchmark & Performance | 🔲 PENDENTE | 🟡 ALTA |
+| **Fase 11: Benchmark & Performance** | **🟡 PLANEJAMENTO COMPLETO (23/12/2024)** | **🔴 CRÍTICA** |
 
-**Progresso Geral:** 11/12 fases completas (92%) - FASE 10 completa, FASE 11 pendente
+**Progresso Geral:** 11/12 fases completas (92%) - FASE 11 pronta para execução
 
 > ✅ **FASE 8 PESQUISA CONCLUÍDA:** Documento completo em `docs/research/CONVENIOS_TISS_RESEARCH.md`
 > Inclui: legislação ANS, padrão TISS 4.01, TUSS, certificação ICP-Brasil, requisitos de 7 operadoras
@@ -1821,6 +2159,15 @@ const STATUS = {
 > - ✅ Novos testes: **58 adicionados** (Progress.tsx 46, SkipLink.tsx 12)
 > - ✅ LotesTab coverage: handleSendLote/handleDeleteLote, callbacks
 > - ✅ Vitest config: Exclusão de type-only files do coverage
+>
+> 🟡 **FASE 11 PLANEJAMENTO COMPLETO (23/12/2024):**
+> - ✅ Deep audit da arquitetura e fluxos de dados
+> - ✅ Identificação de 8 problemas críticos de performance
+> - ✅ Web Research dezembro/2025 (React 19, Firebase, Vite, TanStack)
+> - ✅ Plano de execução HEROICO em 4 sprints
+> - ✅ Métricas e metas definidas (Lighthouse >90, bundle -50%, reads -70%)
+>
+> **Próximo passo:** Executar SPRINT 1 - Quick Wins de Alto Impacto
 
 ---
 
