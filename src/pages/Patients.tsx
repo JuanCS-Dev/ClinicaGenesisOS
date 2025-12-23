@@ -2,17 +2,27 @@
  * Patients Page
  *
  * Displays list of all patients in the clinic.
+ *
+ * PERFORMANCE: Uses TanStack Virtual for 60 FPS scrolling with large patient lists.
+ * Only renders visible rows (~15-20) instead of all patients (500+).
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, MoreVertical, Plus, ChevronRight, Loader2 } from 'lucide-react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { usePatients } from '../hooks/usePatients';
+
+// Row height for virtualization calculations
+const ROW_HEIGHT = 72;
 
 export function Patients() {
   const navigate = useNavigate();
   const { patients, loading } = usePatients();
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Ref for the scrollable container (required by TanStack Virtual)
+  const parentRef = useRef<HTMLDivElement>(null);
 
   // Filter patients by name, email, phone, insurance, or tags
   const filteredPatients = useMemo(() => {
@@ -33,6 +43,14 @@ export function Patients() {
       );
     });
   }, [patients, searchTerm]);
+
+  // TanStack Virtual - only renders visible rows for 60 FPS scrolling
+  const rowVirtualizer = useVirtualizer({
+    count: filteredPatients.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 5, // Render 5 extra rows above/below viewport for smooth scrolling
+  });
 
   if (loading) {
     return (
@@ -105,88 +123,109 @@ export function Patients() {
             </button>
           </div>
         ) : (
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-genesis-soft/80 border-b border-genesis-border-subtle">
-              <tr>
-                <th className="px-6 py-4 font-bold text-genesis-medium uppercase tracking-wider text-[10px]">
-                  Nome
-                </th>
-                <th className="px-6 py-4 font-bold text-genesis-medium uppercase tracking-wider text-[10px]">
-                  Contato
-                </th>
-                <th className="px-6 py-4 font-bold text-genesis-medium uppercase tracking-wider text-[10px]">
-                  Convênio
-                </th>
-                <th className="px-6 py-4 font-bold text-genesis-medium uppercase tracking-wider text-[10px]">
-                  Tags
-                </th>
-                <th className="px-6 py-4 font-bold text-genesis-medium uppercase tracking-wider text-[10px] text-right" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {filteredPatients.map((patient) => (
-                <tr
-                  key={patient.id}
-                  className="hover:bg-genesis-soft/80 transition-all cursor-pointer group"
-                  onClick={() => navigate(`/patients/${patient.id}`)}
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-4">
-                      <div className="relative">
-                        <img
-                          src={
-                            patient.avatar ||
-                            `https://ui-avatars.com/api/?name=${encodeURIComponent(patient.name)}`
-                          }
-                          alt={patient.name}
-                          loading="lazy"
-                          className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm group-hover:scale-110 transition-transform duration-300"
-                        />
-                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
+          <>
+            {/* Table Header - Fixed */}
+            <div className="grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 px-6 py-4 bg-genesis-soft/80 border-b border-genesis-border-subtle">
+              <div className="font-bold text-genesis-medium uppercase tracking-wider text-[10px]">Nome</div>
+              <div className="font-bold text-genesis-medium uppercase tracking-wider text-[10px]">Contato</div>
+              <div className="font-bold text-genesis-medium uppercase tracking-wider text-[10px]">Convênio</div>
+              <div className="font-bold text-genesis-medium uppercase tracking-wider text-[10px]">Tags</div>
+              <div className="w-16" />
+            </div>
+
+            {/* Virtualized List - Only renders visible rows */}
+            <div
+              ref={parentRef}
+              className="overflow-auto"
+              style={{ height: 'calc(100vh - 320px)', maxHeight: '600px' }}
+            >
+              <div
+                style={{
+                  height: `${rowVirtualizer.getTotalSize()}px`,
+                  width: '100%',
+                  position: 'relative',
+                }}
+              >
+                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                  const patient = filteredPatients[virtualRow.index];
+                  return (
+                    <div
+                      key={patient.id}
+                      className="absolute top-0 left-0 w-full grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 px-6 items-center hover:bg-genesis-soft/80 transition-all cursor-pointer group border-b border-gray-50"
+                      style={{
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
+                      onClick={() => navigate(`/patients/${patient.id}`)}
+                    >
+                      {/* Name Column */}
+                      <div className="flex items-center gap-4">
+                        <div className="relative flex-shrink-0">
+                          <img
+                            src={
+                              patient.avatar ||
+                              `https://ui-avatars.com/api/?name=${encodeURIComponent(patient.name)}`
+                            }
+                            alt={patient.name}
+                            loading="lazy"
+                            className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm group-hover:scale-110 transition-transform duration-300"
+                          />
+                          <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-genesis-dark text-sm group-hover:text-genesis-primary transition-colors truncate">
+                            {patient.name}
+                          </p>
+                          <p className="text-[11px] font-medium text-genesis-medium">
+                            {patient.age} anos
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-bold text-genesis-dark text-sm group-hover:text-genesis-primary transition-colors">
-                          {patient.name}
-                        </p>
-                        <p className="text-[11px] font-medium text-genesis-medium">
-                          {patient.age} anos
-                        </p>
+
+                      {/* Contact Column */}
+                      <div className="min-w-0">
+                        <p className="font-semibold text-genesis-dark text-xs truncate">{patient.phone}</p>
+                        <p className="text-[11px] text-genesis-medium truncate">{patient.email}</p>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="font-semibold text-genesis-dark text-xs">{patient.phone}</p>
-                    <p className="text-[11px] text-genesis-medium">{patient.email}</p>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide bg-genesis-hover text-genesis-medium border border-genesis-border">
-                      {patient.insurance || 'Particular'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      {patient.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2.5 py-1 bg-genesis-surface border border-genesis-border-subtle text-genesis-medium text-[10px] font-bold rounded-md uppercase tracking-wide shadow-sm"
-                        >
-                          {tag}
+
+                      {/* Insurance Column */}
+                      <div className="w-24">
+                        <span className="inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide bg-genesis-hover text-genesis-medium border border-genesis-border truncate max-w-full">
+                          {patient.insurance || 'Particular'}
                         </span>
-                      ))}
+                      </div>
+
+                      {/* Tags Column */}
+                      <div className="flex gap-2 w-32 overflow-hidden">
+                        {patient.tags.slice(0, 2).map((tag) => (
+                          <span
+                            key={tag}
+                            className="px-2.5 py-1 bg-genesis-surface border border-genesis-border-subtle text-genesis-medium text-[10px] font-bold rounded-md uppercase tracking-wide shadow-sm truncate"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                        {patient.tags.length > 2 && (
+                          <span className="text-[10px] text-genesis-medium">+{patient.tags.length - 2}</span>
+                        )}
+                      </div>
+
+                      {/* Actions Column */}
+                      <div className="w-16 flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          className="p-2 text-genesis-subtle hover:text-genesis-dark hover:bg-genesis-surface rounded-full transition-all shadow-sm"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                        <ChevronRight className="w-4 h-4 text-genesis-subtle" />
+                      </div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-2 text-genesis-subtle hover:text-genesis-dark hover:bg-genesis-surface rounded-full transition-all shadow-sm">
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
-                      <ChevronRight className="w-4 h-4 text-genesis-subtle" />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  );
+                })}
+              </div>
+            </div>
+          </>
         )}
       </div>
     </div>

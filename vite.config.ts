@@ -160,16 +160,44 @@ export default defineConfig(({ mode }) => {
       build: {
         rollupOptions: {
           output: {
+            // Optimized chunk splitting for better caching and parallel loading
+            // Based on Vite 2025 best practices
             manualChunks(id) {
               if (id.includes('node_modules')) {
-                // PDF/Excel exports (Heavy, load on demand)
+                // PDF/Excel exports - Heavy libs loaded on demand via dynamic import
+                // These are only loaded when user triggers export
                 if (id.includes('jspdf') || id.includes('xlsx') || id.includes('html2canvas')) {
                   return 'export-vendor';
                 }
-                
-                // Utils (Lightweight)
+
+                // React core - cached separately for long-term caching
+                if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+                  return 'react-vendor';
+                }
+
+                // Firebase - loaded with auth, cached separately
+                if (id.includes('firebase')) {
+                  return 'firebase-vendor';
+                }
+
+                // Charts - only loaded on Dashboard/Reports pages
+                if (id.includes('recharts') || id.includes('d3')) {
+                  return 'charts-vendor';
+                }
+
+                // TanStack - virtualization loaded where needed
+                if (id.includes('@tanstack')) {
+                  return 'tanstack-vendor';
+                }
+
+                // Utils (Lightweight, shared across app)
                 if (id.includes('date-fns') || id.includes('uuid') || id.includes('lucide')) {
                   return 'utils-vendor';
+                }
+
+                // UI Components - Radix, etc
+                if (id.includes('@radix-ui')) {
+                  return 'ui-vendor';
                 }
               }
             }
