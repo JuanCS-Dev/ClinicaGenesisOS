@@ -30,7 +30,7 @@ import type { GuiaFirestore, StatusGuia } from '@/types';
 type TabType = 'nova-guia' | 'historico' | 'glosas';
 
 const STATUS_CONFIG: Record<StatusGuia, { label: string; color: string; bg: string }> = {
-  rascunho: { label: 'Rascunho', color: 'text-gray-600', bg: 'bg-gray-100 dark:bg-gray-800' },
+  rascunho: { label: 'Rascunho', color: 'text-genesis-muted', bg: 'bg-genesis-soft dark:bg-genesis-hover' },
   enviada: { label: 'Enviada', color: 'text-blue-600', bg: 'bg-blue-100 dark:bg-blue-900/30' },
   em_analise: { label: 'Em Análise', color: 'text-amber-600', bg: 'bg-amber-100 dark:bg-amber-900/30' },
   autorizada: { label: 'Autorizada', color: 'text-green-600', bg: 'bg-green-100 dark:bg-green-900/30' },

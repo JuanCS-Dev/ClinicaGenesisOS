@@ -53,7 +53,7 @@ const InsightCard: React.FC<InsightCardProps> = ({
   loading,
   icon,
 }) => (
-  <div className="bg-genesis-surface p-6 rounded-2xl border border-white shadow-soft flex flex-col justify-between group hover:shadow-float transition-all duration-300">
+  <div className="bg-genesis-surface p-6 rounded-2xl border border-genesis-border-subtle shadow-md flex flex-col justify-between group hover:shadow-lg transition-all duration-300">
     <div className="flex justify-between items-start">
       <h4 className="text-sm font-medium text-genesis-medium">{title}</h4>
       {icon || (
@@ -228,7 +228,7 @@ export const Reports: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Procedures Chart */}
-        <div className="bg-genesis-surface p-8 rounded-3xl border border-white shadow-soft h-[400px] flex flex-col">
+        <div className="bg-genesis-surface p-8 rounded-3xl border border-genesis-border-subtle shadow-md h-[400px] flex flex-col">
           <h3 className="text-lg font-bold text-genesis-dark mb-6">
             Procedimentos Populares
           </h3>
@@ -281,7 +281,7 @@ export const Reports: React.FC = () => {
         {/* Demographics & Age Grid */}
         <div className="grid grid-rows-2 gap-8">
           {/* Gender Distribution */}
-          <div className="bg-genesis-surface p-6 rounded-3xl border border-white shadow-soft flex items-center justify-between">
+          <div className="bg-genesis-surface p-6 rounded-3xl border border-genesis-border-subtle shadow-md flex items-center justify-between">
             <div>
               <h3 className="text-lg font-bold text-genesis-dark mb-2">
                 Gênero
@@ -338,7 +338,7 @@ export const Reports: React.FC = () => {
           </div>
 
           {/* Age Distribution */}
-          <div className="bg-genesis-surface p-6 rounded-3xl border border-white shadow-soft flex flex-col">
+          <div className="bg-genesis-surface p-6 rounded-3xl border border-genesis-border-subtle shadow-md flex flex-col">
             <h3 className="text-lg font-bold text-genesis-dark mb-4">
               Faixa Etária Predominante
             </h3>

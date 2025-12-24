@@ -27,10 +27,14 @@ export function Navbar() {
 
         <div className="hidden md:flex items-center gap-10">
           {['Manifesto', 'Tecnologia', 'Membership'].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="text-xs font-bold uppercase tracking-widest text-genesis-muted hover:text-genesis-dark transition-colors relative group">
+              <button
+                key={item}
+                onClick={() => navigate(`/${item.toLowerCase()}`)}
+                className="text-xs font-bold uppercase tracking-widest text-genesis-muted hover:text-genesis-dark transition-colors relative group"
+              >
                   {item}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-genesis-dark transition-all duration-300 group-hover:w-full"></span>
-              </a>
+              </button>
           ))}
         </div>
 

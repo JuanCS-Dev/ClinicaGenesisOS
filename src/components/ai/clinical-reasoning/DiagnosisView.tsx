@@ -39,7 +39,7 @@ export function DiagnosisView({ result }: DiagnosisViewProps) {
     <div className="space-y-4">
       {/* Consensus Metrics */}
       {result.consensusMetrics && (
-        <div className="p-4 bg-gradient-to-r from-[#EEF2FF] to-[#F5F3FF] rounded-xl border border-[#E0E7FF]">
+        <div className="p-4 rounded-xl border border-[#E0E7FF]" style={{ background: 'linear-gradient(to right, #EEF2FF, #F5F3FF)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-genesis-surface rounded-lg shadow-sm">

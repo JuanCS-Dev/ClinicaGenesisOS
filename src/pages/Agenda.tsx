@@ -6,7 +6,8 @@
  */
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Filter, Plus, Loader2, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Filter, Plus, Loader2, Calendar, X, User, Clock } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   format,
   addDays,
@@ -29,10 +30,13 @@ import {
   WeekView,
   MonthView,
   FilterPanel,
+  AppointmentModal,
   type LocalFilters,
 } from '../components/agenda';
 import { TelemedicineModal } from '../components/telemedicine';
 import { expandRecurringAppointments } from '@/lib/recurrence';
+import { usePatients } from '@/hooks/usePatients';
+import { Modal } from '@/design-system';
 
 /** View modes for the agenda. */
 type ViewMode = 'day' | 'week' | 'month';
@@ -60,6 +64,9 @@ export function Agenda() {
   // Telemedicine modal state
   const [telemedicineModalOpen, setTelemedicineModalOpen] = useState(false);
   const [selectedAppointmentForTele, setSelectedAppointmentForTele] = useState<Appointment | null>(null);
+
+  // New appointment modal state
+  const [appointmentModalOpen, setAppointmentModalOpen] = useState(false);
 
   // For week view, we need all appointments (no date filter)
   // For day view, we filter by specific date
@@ -311,9 +318,9 @@ export function Agenda() {
   }
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col bg-genesis-surface/60 backdrop-blur-md rounded-3xl border border-white shadow-soft overflow-hidden animate-enter">
+    <div className="h-[calc(100vh-8rem)] flex flex-col bg-genesis-surface/60 backdrop-blur-md rounded-2xl border border-genesis-border-subtle shadow-md overflow-hidden animate-enter">
       {/* Calendar Header */}
-      <div className="p-4 border-b border-white/50 flex justify-between items-center bg-genesis-surface/80 backdrop-blur-md z-20 sticky top-0 shadow-sm">
+      <div className="p-4 border-b border-genesis-border-subtle flex justify-between items-center bg-genesis-surface/80 backdrop-blur-md z-20 sticky top-0 shadow-sm">
         <div className="flex items-center gap-6">
           {/* View Mode Toggle */}
           <div className="flex bg-genesis-hover/80 p-1 rounded-xl shadow-inner">
@@ -417,7 +424,10 @@ export function Agenda() {
             )}
           </div>
 
-          <button className="flex items-center gap-2 px-5 py-2 bg-genesis-dark text-white rounded-xl text-xs font-bold hover:bg-black shadow-lg shadow-genesis-medium/30 transition-all hover:-translate-y-0.5">
+          <button
+            onClick={() => setAppointmentModalOpen(true)}
+            className="flex items-center gap-2 px-5 py-2 bg-genesis-dark text-white rounded-xl text-xs font-bold hover:bg-black shadow-lg shadow-genesis-medium/30 transition-all hover:-translate-y-0.5"
+          >
             <Plus className="w-4 h-4" /> Nova Consulta
           </button>
         </div>
@@ -463,6 +473,13 @@ export function Agenda() {
           }}
         />
       )}
+
+      {/* New Appointment Modal */}
+      <AppointmentModal
+        isOpen={appointmentModalOpen}
+        onClose={() => setAppointmentModalOpen(false)}
+        initialDate={selectedDate}
+      />
     </div>
   );
 }

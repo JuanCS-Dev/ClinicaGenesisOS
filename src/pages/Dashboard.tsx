@@ -140,7 +140,7 @@ export function Dashboard() {
           </p>
         </div>
         <button
-          onClick={() => navigate('/financeiro')}
+          onClick={() => navigate('/finance')}
           className="bg-genesis-primary text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-genesis-primary-dark transition-colors shadow-lg hover:shadow-xl hover:-translate-y-0.5 transform"
         >
           Relatório Completo
@@ -170,7 +170,7 @@ export function Dashboard() {
           trend={metrics.activePatients.trend}
           comparison={metrics.activePatients.comparisonText}
           subLabel="Base cadastrada"
-          onClick={() => navigate('/pacientes')}
+          onClick={() => navigate('/patients')}
         />
 
         <KPICard
@@ -182,11 +182,11 @@ export function Dashboard() {
           trend={metrics.revenue.trend}
           comparison={metrics.revenue.comparisonText}
           subLabel={`${metrics.revenue.completedCount} consultas finalizadas`}
-          onClick={() => navigate('/financeiro')}
+          onClick={() => navigate('/finance')}
         />
 
         {/* Occupancy Card */}
-        <div className="bg-genesis-surface p-6 rounded-2xl border border-genesis-border-subtle shadow-soft hover:shadow-float hover:-translate-y-1 transition-all duration-300">
+        <div className="bg-genesis-surface p-6 rounded-2xl border border-genesis-border-subtle shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
           <div className="flex justify-between items-start mb-4">
             <div className="p-3 rounded-xl bg-clinical-soft">
               <CheckCircle2 className="w-5 h-5 text-clinical-start" strokeWidth={2.5} />
@@ -207,7 +207,7 @@ export function Dashboard() {
       {/* Content Grid: Appointments + Tasks */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Upcoming Appointments */}
-        <div className="lg:col-span-2 bg-genesis-surface rounded-2xl border border-genesis-border-subtle shadow-soft overflow-hidden flex flex-col">
+        <div className="lg:col-span-2 bg-genesis-surface rounded-2xl border border-genesis-border-subtle shadow-md overflow-hidden flex flex-col">
           <div className="p-6 border-b border-genesis-border-subtle flex justify-between items-center">
             <div>
               <h3 className="font-semibold text-genesis-dark text-base">Próximas Consultas</h3>
@@ -310,7 +310,7 @@ export function Dashboard() {
         </div>
 
         {/* Tasks Panel */}
-        <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle shadow-soft p-6 flex flex-col h-full">
+        <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle shadow-md p-6 flex flex-col h-full">
           <div className="flex justify-between items-start mb-6">
             <div>
               <h3 className="font-semibold text-genesis-dark text-base">Tarefas Pendentes</h3>
@@ -370,7 +370,7 @@ export function Dashboard() {
       </div>
 
       {/* Quick Stats Bar */}
-      <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle shadow-soft p-4">
+      <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle shadow-md p-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 divide-x divide-genesis-border-subtle">
           <div className="text-center px-4">
             <span className="text-2xl font-bold text-emerald-600">

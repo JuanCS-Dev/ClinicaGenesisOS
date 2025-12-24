@@ -25,38 +25,52 @@ const NavItem = ({ to, icon: Icon, label }: { to: string, icon: React.ComponentT
   <NavLink
     to={to}
     className={({ isActive }) => `
-      group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200 ease-out
+      group flex items-center gap-3 px-3 py-3 rounded-xl text-[13px] font-medium transition-all duration-300 ease-out relative overflow-hidden
       ${isActive
-        ? 'bg-genesis-surface text-genesis-primary shadow-sm ring-1 ring-genesis-border-subtle translate-x-1'
-        : 'text-genesis-muted hover:text-genesis-dark hover:bg-genesis-surface/50'
+        ? 'bg-genesis-surface text-genesis-dark shadow-md translate-x-1'
+        : 'text-genesis-muted hover:text-genesis-dark hover:bg-genesis-surface/60 hover:shadow-sm'
       }
     `}
   >
     {({ isActive }) => (
       <>
-        <Icon className={`w-4 h-4 transition-colors duration-200 ${isActive ? 'text-genesis-primary' : 'text-genesis-muted group-hover:text-genesis-medium'}`} />
+        {/* Active Indicator Strip */}
+        {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-genesis-primary rounded-r-full" />}
+
+        <div className={`
+          p-1.5 rounded-lg transition-all duration-300
+          ${isActive
+            ? 'bg-genesis-primary/10'
+            : 'bg-genesis-soft group-hover:bg-genesis-hover'
+          }
+        `}>
+          <Icon className={`w-4 h-4 transition-colors duration-200 ${isActive ? 'text-genesis-primary' : 'text-genesis-muted group-hover:text-genesis-medium'}`} />
+        </div>
         <span className={isActive ? 'font-semibold' : ''}>{label}</span>
-        {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-genesis-primary" />}
+        {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-genesis-primary animate-pulse shadow-[0_0_8px_rgba(15,118,110,0.4)]" />}
       </>
     )}
   </NavLink>
 );
 
+const SPECIALTY_COLORS: Record<SpecialtyType, { bg: string; text: string; bgLight: string }> = {
+  medicina: { bg: '#2563eb', text: 'text-blue-600', bgLight: 'rgba(37, 99, 235, 0.1)' },
+  nutricao: { bg: '#16a34a', text: 'text-green-600', bgLight: 'rgba(22, 163, 74, 0.1)' },
+  psicologia: { bg: '#db2777', text: 'text-pink-600', bgLight: 'rgba(219, 39, 119, 0.1)' },
+};
+
 const PluginButton = ({
   id,
   icon: Icon,
   label,
-  activeColorClass,
-  activeBgClass,
 }: {
   id: SpecialtyType,
   icon: React.ComponentType<{ className?: string }>,
   label: string,
-  activeColorClass: string,
-  activeBgClass: string,
 }) => {
   const { userProfile, updateUserProfile } = useClinicContext();
   const isActive = userProfile?.specialty === id;
+  const colors = SPECIALTY_COLORS[id];
 
   const handleSetSpecialty = () => {
     updateUserProfile({ specialty: id }).catch(console.error);
@@ -74,19 +88,27 @@ const PluginButton = ({
       `}
     >
       {/* Active Indicator Strip */}
-      {isActive && <div className={`absolute left-0 top-0 bottom-0 w-1 ${activeBgClass}`} />}
+      {isActive && (
+        <div
+          className="absolute left-0 top-0 bottom-0 w-1 rounded-r-full"
+          style={{ backgroundColor: colors.bg }}
+        />
+      )}
 
-      <div className={`
-        p-1.5 rounded-md transition-all duration-300
-        ${isActive ? activeBgClass.replace('bg-', 'bg-opacity-10 bg-') : 'bg-genesis-soft group-hover:bg-genesis-hover'}
-      `}>
-        <Icon className={`w-4 h-4 ${isActive ? activeColorClass : 'text-genesis-muted group-hover:text-genesis-medium'}`} />
+      <div
+        className={`p-1.5 rounded-md transition-all duration-300 ${!isActive ? 'bg-genesis-soft group-hover:bg-genesis-hover' : ''}`}
+        style={isActive ? { backgroundColor: colors.bgLight } : undefined}
+      >
+        <Icon className={`w-4 h-4 ${isActive ? colors.text : 'text-genesis-muted group-hover:text-genesis-medium'}`} />
       </div>
 
       <span className={`font-medium ${isActive ? 'text-genesis-dark' : 'group-hover:text-genesis-dark'}`}>{label}</span>
 
       {isActive && (
-        <div className={`ml-auto w-1.5 h-1.5 rounded-full ${activeBgClass} animate-pulse`}></div>
+        <div
+          className="ml-auto w-1.5 h-1.5 rounded-full animate-pulse"
+          style={{ backgroundColor: colors.bg }}
+        />
       )}
     </button>
   );
@@ -148,60 +170,70 @@ export const Sidebar: React.FC = () => {
             <span className="text-[9px] bg-genesis-hover text-genesis-muted px-1.5 py-0.5 rounded border border-genesis-border">Mods</span>
           </div>
           
-          <PluginButton
-            id="medicina"
-            label="Medicina"
-            icon={Stethoscope}
-            activeColorClass="text-blue-600"
-            activeBgClass="bg-blue-600"
-          />
-
-          <PluginButton
-            id="nutricao"
-            label="Nutrição"
-            icon={Apple}
-            activeColorClass="text-green-600"
-            activeBgClass="bg-green-600"
-          />
-
-          <PluginButton
-            id="psicologia"
-            label="Psicologia"
-            icon={Brain}
-            activeColorClass="text-pink-600"
-            activeBgClass="bg-pink-600"
-          />
+          <PluginButton id="medicina" label="Medicina" icon={Stethoscope} />
+          <PluginButton id="nutricao" label="Nutrição" icon={Apple} />
+          <PluginButton id="psicologia" label="Psicologia" icon={Brain} />
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="p-4 space-y-1 bg-genesis-surface border-t border-genesis-border-subtle transition-colors duration-300">
-        <NavItem to="/settings" icon={Settings} label="Configurações" />
-        <NavItem to="/help" icon={HelpCircle} label="Ajuda & Suporte" />
-        <button
-          onClick={handleLogout}
-          className="w-full group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium text-red-500 hover:bg-red-50 transition-colors"
-        >
-          <LogOut className="w-4 h-4" />
-          <span>Sair</span>
-        </button>
+      {/* Footer - Compact */}
+      <div className="p-3 bg-genesis-surface border-t border-genesis-border-subtle transition-colors duration-300">
+        {/* Quick Actions Row */}
+        <div className="flex items-center gap-1 mb-3">
+          <NavLink
+            to="/settings"
+            className={({ isActive }) => `
+              flex-1 flex items-center justify-center gap-2 px-2 py-2 rounded-lg text-[11px] font-medium transition-all duration-200
+              ${isActive
+                ? 'bg-genesis-surface shadow-sm text-genesis-primary border border-genesis-border-subtle'
+                : 'text-genesis-muted hover:text-genesis-dark hover:bg-genesis-hover'
+              }
+            `}
+          >
+            <Settings className="w-3.5 h-3.5" />
+            <span>Config</span>
+          </NavLink>
 
-        <div className="pt-3 mt-2 border-t border-genesis-border-subtle px-2 flex items-center gap-3">
-           {user?.photoURL ? (
-             <img
-               src={user.photoURL}
-               alt={user.displayName || 'User'}
-               className="w-8 h-8 rounded-full border border-genesis-border"
-             />
-           ) : (
-             <div className="w-8 h-8 rounded-full bg-genesis-primary/10 border border-genesis-primary/20 flex items-center justify-center text-xs font-bold text-genesis-primary">
-               {getInitials(user?.displayName)}
-             </div>
-           )}
-           <div className="overflow-hidden">
-             <p className="text-xs font-bold text-genesis-dark truncate">{user?.displayName || 'Usuário'}</p>
-             <p className="text-[10px] text-genesis-muted truncate">{user?.email}</p>
-           </div>
+          <NavLink
+            to="/help"
+            className={({ isActive }) => `
+              flex-1 flex items-center justify-center gap-2 px-2 py-2 rounded-lg text-[11px] font-medium transition-all duration-200
+              ${isActive
+                ? 'bg-genesis-surface shadow-sm text-genesis-primary border border-genesis-border-subtle'
+                : 'text-genesis-muted hover:text-genesis-dark hover:bg-genesis-hover'
+              }
+            `}
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+            <span>Ajuda</span>
+          </NavLink>
+
+          <button
+            onClick={handleLogout}
+            title="Sair"
+            className="p-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* User Info */}
+        <div className="flex items-center gap-3 px-1">
+          {user?.photoURL ? (
+            <img
+              src={user.photoURL}
+              alt={user.displayName || 'User'}
+              className="w-8 h-8 rounded-full border border-genesis-border"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-genesis-primary/10 border border-genesis-primary/20 flex items-center justify-center text-xs font-bold text-genesis-primary">
+              {getInitials(user?.displayName)}
+            </div>
+          )}
+          <div className="overflow-hidden flex-1">
+            <p className="text-xs font-bold text-genesis-dark truncate">{user?.displayName || 'Usuário'}</p>
+            <p className="text-[10px] text-genesis-muted truncate">{user?.email}</p>
+          </div>
         </div>
       </div>
     </aside>

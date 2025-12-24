@@ -27,11 +27,11 @@ export function FinanceCard({
   const isPositive = type === 'positive';
   const isNeutral = type === 'neutral';
 
-  const gradientClass = isPositive
-    ? 'from-[#22C55E]/10'
+  const gradientColor = isPositive
+    ? 'rgba(34, 197, 94, 0.10)'
     : isNeutral
-    ? 'from-[#3B82F6]/10'
-    : 'from-[#EF4444]/10';
+    ? 'rgba(59, 130, 246, 0.10)'
+    : 'rgba(239, 68, 68, 0.10)';
 
   const badgeClass = isPositive
     ? 'bg-[#F0FDF4] text-[#15803D]'
@@ -40,9 +40,10 @@ export function FinanceCard({
     : 'bg-[#FEF2F2] text-[#B91C1C]';
 
   return (
-    <div className="group bg-genesis-surface p-6 rounded-2xl border border-white shadow-soft hover:shadow-float transition-all duration-300 relative overflow-hidden">
+    <div className="group bg-genesis-surface p-6 rounded-2xl border border-genesis-border-subtle shadow-md hover:shadow-lg transition-all duration-300 relative overflow-hidden">
       <div
-        className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${gradientClass} to-transparent rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110`}
+        className="absolute top-0 right-0 w-24 h-24 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"
+        style={{ background: `linear-gradient(to bottom right, ${gradientColor}, transparent)` }}
       />
 
       <div className="relative">

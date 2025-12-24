@@ -24,7 +24,7 @@ export function UpdatePrompt(): React.ReactElement | null {
 
   return (
     <div className="fixed bottom-4 right-4 z-50 max-w-sm animate-slide-in">
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-2xl overflow-hidden">
+      <div className="text-white rounded-xl shadow-2xl overflow-hidden" style={{ background: 'linear-gradient(to right, #2563eb, #4f46e5)' }}>
         <div className="p-4">
           <div className="flex items-start gap-3">
             <div className="p-2 bg-genesis-surface/20 rounded-lg">

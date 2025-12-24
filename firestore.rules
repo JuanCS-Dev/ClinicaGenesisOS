@@ -161,6 +161,61 @@ service cloud.firestore {
         allow read: if belongsToClinic(clinicId);
         allow write: if isClinicOwner(clinicId);
       }
+
+      // ========================================
+      // TRANSACTIONS (Clinic Subcollection)
+      // ========================================
+
+      /**
+       * Financial transactions for the clinic.
+       */
+      match /transactions/{transactionId} {
+        allow read, write: if belongsToClinic(clinicId);
+      }
+
+      // ========================================
+      // CONSENTS (Clinic Subcollection)
+      // ========================================
+
+      /**
+       * Patient consent records.
+       */
+      match /consents/{consentId} {
+        allow read, write: if belongsToClinic(clinicId);
+      }
+
+      // ========================================
+      // OPERADORAS (Clinic Subcollection)
+      // ========================================
+
+      /**
+       * Health insurance operators.
+       */
+      match /operadoras/{operadoraId} {
+        allow read, write: if belongsToClinic(clinicId);
+      }
+
+      // ========================================
+      // GUIAS (Clinic Subcollection)
+      // ========================================
+
+      /**
+       * TISS authorization guides.
+       */
+      match /guias/{guiaId} {
+        allow read, write: if belongsToClinic(clinicId);
+      }
+
+      // ========================================
+      // GLOSAS (Clinic Subcollection)
+      // ========================================
+
+      /**
+       * Insurance claim denials/disputes.
+       */
+      match /glosas/{glosaId} {
+        allow read, write: if belongsToClinic(clinicId);
+      }
     }
   }
 }

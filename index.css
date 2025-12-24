@@ -8,6 +8,9 @@
 
 @import "tailwindcss";
 
+/* Enable class-based dark mode for Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* ─────────────────────────────────────────────────────────────────────────
      PRIMARY: Teal (Confiança + Calma + Profissionalismo)
@@ -149,7 +152,8 @@
    SECTION 7: DARK MODE OVERRIDES
    ========================================================================== */
 
-.dark {
+@layer base {
+  .dark {
   /* Primary colors stay the same for brand consistency */
   --color-genesis-primary: #14b8a6;
   --color-genesis-primary-light: #2dd4bf;
@@ -194,9 +198,10 @@
   --color-info-dark: #3b82f6;
   --color-info-soft: #1e3a8a;
 
-  /* Compatibility */
-  --color-genesis-blue: #14b8a6;
-  --color-genesis-accent: #a78bfa;
+    /* Compatibility */
+    --color-genesis-blue: #14b8a6;
+    --color-genesis-accent: #a78bfa;
+  }
 }
 
 /* Base Overrides */

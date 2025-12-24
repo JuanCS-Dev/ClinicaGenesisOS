@@ -203,7 +203,7 @@ export const Finance: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[500px]">
         {/* Main Chart */}
-        <div className="lg:col-span-2 bg-genesis-surface rounded-3xl border border-white shadow-soft p-8 flex flex-col">
+        <div className="lg:col-span-2 bg-genesis-surface rounded-3xl border border-genesis-border-subtle shadow-md p-8 flex flex-col">
           <h3 className="text-lg font-bold text-genesis-dark mb-6">
             Fluxo de Caixa (Semestral)
           </h3>
@@ -280,7 +280,7 @@ export const Finance: React.FC = () => {
         </div>
 
         {/* Recent Transactions List */}
-        <div className="bg-genesis-surface rounded-3xl border border-white shadow-soft p-0 overflow-hidden flex flex-col">
+        <div className="bg-genesis-surface rounded-3xl border border-genesis-border-subtle shadow-md p-0 overflow-hidden flex flex-col">
           <div className="p-6 border-b border-genesis-border-subtle flex flex-col gap-3 bg-genesis-surface/50 backdrop-blur-sm sticky top-0 z-10">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-bold text-genesis-dark">Transações</h3>

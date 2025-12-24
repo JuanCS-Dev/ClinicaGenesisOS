@@ -56,12 +56,12 @@ const variantColors: Record<ProgressVariant, string> = {
   info: 'bg-blue-500',
 };
 
-const variantGradients: Record<ProgressVariant, string> = {
-  primary: 'bg-gradient-to-r from-[var(--color-genesis-primary)] to-[var(--color-genesis-primary-dark)]',
-  success: 'bg-gradient-to-r from-emerald-400 to-emerald-600',
-  warning: 'bg-gradient-to-r from-amber-400 to-amber-600',
-  danger: 'bg-gradient-to-r from-red-400 to-red-600',
-  info: 'bg-gradient-to-r from-blue-400 to-blue-600',
+const variantGradientStyles: Record<ProgressVariant, string> = {
+  primary: 'linear-gradient(to right, var(--color-genesis-primary), var(--color-genesis-primary-dark))',
+  success: 'linear-gradient(to right, #34d399, #059669)',
+  warning: 'linear-gradient(to right, #fbbf24, #d97706)',
+  danger: 'linear-gradient(to right, #f87171, #dc2626)',
+  info: 'linear-gradient(to right, #60a5fa, #2563eb)',
 };
 
 const sizeStyles: Record<ProgressSize, { height: string; fontSize: string }> = {
@@ -104,24 +104,18 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         {/* Bar */}
         {indeterminate ? (
           <div
-            className={`
-              h-full w-1/3
-              ${variantGradients[variant]}
-              rounded-full
-              animate-[progress-indeterminate_1.5s_ease-in-out_infinite]
-            `}
+            className="h-full w-1/3 rounded-full animate-[progress-indeterminate_1.5s_ease-in-out_infinite]"
+            style={{ background: variantGradientStyles[variant] }}
           />
         ) : (
           <div
             className={`
-              h-full
-              ${variantGradients[variant]}
-              rounded-full
+              h-full rounded-full
               ${animated ? 'transition-all duration-500 ease-out' : ''}
               ${clampedValue > 0 ? 'min-w-[4px]' : ''}
               flex items-center justify-end
             `}
-            style={{ width: `${clampedValue}%` }}
+            style={{ background: variantGradientStyles[variant], width: `${clampedValue}%` }}
           >
             {showLabel && labelPosition === 'inside' && size !== 'xs' && size !== 'sm' && (
               <span className={`

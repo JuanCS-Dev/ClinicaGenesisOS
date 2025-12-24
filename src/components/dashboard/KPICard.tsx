@@ -73,7 +73,7 @@ function getTrendConfig(trend: TrendDirection) {
  */
 function KPICardSkeleton() {
   return (
-    <div className="bg-genesis-surface p-6 rounded-2xl border border-genesis-border-subtle shadow-soft animate-pulse">
+    <div className="bg-genesis-surface p-6 rounded-2xl border border-genesis-border-subtle shadow-md animate-pulse">
       <div className="flex justify-between items-start mb-5">
         <div className="w-12 h-12 bg-genesis-soft rounded-xl" />
         <div className="w-16 h-6 bg-genesis-soft rounded-full" />
@@ -127,9 +127,10 @@ export function KPICard({
   return (
     <div
       className={`
-        group bg-genesis-surface p-6 rounded-2xl border border-genesis-border-subtle
-        shadow-soft hover:shadow-float hover:-translate-y-1
-        transition-all duration-300 ease-out
+        group relative bg-genesis-surface p-6 rounded-2xl
+        border border-genesis-border-subtle hover:border-genesis-primary/30
+        shadow-md hover:shadow-xl hover:-translate-y-1.5
+        transition-all duration-300 ease-out overflow-hidden
         ${isClickable ? 'cursor-pointer' : ''}
       `}
       onClick={onClick}
@@ -146,13 +147,16 @@ export function KPICard({
           : undefined
       }
     >
+      {/* Subtle gradient overlay on hover */}
+      <div className="absolute inset-0 bg-gradient-to-br from-genesis-primary/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
       {/* Header: Icon + Trend Badge */}
-      <div className="flex justify-between items-start mb-5">
+      <div className="relative flex justify-between items-start mb-5">
         <div
           className={`
             p-3 rounded-xl ${iconBg}
-            transition-transform duration-300
-            group-hover:scale-110
+            transition-all duration-300
+            group-hover:scale-110 group-hover:shadow-lg
           `}
         >
           <Icon className={`w-5 h-5 ${iconColor}`} strokeWidth={2.5} />
@@ -162,8 +166,8 @@ export function KPICard({
         {comparison && (
           <span
             className={`
-              text-[11px] font-semibold px-2 py-1 rounded-full
-              flex items-center gap-1 border
+              text-[11px] font-semibold px-2.5 py-1 rounded-full
+              flex items-center gap-1 border shadow-sm
               ${trendConfig.bgColor} ${trendConfig.textColor} ${trendConfig.borderColor}
               transition-transform duration-300
               group-hover:scale-105
@@ -171,29 +175,32 @@ export function KPICard({
           >
             <TrendIcon className="w-3 h-3" />
             {trend !== 'stable' && (
-              <span className="hidden sm:inline">{comparison.split(' ')[0]}</span>
+              <span>{comparison.split(' ')[0]}</span>
             )}
           </span>
         )}
       </div>
 
       {/* Value + Title */}
-      <div className="space-y-1">
+      <div className="relative space-y-1">
         <h3 className="text-3xl font-bold text-genesis-dark tracking-tight">{value}</h3>
         <p className="text-[13px] font-medium text-genesis-muted">{title}</p>
       </div>
 
-      {/* Footer: Comparison + Arrow */}
+      {/* Footer: Comparison + Arrow - Always visible */}
       <div
         className={`
-          mt-4 pt-3 border-t border-genesis-border-subtle
+          relative mt-4 pt-3 border-t border-genesis-border-subtle
           flex items-center justify-between
-          opacity-0 group-hover:opacity-100
-          transition-opacity duration-300
+          transition-colors duration-300
         `}
       >
-        <span className="text-[10px] text-genesis-muted">{subLabel || comparison}</span>
-        {isClickable && <ArrowRight className="w-3 h-3 text-genesis-primary" />}
+        <span className="text-[11px] text-genesis-subtle group-hover:text-genesis-muted transition-colors">
+          {subLabel || comparison}
+        </span>
+        {isClickable && (
+          <ArrowRight className="w-4 h-4 text-genesis-subtle group-hover:text-genesis-primary group-hover:translate-x-1 transition-all duration-300" />
+        )}
       </div>
     </div>
   );

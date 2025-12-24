@@ -28,7 +28,7 @@ export function LabProcessingView({
     <div className="animate-[fadeIn_0.3s_ease-out_forwards]">
       <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle shadow-xl overflow-hidden">
         {/* Header with gradient */}
-        <div className="relative px-6 py-5 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED]">
+        <div className="relative px-6 py-5" style={{ background: 'linear-gradient(to right, #4F46E5, #7C3AED)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-genesis-surface/20 rounded-xl backdrop-blur-sm">
@@ -122,8 +122,9 @@ export function LabProcessingView({
           {/* Progress bar */}
           <div className="mt-6 h-1.5 bg-genesis-hover rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] rounded-full transition-all duration-500 ease-out"
+              className="h-full rounded-full transition-all duration-500 ease-out"
               style={{
+                background: 'linear-gradient(to right, #6366F1, #8B5CF6)',
                 width: `${((currentStageIndex + 1) / PROCESSING_STAGES.length) * 100}%`,
               }}
             />

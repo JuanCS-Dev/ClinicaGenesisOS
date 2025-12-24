@@ -152,7 +152,7 @@ export function ClinicalReasoningPanel({
             {/* Title Section */}
             <div className="flex items-center gap-4">
               <div className="relative">
-                <div className="p-3 bg-gradient-to-br from-[#6366F1] to-[#7C3AED] rounded-xl shadow-lg shadow-[#6366F1]/20">
+                <div className="p-3 rounded-xl shadow-lg shadow-[#6366F1]/20" style={{ background: 'linear-gradient(to bottom right, #6366F1, #7C3AED)' }}>
                   <Brain className="w-6 h-6 text-white" />
                 </div>
                 <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-[#FBBF24]" />
@@ -197,12 +197,12 @@ export function ClinicalReasoningPanel({
                   onClick={reset}
                   className="
                     flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium
-                    bg-gradient-to-r from-[#4F46E5] to-[#6366F1] text-white
-                    shadow-lg shadow-[#6366F1]/25
+                    text-white shadow-lg shadow-[#6366F1]/25
                     hover:shadow-xl hover:shadow-[#6366F1]/30
                     active:scale-[0.98]
                     transition-all duration-200
                   "
+                  style={{ background: 'linear-gradient(to right, #4F46E5, #6366F1)' }}
                 >
                   <Upload className="w-4 h-4" />
                   <span>Nova Análise</span>

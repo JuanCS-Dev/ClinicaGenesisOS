@@ -122,18 +122,27 @@ export const Landing: React.FC = () => {
             <strong> Prontuário, Financeiro, TISS e IA Real</strong> em um único sistema operacional.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-            <button 
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+            <button
               onClick={handleApply}
               className="px-8 py-4 bg-genesis-dark text-white rounded-xl font-semibold text-lg hover:bg-genesis-text transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
             >
               Começar Agora <ArrowRight className="w-5 h-5" />
             </button>
-            <button 
+            <button
               onClick={handleDemo}
               className="px-8 py-4 bg-genesis-surface text-genesis-text border border-genesis-border rounded-xl font-semibold text-lg hover:bg-genesis-soft transition-all flex items-center gap-2"
             >
-              Ver Demo
+              Ver Demo Médico
+            </button>
+          </div>
+
+          <div className="flex justify-center mb-16">
+            <button
+              onClick={() => navigate('/portal')}
+              className="text-sm text-genesis-muted hover:text-genesis-primary transition-colors flex items-center gap-2"
+            >
+              Acessar como Paciente <ArrowRight className="w-4 h-4" />
             </button>
           </div>
 
@@ -357,9 +366,9 @@ export const Landing: React.FC = () => {
               © 2025 Vértice Maximus Tecnologia. Cuidando de quem cuida.
             </p>
             <div className="flex gap-6 text-sm text-genesis-muted">
-              <a href="#" className="hover:text-genesis-primary">Privacidade</a>
-              <a href="#" className="hover:text-genesis-primary">Termos</a>
-              <a href="#" className="hover:text-genesis-primary">Contato</a>
+              <a href="#pricing" className="hover:text-genesis-primary transition-colors">Privacidade</a>
+              <a href="#pricing" className="hover:text-genesis-primary transition-colors">Termos</a>
+              <a href="mailto:contato@clinicagenesis.com.br" className="hover:text-genesis-primary transition-colors">Contato</a>
             </div>
           </div>
         </div>

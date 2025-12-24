@@ -140,8 +140,11 @@ const ProcessingIndicator: React.FC<{ status: 'uploading' | 'processing' }> = ({
       {/* Progress bar */}
       <div className="h-2 bg-genesis-border rounded-full overflow-hidden">
         <div
-          className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500 animate-pulse"
-          style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+          className="h-full transition-all duration-500 animate-pulse"
+          style={{
+            background: 'linear-gradient(to right, #3b82f6, #6366f1)',
+            width: `${((currentStep + 1) / steps.length) * 100}%`
+          }}
         />
       </div>
 
@@ -309,7 +312,7 @@ export function RecordingControls({
                   flex items-center gap-2 px-6 py-3 rounded-full font-semibold
                   transition-all duration-200 transform hover:-translate-y-0.5
                   ${canStop
-                    ? 'bg-genesis-dark hover:bg-gray-900 text-white shadow-lg'
+                    ? 'bg-genesis-dark hover:bg-slate-900 dark:hover:bg-slate-800 text-white shadow-lg'
                     : 'bg-genesis-border-subtle text-genesis-subtle cursor-not-allowed'}
                 `}
               >

@@ -36,10 +36,10 @@ export const NutritionPlugin: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Quick Stats - Apple Health Cards */}
           <div className="lg:col-span-1 space-y-4">
-            <div className="bg-genesis-surface p-6 rounded-3xl border border-white shadow-soft group hover:shadow-float transition-all duration-300">
+            <div className="bg-genesis-surface p-6 rounded-3xl border border-genesis-border-subtle shadow-md group hover:shadow-lg transition-all duration-300">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gradient-to-br from-orange-400 to-orange-500 text-white rounded-full shadow-lg shadow-orange-200">
+                  <div className="p-2 text-white rounded-full shadow-lg shadow-orange-200" style={{ background: 'linear-gradient(to bottom right, #fb923c, #f97316)' }}>
                       <Scale className="w-4 h-4" />
                   </div>
                   <h4 className="text-sm font-bold text-genesis-dark">Peso</h4>
@@ -57,15 +57,15 @@ export const NutritionPlugin: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-                <div className="bg-genesis-surface p-5 rounded-3xl border border-white shadow-soft hover:shadow-float transition-all">
-                   <div className="p-2 w-fit bg-gradient-to-br from-blue-400 to-blue-500 text-white rounded-full shadow-lg shadow-blue-200 mb-3">
+                <div className="bg-genesis-surface p-5 rounded-3xl border border-genesis-border-subtle shadow-md hover:shadow-lg transition-all">
+                   <div className="p-2 w-fit text-white rounded-full shadow-lg shadow-blue-200 mb-3" style={{ background: 'linear-gradient(to bottom right, #60a5fa, #3b82f6)' }}>
                       <Activity className="w-3.5 h-3.5" />
                    </div>
                    <p className="text-[10px] font-bold text-genesis-medium uppercase mb-1">IMC</p>
                    <p className="text-xl font-bold text-genesis-dark">{latest.imc}</p>
                 </div>
-                <div className="bg-genesis-surface p-5 rounded-3xl border border-white shadow-soft hover:shadow-float transition-all">
-                   <div className="p-2 w-fit bg-gradient-to-br from-purple-400 to-purple-500 text-white rounded-full shadow-lg shadow-purple-200 mb-3">
+                <div className="bg-genesis-surface p-5 rounded-3xl border border-genesis-border-subtle shadow-md hover:shadow-lg transition-all">
+                   <div className="p-2 w-fit text-white rounded-full shadow-lg shadow-purple-200 mb-3" style={{ background: 'linear-gradient(to bottom right, #c084fc, #a855f7)' }}>
                       <Ruler className="w-3.5 h-3.5" />
                    </div>
                    <p className="text-[10px] font-bold text-genesis-medium uppercase mb-1">Cintura</p>
@@ -73,7 +73,7 @@ export const NutritionPlugin: React.FC = () => {
                 </div>
             </div>
 
-            <div className="bg-gradient-to-br from-[#34C759] to-[#28A745] p-6 rounded-3xl text-white shadow-glow">
+            <div className="p-6 rounded-3xl text-white shadow-glow" style={{ background: 'linear-gradient(to bottom right, #34C759, #28A745)' }}>
                 <div className="flex justify-between items-start mb-4">
                     <h4 className="font-bold">Metas do Mês</h4>
                     <div className="w-8 h-8 rounded-full bg-genesis-surface/20 flex items-center justify-center backdrop-blur-sm">
@@ -104,7 +104,7 @@ export const NutritionPlugin: React.FC = () => {
           </div>
 
           {/* Chart - Clean & Minimal */}
-          <div className="lg:col-span-2 bg-genesis-surface p-8 rounded-3xl border border-white shadow-soft flex flex-col relative overflow-hidden">
+          <div className="lg:col-span-2 bg-genesis-surface p-8 rounded-3xl border border-genesis-border-subtle shadow-md flex flex-col relative overflow-hidden">
             <div className="flex justify-between items-start mb-8 relative z-10">
                 <div>
                     <h3 className="text-lg font-bold text-genesis-dark tracking-tight">Evolução de Peso</h3>
@@ -141,7 +141,7 @@ export const NutritionPlugin: React.FC = () => {
       )}
 
       {activeSubTab === 'plan' && (
-        <div className="bg-genesis-surface border border-white rounded-3xl shadow-soft overflow-hidden group">
+        <div className="bg-genesis-surface border border-genesis-border-subtle rounded-2xl shadow-md overflow-hidden group">
           <div className="p-8 border-b border-genesis-border-subtle flex justify-between items-center bg-gradient-to-r from-white to-gray-50">
             <div>
               <div className="flex items-center gap-3 mb-1">

@@ -25,7 +25,7 @@ export function LabResultView(props: LabResultViewProps): React.ReactElement {
   if (props.variant === 'success') {
     return (
       <div className="animate-[scaleIn_0.4s_cubic-bezier(0.16,1,0.3,1)_forwards]">
-        <div className="bg-gradient-to-br from-[#ECFDF5] to-[#F0FDFA] rounded-2xl border border-[#A7F3D0] p-8 text-center">
+        <div className="rounded-2xl border border-[#A7F3D0] p-8 text-center" style={{ background: 'linear-gradient(to bottom right, #ECFDF5, #F0FDFA)' }}>
           <div className="flex justify-center mb-4">
             <div className="p-4 bg-[#D1FAE5] rounded-2xl">
               <CheckCircle className="w-12 h-12 text-[#059669]" />
@@ -44,7 +44,7 @@ export function LabResultView(props: LabResultViewProps): React.ReactElement {
 
   return (
     <div className="animate-[scaleIn_0.4s_cubic-bezier(0.16,1,0.3,1)_forwards]">
-      <div className="bg-gradient-to-br from-[#FEF2F2] to-[#FFF1F2] rounded-2xl border border-[#FECACA] p-8">
+      <div className="rounded-2xl border border-[#FECACA] p-8" style={{ background: 'linear-gradient(to bottom right, #FEF2F2, #FFF1F2)' }}>
         <div className="flex justify-center mb-4">
           <div className="p-4 bg-[#FEE2E2] rounded-2xl">
             <AlertCircle className="w-12 h-12 text-[#DC2626]" />

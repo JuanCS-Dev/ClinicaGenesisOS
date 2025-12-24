@@ -79,7 +79,7 @@ export function LabUploadZone({
 
         {/* Gradient overlay on drag */}
         {(isDragActive || isDragHovering) && (
-          <div className="absolute inset-0 bg-gradient-to-br from-[#6366F1]/5 to-[#8B5CF6]/5 pointer-events-none" />
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to bottom right, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05))' }} />
         )}
 
         <div className="relative px-8 py-12">
@@ -88,12 +88,9 @@ export function LabUploadZone({
             <div
               className={`
                 relative p-5 rounded-2xl transition-all duration-300
-                ${
-                  isDragActive || isDragHovering
-                    ? 'bg-[#E0E7FF] scale-110'
-                    : 'bg-gradient-to-br from-[#EEF2FF] to-[#F5F3FF]'
-                }
+                ${isDragActive || isDragHovering ? 'bg-[#E0E7FF] scale-110' : ''}
               `}
+              style={!(isDragActive || isDragHovering) ? { background: 'linear-gradient(to bottom right, #EEF2FF, #F5F3FF)' } : undefined}
             >
               <Upload
                 className={`
@@ -127,11 +124,11 @@ export function LabUploadZone({
                 onClick={open}
                 className="
                   flex items-center gap-3 px-6 py-3.5 rounded-xl
-                  bg-gradient-to-r from-[#4F46E5] to-[#6366F1]
+                  bg-genesis-primary
                   text-white font-medium
-                  shadow-lg shadow-[#6366F1]/25
-                  hover:shadow-xl hover:shadow-[#6366F1]/30
-                  hover:from-[#6366F1] hover:to-[#4F46E5]
+                  shadow-lg shadow-genesis-primary/25
+                  hover:shadow-xl hover:shadow-genesis-primary/30
+                  hover:bg-genesis-primary-dark
                   active:scale-[0.98]
                   transition-all duration-200
                 "

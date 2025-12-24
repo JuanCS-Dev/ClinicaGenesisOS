@@ -77,7 +77,7 @@ export function Patients() {
         </button>
       </div>
 
-      <div className="bg-genesis-surface rounded-3xl border border-white shadow-soft overflow-hidden">
+      <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle shadow-md overflow-hidden">
         {/* Toolbar */}
         <div className="p-5 border-b border-genesis-border-subtle flex gap-4 bg-genesis-surface/80 backdrop-blur-sm sticky top-0 z-10">
           <div className="relative flex-1 max-w-md group">
@@ -87,7 +87,7 @@ export function Patients() {
               placeholder="Buscar por nome, telefone ou convênio..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-genesis-soft border-none rounded-xl text-sm font-medium text-genesis-dark focus:ring-2 focus:ring-genesis-primary/20 focus:bg-genesis-surface transition-all placeholder-gray-400 shadow-inner"
+              className="w-full pl-10 pr-4 py-2.5 bg-genesis-soft border-none rounded-xl text-sm font-medium text-genesis-dark focus:ring-2 focus:ring-genesis-primary/20 focus:bg-genesis-surface transition-all placeholder:text-genesis-subtle shadow-inner"
             />
           </div>
           {searchTerm && (
@@ -151,7 +151,7 @@ export function Patients() {
                   return (
                     <div
                       key={patient.id}
-                      className="absolute top-0 left-0 w-full grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 px-6 items-center hover:bg-genesis-soft/80 transition-all cursor-pointer group border-b border-gray-50"
+                      className="absolute top-0 left-0 w-full grid grid-cols-[1fr_1fr_auto_auto_auto] gap-4 px-6 items-center hover:bg-genesis-soft/80 transition-all cursor-pointer group border-b border-genesis-border-subtle"
                       style={{
                         height: `${virtualRow.size}px`,
                         transform: `translateY(${virtualRow.start}px)`,

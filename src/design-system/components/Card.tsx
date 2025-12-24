@@ -40,9 +40,9 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
  */
 const paddingStyles: Record<CardPadding, string> = {
   none: '',
-  sm: 'p-3',
-  md: 'p-4',
-  lg: 'p-6',
+  sm: 'p-4',
+  md: 'p-6',
+  lg: 'p-8',
 };
 
 /**
@@ -51,8 +51,8 @@ const paddingStyles: Record<CardPadding, string> = {
 const shadowStyles = {
   none: '',
   sm: 'shadow-sm',
-  md: 'shadow-md',
-  lg: 'shadow-lg',
+  md: 'shadow-md hover:shadow-lg',
+  lg: 'shadow-lg hover:shadow-xl',
 };
 
 /**
@@ -65,7 +65,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       interactive = false,
       padding = 'md',
       bordered = true,
-      shadow = 'sm',
+      shadow = 'md',
       className = '',
       ...props
     },
@@ -73,16 +73,20 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
   ) => {
     const styles = [
       // Base styles
-      'bg-[var(--color-genesis-surface)] rounded-xl',
-      // Border
-      bordered ? 'border border-[var(--color-genesis-border)]' : '',
+      'group relative bg-genesis-surface rounded-2xl overflow-hidden',
+      // Border with hover effect
+      bordered
+        ? 'border border-genesis-border-subtle hover:border-genesis-primary/30'
+        : '',
       // Shadow
       shadowStyles[shadow],
       // Padding
       paddingStyles[padding],
+      // Transition
+      'transition-all duration-300 ease-out',
       // Interactive styles
       interactive
-        ? 'cursor-pointer transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-genesis-primary)] focus-visible:ring-offset-2'
+        ? 'cursor-pointer hover:-translate-y-1.5 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-genesis-primary focus-visible:ring-offset-2'
         : '',
       className,
     ].filter(Boolean).join(' ');
@@ -95,7 +99,13 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         role={interactive ? 'button' : undefined}
         {...props}
       >
-        {children}
+        {/* Subtle gradient overlay on hover for interactive cards */}
+        {interactive && (
+          <div className="absolute inset-0 bg-gradient-to-br from-genesis-primary/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        )}
+        <div className="relative">
+          {children}
+        </div>
       </div>
     );
   }
@@ -112,13 +122,13 @@ export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
-  ({ children, divider = false, className = '', ...props }, ref) => {
+  ({ children, divider = true, className = '', ...props }, ref) => {
     return (
       <div
         ref={ref}
         className={[
-          'px-0 pb-4',
-          divider ? 'border-b border-[var(--color-genesis-border)] mb-4' : '',
+          'flex items-center justify-between pb-4',
+          divider ? 'border-b border-genesis-border-subtle mb-4' : '',
           className,
         ].filter(Boolean).join(' ')}
         {...props}
@@ -160,13 +170,13 @@ export interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
-  ({ children, divider = false, className = '', ...props }, ref) => {
+  ({ children, divider = true, className = '', ...props }, ref) => {
     return (
       <div
         ref={ref}
         className={[
-          'pt-4 flex items-center justify-end gap-3',
-          divider ? 'border-t border-[var(--color-genesis-border)] mt-4' : '',
+          'pt-4 flex items-center justify-between gap-3',
+          divider ? 'border-t border-genesis-border-subtle mt-4' : '',
           className,
         ].filter(Boolean).join(' ')}
         {...props}

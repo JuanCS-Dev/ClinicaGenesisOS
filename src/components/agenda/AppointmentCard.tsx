@@ -119,7 +119,7 @@ export function AppointmentCard({
       className={`
         absolute top-2 left-2 right-4 bottom-2 rounded-2xl border-l-[4px] p-4 shadow-sm cursor-pointer transition-all duration-300 z-10 group/card
         bg-gradient-to-br ${specialtyColors.bg} ${specialtyColors.border} ${specialtyColors.shadow} ring-1 ${specialtyColors.ring}
-        ${isDimmed ? 'opacity-60' : 'hover:shadow-float hover:-translate-y-0.5'}
+        ${isDimmed ? 'opacity-60' : 'hover:shadow-lg hover:-translate-y-0.5'}
         ${isCanceled ? 'grayscale' : ''}
       `}
     >

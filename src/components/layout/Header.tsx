@@ -1,36 +1,14 @@
 import React from 'react';
-import { Bell, Search, ChevronDown, ChevronRight } from 'lucide-react';
+import { Bell, Search, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { CommandPalette, useCommandPalette } from '../search';
 import { ThemeToggle } from '@/design-system';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { useClinicContext } from '@/contexts/ClinicContext';
 import { usePageContext } from '@/contexts/PageContext';
+import { UserDropdown } from './UserDropdown';
 
 export const Header: React.FC = () => {
   const { isOpen, open, close } = useCommandPalette();
-  const { user } = useAuthContext();
-  const { userProfile } = useClinicContext();
   const { title, subtitle, actions, breadcrumbs } = usePageContext();
-
-  const getInitials = (name: string | null | undefined) => {
-    if (!name) return 'U';
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const getSpecialtyLabel = (specialty?: string) => {
-    const labels: Record<string, string> = {
-      medicina: 'Médico(a)',
-      nutricao: 'Nutricionista',
-      psicologia: 'Psicólogo(a)',
-    };
-    return labels[specialty || ''] || 'Profissional';
-  };
 
   return (
     <>
@@ -77,7 +55,7 @@ export const Header: React.FC = () => {
             <Search className="w-4 h-4 text-genesis-medium" />
             <span className="flex-1 text-left">Buscar...</span>
             <kbd className="px-1.5 py-0.5 text-[10px] font-medium bg-genesis-hover rounded border border-genesis-border">
-              ⌘K
+              {navigator.platform.includes('Mac') ? '⌘K' : 'Ctrl+K'}
             </kbd>
           </button>
         )}
@@ -101,25 +79,8 @@ export const Header: React.FC = () => {
         </button>
         
         <div className="h-6 w-px bg-genesis-medium/20"></div>
-        
-        <button className="flex items-center gap-3 pl-1 pr-2 py-1 rounded-full hover:bg-genesis-surface transition-all duration-200 group">
-          {user?.photoURL ? (
-            <img
-              src={user.photoURL}
-              alt={user.displayName || 'User'}
-              className="w-8 h-8 rounded-full ring-2 ring-white group-hover:ring-genesis-primary/20 transition-all"
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-genesis-primary to-blue-400 flex items-center justify-center text-white text-xs font-semibold shadow-md ring-2 ring-white group-hover:ring-genesis-primary/20 transition-all">
-              {getInitials(user?.displayName)}
-            </div>
-          )}
-          <div className="hidden md:block text-left">
-            <p className="text-xs font-semibold text-genesis-dark leading-tight">{user?.displayName || 'Usuário'}</p>
-            <p className="text-[10px] font-medium text-genesis-medium">{getSpecialtyLabel(userProfile?.specialty)}</p>
-          </div>
-          <ChevronDown className="w-3 h-3 text-genesis-medium group-hover:text-genesis-dark transition-colors" />
-        </button>
+
+        <UserDropdown />
       </div>
     </header>
     

@@ -44,7 +44,7 @@ export function InstallPrompt(): React.ReactElement | null {
         <div className="p-5">
           {/* Header */}
           <div className="flex items-start gap-4 mb-4">
-            <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg">
+            <div className="p-3 rounded-xl shadow-lg" style={{ background: 'linear-gradient(to bottom right, #10b981, #0d9488)' }}>
               <Smartphone className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1 pr-6">
@@ -79,7 +79,8 @@ export function InstallPrompt(): React.ReactElement | null {
             </button>
             <button
               onClick={handleInstall}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-emerald-500/25"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-white rounded-xl font-medium transition-all shadow-lg shadow-emerald-500/25 hover:opacity-90"
+              style={{ background: 'linear-gradient(to right, #10b981, #0d9488)' }}
             >
               <Download className="w-4 h-4" />
               Instalar

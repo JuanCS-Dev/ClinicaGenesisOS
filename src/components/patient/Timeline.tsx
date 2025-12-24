@@ -49,7 +49,7 @@ export const Timeline: React.FC<TimelineProps> = ({ events }) => {
             </div>
 
             {/* Content Card - Minimalist */}
-            <div className="bg-genesis-surface border border-genesis-border-subtle rounded-2xl p-5 shadow-sm hover:shadow-float transition-all duration-300 cursor-pointer ml-2 group-hover:border-blue-100/50">
+            <div className="bg-genesis-surface border border-genesis-border-subtle rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer ml-2 group-hover:border-blue-100/50">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-[11px] font-bold text-genesis-medium uppercase tracking-widest">
                   {format(event.date, "dd MMM yyyy", { locale: ptBR })}

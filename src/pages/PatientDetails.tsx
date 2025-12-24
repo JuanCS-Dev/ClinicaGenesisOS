@@ -122,7 +122,7 @@ const HistoryItem = ({ record, active }: HistoryItemProps) => {
   const hasAttachments = record.attachments && record.attachments.length > 0;
 
   return (
-    <div className={`p-4 rounded-xl cursor-pointer transition-all duration-200 group border ${active ? 'bg-genesis-surface shadow-soft border-genesis-border-subtle ring-1 ring-black/5' : 'border-transparent hover:bg-genesis-surface/50 hover:border-genesis-border-subtle'}`}>
+    <div className={`p-4 rounded-xl cursor-pointer transition-all duration-200 group border ${active ? 'bg-genesis-surface shadow-md border-genesis-border-subtle ring-1 ring-black/5' : 'border-transparent hover:bg-genesis-surface/50 hover:border-genesis-border-subtle'}`}>
       <div className="flex justify-between items-start mb-1.5">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold text-genesis-medium uppercase tracking-wider bg-genesis-soft px-2 py-0.5 rounded-md">
@@ -289,7 +289,7 @@ export const PatientDetails: React.FC = () => {
     <div className="space-y-6 animate-enter pb-8">
       
       {/* Patient Header */}
-      <div className="bg-genesis-surface rounded-[24px] border border-white shadow-soft overflow-hidden group relative z-0">
+      <div className="bg-genesis-surface rounded-[24px] border border-genesis-border-subtle shadow-md overflow-hidden group relative z-0">
         <div className="h-40 bg-gradient-to-r from-slate-50 via-gray-50 to-zinc-50 border-b border-genesis-border-subtle relative overflow-hidden">
            <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px] opacity-60"></div>
            <div className="absolute top-6 right-8 flex gap-3 z-20">
@@ -384,7 +384,7 @@ export const PatientDetails: React.FC = () => {
             <div className="flex gap-8 animate-in fade-in zoom-in-95 h-[calc(100vh-18rem)]">
               
               {/* History Sidebar */}
-              <div className="w-72 flex-shrink-0 flex flex-col bg-genesis-surface rounded-[24px] border border-white shadow-soft overflow-hidden">
+              <div className="w-72 flex-shrink-0 flex flex-col bg-genesis-surface rounded-[24px] border border-genesis-border-subtle shadow-md overflow-hidden">
                  <div className="p-4 border-b border-genesis-border-subtle flex justify-between items-center bg-genesis-soft/30">
                     <h3 className="text-xs font-bold text-genesis-medium uppercase tracking-wider">Registros</h3>
                  </div>
@@ -402,7 +402,7 @@ export const PatientDetails: React.FC = () => {
               </div>
 
               {/* Dynamic Editor Area */}
-              <div className="flex-1 flex flex-col bg-genesis-surface rounded-[24px] border border-white shadow-soft overflow-hidden relative">
+              <div className="flex-1 flex flex-col bg-genesis-surface rounded-[24px] border border-genesis-border-subtle shadow-md overflow-hidden relative">
                 <div className={`px-8 py-5 border-b border-genesis-border-subtle flex justify-between items-center bg-genesis-surface sticky top-0 z-10 ${activePlugin.color.split(' ')[1]}`}>
                     <div>
                         <div className="flex items-center gap-2 mb-1">
@@ -424,7 +424,7 @@ export const PatientDetails: React.FC = () => {
           )}
 
           {activeTab === 'timeline' && (
-             <div className="bg-genesis-surface rounded-[32px] border border-white shadow-soft p-10 animate-in fade-in zoom-in-95">
+             <div className="bg-genesis-surface rounded-[32px] border border-genesis-border-subtle shadow-md p-10 animate-in fade-in zoom-in-95">
                 <h3 className="text-lg font-bold text-genesis-dark mb-8 pl-8">Linha do Tempo</h3>
                 {timelineEvents.length === 0 ? (
                     <p className="text-center text-genesis-subtle py-10">Nenhum evento registrado no histórico.</p>
@@ -435,7 +435,7 @@ export const PatientDetails: React.FC = () => {
           )}
 
           {activeTab === 'clinicalAI' && id && (
-            <div className="bg-genesis-surface rounded-[32px] border border-white shadow-soft overflow-hidden animate-in fade-in zoom-in-95 h-[calc(100vh-18rem)]">
+            <div className="bg-genesis-surface rounded-[32px] border border-genesis-border-subtle shadow-md overflow-hidden animate-in fade-in zoom-in-95 h-[calc(100vh-18rem)]">
               <ClinicalReasoningPanel
                 patientId={id}
                 patientContext={patientContext}

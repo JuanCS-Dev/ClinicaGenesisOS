@@ -130,7 +130,7 @@ export const NewPatient: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Photo */}
         <div className="space-y-6">
-          <div className="bg-genesis-surface p-8 rounded-3xl border border-white shadow-soft flex flex-col items-center text-center">
+          <div className="bg-genesis-surface p-8 rounded-3xl border border-genesis-border-subtle shadow-md flex flex-col items-center text-center">
             <AvatarUpload
               currentAvatar={formData.avatar}
               patientName={formData.name}
@@ -143,7 +143,7 @@ export const NewPatient: React.FC = () => {
         {/* Right Column: The Form */}
         <div className="lg:col-span-2 space-y-8">
            {/* Section 1: Personal */}
-           <div className="bg-genesis-surface p-8 rounded-3xl border border-white shadow-soft">
+           <div className="bg-genesis-surface p-8 rounded-3xl border border-genesis-border-subtle shadow-md">
               <h3 className="text-lg font-bold text-genesis-dark mb-6 flex items-center gap-2">
                 <div className="p-1.5 bg-blue-50 rounded-lg"><User className="w-4 h-4 text-genesis-primary" /></div>
                 Dados Pessoais
@@ -172,7 +172,7 @@ export const NewPatient: React.FC = () => {
            </div>
 
            {/* Section 2: Contact */}
-           <div className="bg-genesis-surface p-8 rounded-3xl border border-white shadow-soft">
+           <div className="bg-genesis-surface p-8 rounded-3xl border border-genesis-border-subtle shadow-md">
               <h3 className="text-lg font-bold text-genesis-dark mb-6 flex items-center gap-2">
                 <div className="p-1.5 bg-green-50 rounded-lg"><Phone className="w-4 h-4 text-green-600" /></div>
                 Contato
@@ -190,7 +190,7 @@ export const NewPatient: React.FC = () => {
            </div>
 
            {/* Section 3: Extra */}
-           <div className="bg-genesis-surface p-8 rounded-3xl border border-white shadow-soft">
+           <div className="bg-genesis-surface p-8 rounded-3xl border border-genesis-border-subtle shadow-md">
               <h3 className="text-lg font-bold text-genesis-dark mb-6 flex items-center gap-2">
                 <div className="p-1.5 bg-purple-50 rounded-lg"><ShieldCheck className="w-4 h-4 text-purple-600" /></div>
                 Convênio

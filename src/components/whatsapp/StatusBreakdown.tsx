@@ -29,7 +29,7 @@ export const StatusBreakdown = memo(function StatusBreakdown({
   accentColor,
 }: StatusBreakdownProps) {
   return (
-    <div className="bg-genesis-surface rounded-2xl border border-white shadow-soft p-6">
+    <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle shadow-md p-6">
       <div className="flex items-center gap-3 mb-4">
         <div className={`p-2 rounded-lg ${accentColor}`}>
           <Icon className="w-4 h-4 text-white" />

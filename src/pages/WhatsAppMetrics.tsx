@@ -148,7 +148,7 @@ export function WhatsAppMetrics() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Chart - Delivery Trend */}
-        <div className="lg:col-span-2 bg-genesis-surface rounded-3xl border border-white shadow-soft p-8">
+        <div className="lg:col-span-2 bg-genesis-surface rounded-3xl border border-genesis-border-subtle shadow-md p-8">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold text-genesis-dark">Tendência de Engajamento</h3>
             <span className="text-xs text-genesis-medium bg-genesis-hover px-3 py-1 rounded-full">
@@ -187,7 +187,7 @@ export function WhatsAppMetrics() {
         </div>
 
         {/* No-Show Impact */}
-        <div className="bg-genesis-surface rounded-3xl border border-white shadow-soft p-6">
+        <div className="bg-genesis-surface rounded-3xl border border-genesis-border-subtle shadow-md p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-red-50 rounded-lg">
               <CalendarX className="w-4 h-4 text-red-600" />
@@ -226,7 +226,7 @@ export function WhatsAppMetrics() {
       </div>
 
       {/* Response Summary */}
-      <div className="bg-gradient-to-br from-genesis-dark to-gray-800 rounded-3xl p-8 text-white">
+      <div className="rounded-2xl p-8 text-white shadow-xl border border-genesis-border-subtle" style={{ background: 'linear-gradient(to bottom right, #0f172a, #000000)' }}>
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-bold mb-1">Resumo de Respostas</h3>

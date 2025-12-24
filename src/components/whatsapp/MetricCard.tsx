@@ -32,7 +32,7 @@ export const MetricCard = memo(function MetricCard({
   const isPositive = trend !== undefined && trend >= 0;
 
   return (
-    <div className="group bg-genesis-surface p-6 rounded-2xl border border-white shadow-soft hover:shadow-float hover:-translate-y-1 transition-all duration-300 ease-out relative overflow-hidden">
+    <div className="group bg-genesis-surface p-6 rounded-2xl border border-genesis-border-subtle shadow-md hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 ease-out relative overflow-hidden">
       {/* Background gradient */}
       <div
         className={`absolute top-0 right-0 w-24 h-24 ${bgClass} opacity-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110`}

@@ -11,3 +11,4 @@ export { WeekView } from './WeekView';
 export { MonthView } from './MonthView';
 export { RecurrenceSelector } from './RecurrenceSelector';
 export { FilterPanel, type LocalFilters } from './FilterPanel';
+export { AppointmentModal } from './AppointmentModal';

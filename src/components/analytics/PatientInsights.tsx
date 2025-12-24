@@ -174,9 +174,9 @@ export const PatientInsights: React.FC = () => {
               <p className="text-lg font-bold text-emerald-600">{nps.promoters}</p>
               <p className="text-xs text-emerald-700">Promotores</p>
             </div>
-            <div className="text-center p-2 bg-gray-50 rounded-lg">
-              <p className="text-lg font-bold text-gray-600">{nps.passives}</p>
-              <p className="text-xs text-gray-700">Neutros</p>
+            <div className="text-center p-2 bg-genesis-soft dark:bg-genesis-hover rounded-lg">
+              <p className="text-lg font-bold text-genesis-muted">{nps.passives}</p>
+              <p className="text-xs text-genesis-text dark:text-genesis-muted">Neutros</p>
             </div>
             <div className="text-center p-2 bg-red-50 rounded-lg">
               <p className="text-lg font-bold text-red-600">{nps.detractors}</p>

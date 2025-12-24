@@ -20,6 +20,7 @@ import {
   MessageCircle,
   HeartPulse,
   Zap,
+  User,
 } from 'lucide-react';
 import { PixSettings } from '@/components/settings/PixSettings';
 import { DataExportRequest } from '@/components/consent/DataExportRequest';
@@ -29,12 +30,19 @@ import { NotificationPreferences } from '@/components/notifications';
 import { WhatsAppSettings } from '@/components/settings/WhatsAppSettings';
 import { ConvenioSettings } from '@/components/settings/ConvenioSettings';
 import { WorkflowSettings } from '@/components/settings/WorkflowSettings';
+import { ProfileSettings } from '@/components/settings/ProfileSettings';
 import { useClinicContext } from '@/contexts/ClinicContext';
 
 /**
  * Tab configuration.
  */
 const TABS = [
+  {
+    id: 'profile',
+    label: 'Meu Perfil',
+    icon: User,
+    description: 'Suas informações pessoais',
+  },
   {
     id: 'clinic',
     label: 'Clínica',
@@ -97,7 +105,7 @@ type TabId = (typeof TABS)[number]['id'];
  * Settings page component.
  */
 export function Settings(): React.ReactElement {
-  const [activeTab, setActiveTab] = useState<TabId>('clinic');
+  const [activeTab, setActiveTab] = useState<TabId>('profile');
   const { clinic } = useClinicContext();
   const [showCertificateModal, setShowCertificateModal] = useState(false);
 
@@ -152,6 +160,13 @@ export function Settings(): React.ReactElement {
 
       {/* Tab Content */}
       <div className="min-h-[500px]">
+        {/* Profile Tab */}
+        {activeTab === 'profile' && (
+          <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle p-6 animate-in fade-in zoom-in-95">
+            <ProfileSettings />
+          </div>
+        )}
+
         {/* Clinic Info Tab */}
         {activeTab === 'clinic' && (
           <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle p-6 animate-in fade-in zoom-in-95">

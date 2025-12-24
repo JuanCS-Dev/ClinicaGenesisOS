@@ -207,6 +207,6 @@ export function getStatusColor(status: ReminderStatus): string {
     case 'failed':
       return 'text-red-600 bg-red-50 border-red-100';
     default:
-      return 'text-gray-600 bg-gray-50 border-gray-100';
+      return 'text-genesis-muted bg-genesis-soft border-genesis-border-subtle';
   }
 }

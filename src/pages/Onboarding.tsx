@@ -139,7 +139,7 @@ export function Onboarding() {
         </div>
 
         {/* Step Content */}
-        <div className="bg-genesis-surface rounded-2xl shadow-xl shadow-genesis-medium/20/50 border border-white p-8">
+        <div className="bg-genesis-surface rounded-2xl shadow-xl border border-genesis-border-subtle p-8">
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>

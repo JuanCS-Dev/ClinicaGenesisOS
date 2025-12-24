@@ -19,6 +19,11 @@ import { ConsentBanner } from './components/consent';
 // Lazy-loaded pages for code splitting
 const Landing = lazy(() => import('./pages/Landing').then(m => ({ default: m.Landing })));
 const Application = lazy(() => import('./pages/Application').then(m => ({ default: m.Application })));
+
+// Landing subpages
+const Manifesto = lazy(() => import('./pages/landing/Manifesto').then(m => ({ default: m.Manifesto })));
+const Tecnologia = lazy(() => import('./pages/landing/Tecnologia').then(m => ({ default: m.Tecnologia })));
+const Membership = lazy(() => import('./pages/landing/Membership').then(m => ({ default: m.Membership })));
 const Login = lazy(() => import('./pages/auth/Login').then(m => ({ default: m.Login })));
 const Register = lazy(() => import('./pages/auth/Register').then(m => ({ default: m.Register })));
 const Onboarding = lazy(() => import('./pages/Onboarding').then(m => ({ default: m.Onboarding })));
@@ -165,6 +170,11 @@ function App() {
 
             {/* Public Application Page (Premium) */}
             <Route path="/apply" element={<Application />} />
+
+            {/* Landing Subpages */}
+            <Route path="/manifesto" element={<Manifesto />} />
+            <Route path="/tecnologia" element={<Tecnologia />} />
+            <Route path="/membership" element={<Membership />} />
 
             {/* Public Booking Pages (no auth required) */}
             <Route path="/agendar/:clinicSlug" element={<BookAppointment />} />
