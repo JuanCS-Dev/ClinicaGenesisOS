@@ -316,7 +316,7 @@ export const PatientDetails: React.FC = () => {
             <div className="flex items-end gap-6">
               <div className="relative group/avatar cursor-pointer">
                 <div className="w-28 h-28 rounded-[24px] border-[4px] border-white shadow-xl overflow-hidden bg-genesis-surface transition-transform duration-500 group-hover/avatar:scale-105 group-hover/avatar:shadow-2xl">
-                    <img src={patient.avatar || `https://ui-avatars.com/api/?name=${patient.name}`} alt={patient.name} className="w-full h-full object-cover"/>
+                    <img src={patient.avatar || `https://ui-avatars.com/api/?name=${patient.name}`} alt={patient.name} loading="lazy" className="w-full h-full object-cover"/>
                 </div>
               </div>
               

@@ -70,7 +70,7 @@ export const Timeline: React.FC<TimelineProps> = ({ events }) => {
               {event.type === TimelineEventType.PHOTO && event.details && (
                 <div className="mt-4 overflow-hidden rounded-xl border border-genesis-border-subtle shadow-sm relative group/img">
                   <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-colors z-10" />
-                  <img src={event.details} alt="Evolução" className="w-40 h-28 object-cover transform group-hover/img:scale-105 transition-transform duration-500" />
+                  <img src={event.details} alt="Evolução" loading="lazy" className="w-40 h-28 object-cover transform group-hover/img:scale-105 transition-transform duration-500" />
                 </div>
               )}
             </div>

@@ -107,6 +107,7 @@ export function LabUploadPanel({
     onDrop,
     onDragEnter: () => setIsDragHovering(true),
     onDragLeave: () => setIsDragHovering(false),
+    onDragOver: () => undefined,
     accept: {
       'image/jpeg': ['.jpg', '.jpeg'],
       'image/png': ['.png'],
@@ -117,8 +118,7 @@ export function LabUploadPanel({
     multiple: false,
     disabled: disabled || status !== 'idle',
     noClick: true,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+  });
 
   const isProcessing = ['uploading', 'extracting', 'processing'].includes(status);
   const currentStageIndex = getStageIndex(status);

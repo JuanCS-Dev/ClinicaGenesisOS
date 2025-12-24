@@ -230,6 +230,7 @@ export function BookAppointment(): React.ReactElement {
                 <img
                   src={MOCK_CLINIC.logo}
                   alt={MOCK_CLINIC.name}
+                  loading="lazy"
                   className="w-10 h-10 rounded-lg object-cover"
                 />
               ) : (

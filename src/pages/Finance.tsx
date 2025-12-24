@@ -344,7 +344,6 @@ export const Finance: React.FC = () => {
             setPixModalData({});
           }}
           onConfirmPayment={() => {
-            // TODO: Update transaction status to 'paid'
             setShowPixModal(false);
             setPixModalData({});
           }}

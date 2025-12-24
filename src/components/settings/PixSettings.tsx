@@ -278,7 +278,7 @@ export const PixSettings: React.FC = () => {
         {previewQR && (
           <div className="flex flex-col items-center p-4 bg-genesis-soft rounded-xl">
             <p className="text-sm font-medium text-genesis-text mb-3">Preview do QR Code</p>
-            <img src={previewQR} alt="Preview QR Code" className="w-32 h-32" />
+            <img src={previewQR} alt="Preview QR Code" loading="lazy" className="w-32 h-32" />
             <p className="mt-2 text-xs text-genesis-subtle">Valor de teste: R$ 1,00</p>
           </div>
         )}

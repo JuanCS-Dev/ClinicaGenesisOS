@@ -1,6 +1,21 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+// Mock window.matchMedia (not implemented in jsdom)
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(), // deprecated
+    removeListener: vi.fn(), // deprecated
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
+
 // Mock Firebase Auth globally
 vi.mock('firebase/auth', () => ({
   signInWithEmailAndPassword: vi.fn(),
@@ -72,3 +87,6 @@ vi.mock('firebase/firestore', () => ({
 vi.mock('firebase/storage', () => ({
   getStorage: vi.fn(() => ({})),
 }));
+
+// Note: virtual:pwa-register is resolved via alias in vitest.config.ts
+// to src/__mocks__/virtual-pwa-register.ts

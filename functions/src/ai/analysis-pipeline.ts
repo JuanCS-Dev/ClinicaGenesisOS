@@ -269,8 +269,8 @@ FORMATO DE SAÍDA (JSON):
         urgency: t.urgency,
         investigates: t.investigates,
       }));
-    } catch {
-      console.error('[FusionLayer] Failed to parse Gemini response');
+    } catch (parseError) {
+      console.error('[FusionLayer] Failed to parse Gemini response:', parseError);
     }
   }
 

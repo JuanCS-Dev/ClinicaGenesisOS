@@ -94,6 +94,7 @@ const ProfessionalCard: React.FC<{
             <img
               src={professional.avatar}
               alt={professional.name}
+              loading="lazy"
               className="w-16 h-16 rounded-xl object-cover"
             />
           ) : (
@@ -207,7 +208,7 @@ export default function ClinicProfile(): React.ReactElement {
       {/* Cover */}
       <div className="h-48 bg-gradient-to-br from-genesis-primary to-genesis-primary/70 relative">
         {clinic.coverImage && (
-          <img src={clinic.coverImage} alt="" className="w-full h-full object-cover opacity-30" />
+          <img src={clinic.coverImage} alt="" loading="lazy" className="w-full h-full object-cover opacity-30" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
       </div>
@@ -222,6 +223,7 @@ export default function ClinicProfile(): React.ReactElement {
                   <img
                     src={clinic.logo}
                     alt={clinic.name}
+                    loading="lazy"
                     className="w-24 h-24 rounded-xl object-cover border-4 border-genesis-surface shadow-md"
                   />
                 ) : (
