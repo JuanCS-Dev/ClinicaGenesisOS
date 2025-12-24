@@ -8,7 +8,7 @@
  * @version 1.0.0
  */
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   Pill,
   Download,
@@ -21,28 +21,28 @@ import {
   RefreshCw,
   FileText,
   QrCode,
-} from 'lucide-react';
+} from 'lucide-react'
 
 // ============================================================================
 // Types
 // ============================================================================
 
 interface Medication {
-  name: string;
-  dosage: string;
-  frequency: string;
-  duration: string;
+  name: string
+  dosage: string
+  frequency: string
+  duration: string
 }
 
 interface Prescription {
-  id: string;
-  date: string;
-  doctor: string;
-  specialty: string;
-  medications: Medication[];
-  status: 'active' | 'expired' | 'renewed';
-  expiresAt: string;
-  hasDigitalSignature: boolean;
+  id: string
+  date: string
+  doctor: string
+  specialty: string
+  medications: Medication[]
+  status: 'active' | 'expired' | 'renewed'
+  expiresAt: string
+  hasDigitalSignature: boolean
 }
 
 // ============================================================================
@@ -107,26 +107,26 @@ const MOCK_PRESCRIPTIONS: Prescription[] = [
     expiresAt: '2024-10-31',
     hasDigitalSignature: false,
   },
-];
+]
 
 // ============================================================================
 // Helpers
 // ============================================================================
 
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
+  const date = new Date(dateStr)
   return date.toLocaleDateString('pt-BR', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
-  });
+  })
 }
 
 function getDaysUntilExpiry(expiresAt: string): number {
-  const today = new Date();
-  const expiry = new Date(expiresAt);
-  const diff = expiry.getTime() - today.getTime();
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  const today = new Date()
+  const expiry = new Date(expiresAt)
+  const diff = expiry.getTime() - today.getTime()
+  return Math.ceil(diff / (1000 * 60 * 60 * 24))
 }
 
 // ============================================================================
@@ -134,16 +134,16 @@ function getDaysUntilExpiry(expiresAt: string): number {
 // ============================================================================
 
 interface PrescriptionCardProps {
-  prescription: Prescription;
+  prescription: Prescription
 }
 
 const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ prescription }) => {
-  const daysLeft = getDaysUntilExpiry(prescription.expiresAt);
-  const isExpiringSoon = daysLeft > 0 && daysLeft <= 7;
-  const isExpired = daysLeft <= 0;
+  const daysLeft = getDaysUntilExpiry(prescription.expiresAt)
+  const isExpiringSoon = daysLeft > 0 && daysLeft <= 7
+  const isExpired = daysLeft <= 0
 
   return (
-    <div className="bg-white dark:bg-genesis-surface rounded-2xl border border-genesis-border overflow-hidden hover:shadow-lg transition-all">
+    <div className="bg-genesis-surface rounded-2xl border border-genesis-border overflow-hidden hover:shadow-lg transition-all">
       {/* Header */}
       <div className="p-4 border-b border-genesis-border">
         <div className="flex items-start justify-between mb-3">
@@ -196,10 +196,7 @@ const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ prescription }) => 
           Medicamentos ({prescription.medications.length})
         </p>
         {prescription.medications.map((med, index) => (
-          <div
-            key={index}
-            className="bg-genesis-soft rounded-xl p-3"
-          >
+          <div key={index} className="bg-genesis-soft rounded-xl p-3">
             <p className="font-medium text-genesis-dark text-sm">{med.name}</p>
             <p className="text-xs text-genesis-muted mt-1">
               {med.dosage} • {med.frequency} • {med.duration}
@@ -221,7 +218,7 @@ const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ prescription }) => 
         )}
       </div>
     </div>
-  );
+  )
 }
 
 // ============================================================================
@@ -229,28 +226,25 @@ const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ prescription }) => 
 // ============================================================================
 
 export function PatientPrescriptions(): React.ReactElement {
-  const [search, setSearch] = useState('');
-  const [showExpired, setShowExpired] = useState(false);
+  const [search, setSearch] = useState('')
+  const [showExpired, setShowExpired] = useState(false)
 
-  const filteredPrescriptions = MOCK_PRESCRIPTIONS.filter((rx) => {
-    if (!showExpired && rx.status === 'expired') return false;
+  const filteredPrescriptions = MOCK_PRESCRIPTIONS.filter(rx => {
+    if (!showExpired && rx.status === 'expired') return false
     if (search) {
-      const searchLower = search.toLowerCase();
-      const matchesMed = rx.medications.some((m) =>
-        m.name.toLowerCase().includes(searchLower)
-      );
-      const matchesDoctor = rx.doctor.toLowerCase().includes(searchLower);
-      return matchesMed || matchesDoctor;
+      const searchLower = search.toLowerCase()
+      const matchesMed = rx.medications.some(m => m.name.toLowerCase().includes(searchLower))
+      const matchesDoctor = rx.doctor.toLowerCase().includes(searchLower)
+      return matchesMed || matchesDoctor
     }
-    return true;
-  });
+    return true
+  })
 
-  const activeCount = MOCK_PRESCRIPTIONS.filter(
-    (rx) => rx.status === 'active'
-  ).length;
-  const totalMeds = MOCK_PRESCRIPTIONS.filter(
-    (rx) => rx.status === 'active'
-  ).reduce((sum, rx) => sum + rx.medications.length, 0);
+  const activeCount = MOCK_PRESCRIPTIONS.filter(rx => rx.status === 'active').length
+  const totalMeds = MOCK_PRESCRIPTIONS.filter(rx => rx.status === 'active').reduce(
+    (sum, rx) => sum + rx.medications.length,
+    0
+  )
 
   return (
     <div className="space-y-6 animate-enter pb-8">
@@ -274,9 +268,9 @@ export function PatientPrescriptions(): React.ReactElement {
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={e => setSearch(e.target.value)}
             placeholder="Buscar medicamento ou médico..."
-            className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-genesis-border bg-white dark:bg-genesis-surface text-genesis-dark placeholder:text-genesis-muted focus:outline-none focus:ring-2 focus:ring-genesis-primary focus:border-transparent"
+            className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-genesis-border bg-genesis-surface text-genesis-dark placeholder:text-genesis-muted focus:outline-none focus:ring-2 focus:ring-genesis-primary focus:border-transparent"
           />
         </div>
 
@@ -284,7 +278,7 @@ export function PatientPrescriptions(): React.ReactElement {
           <input
             type="checkbox"
             checked={showExpired}
-            onChange={(e) => setShowExpired(e.target.checked)}
+            onChange={e => setShowExpired(e.target.checked)}
             className="w-4 h-4 rounded border-genesis-border text-genesis-primary focus:ring-genesis-primary"
           />
           <span className="text-sm text-genesis-medium">Mostrar expiradas</span>
@@ -294,18 +288,16 @@ export function PatientPrescriptions(): React.ReactElement {
       {/* Prescriptions Grid */}
       {filteredPrescriptions.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {filteredPrescriptions.map((prescription) => (
+          {filteredPrescriptions.map(prescription => (
             <PrescriptionCard key={prescription.id} prescription={prescription} />
           ))}
         </div>
       ) : (
-        <div className="text-center py-12 bg-white dark:bg-genesis-surface rounded-2xl border border-genesis-border">
+        <div className="text-center py-12 bg-genesis-surface rounded-2xl border border-genesis-border">
           <Pill className="w-12 h-12 text-genesis-muted mx-auto mb-4" />
           <p className="text-genesis-dark font-medium">Nenhuma receita encontrada</p>
           <p className="text-genesis-muted text-sm mt-1">
-            {search
-              ? 'Tente outra busca'
-              : 'Nenhuma receita registrada no sistema'}
+            {search ? 'Tente outra busca' : 'Nenhuma receita registrada no sistema'}
           </p>
         </div>
       )}
@@ -319,14 +311,14 @@ export function PatientPrescriptions(): React.ReactElement {
               Receitas Digitais
             </p>
             <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-              Receitas com assinatura digital podem ser apresentadas
-              diretamente na farmácia pelo celular. Basta mostrar o QR Code.
+              Receitas com assinatura digital podem ser apresentadas diretamente na farmácia pelo
+              celular. Basta mostrar o QR Code.
             </p>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default PatientPrescriptions;
+export default PatientPrescriptions

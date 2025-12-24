@@ -7,26 +7,21 @@
  * @module components/settings/workflow/components/WorkflowCard
  */
 
-import React from 'react';
-import { Settings } from 'lucide-react';
-import type { WorkflowDefinition, WorkflowSettingsData, WorkflowId } from '../types';
-import { WORKFLOW_COLOR_CLASSES } from '../constants';
-import {
-  FollowUpConfig,
-  NpsConfig,
-  PatientReturnConfig,
-  LabsConfig,
-} from './configs';
+import React from 'react'
+import { Settings } from 'lucide-react'
+import type { WorkflowDefinition, WorkflowSettingsData, WorkflowId } from '../types'
+import { WORKFLOW_COLOR_CLASSES } from '../constants'
+import { FollowUpConfig, NpsConfig, PatientReturnConfig, LabsConfig } from './configs'
 
 interface WorkflowCardProps {
-  workflow: WorkflowDefinition;
-  settings: WorkflowSettingsData;
-  isExpanded: boolean;
-  clinicId: string | undefined;
-  onToggleExpanded: () => void;
-  onToggleEnabled: () => void;
-  onUpdateConfig: (field: string, value: unknown) => void;
-  onCopyWebhookUrl: () => void;
+  workflow: WorkflowDefinition
+  settings: WorkflowSettingsData
+  isExpanded: boolean
+  clinicId: string | undefined
+  onToggleExpanded: () => void
+  onToggleEnabled: () => void
+  onUpdateConfig: (field: string, value: unknown) => void
+  onCopyWebhookUrl: () => void
 }
 
 /**
@@ -42,8 +37,8 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
   onUpdateConfig,
   onCopyWebhookUrl,
 }) => {
-  const config = settings[workflow.id];
-  const Icon = workflow.icon;
+  const config = settings[workflow.id]
+  const Icon = workflow.icon
 
   return (
     <div className="bg-genesis-surface rounded-xl border border-genesis-border-subtle overflow-hidden">
@@ -53,7 +48,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
         onClick={onToggleExpanded}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => e.key === 'Enter' && onToggleExpanded()}
+        onKeyDown={e => e.key === 'Enter' && onToggleExpanded()}
         aria-expanded={isExpanded}
       >
         <div className="flex items-center gap-4">
@@ -72,9 +67,9 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
           <StatusBadge enabled={config.enabled} />
           <ToggleSwitch
             enabled={config.enabled}
-            onToggle={(e) => {
-              e.stopPropagation();
-              onToggleEnabled();
+            onToggle={e => {
+              e.stopPropagation()
+              onToggleEnabled()
             }}
           />
           <Settings
@@ -98,7 +93,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
         </div>
       )}
     </div>
-  );
+  )
 }
 
 /**
@@ -110,12 +105,12 @@ function StatusBadge({ enabled }: { enabled: boolean }): React.ReactElement {
       className={`px-2.5 py-1 rounded-full text-xs font-medium ${
         enabled
           ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-          : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+          : 'bg-genesis-hover text-genesis-muted'
       }`}
     >
       {enabled ? 'Ativo' : 'Inativo'}
     </span>
-  );
+  )
 }
 
 /**
@@ -125,14 +120,14 @@ function ToggleSwitch({
   enabled,
   onToggle,
 }: {
-  enabled: boolean;
-  onToggle: (e: React.MouseEvent) => void;
+  enabled: boolean
+  onToggle: (e: React.MouseEvent) => void
 }): React.ReactElement {
   return (
     <button
       onClick={onToggle}
       className={`relative w-11 h-6 rounded-full transition-colors ${
-        enabled ? 'bg-genesis-primary' : 'bg-gray-300 dark:bg-gray-600'
+        enabled ? 'bg-genesis-primary' : 'bg-genesis-border'
       }`}
       role="switch"
       aria-checked={enabled}
@@ -143,7 +138,7 @@ function ToggleSwitch({
         }`}
       />
     </button>
-  );
+  )
 }
 
 /**
@@ -156,21 +151,19 @@ function WorkflowConfigSection({
   onUpdate,
   onCopyWebhookUrl,
 }: {
-  workflowId: WorkflowId;
-  settings: WorkflowSettingsData;
-  clinicId: string | undefined;
-  onUpdate: (field: string, value: unknown) => void;
-  onCopyWebhookUrl: () => void;
+  workflowId: WorkflowId
+  settings: WorkflowSettingsData
+  clinicId: string | undefined
+  onUpdate: (field: string, value: unknown) => void
+  onCopyWebhookUrl: () => void
 }): React.ReactElement | null {
   switch (workflowId) {
     case 'followUp':
-      return <FollowUpConfig config={settings.followUp} onUpdate={onUpdate} />;
+      return <FollowUpConfig config={settings.followUp} onUpdate={onUpdate} />
     case 'nps':
-      return <NpsConfig config={settings.nps} onUpdate={onUpdate} />;
+      return <NpsConfig config={settings.nps} onUpdate={onUpdate} />
     case 'patientReturn':
-      return (
-        <PatientReturnConfig config={settings.patientReturn} onUpdate={onUpdate} />
-      );
+      return <PatientReturnConfig config={settings.patientReturn} onUpdate={onUpdate} />
     case 'labsIntegration':
       return (
         <LabsConfig
@@ -179,10 +172,10 @@ function WorkflowConfigSection({
           onUpdate={onUpdate}
           onCopyWebhookUrl={onCopyWebhookUrl}
         />
-      );
+      )
     default:
-      return null;
+      return null
   }
 }
 
-export default WorkflowCard;
+export default WorkflowCard

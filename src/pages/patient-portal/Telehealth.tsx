@@ -8,7 +8,7 @@
  * @version 1.0.0
  */
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   Video,
   VideoOff,
@@ -20,7 +20,7 @@ import {
   Calendar,
   CheckCircle2,
   AlertCircle,
-} from 'lucide-react';
+} from 'lucide-react'
 
 // ============================================================================
 // Mock Data
@@ -33,18 +33,18 @@ const MOCK_TELECONSULTA = {
   provider: 'Dr. João Silva',
   specialty: 'Clínica Geral',
   status: 'scheduled', // 'scheduled' | 'waiting' | 'in_progress' | 'completed'
-};
+}
 
 // ============================================================================
 // Components
 // ============================================================================
 
 function DeviceCheck() {
-  const [videoEnabled, setVideoEnabled] = useState(true);
-  const [audioEnabled, setAudioEnabled] = useState(true);
+  const [videoEnabled, setVideoEnabled] = useState(true)
+  const [audioEnabled, setAudioEnabled] = useState(true)
 
   return (
-    <div className="bg-white dark:bg-genesis-surface rounded-2xl border border-genesis-border p-6">
+    <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-6">
       <h3 className="font-semibold text-genesis-dark mb-4 flex items-center gap-2">
         <Settings className="w-5 h-5" />
         Verificar Dispositivos
@@ -69,31 +69,19 @@ function DeviceCheck() {
         <button
           onClick={() => setVideoEnabled(!videoEnabled)}
           className={`p-4 rounded-xl transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] ${
-            videoEnabled
-              ? 'bg-genesis-primary text-white'
-              : 'bg-danger text-white'
+            videoEnabled ? 'bg-genesis-primary text-white' : 'bg-danger text-white'
           }`}
         >
-          {videoEnabled ? (
-            <Video className="w-6 h-6" />
-          ) : (
-            <VideoOff className="w-6 h-6" />
-          )}
+          {videoEnabled ? <Video className="w-6 h-6" /> : <VideoOff className="w-6 h-6" />}
         </button>
 
         <button
           onClick={() => setAudioEnabled(!audioEnabled)}
           className={`p-4 rounded-xl transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] ${
-            audioEnabled
-              ? 'bg-genesis-primary text-white'
-              : 'bg-danger text-white'
+            audioEnabled ? 'bg-genesis-primary text-white' : 'bg-danger text-white'
           }`}
         >
-          {audioEnabled ? (
-            <Mic className="w-6 h-6" />
-          ) : (
-            <MicOff className="w-6 h-6" />
-          )}
+          {audioEnabled ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6" />}
         </button>
       </div>
 
@@ -113,18 +101,17 @@ function DeviceCheck() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 function AppointmentInfo({ appointment }: { appointment: typeof MOCK_TELECONSULTA }) {
-  const appointmentDate = new Date(`${appointment.date}T${appointment.time}`);
-  const now = new Date();
-  const isToday = appointmentDate.toDateString() === now.toDateString();
-  const canJoin =
-    isToday && now >= new Date(appointmentDate.getTime() - 15 * 60 * 1000);
+  const appointmentDate = new Date(`${appointment.date}T${appointment.time}`)
+  const now = new Date()
+  const isToday = appointmentDate.toDateString() === now.toDateString()
+  const canJoin = isToday && now >= new Date(appointmentDate.getTime() - 15 * 60 * 1000)
 
   return (
-    <div className="bg-white dark:bg-genesis-surface rounded-2xl border border-genesis-border p-6">
+    <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-6">
       <div className="flex items-center gap-4 mb-6">
         <div className="w-14 h-14 rounded-xl bg-genesis-primary/10 flex items-center justify-center">
           <User className="w-7 h-7 text-genesis-primary" />
@@ -175,7 +162,7 @@ function AppointmentInfo({ appointment }: { appointment: typeof MOCK_TELECONSULT
         </div>
       )}
     </div>
-  );
+  )
 }
 
 // ============================================================================
@@ -230,7 +217,7 @@ export function PatientTelehealth(): React.ReactElement {
         </ul>
       </div>
     </div>
-  );
+  )
 }
 
-export default PatientTelehealth;
+export default PatientTelehealth

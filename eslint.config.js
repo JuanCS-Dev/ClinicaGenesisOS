@@ -26,6 +26,17 @@ export default tseslint.config(
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       // Allow setState in effect for form initialization pattern
       'react-hooks/set-state-in-effect': 'off',
+      // CODE_CONSTITUTION guardrails
+      'max-lines': ['error', { max: 500, skipBlankLines: true, skipComments: true }],
+      'max-lines-per-function': ['warn', { max: 75, skipBlankLines: true, skipComments: true }],
+    },
+  },
+  // Relaxed rules for test files and functions folder
+  {
+    files: ['**/*.test.{ts,tsx}', '**/__tests__/**/*.{ts,tsx}', 'functions/**/*.{ts,tsx}'],
+    rules: {
+      'max-lines': 'off',
+      'max-lines-per-function': 'off',
     },
   },
 )

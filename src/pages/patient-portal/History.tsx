@@ -8,8 +8,8 @@
  * @version 1.0.0
  */
 
-import React from 'react';
-import { FileText, Calendar, User, ChevronRight, Download } from 'lucide-react';
+import React from 'react'
+import { FileText, Calendar, User, ChevronRight, Download } from 'lucide-react'
 
 // ============================================================================
 // Mock Data
@@ -48,7 +48,7 @@ const MOCK_RECORDS = [
     specialty: 'Exames',
     summary: 'Check-up anual completo.',
   },
-];
+]
 
 // ============================================================================
 // Main Component
@@ -88,7 +88,7 @@ export function PatientHistory(): React.ReactElement {
             </div>
 
             {/* Card */}
-            <div className="bg-white dark:bg-genesis-surface rounded-2xl border border-genesis-border p-4 hover:shadow-lg transition-all">
+            <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-4 hover:shadow-lg transition-all">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
@@ -119,7 +119,7 @@ export function PatientHistory(): React.ReactElement {
         ))}
       </div>
     </div>
-  );
+  )
 }
 
-export default PatientHistory;
+export default PatientHistory

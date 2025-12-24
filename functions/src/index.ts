@@ -7,27 +7,27 @@
  * - Cloud Functions (2M invocations free)
  */
 
-import { initializeApp } from 'firebase-admin/app';
+import { initializeApp } from 'firebase-admin/app'
 
 // Initialize Firebase Admin
-initializeApp();
+initializeApp()
 
 // ============================================
 // WhatsApp Reminders (3.1)
 // ============================================
-export { whatsappWebhook } from './whatsapp/webhook.js';
-export { sendReminders24h, sendReminders2h } from './scheduler/reminders.js';
-export { onAppointmentCreated, onAppointmentUpdated } from './scheduler/triggers.js';
+export { whatsappWebhook } from './whatsapp/webhook.js'
+export { sendReminders24h, sendReminders2h } from './scheduler/reminders.js'
+export { onAppointmentCreated, onAppointmentUpdated } from './scheduler/triggers.js'
 
 // ============================================
 // AI Scribe (3.2)
 // ============================================
-export { processAudioScribe } from './ai/process-audio-scribe.js';
+export { processAudioScribe } from './ai/process-audio-scribe.js'
 
 // ============================================
 // Clinical Reasoning Engine (3.3)
 // ============================================
-export { analyzeLabResults } from './ai/analyze-lab-results.js';
+export { analyzeLabResults } from './ai/analyze-lab-results.js'
 
 // ============================================
 // Stripe Payments - PIX & Boleto (10.1)
@@ -43,7 +43,7 @@ export {
   refundBoletoPayment,
   // Webhook
   stripeWebhook,
-} from './stripe/index.js';
+} from './stripe/index.js'
 
 // ============================================
 // TISS - Convênios & Billing (8b)
@@ -61,7 +61,7 @@ export {
   // Sending to operadoras
   sendLote,
   retrySendLote,
-} from './tiss/index.js';
+} from './tiss/index.js'
 
 // ============================================
 // Workflows - Automation (9)
@@ -76,4 +76,13 @@ export {
   sendPatientReturnReminders,
   // Labs integration
   labsResultWebhook,
-} from './workflows/index.js';
+} from './workflows/index.js'
+
+// ============================================
+// Patient Health Companion (Moonshot #4)
+// ============================================
+export {
+  // Scheduled cleanup functions
+  cleanupExpiredSessions,
+  cleanupOldHandoffs,
+} from './companion/index.js'

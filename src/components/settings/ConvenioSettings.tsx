@@ -5,7 +5,7 @@
  * Allows clinics to configure CNES, CNPJ, and manage their operadora partnerships.
  */
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   Building2,
   Plus,
@@ -21,20 +21,20 @@ import {
   Phone,
   Mail,
   Globe,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { useOperadoras } from '@/hooks/useOperadoras';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { OperadoraForm } from './OperadoraForm';
-import { CertificadoUpload, type CertificadoInfo } from '@/components/billing/CertificadoUpload';
-import type { OperadoraFirestore, CreateOperadoraInput } from '@/types';
+} from 'lucide-react'
+import { toast } from 'sonner'
+import { useOperadoras } from '@/hooks/useOperadoras'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { OperadoraForm } from './OperadoraForm'
+import { CertificadoUpload, type CertificadoInfo } from '@/components/billing/CertificadoUpload'
+import type { OperadoraFirestore, CreateOperadoraInput } from '@/types'
 
 interface ConvenioSettingsProps {
-  cnes?: string;
-  cnpj?: string;
-  certificado?: CertificadoInfo;
-  onCertificateConfigured?: (info: CertificadoInfo) => void;
-  onCertificateRemoved?: () => void;
+  cnes?: string
+  cnpj?: string
+  certificado?: CertificadoInfo
+  onCertificateConfigured?: (info: CertificadoInfo) => void
+  onCertificateRemoved?: () => void
 }
 
 export function ConvenioSettings({
@@ -52,62 +52,62 @@ export function ConvenioSettings({
     updateOperadora,
     toggleAtiva,
     deleteOperadora,
-  } = useOperadoras();
+  } = useOperadoras()
 
-  const [showForm, setShowForm] = useState(false);
-  const [editingOperadora, setEditingOperadora] = useState<OperadoraFirestore | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false)
+  const [editingOperadora, setEditingOperadora] = useState<OperadoraFirestore | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const filteredOperadoras = operadoras.filter(
-    (op) =>
+    op =>
       op.nomeFantasia.toLowerCase().includes(searchQuery.toLowerCase()) ||
       op.registroANS.includes(searchQuery)
-  );
+  )
 
   const handleAddOperadora = async (data: CreateOperadoraInput) => {
     try {
-      await addOperadora(data);
-      setShowForm(false);
-      toast.success('Convênio cadastrado com sucesso');
+      await addOperadora(data)
+      setShowForm(false)
+      toast.success('Convênio cadastrado com sucesso')
     } catch (error) {
-      console.error('Error adding operadora:', error);
-      toast.error('Erro ao cadastrar convênio');
+      console.error('Error adding operadora:', error)
+      toast.error('Erro ao cadastrar convênio')
     }
-  };
+  }
 
   const handleUpdateOperadora = async (data: CreateOperadoraInput) => {
-    if (!editingOperadora) return;
+    if (!editingOperadora) return
     try {
-      await updateOperadora(editingOperadora.id, data);
-      setEditingOperadora(null);
-      toast.success('Convênio atualizado com sucesso');
+      await updateOperadora(editingOperadora.id, data)
+      setEditingOperadora(null)
+      toast.success('Convênio atualizado com sucesso')
     } catch (error) {
-      console.error('Error updating operadora:', error);
-      toast.error('Erro ao atualizar convênio');
+      console.error('Error updating operadora:', error)
+      toast.error('Erro ao atualizar convênio')
     }
-  };
+  }
 
   const handleToggleAtiva = async (op: OperadoraFirestore) => {
     try {
-      await toggleAtiva(op.id, !op.ativa);
-      toast.success(op.ativa ? 'Convênio desativado' : 'Convênio ativado');
+      await toggleAtiva(op.id, !op.ativa)
+      toast.success(op.ativa ? 'Convênio desativado' : 'Convênio ativado')
     } catch (error) {
-      console.error('Error toggling operadora:', error);
-      toast.error('Erro ao alterar status');
+      console.error('Error toggling operadora:', error)
+      toast.error('Erro ao alterar status')
     }
-  };
+  }
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteOperadora(id);
-      setDeletingId(null);
-      toast.success('Convênio removido com sucesso');
+      await deleteOperadora(id)
+      setDeletingId(null)
+      toast.success('Convênio removido com sucesso')
     } catch (error) {
-      console.error('Error deleting operadora:', error);
-      toast.error('Erro ao remover convênio');
+      console.error('Error deleting operadora:', error)
+      toast.error('Erro ao remover convênio')
     }
-  };
+  }
 
   // Show form modal
   if (showForm || editingOperadora) {
@@ -116,8 +116,8 @@ export function ConvenioSettings({
         <div className="flex items-center justify-between">
           <button
             onClick={() => {
-              setShowForm(false);
-              setEditingOperadora(null);
+              setShowForm(false)
+              setEditingOperadora(null)
             }}
             className="flex items-center gap-2 text-genesis-muted hover:text-genesis-dark transition-colors"
           >
@@ -130,12 +130,12 @@ export function ConvenioSettings({
           operadora={editingOperadora || undefined}
           onSubmit={editingOperadora ? handleUpdateOperadora : handleAddOperadora}
           onCancel={() => {
-            setShowForm(false);
-            setEditingOperadora(null);
+            setShowForm(false)
+            setEditingOperadora(null)
           }}
         />
       </div>
-    );
+    )
   }
 
   return (
@@ -147,12 +147,8 @@ export function ConvenioSettings({
             <Building2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-genesis-dark">
-              Dados do Estabelecimento
-            </h3>
-            <p className="text-sm text-genesis-muted">
-              Informações para faturamento TISS
-            </p>
+            <h3 className="font-semibold text-genesis-dark">Dados do Estabelecimento</h3>
+            <p className="text-sm text-genesis-muted">Informações para faturamento TISS</p>
           </div>
         </div>
 
@@ -198,12 +194,10 @@ export function ConvenioSettings({
           <div className="mt-4 p-4 bg-warning-soft rounded-xl flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-genesis-dark">
-                Configuração incompleta
-              </p>
+              <p className="text-sm font-medium text-genesis-dark">Configuração incompleta</p>
               <p className="text-sm text-genesis-muted mt-1">
-                Configure o CNES e CNPJ da clínica para habilitar o faturamento TISS.
-                Entre em contato com o suporte para atualizar estes dados.
+                Configure o CNES e CNPJ da clínica para habilitar o faturamento TISS. Entre em
+                contato com o suporte para atualizar estes dados.
               </p>
             </div>
           </div>
@@ -227,11 +221,10 @@ export function ConvenioSettings({
               <Building2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-genesis-dark">
-                Convênios Cadastrados
-              </h3>
+              <h3 className="font-semibold text-genesis-dark">Convênios Cadastrados</h3>
               <p className="text-sm text-genesis-muted">
-                {operadorasAtivas.length} ativo{operadorasAtivas.length !== 1 ? 's' : ''} de {operadoras.length} total
+                {operadorasAtivas.length} ativo{operadorasAtivas.length !== 1 ? 's' : ''} de{' '}
+                {operadoras.length} total
               </p>
             </div>
           </div>
@@ -253,7 +246,7 @@ export function ConvenioSettings({
               type="text"
               placeholder="Buscar por nome ou registro ANS..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 border border-genesis-border rounded-xl bg-genesis-soft text-genesis-text placeholder:text-genesis-subtle focus:ring-2 focus:ring-genesis-primary/20 focus:border-genesis-primary transition-all"
             />
           </div>
@@ -282,7 +275,7 @@ export function ConvenioSettings({
         {/* Operadoras list */}
         {!loading && filteredOperadoras.length > 0 && (
           <div className="space-y-3">
-            {filteredOperadoras.map((op) => (
+            {filteredOperadoras.map(op => (
               <div
                 key={op.id}
                 className={`group p-4 rounded-xl border transition-all hover:shadow-md ${
@@ -297,7 +290,7 @@ export function ConvenioSettings({
                       className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold ${
                         op.ativa
                           ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-400'
-                          : 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500'
+                          : 'bg-genesis-hover text-genesis-subtle'
                       }`}
                     >
                       {op.nomeFantasia.charAt(0).toUpperCase()}
@@ -305,11 +298,9 @@ export function ConvenioSettings({
 
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-genesis-dark">
-                          {op.nomeFantasia}
-                        </h4>
+                        <h4 className="font-semibold text-genesis-dark">{op.nomeFantasia}</h4>
                         {!op.ativa && (
-                          <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400 rounded-full">
+                          <span className="px-2 py-0.5 text-xs font-medium bg-genesis-hover text-genesis-subtle rounded-full">
                             Inativo
                           </span>
                         )}
@@ -366,11 +357,7 @@ export function ConvenioSettings({
                       }`}
                       title={op.ativa ? 'Desativar' : 'Ativar'}
                     >
-                      {op.ativa ? (
-                        <PowerOff className="w-4 h-4" />
-                      ) : (
-                        <Power className="w-4 h-4" />
-                      )}
+                      {op.ativa ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
                     </button>
 
                     <button
@@ -440,5 +427,5 @@ export function ConvenioSettings({
         )}
       </div>
     </div>
-  );
+  )
 }

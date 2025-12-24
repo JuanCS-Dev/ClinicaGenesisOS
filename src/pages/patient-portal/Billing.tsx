@@ -8,7 +8,7 @@
  * @version 1.0.0
  */
 
-import React from 'react';
+import React from 'react'
 import {
   CreditCard,
   Download,
@@ -17,7 +17,7 @@ import {
   AlertCircle,
   Calendar,
   FileText,
-} from 'lucide-react';
+} from 'lucide-react'
 
 // ============================================================================
 // Mock Data
@@ -56,7 +56,7 @@ const MOCK_INVOICES = [
     status: 'paid',
     paymentMethod: 'PIX',
   },
-];
+]
 
 // ============================================================================
 // Helpers
@@ -78,13 +78,13 @@ const STATUS_CONFIG = {
     color: 'text-danger bg-danger-soft',
     icon: AlertCircle,
   },
-};
+}
 
 function formatCurrency(value: number): string {
   return value.toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-  });
+  })
 }
 
 // ============================================================================
@@ -92,14 +92,14 @@ function formatCurrency(value: number): string {
 // ============================================================================
 
 export function PatientBilling(): React.ReactElement {
-  const totalPaid = MOCK_INVOICES.filter((i) => i.status === 'paid').reduce(
+  const totalPaid = MOCK_INVOICES.filter(i => i.status === 'paid').reduce(
     (sum, i) => sum + i.amount,
     0
-  );
-  const totalPending = MOCK_INVOICES.filter((i) => i.status === 'pending').reduce(
+  )
+  const totalPending = MOCK_INVOICES.filter(i => i.status === 'pending').reduce(
     (sum, i) => sum + i.amount,
     0
-  );
+  )
 
   return (
     <div className="space-y-6 animate-enter pb-8">
@@ -131,9 +131,7 @@ export function PatientBilling(): React.ReactElement {
         <div className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl p-6 border border-amber-100 dark:border-amber-800">
           <div className="flex items-center gap-3 mb-2">
             <Clock className="w-5 h-5 text-amber-600" />
-            <span className="text-sm font-medium text-amber-700 dark:text-amber-300">
-              Pendente
-            </span>
+            <span className="text-sm font-medium text-amber-700 dark:text-amber-300">Pendente</span>
           </div>
           <p className="text-2xl font-bold text-amber-800 dark:text-amber-200">
             {formatCurrency(totalPending)}
@@ -142,30 +140,25 @@ export function PatientBilling(): React.ReactElement {
       </div>
 
       {/* Invoices List */}
-      <div className="bg-white dark:bg-genesis-surface rounded-2xl border border-genesis-border overflow-hidden">
+      <div className="bg-genesis-surface rounded-2xl border border-genesis-border overflow-hidden">
         <div className="p-4 border-b border-genesis-border">
           <h3 className="font-semibold text-genesis-dark">Histórico de Faturas</h3>
         </div>
 
         <div className="divide-y divide-genesis-border">
-          {MOCK_INVOICES.map((invoice) => {
-            const statusConfig = STATUS_CONFIG[invoice.status as keyof typeof STATUS_CONFIG];
-            const StatusIcon = statusConfig.icon;
+          {MOCK_INVOICES.map(invoice => {
+            const statusConfig = STATUS_CONFIG[invoice.status as keyof typeof STATUS_CONFIG]
+            const StatusIcon = statusConfig.icon
 
             return (
-              <div
-                key={invoice.id}
-                className="p-4 hover:bg-genesis-hover transition-colors"
-              >
+              <div key={invoice.id} className="p-4 hover:bg-genesis-hover transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-genesis-soft flex items-center justify-center">
                       <FileText className="w-5 h-5 text-genesis-primary" />
                     </div>
                     <div>
-                      <p className="font-medium text-genesis-dark">
-                        {invoice.description}
-                      </p>
+                      <p className="font-medium text-genesis-dark">{invoice.description}</p>
                       <p className="text-sm text-genesis-muted flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         {new Date(invoice.date).toLocaleDateString('pt-BR')}
@@ -179,9 +172,7 @@ export function PatientBilling(): React.ReactElement {
                         {formatCurrency(invoice.amount)}
                       </p>
                       {invoice.status === 'paid' && invoice.paymentMethod && (
-                        <p className="text-xs text-genesis-muted">
-                          {invoice.paymentMethod}
-                        </p>
+                        <p className="text-xs text-genesis-muted">{invoice.paymentMethod}</p>
                       )}
                     </div>
 
@@ -206,12 +197,12 @@ export function PatientBilling(): React.ReactElement {
                   </div>
                 </div>
               </div>
-            );
+            )
           })}
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default PatientBilling;
+export default PatientBilling

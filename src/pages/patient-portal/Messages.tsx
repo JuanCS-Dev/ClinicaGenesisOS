@@ -8,38 +8,29 @@
  * @version 1.0.0
  */
 
-import React, { useState } from 'react';
-import {
-  MessageCircle,
-  Send,
-  User,
-  Clock,
-  CheckCheck,
-  Paperclip,
-  Search,
-  Plus,
-} from 'lucide-react';
+import React, { useState } from 'react'
+import { MessageCircle, Send, User, Clock, CheckCheck, Paperclip, Search, Plus } from 'lucide-react'
 
 // ============================================================================
 // Types
 // ============================================================================
 
 interface Message {
-  id: string;
-  content: string;
-  sender: 'patient' | 'provider';
-  timestamp: string;
-  read: boolean;
+  id: string
+  content: string
+  sender: 'patient' | 'provider'
+  timestamp: string
+  read: boolean
 }
 
 interface Conversation {
-  id: string;
-  provider: string;
-  specialty: string;
-  lastMessage: string;
-  lastMessageTime: string;
-  unreadCount: number;
-  messages: Message[];
+  id: string
+  provider: string
+  specialty: string
+  lastMessage: string
+  lastMessageTime: string
+  unreadCount: number
+  messages: Message[]
 }
 
 // ============================================================================
@@ -104,26 +95,26 @@ const MOCK_CONVERSATIONS: Conversation[] = [
       },
     ],
   },
-];
+]
 
 // ============================================================================
 // Helpers
 // ============================================================================
 
 function formatTime(timestamp: string): string {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
 
   if (days === 0) {
-    return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
   } else if (days === 1) {
-    return 'Ontem';
+    return 'Ontem'
   } else if (days < 7) {
-    return date.toLocaleDateString('pt-BR', { weekday: 'short' });
+    return date.toLocaleDateString('pt-BR', { weekday: 'short' })
   } else {
-    return date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
+    return date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })
   }
 }
 
@@ -136,20 +127,20 @@ function ConversationList({
   selectedId,
   onSelect,
 }: {
-  conversations: Conversation[];
-  selectedId: string | null;
-  onSelect: (id: string) => void;
+  conversations: Conversation[]
+  selectedId: string | null
+  onSelect: (id: string) => void
 }) {
   return (
     <div className="space-y-2">
-      {conversations.map((conv) => (
+      {conversations.map(conv => (
         <button
           key={conv.id}
           onClick={() => onSelect(conv.id)}
           className={`w-full p-4 rounded-xl text-left transition-colors ${
             selectedId === conv.id
               ? 'bg-genesis-primary/10 border-genesis-primary'
-              : 'bg-white dark:bg-genesis-surface hover:bg-genesis-hover'
+              : 'bg-genesis-surface hover:bg-genesis-hover'
           } border border-genesis-border`}
         >
           <div className="flex items-start gap-3">
@@ -158,17 +149,13 @@ function ConversationList({
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <p className="font-medium text-genesis-dark text-sm truncate">
-                  {conv.provider}
-                </p>
+                <p className="font-medium text-genesis-dark text-sm truncate">{conv.provider}</p>
                 <span className="text-xs text-genesis-muted">
                   {formatTime(conv.lastMessageTime)}
                 </span>
               </div>
               <p className="text-xs text-genesis-muted">{conv.specialty}</p>
-              <p className="text-sm text-genesis-medium mt-1 truncate">
-                {conv.lastMessage}
-              </p>
+              <p className="text-sm text-genesis-medium mt-1 truncate">{conv.lastMessage}</p>
             </div>
             {conv.unreadCount > 0 && (
               <span className="w-5 h-5 rounded-full bg-genesis-primary text-white text-xs flex items-center justify-center flex-shrink-0">
@@ -179,20 +166,20 @@ function ConversationList({
         </button>
       ))}
     </div>
-  );
+  )
 }
 
 function ChatView({ conversation }: { conversation: Conversation }) {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState('')
 
   const handleSend = () => {
-    if (!message.trim()) return;
+    if (!message.trim()) return
     // Would send message to backend
-    setMessage('');
-  };
+    setMessage('')
+  }
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-genesis-surface rounded-2xl border border-genesis-border overflow-hidden">
+    <div className="flex flex-col h-full bg-genesis-surface rounded-2xl border border-genesis-border overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-genesis-border">
         <div className="flex items-center gap-3">
@@ -208,7 +195,7 @@ function ChatView({ conversation }: { conversation: Conversation }) {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {conversation.messages.map((msg) => (
+        {conversation.messages.map(msg => (
           <div
             key={msg.id}
             className={`flex ${msg.sender === 'patient' ? 'justify-end' : 'justify-start'}`}
@@ -251,8 +238,8 @@ function ChatView({ conversation }: { conversation: Conversation }) {
           <input
             type="text"
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            onChange={e => setMessage(e.target.value)}
+            onKeyPress={e => e.key === 'Enter' && handleSend()}
             placeholder="Digite sua mensagem..."
             className="flex-1 px-4 py-2.5 rounded-xl border border-genesis-border bg-genesis-soft text-genesis-dark placeholder:text-genesis-muted focus:outline-none focus:ring-2 focus:ring-genesis-primary focus:border-transparent"
           />
@@ -266,7 +253,7 @@ function ChatView({ conversation }: { conversation: Conversation }) {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 // ============================================================================
@@ -276,22 +263,17 @@ function ChatView({ conversation }: { conversation: Conversation }) {
 export function PatientMessages(): React.ReactElement {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(
     MOCK_CONVERSATIONS[0]?.id || null
-  );
-  const [search, setSearch] = useState('');
+  )
+  const [search, setSearch] = useState('')
 
-  const filteredConversations = MOCK_CONVERSATIONS.filter((conv) => {
-    if (!search) return true;
-    return conv.provider.toLowerCase().includes(search.toLowerCase());
-  });
+  const filteredConversations = MOCK_CONVERSATIONS.filter(conv => {
+    if (!search) return true
+    return conv.provider.toLowerCase().includes(search.toLowerCase())
+  })
 
-  const activeConversation = MOCK_CONVERSATIONS.find(
-    (c) => c.id === selectedConversation
-  );
+  const activeConversation = MOCK_CONVERSATIONS.find(c => c.id === selectedConversation)
 
-  const totalUnread = MOCK_CONVERSATIONS.reduce(
-    (sum, c) => sum + c.unreadCount,
-    0
-  );
+  const totalUnread = MOCK_CONVERSATIONS.reduce((sum, c) => sum + c.unreadCount, 0)
 
   return (
     <div className="space-y-6 animate-enter pb-8">
@@ -324,9 +306,9 @@ export function PatientMessages(): React.ReactElement {
             <input
               type="text"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={e => setSearch(e.target.value)}
               placeholder="Buscar conversa..."
-              className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-genesis-border bg-white dark:bg-genesis-surface text-genesis-dark placeholder:text-genesis-muted focus:outline-none focus:ring-2 focus:ring-genesis-primary focus:border-transparent"
+              className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-genesis-border bg-genesis-surface text-genesis-dark placeholder:text-genesis-muted focus:outline-none focus:ring-2 focus:ring-genesis-primary focus:border-transparent"
             />
           </div>
 
@@ -342,22 +324,18 @@ export function PatientMessages(): React.ReactElement {
           {activeConversation ? (
             <ChatView conversation={activeConversation} />
           ) : (
-            <div className="h-full flex items-center justify-center bg-white dark:bg-genesis-surface rounded-2xl border border-genesis-border">
+            <div className="h-full flex items-center justify-center bg-genesis-surface rounded-2xl border border-genesis-border">
               <div className="text-center">
                 <MessageCircle className="w-12 h-12 text-genesis-muted mx-auto mb-4" />
-                <p className="text-genesis-dark font-medium">
-                  Selecione uma conversa
-                </p>
-                <p className="text-genesis-muted text-sm mt-1">
-                  Ou inicie uma nova mensagem
-                </p>
+                <p className="text-genesis-dark font-medium">Selecione uma conversa</p>
+                <p className="text-genesis-muted text-sm mt-1">Ou inicie uma nova mensagem</p>
               </div>
             </div>
           )}
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default PatientMessages;
+export default PatientMessages

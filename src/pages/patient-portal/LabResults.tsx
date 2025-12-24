@@ -8,7 +8,7 @@
  * @version 1.0.0
  */
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   FlaskConical,
   Download,
@@ -20,23 +20,23 @@ import {
   Search,
   Filter,
   AlertTriangle,
-} from 'lucide-react';
+} from 'lucide-react'
 
 // ============================================================================
 // Types
 // ============================================================================
 
-type ResultStatus = 'ready' | 'pending' | 'partial';
+type ResultStatus = 'ready' | 'pending' | 'partial'
 
 interface LabResult {
-  id: string;
-  name: string;
-  category: string;
-  date: string;
-  status: ResultStatus;
-  doctor: string;
-  hasAbnormal: boolean;
-  pdfUrl?: string;
+  id: string
+  name: string
+  category: string
+  date: string
+  status: ResultStatus
+  doctor: string
+  hasAbnormal: boolean
+  pdfUrl?: string
 }
 
 // ============================================================================
@@ -89,7 +89,7 @@ const MOCK_RESULTS: LabResult[] = [
     doctor: 'Dr. João Silva',
     hasAbnormal: false,
   },
-];
+]
 
 // ============================================================================
 // Helpers
@@ -114,15 +114,15 @@ const STATUS_CONFIG: Record<
     color: 'text-info bg-info-soft',
     icon: Clock,
   },
-};
+}
 
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
+  const date = new Date(dateStr)
   return date.toLocaleDateString('pt-BR', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
-  });
+  })
 }
 
 // ============================================================================
@@ -130,15 +130,15 @@ function formatDate(dateStr: string): string {
 // ============================================================================
 
 interface ResultCardProps {
-  result: LabResult;
+  result: LabResult
 }
 
 const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
-  const statusConfig = STATUS_CONFIG[result.status];
-  const StatusIcon = statusConfig.icon;
+  const statusConfig = STATUS_CONFIG[result.status]
+  const StatusIcon = statusConfig.icon
 
   return (
-    <div className="bg-white dark:bg-genesis-surface rounded-2xl border border-genesis-border p-4 hover:shadow-lg transition-all">
+    <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-4 hover:shadow-lg transition-all">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
           <div
@@ -170,9 +170,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
         </div>
       </div>
 
-      <p className="text-xs text-genesis-muted mb-4">
-        Solicitado por: {result.doctor}
-      </p>
+      <p className="text-xs text-genesis-muted mb-4">Solicitado por: {result.doctor}</p>
 
       {result.status === 'ready' && (
         <div className="flex gap-2">
@@ -199,7 +197,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
         </button>
       )}
     </div>
-  );
+  )
 }
 
 // ============================================================================
@@ -207,19 +205,18 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
 // ============================================================================
 
 export function PatientLabResults(): React.ReactElement {
-  const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<'all' | 'ready' | 'pending'>('all');
+  const [search, setSearch] = useState('')
+  const [filter, setFilter] = useState<'all' | 'ready' | 'pending'>('all')
 
-  const filteredResults = MOCK_RESULTS.filter((result) => {
-    if (filter === 'ready' && result.status !== 'ready') return false;
-    if (filter === 'pending' && result.status === 'ready') return false;
-    if (search && !result.name.toLowerCase().includes(search.toLowerCase()))
-      return false;
-    return true;
-  });
+  const filteredResults = MOCK_RESULTS.filter(result => {
+    if (filter === 'ready' && result.status !== 'ready') return false
+    if (filter === 'pending' && result.status === 'ready') return false
+    if (search && !result.name.toLowerCase().includes(search.toLowerCase())) return false
+    return true
+  })
 
-  const readyCount = MOCK_RESULTS.filter((r) => r.status === 'ready').length;
-  const pendingCount = MOCK_RESULTS.filter((r) => r.status !== 'ready').length;
+  const readyCount = MOCK_RESULTS.filter(r => r.status === 'ready').length
+  const pendingCount = MOCK_RESULTS.filter(r => r.status !== 'ready').length
 
   return (
     <div className="space-y-6 animate-enter pb-8">
@@ -243,9 +240,9 @@ export function PatientLabResults(): React.ReactElement {
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={e => setSearch(e.target.value)}
             placeholder="Buscar exame..."
-            className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-genesis-border bg-white dark:bg-genesis-surface text-genesis-dark placeholder:text-genesis-muted focus:outline-none focus:ring-2 focus:ring-genesis-primary focus:border-transparent"
+            className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-genesis-border bg-genesis-surface text-genesis-dark placeholder:text-genesis-muted focus:outline-none focus:ring-2 focus:ring-genesis-primary focus:border-transparent"
           />
         </div>
 
@@ -256,13 +253,13 @@ export function PatientLabResults(): React.ReactElement {
               { value: 'all', label: 'Todos' },
               { value: 'ready', label: 'Disponíveis' },
               { value: 'pending', label: 'Pendentes' },
-            ].map((option) => (
+            ].map(option => (
               <button
                 key={option.value}
                 onClick={() => setFilter(option.value as typeof filter)}
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                   filter === option.value
-                    ? 'bg-white dark:bg-genesis-surface text-genesis-dark shadow-sm'
+                    ? 'bg-genesis-surface text-genesis-dark shadow-sm'
                     : 'text-genesis-muted hover:text-genesis-dark'
                 }`}
               >
@@ -276,18 +273,16 @@ export function PatientLabResults(): React.ReactElement {
       {/* Results Grid */}
       {filteredResults.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredResults.map((result) => (
+          {filteredResults.map(result => (
             <ResultCard key={result.id} result={result} />
           ))}
         </div>
       ) : (
-        <div className="text-center py-12 bg-white dark:bg-genesis-surface rounded-2xl border border-genesis-border">
+        <div className="text-center py-12 bg-genesis-surface rounded-2xl border border-genesis-border">
           <FlaskConical className="w-12 h-12 text-genesis-muted mx-auto mb-4" />
           <p className="text-genesis-dark font-medium">Nenhum exame encontrado</p>
           <p className="text-genesis-muted text-sm mt-1">
-            {search
-              ? 'Tente outra busca'
-              : 'Nenhum resultado de exame disponível'}
+            {search ? 'Tente outra busca' : 'Nenhum resultado de exame disponível'}
           </p>
         </div>
       )}
@@ -301,14 +296,14 @@ export function PatientLabResults(): React.ReactElement {
               Sobre seus resultados
             </p>
             <p className="text-sm text-purple-700 dark:text-purple-300 mt-1">
-              Resultados marcados com "Atenção" indicam valores fora da faixa de
-              referência. Consulte seu médico para interpretação.
+              Resultados marcados com "Atenção" indicam valores fora da faixa de referência.
+              Consulte seu médico para interpretação.
             </p>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default PatientLabResults;
+export default PatientLabResults

@@ -5,52 +5,53 @@
  * Updates appointment status based on patient responses.
  */
 
-import { onRequest } from 'firebase-functions/v2/https';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { logger } from 'firebase-functions';
-import { markAsRead } from './client.js';
+import { onRequest } from 'firebase-functions/v2/https'
+import { getFirestore, FieldValue } from 'firebase-admin/firestore'
+import { logger } from 'firebase-functions'
+import { markAsRead } from './client.js'
+import { handleCompanionMessage, findPatientByPhone } from '../companion/index.js'
 
-const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || 'genesis_verify_token';
+const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || 'genesis_verify_token'
 
 /** WhatsApp webhook payload structure. */
 interface WhatsAppWebhookPayload {
-  object: 'whatsapp_business_account';
+  object: 'whatsapp_business_account'
   entry: Array<{
-    id: string;
+    id: string
     changes: Array<{
       value: {
-        messaging_product: 'whatsapp';
+        messaging_product: 'whatsapp'
         metadata: {
-          display_phone_number: string;
-          phone_number_id: string;
-        };
+          display_phone_number: string
+          phone_number_id: string
+        }
         contacts?: Array<{
-          profile: { name: string };
-          wa_id: string;
-        }>;
+          profile: { name: string }
+          wa_id: string
+        }>
         messages?: Array<{
-          from: string;
-          id: string;
-          timestamp: string;
-          type: 'text' | 'button' | 'interactive';
-          text?: { body: string };
-          button?: { text: string; payload: string };
+          from: string
+          id: string
+          timestamp: string
+          type: 'text' | 'button' | 'interactive'
+          text?: { body: string }
+          button?: { text: string; payload: string }
           interactive?: {
-            type: 'button_reply';
-            button_reply: { id: string; title: string };
-          };
-        }>;
+            type: 'button_reply'
+            button_reply: { id: string; title: string }
+          }
+        }>
         statuses?: Array<{
-          id: string;
-          status: 'sent' | 'delivered' | 'read' | 'failed';
-          timestamp: string;
-          recipient_id: string;
-          errors?: Array<{ code: number; title: string }>;
-        }>;
-      };
-      field: string;
-    }>;
-  }>;
+          id: string
+          status: 'sent' | 'delivered' | 'read' | 'failed'
+          timestamp: string
+          recipient_id: string
+          errors?: Array<{ code: number; title: string }>
+        }>
+      }
+      field: string
+    }>
+  }>
 }
 
 /**
@@ -64,58 +65,58 @@ export const whatsappWebhook = onRequest(
   async (req, res) => {
     // GET: Webhook verification
     if (req.method === 'GET') {
-      const mode = req.query['hub.mode'];
-      const token = req.query['hub.verify_token'];
-      const challenge = req.query['hub.challenge'];
+      const mode = req.query['hub.mode']
+      const token = req.query['hub.verify_token']
+      const challenge = req.query['hub.challenge']
 
       if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-        logger.info('Webhook verified successfully');
-        res.status(200).send(challenge);
-        return;
+        logger.info('Webhook verified successfully')
+        res.status(200).send(challenge)
+        return
       }
 
-      logger.warn('Webhook verification failed', { mode, token });
-      res.status(403).send('Verification failed');
-      return;
+      logger.warn('Webhook verification failed', { mode, token })
+      res.status(403).send('Verification failed')
+      return
     }
 
     // POST: Incoming webhook
     if (req.method === 'POST') {
       try {
-        const payload = req.body as WhatsAppWebhookPayload;
+        const payload = req.body as WhatsAppWebhookPayload
 
         // Process each entry
         for (const entry of payload.entry) {
           for (const change of entry.changes) {
-            const value = change.value;
+            const value = change.value
 
             // Process incoming messages
             if (value.messages) {
               for (const message of value.messages) {
-                await processIncomingMessage(message, value.metadata.phone_number_id);
+                await processIncomingMessage(message, value.metadata.phone_number_id)
               }
             }
 
             // Process status updates
             if (value.statuses) {
               for (const status of value.statuses) {
-                await processStatusUpdate(status);
+                await processStatusUpdate(status)
               }
             }
           }
         }
 
-        res.status(200).send('OK');
+        res.status(200).send('OK')
       } catch (error) {
-        logger.error('Webhook processing error', error);
-        res.status(500).send('Error processing webhook');
+        logger.error('Webhook processing error', error)
+        res.status(500).send('Error processing webhook')
       }
-      return;
+      return
     }
 
-    res.status(405).send('Method not allowed');
+    res.status(405).send('Method not allowed')
   }
-);
+)
 
 /**
  * Process incoming message from patient.
@@ -124,32 +125,32 @@ async function processIncomingMessage(
   message: NonNullable<WhatsAppWebhookPayload['entry'][0]['changes'][0]['value']['messages']>[0],
   _phoneNumberId: string
 ): Promise<void> {
-  const db = getFirestore();
-  const patientPhone = message.from;
-  const messageId = message.id;
+  const db = getFirestore()
+  const patientPhone = message.from
+  const messageId = message.id
 
   logger.info('Processing incoming message', {
     from: patientPhone,
     type: message.type,
-  });
+  })
 
   // Extract response text
-  let responseText = '';
-  let isConfirmation = false;
-  let isReschedule = false;
+  let responseText = ''
+  let isConfirmation = false
+  let isReschedule = false
 
   if (message.type === 'text' && message.text) {
-    responseText = message.text.body.toLowerCase().trim();
-    isConfirmation = ['sim', 'ok', 'confirmo', 'confirmado', 'yes', '1'].includes(responseText);
-    isReschedule = ['não', 'nao', 'remarcar', 'cancelar', 'no', '2'].includes(responseText);
+    responseText = message.text.body.toLowerCase().trim()
+    isConfirmation = ['sim', 'ok', 'confirmo', 'confirmado', 'yes', '1'].includes(responseText)
+    isReschedule = ['não', 'nao', 'remarcar', 'cancelar', 'no', '2'].includes(responseText)
   } else if (message.type === 'button' && message.button) {
-    responseText = message.button.payload || message.button.text;
-    isConfirmation = responseText.toLowerCase().includes('confirm');
-    isReschedule = responseText.toLowerCase().includes('remarcar');
+    responseText = message.button.payload || message.button.text
+    isConfirmation = responseText.toLowerCase().includes('confirm')
+    isReschedule = responseText.toLowerCase().includes('remarcar')
   } else if (message.type === 'interactive' && message.interactive?.button_reply) {
-    responseText = message.interactive.button_reply.id;
-    isConfirmation = responseText.toLowerCase().includes('confirm');
-    isReschedule = responseText.toLowerCase().includes('remarcar');
+    responseText = message.interactive.button_reply.id
+    isConfirmation = responseText.toLowerCase().includes('confirm')
+    isReschedule = responseText.toLowerCase().includes('remarcar')
   }
 
   // Find pending appointment for this patient
@@ -159,17 +160,40 @@ async function processIncomingMessage(
     .where('status', '==', 'Pendente')
     .orderBy('date', 'asc')
     .limit(1)
-    .get();
+    .get()
 
   if (appointmentsSnapshot.empty) {
-    logger.info('No pending appointment found for patient', { patientPhone });
+    logger.info('No pending appointment found, routing to companion', { patientPhone })
+
+    // Try to find patient by phone and route to companion
+    const patientEntry = await findPatientByPhone(patientPhone)
+
+    if (patientEntry) {
+      try {
+        await handleCompanionMessage(
+          patientEntry.clinicId,
+          patientEntry.patientId,
+          patientPhone,
+          responseText || 'Olá',
+          messageId
+        )
+      } catch (error) {
+        logger.error('Companion handler error', {
+          patientPhone,
+          error: error instanceof Error ? error.message : 'Unknown',
+        })
+      }
+    } else {
+      logger.info('Patient not found in phone index', { patientPhone })
+    }
+
     // Mark as read anyway
-    await markAsRead(messageId);
-    return;
+    await markAsRead(messageId)
+    return
   }
 
-  const appointmentDoc = appointmentsSnapshot.docs[0];
-  const appointmentRef = appointmentDoc.ref;
+  const appointmentDoc = appointmentsSnapshot.docs[0]
+  const appointmentRef = appointmentDoc.ref
 
   // Update appointment based on response
   if (isConfirmation) {
@@ -181,8 +205,8 @@ async function processIncomingMessage(
         message: responseText,
       },
       'reminder.lastInteraction': FieldValue.serverTimestamp(),
-    });
-    logger.info('Appointment confirmed', { appointmentId: appointmentDoc.id });
+    })
+    logger.info('Appointment confirmed', { appointmentId: appointmentDoc.id })
   } else if (isReschedule) {
     await appointmentRef.update({
       'reminder.patientResponse': {
@@ -192,8 +216,8 @@ async function processIncomingMessage(
         needsReschedule: true,
       },
       'reminder.lastInteraction': FieldValue.serverTimestamp(),
-    });
-    logger.info('Patient requested reschedule', { appointmentId: appointmentDoc.id });
+    })
+    logger.info('Patient requested reschedule', { appointmentId: appointmentDoc.id })
   } else {
     // Any response opens the 24h window
     await appointmentRef.update({
@@ -202,11 +226,11 @@ async function processIncomingMessage(
         respondedAt: new Date().toISOString(),
         message: responseText,
       },
-    });
+    })
   }
 
   // Mark message as read
-  await markAsRead(messageId);
+  await markAsRead(messageId)
 }
 
 /**
@@ -215,18 +239,18 @@ async function processIncomingMessage(
 async function processStatusUpdate(
   status: NonNullable<WhatsAppWebhookPayload['entry'][0]['changes'][0]['value']['statuses']>[0]
 ): Promise<void> {
-  const db = getFirestore();
-  const messageId = status.id;
-  const newStatus = status.status;
+  const db = getFirestore()
+  const messageId = status.id
+  const newStatus = status.status
 
-  logger.info('Processing status update', { messageId, status: newStatus });
+  logger.info('Processing status update', { messageId, status: newStatus })
 
   // Find reminder with this message ID and update status
   const remindersSnapshot = await db
     .collectionGroup('appointments')
     .where('reminder.messageId', '==', messageId)
     .limit(1)
-    .get();
+    .get()
 
   if (remindersSnapshot.empty) {
     // Try 24h reminder
@@ -234,12 +258,12 @@ async function processStatusUpdate(
       .collectionGroup('appointments')
       .where('reminder.reminder24h.messageId', '==', messageId)
       .limit(1)
-      .get();
+      .get()
 
     if (!reminder24hSnapshot.empty) {
       await reminder24hSnapshot.docs[0].ref.update({
         'reminder.reminder24h.status': newStatus,
-      });
+      })
     }
 
     // Try 2h reminder
@@ -247,30 +271,30 @@ async function processStatusUpdate(
       .collectionGroup('appointments')
       .where('reminder.reminder2h.messageId', '==', messageId)
       .limit(1)
-      .get();
+      .get()
 
     if (!reminder2hSnapshot.empty) {
       await reminder2hSnapshot.docs[0].ref.update({
         'reminder.reminder2h.status': newStatus,
-      });
+      })
     }
 
-    return;
+    return
   }
 
   // Update main reminder status
   await remindersSnapshot.docs[0].ref.update({
     'reminder.status': newStatus,
-  });
+  })
 }
 
 /**
  * Normalize phone number for comparison.
  */
 function normalizePhone(phone: string): string {
-  let normalized = phone.replace(/\D/g, '');
+  let normalized = phone.replace(/\D/g, '')
   if (normalized.length === 11 || normalized.length === 10) {
-    normalized = '55' + normalized;
+    normalized = '55' + normalized
   }
-  return normalized;
+  return normalized
 }

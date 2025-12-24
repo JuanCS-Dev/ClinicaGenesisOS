@@ -9,8 +9,8 @@
  * @version 1.0.0
  */
 
-import React from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import React from 'react'
+import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import {
   Home,
   Calendar,
@@ -25,8 +25,8 @@ import {
   Menu,
   X,
   ChevronRight,
-} from 'lucide-react';
-import { usePatientAuth } from '../../contexts/PatientAuthContext';
+} from 'lucide-react'
+import { usePatientAuth } from '../../contexts/PatientAuthContext'
 
 // ============================================================================
 // Navigation Items
@@ -41,40 +41,31 @@ const NAV_ITEMS = [
   { path: '/portal/mensagens', icon: MessageCircle, label: 'Mensagens' },
   { path: '/portal/financeiro', icon: CreditCard, label: 'Financeiro' },
   { path: '/portal/teleconsulta', icon: Video, label: 'Teleconsulta' },
-];
+]
 
 // ============================================================================
 // Components
 // ============================================================================
 
-function MobileNav({
-  isOpen,
-  onClose,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-}) {
-  const { profile, logout } = usePatientAuth();
-  const navigate = useNavigate();
+function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const { profile, logout } = usePatientAuth()
+  const navigate = useNavigate()
 
   const handleLogout = async () => {
-    await logout();
-    navigate('/portal/login');
-    onClose();
-  };
+    await logout()
+    navigate('/portal/login')
+    onClose()
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-genesis-dark shadow-xl animate-in slide-in-from-left">
+      <div className="fixed inset-y-0 left-0 w-72 bg-genesis-surface shadow-xl animate-in slide-in-from-left">
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-genesis-border">
@@ -89,17 +80,14 @@ function MobileNav({
                 <p className="text-xs text-genesis-muted">{profile?.email}</p>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-genesis-hover"
-            >
+            <button onClick={onClose} className="p-2 rounded-lg hover:bg-genesis-hover">
               <X className="w-5 h-5 text-genesis-muted" />
             </button>
           </div>
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            {NAV_ITEMS.map((item) => (
+            {NAV_ITEMS.map(item => (
               <NavLink
                 key={item.path}
                 to={item.path}
@@ -133,20 +121,20 @@ function MobileNav({
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 function DesktopSidebar() {
-  const { profile, logout } = usePatientAuth();
-  const navigate = useNavigate();
+  const { profile, logout } = usePatientAuth()
+  const navigate = useNavigate()
 
   const handleLogout = async () => {
-    await logout();
-    navigate('/portal/login');
-  };
+    await logout()
+    navigate('/portal/login')
+  }
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 bg-white dark:bg-genesis-surface border-r border-genesis-border">
+    <aside className="hidden lg:flex flex-col w-64 bg-genesis-surface border-r border-genesis-border">
       {/* Logo */}
       <div className="p-6 border-b border-genesis-border">
         <div className="flex items-center gap-3">
@@ -170,16 +158,14 @@ function DesktopSidebar() {
             <p className="font-medium text-genesis-dark text-sm truncate">
               {profile?.name || 'Paciente'}
             </p>
-            <p className="text-xs text-genesis-muted truncate">
-              {profile?.email}
-            </p>
+            <p className="text-xs text-genesis-muted truncate">{profile?.email}</p>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {NAV_ITEMS.map((item) => (
+        {NAV_ITEMS.map(item => (
           <NavLink
             key={item.path}
             to={item.path}
@@ -209,7 +195,7 @@ function DesktopSidebar() {
         </button>
       </div>
     </aside>
-  );
+  )
 }
 
 // ============================================================================
@@ -217,8 +203,8 @@ function DesktopSidebar() {
 // ============================================================================
 
 export function PatientPortalLayout(): React.ReactElement {
-  const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
-  const { profile } = usePatientAuth();
+  const [mobileNavOpen, setMobileNavOpen] = React.useState(false)
+  const { profile } = usePatientAuth()
 
   return (
     <div className="min-h-screen bg-genesis-soft flex">
@@ -231,7 +217,7 @@ export function PatientPortalLayout(): React.ReactElement {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile Header */}
-        <header className="lg:hidden sticky top-0 z-40 bg-white dark:bg-genesis-surface border-b border-genesis-border px-4 py-3">
+        <header className="lg:hidden sticky top-0 z-40 bg-genesis-surface border-b border-genesis-border px-4 py-3">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setMobileNavOpen(true)}
@@ -254,14 +240,12 @@ export function PatientPortalLayout(): React.ReactElement {
         </header>
 
         {/* Desktop Header */}
-        <header className="hidden lg:flex items-center justify-between px-8 py-4 bg-white dark:bg-genesis-surface border-b border-genesis-border">
+        <header className="hidden lg:flex items-center justify-between px-8 py-4 bg-genesis-surface border-b border-genesis-border">
           <div>
             <h2 className="text-xl font-bold text-genesis-dark">
               Olá, {profile?.name?.split(' ')[0] || 'Paciente'}!
             </h2>
-            <p className="text-sm text-genesis-muted">
-              Bem-vindo ao seu portal de saúde
-            </p>
+            <p className="text-sm text-genesis-muted">Bem-vindo ao seu portal de saúde</p>
           </div>
         </header>
 
@@ -271,7 +255,7 @@ export function PatientPortalLayout(): React.ReactElement {
         </main>
       </div>
     </div>
-  );
+  )
 }
 
-export default PatientPortalLayout;
+export default PatientPortalLayout

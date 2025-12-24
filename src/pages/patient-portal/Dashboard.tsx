@@ -11,8 +11,8 @@
  * @version 1.0.0
  */
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react'
+import { Link } from 'react-router-dom'
 import {
   Calendar,
   Clock,
@@ -27,8 +27,8 @@ import {
   Bell,
   Heart,
   Activity,
-} from 'lucide-react';
-import { usePatientAuth } from '../../contexts/PatientAuthContext';
+} from 'lucide-react'
+import { usePatientAuth } from '../../contexts/PatientAuthContext'
 
 // ============================================================================
 // Mock Data (would come from Firestore)
@@ -42,7 +42,7 @@ const MOCK_NEXT_APPOINTMENT = {
   specialty: 'Clínica Geral',
   location: 'Sala 3',
   status: 'confirmed',
-};
+}
 
 const MOCK_NOTIFICATIONS = [
   {
@@ -61,7 +61,7 @@ const MOCK_NOTIFICATIONS = [
     date: '2024-12-22',
     read: true,
   },
-];
+]
 
 const QUICK_ACTIONS = [
   {
@@ -88,23 +88,23 @@ const QUICK_ACTIONS = [
     href: '/portal/mensagens',
     color: 'bg-amber-500',
   },
-];
+]
 
 // ============================================================================
 // Components
 // ============================================================================
 
 function NextAppointmentCard() {
-  const appointment = MOCK_NEXT_APPOINTMENT;
+  const appointment = MOCK_NEXT_APPOINTMENT
 
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+    const date = new Date(dateStr)
     return date.toLocaleDateString('pt-BR', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
-    });
-  };
+    })
+  }
 
   return (
     <div className="bg-gradient-to-br from-genesis-primary to-genesis-primary-dark rounded-2xl p-6 text-white shadow-lg shadow-genesis-primary/20">
@@ -150,17 +150,17 @@ function NextAppointmentCard() {
         </Link>
       </div>
     </div>
-  );
+  )
 }
 
 function QuickActionsGrid() {
   return (
     <div className="grid grid-cols-2 gap-4">
-      {QUICK_ACTIONS.map((action) => (
+      {QUICK_ACTIONS.map(action => (
         <Link
           key={action.label}
           to={action.href}
-          className="bg-white dark:bg-genesis-surface rounded-2xl p-4 border border-genesis-border hover:shadow-lg transition-all group"
+          className="bg-genesis-surface rounded-2xl p-4 border border-genesis-border hover:shadow-lg transition-all group"
         >
           <div
             className={`w-12 h-12 rounded-xl ${action.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}
@@ -171,14 +171,14 @@ function QuickActionsGrid() {
         </Link>
       ))}
     </div>
-  );
+  )
 }
 
 function NotificationsCard() {
-  const unreadCount = MOCK_NOTIFICATIONS.filter((n) => !n.read).length;
+  const unreadCount = MOCK_NOTIFICATIONS.filter(n => !n.read).length
 
   return (
-    <div className="bg-white dark:bg-genesis-surface rounded-2xl border border-genesis-border overflow-hidden">
+    <div className="bg-genesis-surface rounded-2xl border border-genesis-border overflow-hidden">
       <div className="flex items-center justify-between p-4 border-b border-genesis-border">
         <div className="flex items-center gap-2">
           <Bell className="w-5 h-5 text-genesis-primary" />
@@ -189,16 +189,13 @@ function NotificationsCard() {
             </span>
           )}
         </div>
-        <Link
-          to="/portal/mensagens"
-          className="text-sm text-genesis-primary hover:underline"
-        >
+        <Link to="/portal/mensagens" className="text-sm text-genesis-primary hover:underline">
           Ver todas
         </Link>
       </div>
 
       <div className="divide-y divide-genesis-border">
-        {MOCK_NOTIFICATIONS.map((notification) => (
+        {MOCK_NOTIFICATIONS.map(notification => (
           <div
             key={notification.id}
             className={`p-4 hover:bg-genesis-hover transition-colors ${
@@ -212,12 +209,8 @@ function NotificationsCard() {
                 }`}
               />
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-genesis-dark text-sm">
-                  {notification.title}
-                </p>
-                <p className="text-genesis-muted text-xs mt-0.5">
-                  {notification.description}
-                </p>
+                <p className="font-medium text-genesis-dark text-sm">{notification.title}</p>
+                <p className="text-genesis-muted text-xs mt-0.5">{notification.description}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-genesis-muted flex-shrink-0" />
             </div>
@@ -225,12 +218,12 @@ function NotificationsCard() {
         ))}
       </div>
     </div>
-  );
+  )
 }
 
 function HealthSummaryCard() {
   return (
-    <div className="bg-white dark:bg-genesis-surface rounded-2xl border border-genesis-border p-4">
+    <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-4">
       <div className="flex items-center gap-2 mb-4">
         <Heart className="w-5 h-5 text-red-500" />
         <h3 className="font-semibold text-genesis-dark">Minha Saúde</h3>
@@ -261,7 +254,7 @@ function HealthSummaryCard() {
         <ChevronRight className="w-4 h-4" />
       </Link>
     </div>
-  );
+  )
 }
 
 // ============================================================================
@@ -269,17 +262,15 @@ function HealthSummaryCard() {
 // ============================================================================
 
 export function PatientDashboard(): React.ReactElement {
-  const { profile } = usePatientAuth();
-  const firstName = profile?.name?.split(' ')[0] || 'Paciente';
+  const { profile } = usePatientAuth()
+  const firstName = profile?.name?.split(' ')[0] || 'Paciente'
 
   return (
     <div className="space-y-6 animate-enter pb-8">
       {/* Welcome */}
       <div className="lg:hidden">
         <h1 className="text-xl font-bold text-genesis-dark">Olá, {firstName}!</h1>
-        <p className="text-sm text-genesis-muted">
-          Bem-vindo ao seu portal de saúde
-        </p>
+        <p className="text-sm text-genesis-muted">Bem-vindo ao seu portal de saúde</p>
       </div>
 
       {/* Main Grid */}
@@ -311,7 +302,7 @@ export function PatientDashboard(): React.ReactElement {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default PatientDashboard;
+export default PatientDashboard

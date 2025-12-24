@@ -7,12 +7,12 @@
  * @module functions/workflows/patient-return
  */
 
-import { onSchedule } from 'firebase-functions/v2/scheduler';
-import { getFirestore } from 'firebase-admin/firestore';
-import { logger } from 'firebase-functions';
-import { sendTemplateMessage } from '../whatsapp/client.js';
-import type { ClinicWorkflowSettings, PatientForReturn, WorkflowExecutionLog } from './types.js';
-import { DEFAULT_WORKFLOW_SETTINGS } from './types.js';
+import { onSchedule } from 'firebase-functions/v2/scheduler'
+import { getFirestore } from 'firebase-admin/firestore'
+import { logger } from 'firebase-functions'
+import { sendTemplateMessage } from '../whatsapp/client.js'
+import type { ClinicWorkflowSettings, PatientForReturn, WorkflowExecutionLog } from './types.js'
+import { DEFAULT_WORKFLOW_SETTINGS } from './types.js'
 
 // =============================================================================
 // HELPERS
@@ -22,36 +22,36 @@ import { DEFAULT_WORKFLOW_SETTINGS } from './types.js';
  * Get workflow settings for a clinic.
  */
 async function getWorkflowSettings(clinicId: string): Promise<ClinicWorkflowSettings> {
-  const db = getFirestore();
+  const db = getFirestore()
   const settingsDoc = await db
     .collection('clinics')
     .doc(clinicId)
     .collection('settings')
     .doc('workflows')
-    .get();
+    .get()
 
   if (!settingsDoc.exists) {
-    return DEFAULT_WORKFLOW_SETTINGS;
+    return DEFAULT_WORKFLOW_SETTINGS
   }
 
-  return { ...DEFAULT_WORKFLOW_SETTINGS, ...settingsDoc.data() } as ClinicWorkflowSettings;
+  return { ...DEFAULT_WORKFLOW_SETTINGS, ...settingsDoc.data() } as ClinicWorkflowSettings
 }
 
 /**
  * Log workflow execution.
  */
 async function logWorkflowExecution(log: WorkflowExecutionLog): Promise<void> {
-  const db = getFirestore();
-  await db.collection('clinics').doc(log.clinicId).collection('workflowLogs').add(log);
+  const db = getFirestore()
+  await db.collection('clinics').doc(log.clinicId).collection('workflowLogs').add(log)
 }
 
 /**
  * Calculate days since last visit.
  */
 function daysSince(dateString: string): number {
-  const date = new Date(dateString);
-  const now = new Date();
-  return Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+  const date = new Date(dateString)
+  const now = new Date()
+  return Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
 }
 
 /**
@@ -62,9 +62,9 @@ async function wasReminderSentRecently(
   patientId: string,
   frequencyDays: number
 ): Promise<boolean> {
-  const db = getFirestore();
-  const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - frequencyDays);
+  const db = getFirestore()
+  const cutoffDate = new Date()
+  cutoffDate.setDate(cutoffDate.getDate() - frequencyDays)
 
   const logsSnapshot = await db
     .collection('clinics')
@@ -75,9 +75,9 @@ async function wasReminderSentRecently(
     .where('status', 'in', ['sent', 'delivered'])
     .where('createdAt', '>=', cutoffDate.toISOString())
     .limit(1)
-    .get();
+    .get()
 
-  return !logsSnapshot.empty;
+  return !logsSnapshot.empty
 }
 
 // =============================================================================
@@ -91,9 +91,9 @@ async function findInactivePatients(
   clinicId: string,
   inactiveDays: number
 ): Promise<PatientForReturn[]> {
-  const db = getFirestore();
-  const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - inactiveDays);
+  const db = getFirestore()
+  const cutoffDate = new Date()
+  cutoffDate.setDate(cutoffDate.getDate() - inactiveDays)
 
   // Get all patients
   const patientsSnapshot = await db
@@ -101,15 +101,15 @@ async function findInactivePatients(
     .doc(clinicId)
     .collection('patients')
     .where('active', '==', true)
-    .get();
+    .get()
 
-  const inactivePatients: PatientForReturn[] = [];
+  const inactivePatients: PatientForReturn[] = []
 
   for (const patientDoc of patientsSnapshot.docs) {
-    const patient = patientDoc.data();
+    const patient = patientDoc.data()
 
     // Skip if no phone
-    if (!patient.phone) continue;
+    if (!patient.phone) continue
 
     // Find last appointment
     const lastAppointment = await db
@@ -120,12 +120,12 @@ async function findInactivePatients(
       .where('status', '==', 'Finalizado')
       .orderBy('date', 'desc')
       .limit(1)
-      .get();
+      .get()
 
-    if (lastAppointment.empty) continue;
+    if (lastAppointment.empty) continue
 
-    const lastVisit = lastAppointment.docs[0].data().date;
-    const daysSinceLastVisit = daysSince(lastVisit);
+    const lastVisit = lastAppointment.docs[0].data().date
+    const daysSinceLastVisit = daysSince(lastVisit)
 
     if (daysSinceLastVisit >= inactiveDays) {
       inactivePatients.push({
@@ -137,11 +137,11 @@ async function findInactivePatients(
         lastVisit,
         daysSinceLastVisit,
         conditions: patient.chronicConditions || [],
-      });
+      })
     }
   }
 
-  return inactivePatients;
+  return inactivePatients
 }
 
 // =============================================================================
@@ -149,34 +149,34 @@ async function findInactivePatients(
 // =============================================================================
 
 interface ReturnReminderParams {
-  patientName: string;
-  clinicName: string;
-  daysSinceLastVisit: number;
-  hasChronicCondition: boolean;
+  patientName: string
+  clinicName: string
+  daysSinceLastVisit: number
+  hasChronicCondition: boolean
 }
 
-function buildReturnMessage(params: ReturnReminderParams): string {
-  const { patientName, clinicName, daysSinceLastVisit, hasChronicCondition } = params;
+export function buildReturnMessage(params: ReturnReminderParams): string {
+  const { patientName, clinicName, daysSinceLastVisit, hasChronicCondition } = params
 
   if (hasChronicCondition) {
     return (
       `Ola ${patientName}! Notamos que faz ${daysSinceLastVisit} dias desde sua ultima consulta. ` +
       `Para o acompanhamento adequado da sua saude, recomendamos agendar um retorno. ` +
       `Entre em contato conosco! ${clinicName}`
-    );
+    )
   }
 
   if (daysSinceLastVisit > 180) {
     return (
       `Ola ${patientName}! Ja faz mais de 6 meses desde sua ultima visita a ${clinicName}. ` +
       `Que tal agendar um check-up? Cuidar da saude e sempre importante!`
-    );
+    )
   }
 
   return (
     `Ola ${patientName}! Faz algum tempo que nao nos vemos na ${clinicName}. ` +
     `Se precisar de algum atendimento, estamos a disposicao!`
-  );
+  )
 }
 
 // =============================================================================
@@ -194,36 +194,36 @@ export const sendPatientReturnReminders = onSchedule(
     timeZone: 'America/Sao_Paulo',
   },
   async () => {
-    const db = getFirestore();
-    const now = new Date();
+    const db = getFirestore()
+    const now = new Date()
 
-    logger.info('Starting patient return reminder check');
+    logger.info('Starting patient return reminder check')
 
-    const clinicsSnapshot = await db.collection('clinics').get();
+    const clinicsSnapshot = await db.collection('clinics').get()
 
-    let totalSent = 0;
-    let totalSkipped = 0;
-    let totalErrors = 0;
+    let totalSent = 0
+    let totalSkipped = 0
+    let totalErrors = 0
 
     for (const clinicDoc of clinicsSnapshot.docs) {
-      const clinicId = clinicDoc.id;
-      const clinic = clinicDoc.data();
+      const clinicId = clinicDoc.id
+      const clinic = clinicDoc.data()
 
       // Check if patient return reminders are enabled
-      const settings = await getWorkflowSettings(clinicId);
+      const settings = await getWorkflowSettings(clinicId)
       if (!settings.patientReturn.enabled) {
-        continue;
+        continue
       }
 
-      const { inactiveDays, reminderFrequencyDays } = settings.patientReturn;
+      const { inactiveDays, reminderFrequencyDays } = settings.patientReturn
 
       // Find inactive patients
-      const inactivePatients = await findInactivePatients(clinicId, inactiveDays);
+      const inactivePatients = await findInactivePatients(clinicId, inactiveDays)
 
-      logger.info(`Found ${inactivePatients.length} inactive patients`, { clinicId });
+      logger.info(`Found ${inactivePatients.length} inactive patients`, { clinicId })
 
       // Limit to 50 per clinic per day to avoid spam
-      const patientsToContact = inactivePatients.slice(0, 50);
+      const patientsToContact = inactivePatients.slice(0, 50)
 
       for (const patient of patientsToContact) {
         // Check if reminder was sent recently
@@ -231,45 +231,40 @@ export const sendPatientReturnReminders = onSchedule(
           clinicId,
           patient.id,
           reminderFrequencyDays
-        );
+        )
 
         if (recentlySent) {
-          totalSkipped++;
-          continue;
+          totalSkipped++
+          continue
         }
 
         try {
-          const message = buildReturnMessage({
-            patientName: patient.name,
-            clinicName: clinic.name || 'Clinica',
-            daysSinceLastVisit: patient.daysSinceLastVisit,
-            hasChronicCondition: (patient.conditions?.length || 0) > 0,
-          });
-
           // Try to use template first, fall back to text if within 24h window
-          let messageId: string;
+          let messageId: string
           try {
             messageId = await sendTemplateMessage(
               patient.phone!,
               'retorno_lembrete',
               'pt_BR',
-              [{
-                type: 'body',
-                parameters: [
-                  { type: 'text', text: patient.name },
-                  { type: 'text', text: clinic.name || 'Clinica' },
-                ],
-              }],
+              [
+                {
+                  type: 'body',
+                  parameters: [
+                    { type: 'text', text: patient.name },
+                    { type: 'text', text: clinic.name || 'Clinica' },
+                  ],
+                },
+              ],
               clinicId
-            );
+            )
           } catch {
             // Template might not exist, skip this patient
             logger.warn('Template not available, skipping patient', {
               clinicId,
               patientId: patient.id,
-            });
-            totalSkipped++;
-            continue;
+            })
+            totalSkipped++
+            continue
           }
 
           // Log success
@@ -281,7 +276,7 @@ export const sendPatientReturnReminders = onSchedule(
             channel: 'whatsapp',
             messageId,
             createdAt: now.toISOString(),
-          });
+          })
 
           // Update patient record
           await db
@@ -292,21 +287,21 @@ export const sendPatientReturnReminders = onSchedule(
             .update({
               'returnReminder.lastSent': now.toISOString(),
               'returnReminder.messageId': messageId,
-            });
+            })
 
-          totalSent++;
+          totalSent++
           logger.info('Return reminder sent', {
             clinicId,
             patientId: patient.id,
             daysSinceLastVisit: patient.daysSinceLastVisit,
-          });
+          })
         } catch (error) {
-          totalErrors++;
+          totalErrors++
           logger.error('Failed to send return reminder', {
             clinicId,
             patientId: patient.id,
             error: error instanceof Error ? error.message : 'Unknown error',
-          });
+          })
 
           await logWorkflowExecution({
             clinicId,
@@ -316,7 +311,7 @@ export const sendPatientReturnReminders = onSchedule(
             channel: 'whatsapp',
             error: error instanceof Error ? error.message : 'Unknown error',
             createdAt: now.toISOString(),
-          });
+          })
         }
       }
     }
@@ -325,9 +320,9 @@ export const sendPatientReturnReminders = onSchedule(
       sent: totalSent,
       skipped: totalSkipped,
       errors: totalErrors,
-    });
+    })
   }
-);
+)
 
 // =============================================================================
 // STATISTICS
@@ -337,22 +332,22 @@ export const sendPatientReturnReminders = onSchedule(
  * Get patient return statistics for a clinic.
  */
 export async function getPatientReturnStats(clinicId: string): Promise<{
-  totalInactivePatients: number;
-  totalRemindersSent: number;
-  totalReturned: number;
-  returnRate: number;
+  totalInactivePatients: number
+  totalRemindersSent: number
+  totalReturned: number
+  returnRate: number
 }> {
-  const db = getFirestore();
-  const settings = await getWorkflowSettings(clinicId);
-  const inactiveDays = settings.patientReturn.inactiveDays || 90;
+  const db = getFirestore()
+  const settings = await getWorkflowSettings(clinicId)
+  const inactiveDays = settings.patientReturn.inactiveDays || 90
 
   // Count inactive patients
-  const inactivePatients = await findInactivePatients(clinicId, inactiveDays);
-  const totalInactivePatients = inactivePatients.length;
+  const inactivePatients = await findInactivePatients(clinicId, inactiveDays)
+  const totalInactivePatients = inactivePatients.length
 
   // Count reminders sent (last 30 days)
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
   const remindersSnapshot = await db
     .collection('clinics')
@@ -361,15 +356,15 @@ export async function getPatientReturnStats(clinicId: string): Promise<{
     .where('workflowType', '==', 'patient_return')
     .where('status', '==', 'sent')
     .where('createdAt', '>=', thirtyDaysAgo.toISOString())
-    .get();
+    .get()
 
-  const totalRemindersSent = remindersSnapshot.size;
+  const totalRemindersSent = remindersSnapshot.size
 
   // Count patients who returned after reminder
-  let totalReturned = 0;
+  let totalReturned = 0
   for (const logDoc of remindersSnapshot.docs) {
-    const log = logDoc.data();
-    const patientId = log.targetId;
+    const log = logDoc.data()
+    const patientId = log.targetId
 
     // Check if patient had appointment after reminder
     const appointmentAfter = await db
@@ -380,19 +375,19 @@ export async function getPatientReturnStats(clinicId: string): Promise<{
       .where('date', '>=', log.createdAt)
       .where('status', '==', 'Finalizado')
       .limit(1)
-      .get();
+      .get()
 
     if (!appointmentAfter.empty) {
-      totalReturned++;
+      totalReturned++
     }
   }
 
-  const returnRate = totalRemindersSent > 0 ? (totalReturned / totalRemindersSent) * 100 : 0;
+  const returnRate = totalRemindersSent > 0 ? (totalReturned / totalRemindersSent) * 100 : 0
 
   return {
     totalInactivePatients,
     totalRemindersSent,
     totalReturned,
     returnRate,
-  };
+  }
 }

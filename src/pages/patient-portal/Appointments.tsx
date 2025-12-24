@@ -9,7 +9,7 @@
  * @version 1.0.0
  */
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   Calendar,
   Clock,
@@ -22,23 +22,23 @@ import {
   Plus,
   ChevronRight,
   Filter,
-} from 'lucide-react';
+} from 'lucide-react'
 
 // ============================================================================
 // Types
 // ============================================================================
 
-type AppointmentStatus = 'confirmed' | 'pending' | 'completed' | 'cancelled';
+type AppointmentStatus = 'confirmed' | 'pending' | 'completed' | 'cancelled'
 
 interface Appointment {
-  id: string;
-  date: string;
-  time: string;
-  professional: string;
-  specialty: string;
-  location: string;
-  status: AppointmentStatus;
-  type: 'presencial' | 'teleconsulta';
+  id: string
+  date: string
+  time: string
+  professional: string
+  specialty: string
+  location: string
+  status: AppointmentStatus
+  type: 'presencial' | 'teleconsulta'
 }
 
 // ============================================================================
@@ -96,7 +96,7 @@ const MOCK_APPOINTMENTS: Appointment[] = [
     status: 'cancelled',
     type: 'presencial',
   },
-];
+]
 
 // ============================================================================
 // Helpers
@@ -126,20 +126,20 @@ const STATUS_CONFIG: Record<
     color: 'text-danger bg-danger-soft',
     icon: XCircle,
   },
-};
+}
 
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
+  const date = new Date(dateStr)
   return date.toLocaleDateString('pt-BR', {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
     year: 'numeric',
-  });
+  })
 }
 
 function isUpcoming(dateStr: string): boolean {
-  return new Date(dateStr) >= new Date(new Date().toDateString());
+  return new Date(dateStr) >= new Date(new Date().toDateString())
 }
 
 // ============================================================================
@@ -147,17 +147,17 @@ function isUpcoming(dateStr: string): boolean {
 // ============================================================================
 
 interface AppointmentCardProps {
-  appointment: Appointment;
+  appointment: Appointment
 }
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment }) => {
-  const statusConfig = STATUS_CONFIG[appointment.status];
-  const StatusIcon = statusConfig.icon;
-  const upcoming = isUpcoming(appointment.date);
+  const statusConfig = STATUS_CONFIG[appointment.status]
+  const StatusIcon = statusConfig.icon
+  const upcoming = isUpcoming(appointment.date)
 
   return (
     <div
-      className={`bg-white dark:bg-genesis-surface rounded-2xl border border-genesis-border p-4 hover:shadow-lg transition-all ${
+      className={`bg-genesis-surface rounded-2xl border border-genesis-border p-4 hover:shadow-lg transition-all ${
         upcoming ? '' : 'opacity-75'
       }`}
     >
@@ -219,7 +219,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment }) => {
         </div>
       )}
     </div>
-  );
+  )
 }
 
 // ============================================================================
@@ -227,17 +227,15 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment }) => {
 // ============================================================================
 
 export function PatientAppointments(): React.ReactElement {
-  const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all');
+  const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all')
 
-  const filteredAppointments = MOCK_APPOINTMENTS.filter((apt) => {
-    if (filter === 'upcoming') return isUpcoming(apt.date);
-    if (filter === 'past') return !isUpcoming(apt.date);
-    return true;
-  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const filteredAppointments = MOCK_APPOINTMENTS.filter(apt => {
+    if (filter === 'upcoming') return isUpcoming(apt.date)
+    if (filter === 'past') return !isUpcoming(apt.date)
+    return true
+  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
-  const upcomingCount = MOCK_APPOINTMENTS.filter((apt) =>
-    isUpcoming(apt.date)
-  ).length;
+  const upcomingCount = MOCK_APPOINTMENTS.filter(apt => isUpcoming(apt.date)).length
 
   return (
     <div className="space-y-6 animate-enter pb-8">
@@ -268,13 +266,13 @@ export function PatientAppointments(): React.ReactElement {
             { value: 'all', label: 'Todas' },
             { value: 'upcoming', label: 'Próximas' },
             { value: 'past', label: 'Anteriores' },
-          ].map((option) => (
+          ].map(option => (
             <button
               key={option.value}
               onClick={() => setFilter(option.value as typeof filter)}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 filter === option.value
-                  ? 'bg-white dark:bg-genesis-surface text-genesis-dark shadow-sm'
+                  ? 'bg-genesis-surface text-genesis-dark shadow-sm'
                   : 'text-genesis-muted hover:text-genesis-dark'
               }`}
             >
@@ -287,12 +285,12 @@ export function PatientAppointments(): React.ReactElement {
       {/* Appointments List */}
       {filteredAppointments.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredAppointments.map((appointment) => (
+          {filteredAppointments.map(appointment => (
             <AppointmentCard key={appointment.id} appointment={appointment} />
           ))}
         </div>
       ) : (
-        <div className="text-center py-12 bg-white dark:bg-genesis-surface rounded-2xl border border-genesis-border">
+        <div className="text-center py-12 bg-genesis-surface rounded-2xl border border-genesis-border">
           <Calendar className="w-12 h-12 text-genesis-muted mx-auto mb-4" />
           <p className="text-genesis-dark font-medium">Nenhuma consulta encontrada</p>
           <p className="text-genesis-muted text-sm mt-1">
@@ -314,14 +312,14 @@ export function PatientAppointments(): React.ReactElement {
               Política de Cancelamento
             </p>
             <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-              Cancelamentos devem ser feitos com pelo menos 24 horas de
-              antecedência para evitar cobrança.
+              Cancelamentos devem ser feitos com pelo menos 24 horas de antecedência para evitar
+              cobrança.
             </p>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default PatientAppointments;
+export default PatientAppointments

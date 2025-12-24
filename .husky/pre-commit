@@ -1,0 +1,33 @@
+#!/bin/bash
+# CODE_CONSTITUTION Pre-commit Guardrails
+
+# Exit on error
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# 1. File size check (max 500 lines per CODE_CONSTITUTION)
+echo "📏 Checking file sizes..."
+find src -name "*.ts" -o -name "*.tsx" | while read file; do
+  lines=$(wc -l < "$file")
+  if [ "$lines" -gt 500 ]; then
+    echo "❌ BLOCKED: $file has $lines lines (max 500)"
+    exit 1
+  fi
+done
+
+# 2. Design tokens check (no hardcoded bg-white without dark: variant)
+echo "🎨 Checking design tokens..."
+if git diff --cached --name-only | grep -E "\.tsx$" | xargs grep -l "bg-white" 2>/dev/null | xargs grep "bg-white" 2>/dev/null | grep -v "dark:"; then
+  echo "⚠️  WARNING: Found bg-white without dark: variant. Use bg-genesis-surface instead."
+fi
+
+# 3. Run lint-staged (ESLint + Prettier on staged files)
+echo "✨ Running lint-staged..."
+npx lint-staged
+
+# 4. TypeScript check
+echo "📦 Running TypeScript check..."
+npm run typecheck
+
+echo "✅ All pre-commit checks passed!"
