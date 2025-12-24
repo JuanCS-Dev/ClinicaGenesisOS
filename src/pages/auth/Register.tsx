@@ -63,7 +63,7 @@ export const Register: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-genesis-soft via-white to-blue-50 flex">
       {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-genesis-dark relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-[#0f172a] relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 via-transparent to-genesis-primary/10" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
           <Link to="/" className="flex items-center gap-3">
@@ -120,7 +120,7 @@ export const Register: React.FC = () => {
         <div className="w-full max-w-md space-y-8">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-genesis-dark rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-genesis-primary rounded-xl flex items-center justify-center">
               <Activity className="w-6 h-6 text-white" strokeWidth={2.5} />
             </div>
             <span className="text-xl font-bold text-genesis-dark">CLÍNICA GENESIS</span>
@@ -237,7 +237,7 @@ export const Register: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting || loading}
-              className="w-full py-3 bg-genesis-dark text-white font-semibold rounded-xl hover:bg-genesis-dark/90 focus:outline-none focus:ring-2 focus:ring-genesis-dark/20 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-genesis-primary text-white font-semibold rounded-xl hover:bg-genesis-primary-dark focus:outline-none focus:ring-2 focus:ring-genesis-primary/20 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Criando conta...' : 'Criar conta'}
             </button>

@@ -218,7 +218,7 @@ export function TransactionForm({
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3 bg-genesis-dark text-white rounded-xl font-medium hover:bg-black transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-3 bg-genesis-primary text-white rounded-xl font-medium hover:bg-genesis-primary-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {submitting ? (
               <>

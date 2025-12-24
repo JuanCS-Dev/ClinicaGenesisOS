@@ -100,7 +100,7 @@ export function WhatsAppMetrics() {
             Métricas de engajamento e confirmações de consulta via WhatsApp.
           </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-genesis-dark text-white rounded-xl text-sm font-medium hover:bg-black transition-colors shadow-lg shadow-genesis-medium/20">
+        <button className="flex items-center gap-2 px-4 py-2.5 bg-genesis-primary text-white rounded-xl text-sm font-medium hover:bg-genesis-primary-dark transition-colors shadow-lg shadow-genesis-primary/20">
           <RefreshCw className="w-4 h-4" /> Atualizar
         </button>
       </div>

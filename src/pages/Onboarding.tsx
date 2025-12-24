@@ -93,7 +93,7 @@ export function Onboarding() {
       <div className="bg-genesis-surface border-b border-genesis-border-subtle">
         <div className="max-w-3xl mx-auto px-6 py-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-genesis-dark rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-genesis-primary rounded-xl flex items-center justify-center">
               <Activity className="w-6 h-6 text-white" strokeWidth={2.5} />
             </div>
             <span className="text-xl font-bold text-genesis-dark">CLÍNICA GENESIS</span>

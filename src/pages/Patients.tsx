@@ -71,7 +71,7 @@ export function Patients() {
         </div>
         <button
           onClick={() => navigate('/patients/new')}
-          className="flex items-center gap-2 px-5 py-2.5 bg-genesis-dark text-white rounded-xl text-sm font-bold hover:bg-black transition-all shadow-lg shadow-genesis-medium/20 hover:-translate-y-0.5"
+          className="flex items-center gap-2 px-5 py-2.5 bg-genesis-primary text-white rounded-xl text-sm font-bold hover:bg-genesis-primary-dark transition-all shadow-lg shadow-genesis-primary/20 hover:-translate-y-0.5"
         >
           <Plus className="w-4 h-4" /> Novo Paciente
         </button>

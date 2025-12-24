@@ -137,8 +137,8 @@ export function Billing(): React.ReactElement {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 flex items-center justify-center">
-            <FileText className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+          <div className="w-12 h-12 rounded-2xl bg-genesis-primary/10 flex items-center justify-center">
+            <FileText className="w-6 h-6 text-genesis-primary" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-genesis-dark tracking-tight">
@@ -229,7 +229,7 @@ export function Billing(): React.ReactElement {
               flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all
               ${
                 activeTab === tab.id
-                  ? 'bg-genesis-dark text-white shadow-lg'
+                  ? 'bg-genesis-primary text-white shadow-lg'
                   : 'text-genesis-muted hover:bg-genesis-hover'
               }
             `}

@@ -55,22 +55,22 @@ const InsightCard: React.FC<InsightCardProps> = ({
 }) => (
   <div className="bg-genesis-surface p-6 rounded-2xl border border-genesis-border-subtle shadow-md flex flex-col justify-between group hover:shadow-lg transition-all duration-300">
     <div className="flex justify-between items-start">
-      <h4 className="text-sm font-medium text-genesis-medium">{title}</h4>
+      <h4 className="text-[11px] font-semibold text-genesis-muted uppercase tracking-wider">{title}</h4>
       {icon || (
-        <Info className="w-4 h-4 text-genesis-subtle hover:text-[#4F46E5] cursor-pointer transition-colors" />
+        <Info className="w-4 h-4 text-genesis-subtle hover:text-genesis-primary cursor-pointer transition-colors" />
       )}
     </div>
-    <div className="mt-4">
+    <div className="mt-3">
       {loading ? (
         <div className="h-9 flex items-center">
           <Loader2 className="w-6 h-6 animate-spin text-genesis-subtle" />
         </div>
       ) : (
-        <h2 className="text-3xl font-bold text-genesis-dark tracking-tight">
+        <h2 className="text-3xl font-bold text-genesis-dark tracking-tight leading-none">
           {value}
         </h2>
       )}
-      {footer && <p className="text-xs text-genesis-medium mt-1">{footer}</p>}
+      {footer && <p className="text-xs text-genesis-medium mt-2 font-medium">{footer}</p>}
     </div>
   </div>
 );
@@ -155,11 +155,11 @@ export const Reports: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-end flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-genesis-dark tracking-tight">
+          <h1 className="text-2xl font-bold text-genesis-dark tracking-tight leading-tight">
             Relatórios Clínicos
           </h1>
-          <p className="text-genesis-medium text-sm">
-            Análise demográfica e desempenho de procedimentos.
+          <p className="text-genesis-muted text-sm mt-1">
+            Análise demográfica e desempenho de procedimentos
           </p>
         </div>
         <div className="flex gap-3">
@@ -182,7 +182,7 @@ export const Reports: React.FC = () => {
           <button
             onClick={handleExport}
             disabled={exporting}
-            className="flex items-center gap-2 px-4 py-2.5 bg-genesis-dark text-white rounded-xl text-sm font-medium hover:bg-black transition-colors shadow-lg shadow-genesis-medium/20 disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2.5 bg-genesis-primary text-white rounded-xl text-sm font-medium hover:bg-genesis-primary-dark transition-colors shadow-lg shadow-genesis-primary/20 disabled:opacity-50"
           >
             {exporting ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -229,7 +229,7 @@ export const Reports: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Procedures Chart */}
         <div className="bg-genesis-surface p-8 rounded-3xl border border-genesis-border-subtle shadow-md h-[400px] flex flex-col">
-          <h3 className="text-lg font-bold text-genesis-dark mb-6">
+          <h3 className="text-base font-semibold text-genesis-dark mb-6">
             Procedimentos Populares
           </h3>
           {loading ? (
@@ -251,15 +251,17 @@ export const Reports: React.FC = () => {
                   type="category"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: '#111827', fontSize: 13, fontWeight: 500 }}
+                  tick={{ fill: 'var(--color-genesis-muted)', fontSize: 13, fontWeight: 500 }}
                   width={120}
                 />
                 <Tooltip
-                  cursor={{ fill: '#F5F5F7' }}
+                  cursor={{ fill: 'var(--color-genesis-hover)' }}
                   contentStyle={{
                     borderRadius: '8px',
                     border: 'none',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    backgroundColor: 'var(--color-genesis-surface)',
+                    color: 'var(--color-genesis-dark)',
                   }}
                   formatter={(value: number) => [
                     `${value} agendamentos`,
@@ -279,11 +281,11 @@ export const Reports: React.FC = () => {
         </div>
 
         {/* Demographics & Age Grid */}
-        <div className="grid grid-rows-2 gap-8">
+        <div className="grid grid-rows-2 gap-6 h-[400px]">
           {/* Gender Distribution */}
-          <div className="bg-genesis-surface p-6 rounded-3xl border border-genesis-border-subtle shadow-md flex items-center justify-between">
+          <div className="bg-genesis-surface p-6 rounded-3xl border border-genesis-border-subtle shadow-md flex items-center justify-between min-h-0">
             <div>
-              <h3 className="text-lg font-bold text-genesis-dark mb-2">
+              <h3 className="text-base font-semibold text-genesis-dark mb-3">
                 Gênero
               </h3>
               {loading ? (
@@ -338,8 +340,8 @@ export const Reports: React.FC = () => {
           </div>
 
           {/* Age Distribution */}
-          <div className="bg-genesis-surface p-6 rounded-3xl border border-genesis-border-subtle shadow-md flex flex-col">
-            <h3 className="text-lg font-bold text-genesis-dark mb-4">
+          <div className="bg-genesis-surface p-6 rounded-3xl border border-genesis-border-subtle shadow-md flex flex-col min-h-0">
+            <h3 className="text-base font-semibold text-genesis-dark mb-4">
               Faixa Etária Predominante
             </h3>
             {loading ? (
@@ -355,7 +357,7 @@ export const Reports: React.FC = () => {
                   >
                     <div className="w-full bg-genesis-soft rounded-t-xl relative overflow-hidden h-24 flex items-end">
                       <div
-                        className="w-full bg-genesis-dark/80 group-hover:bg-[#4F46E5] transition-colors duration-500 rounded-t-xl"
+                        className="w-full bg-genesis-primary/60 group-hover:bg-genesis-primary transition-colors duration-500 rounded-t-xl"
                         style={{ height: `${Math.max(d.value * 2, 10)}%` }}
                       />
                     </div>

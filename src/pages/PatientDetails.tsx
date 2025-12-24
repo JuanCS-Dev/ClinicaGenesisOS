@@ -305,7 +305,7 @@ export const PatientDetails: React.FC = () => {
             >
               <Receipt className="w-3.5 h-3.5" /> Prescrever
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-genesis-dark text-white rounded-xl text-xs font-bold hover:bg-black transition-all shadow-lg shadow-genesis-medium/20/50 hover:-translate-y-0.5">
+            <button className="flex items-center gap-2 px-4 py-2 bg-genesis-primary text-white rounded-xl text-xs font-bold hover:bg-genesis-primary-dark transition-all shadow-lg shadow-genesis-primary/20 hover:-translate-y-0.5">
                 <Calendar className="w-3.5 h-3.5" /> Agendar
             </button>
            </div>

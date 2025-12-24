@@ -16,7 +16,7 @@ export function Navbar() {
     <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'bg-genesis-surface/90 backdrop-blur-xl border-b border-genesis-border/50 py-4' : 'bg-transparent py-6'}`}>
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <div className="flex items-center gap-3 group cursor-pointer" onClick={() => navigate('/')}>
-          <div className="w-10 h-10 bg-genesis-dark rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-500">
+          <div className="w-10 h-10 bg-genesis-primary rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-500">
             <Activity className="text-white w-5 h-5" />
           </div>
           <div className="flex flex-col">
@@ -47,7 +47,7 @@ export function Navbar() {
           </button>
           <button 
             onClick={() => navigate('/apply')}
-            className="px-6 py-3 bg-genesis-dark text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-black transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center gap-2 group"
+            className="px-6 py-3 bg-genesis-primary text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-genesis-primary-dark transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center gap-2 group"
           >
             <Lock className="w-3 h-3 group-hover:text-genesis-primary transition-colors" />
             Falar com Concierge

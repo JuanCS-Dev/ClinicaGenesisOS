@@ -18,7 +18,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: Props) {
         </p>
         <button
           onClick={resetErrorBoundary}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-genesis-dark text-white rounded-xl font-medium hover:bg-black transition-colors"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-genesis-primary text-white rounded-xl font-medium hover:bg-genesis-primary-dark transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
           Tentar novamente

@@ -141,7 +141,7 @@ export const Sidebar: React.FC = () => {
     <aside className="w-64 h-screen flex flex-col fixed left-0 top-0 z-20 bg-genesis-soft border-r border-genesis-border-subtle shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)] transition-colors duration-300" aria-label="Menu principal">
       {/* Logo Area */}
       <Link to="/" className="h-20 flex items-center px-6 mb-2 hover:opacity-80 transition-opacity">
-        <div className="w-9 h-9 bg-genesis-dark rounded-xl flex items-center justify-center mr-3 shadow-lg">
+        <div className="w-9 h-9 bg-genesis-primary rounded-xl flex items-center justify-center mr-3 shadow-lg">
           <Activity className="text-white w-5 h-5" strokeWidth={2.5} />
         </div>
         <div>

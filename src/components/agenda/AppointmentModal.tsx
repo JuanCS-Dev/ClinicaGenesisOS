@@ -146,7 +146,7 @@ export function AppointmentModal({ isOpen, onClose, initialDate }: AppointmentMo
             type="submit"
             form="appointment-form"
             disabled={saving || !selectedPatient}
-            className="flex items-center gap-2 px-6 py-2.5 bg-genesis-dark text-white rounded-xl text-sm font-bold hover:bg-black shadow-lg shadow-genesis-medium/30 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+            className="flex items-center gap-2 px-6 py-2.5 bg-genesis-primary text-white rounded-xl text-sm font-bold hover:bg-genesis-primary-dark shadow-lg shadow-genesis-primary/30 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           >
             {saving ? (
               <>

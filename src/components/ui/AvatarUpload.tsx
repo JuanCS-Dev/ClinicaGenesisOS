@@ -118,7 +118,7 @@ export function AvatarUpload({
         </div>
 
         {!disabled && !uploading && (
-          <div className="absolute bottom-0 right-0 p-2 bg-genesis-dark rounded-full text-white shadow-lg group-hover:scale-110 transition-transform">
+          <div className="absolute bottom-0 right-0 p-2 bg-genesis-primary rounded-full text-white shadow-lg group-hover:scale-110 transition-transform">
             <Camera className="w-4 h-4" />
           </div>
         )}

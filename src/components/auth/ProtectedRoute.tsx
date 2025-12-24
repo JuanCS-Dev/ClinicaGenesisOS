@@ -15,7 +15,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return (
       <div className="min-h-screen bg-genesis-soft flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="w-16 h-16 bg-genesis-dark rounded-2xl flex items-center justify-center mx-auto animate-pulse">
+          <div className="w-16 h-16 bg-genesis-primary rounded-2xl flex items-center justify-center mx-auto animate-pulse">
             <Activity className="w-8 h-8 text-white" strokeWidth={2.5} />
           </div>
           <p className="text-genesis-medium font-medium">Carregando...</p>

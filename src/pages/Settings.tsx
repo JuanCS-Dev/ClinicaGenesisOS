@@ -146,7 +146,7 @@ export function Settings(): React.ReactElement {
                 transition-all duration-200 whitespace-nowrap
                 ${
                   isActive
-                    ? 'bg-genesis-dark text-white shadow-lg'
+                    ? 'bg-genesis-primary text-white shadow-lg'
                     : 'text-genesis-medium hover:bg-genesis-hover'
                 }
               `}

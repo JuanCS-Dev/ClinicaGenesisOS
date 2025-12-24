@@ -179,7 +179,7 @@ export function UserDropdown({ className = '' }: UserDropdownProps) {
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-genesis-medium hover:bg-genesis-hover hover:text-genesis-dark transition-colors group"
               >
                 <div className="p-1.5 rounded-lg bg-genesis-soft group-hover:bg-genesis-primary/10 transition-colors">
-                  <User className="w-4 h-4 group-hover:text-genesis-primary transition-colors" />
+                  <User className="w-4 h-4 text-genesis-muted group-hover:text-genesis-primary transition-colors" />
                 </div>
                 <span>Meu Perfil</span>
               </button>
@@ -188,7 +188,7 @@ export function UserDropdown({ className = '' }: UserDropdownProps) {
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-genesis-medium hover:bg-genesis-hover hover:text-genesis-dark transition-colors group"
               >
                 <div className="p-1.5 rounded-lg bg-genesis-soft group-hover:bg-genesis-primary/10 transition-colors">
-                  <Building2 className="w-4 h-4 group-hover:text-genesis-primary transition-colors" />
+                  <Building2 className="w-4 h-4 text-genesis-muted group-hover:text-genesis-primary transition-colors" />
                 </div>
                 <span>Dados da Clínica</span>
               </button>
@@ -204,7 +204,7 @@ export function UserDropdown({ className = '' }: UserDropdownProps) {
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-genesis-medium hover:bg-genesis-hover hover:text-genesis-dark transition-colors group"
               >
                 <div className="p-1.5 rounded-lg bg-genesis-soft group-hover:bg-genesis-primary/10 transition-colors">
-                  <Settings className="w-4 h-4 group-hover:text-genesis-primary transition-colors" />
+                  <Settings className="w-4 h-4 text-genesis-muted group-hover:text-genesis-primary transition-colors" />
                 </div>
                 <span>Preferências</span>
               </button>
@@ -213,7 +213,7 @@ export function UserDropdown({ className = '' }: UserDropdownProps) {
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-genesis-medium hover:bg-genesis-hover hover:text-genesis-dark transition-colors group"
               >
                 <div className="p-1.5 rounded-lg bg-genesis-soft group-hover:bg-genesis-primary/10 transition-colors">
-                  <CreditCard className="w-4 h-4 group-hover:text-genesis-primary transition-colors" />
+                  <CreditCard className="w-4 h-4 text-genesis-muted group-hover:text-genesis-primary transition-colors" />
                 </div>
                 <span>Faturamento TISS</span>
               </button>
@@ -223,7 +223,7 @@ export function UserDropdown({ className = '' }: UserDropdownProps) {
               >
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-lg bg-genesis-soft group-hover:bg-genesis-primary/10 transition-colors">
-                    <ThemeIcon className="w-4 h-4 group-hover:text-genesis-primary transition-colors" />
+                    <ThemeIcon className="w-4 h-4 text-genesis-muted group-hover:text-genesis-primary transition-colors" />
                   </div>
                   <span>Tema</span>
                 </div>
@@ -240,7 +240,7 @@ export function UserDropdown({ className = '' }: UserDropdownProps) {
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-genesis-medium hover:bg-genesis-hover hover:text-genesis-dark transition-colors group"
               >
                 <div className="p-1.5 rounded-lg bg-genesis-soft group-hover:bg-genesis-primary/10 transition-colors">
-                  <HelpCircle className="w-4 h-4 group-hover:text-genesis-primary transition-colors" />
+                  <HelpCircle className="w-4 h-4 text-genesis-muted group-hover:text-genesis-primary transition-colors" />
                 </div>
                 <span>Ajuda & Suporte</span>
               </button>
@@ -249,7 +249,7 @@ export function UserDropdown({ className = '' }: UserDropdownProps) {
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-genesis-medium hover:bg-genesis-hover hover:text-genesis-dark transition-colors group"
               >
                 <div className="p-1.5 rounded-lg bg-genesis-soft group-hover:bg-genesis-primary/10 transition-colors">
-                  <Shield className="w-4 h-4 group-hover:text-genesis-primary transition-colors" />
+                  <Shield className="w-4 h-4 text-genesis-muted group-hover:text-genesis-primary transition-colors" />
                 </div>
                 <span>Privacidade & LGPD</span>
               </button>

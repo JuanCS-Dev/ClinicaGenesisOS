@@ -23,7 +23,7 @@ export function NotFound() {
           </button>
           <button
             onClick={() => navigate('/dashboard')}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-genesis-dark text-white rounded-xl font-medium hover:bg-black transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-genesis-primary text-white rounded-xl font-medium hover:bg-genesis-primary-dark transition-colors"
           >
             <Home className="w-4 h-4" /> Ir para Dashboard
           </button>
