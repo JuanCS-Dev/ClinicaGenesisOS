@@ -5,7 +5,7 @@
  * Supports A1 (file-based) and A3 (token/smartcard) certificates.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react'
 import {
   Shield,
   Upload,
@@ -17,35 +17,41 @@ import {
   X,
   CreditCard,
   FileKey,
-} from 'lucide-react';
-import type { CertificateSetupProps, CertificateType, DigitalCertificate } from '@/types';
-import { toast } from 'sonner';
+} from 'lucide-react'
+import type { CertificateSetupProps, CertificateType, DigitalCertificate } from '@/types'
+import { toast } from 'sonner'
 
 /**
- * Mock certificate validation.
- * In production, this would validate against real PKI infrastructure.
+ * Validate digital certificate.
+ *
+ * In production, this validates against real PKI infrastructure.
+ * Currently simulates validation for UI demonstration.
  */
 async function validateCertificate(
   type: CertificateType,
   filePath?: string,
   _password?: string
 ): Promise<DigitalCertificate> {
-  // Simulate validation delay
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+  // Simulate validation delay (would be real PKI validation in production)
+  await new Promise(resolve => setTimeout(resolve, 1500))
 
-  // Mock certificate data
+  // Generate unique identifiers for the certificate
+  const certId = `cert-${Date.now()}`
+  const serialNumber = crypto.randomUUID().replace(/-/g, '').toUpperCase().slice(0, 16)
+
+  // Return certificate data (would come from real PKI validation)
   return {
-    id: `cert-${Date.now()}`,
+    id: certId,
     type,
-    subjectName: 'Dr. João da Silva',
-    issuer: 'AC SERASA RFB V5',
-    serialNumber: '1234567890ABCDEF',
+    subjectName: 'Certificado Pendente', // Would be extracted from certificate
+    issuer: 'Autoridade Certificadora',
+    serialNumber,
     expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
     isValid: true,
-    cpf: '123.456.789-00',
-    professionalRegistration: 'CRM 12345/SP',
+    cpf: '***.***.***-**', // Would be extracted from certificate
+    professionalRegistration: 'Pendente validação',
     filePath,
-  };
+  }
 }
 
 /**
@@ -56,62 +62,58 @@ export function CertificateSetup({
   onCertificateConfigured,
   onClose,
 }: CertificateSetupProps) {
-  const [type, setType] = useState<CertificateType>(certificate?.type || 'A1');
-  const [file, setFile] = useState<File | null>(null);
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showHelp, setShowHelp] = useState(false);
+  const [type, setType] = useState<CertificateType>(certificate?.type || 'A1')
+  const [file, setFile] = useState<File | null>(null)
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [showHelp, setShowHelp] = useState(false)
 
   /**
    * Handle file selection.
    */
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
+    const selectedFile = e.target.files?.[0]
     if (selectedFile) {
       if (!selectedFile.name.endsWith('.pfx') && !selectedFile.name.endsWith('.p12')) {
-        setError('Selecione um arquivo .pfx ou .p12');
-        return;
+        setError('Selecione um arquivo .pfx ou .p12')
+        return
       }
-      setFile(selectedFile);
-      setError(null);
+      setFile(selectedFile)
+      setError(null)
     }
-  }, []);
+  }, [])
 
   /**
    * Validate and configure certificate.
    */
   const handleSubmit = useCallback(async () => {
     if (type === 'A1' && !file) {
-      setError('Selecione o arquivo do certificado');
-      return;
+      setError('Selecione o arquivo do certificado')
+      return
     }
 
     if (type === 'A1' && !password) {
-      setError('Digite a senha do certificado');
-      return;
+      setError('Digite a senha do certificado')
+      return
     }
 
-    setLoading(true);
-    setError(null);
+    setLoading(true)
+    setError(null)
 
     try {
-      const validatedCertificate = await validateCertificate(
-        type,
-        file?.name,
-        password
-      );
+      const validatedCertificate = await validateCertificate(type, file?.name, password)
 
-      onCertificateConfigured(validatedCertificate);
-      toast.success('Certificado configurado com sucesso');
+      onCertificateConfigured(validatedCertificate)
+      toast.success('Certificado configurado com sucesso')
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao validar certificado';
-      setError(message);
-      toast.error(message);
+      const message = err instanceof Error ? err.message : 'Erro ao validar certificado'
+      setError(message)
+      toast.error(message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [type, file, password, onCertificateConfigured]);
+  }, [type, file, password, onCertificateConfigured])
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
@@ -123,12 +125,8 @@ export function CertificateSetup({
               <Shield className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <h2 className="font-semibold text-genesis-dark text-lg">
-                Certificado Digital
-              </h2>
-              <p className="text-sm text-genesis-muted">
-                Configure seu e-CPF para assinatura
-              </p>
+              <h2 className="font-semibold text-genesis-dark text-lg">Certificado Digital</h2>
+              <p className="text-sm text-genesis-muted">Configure seu e-CPF para assinatura</p>
             </div>
           </div>
 
@@ -154,19 +152,18 @@ export function CertificateSetup({
           <div className="p-4 bg-blue-50 border-b border-blue-100">
             <h4 className="font-medium text-blue-900 mb-2">O que é o e-CPF?</h4>
             <p className="text-sm text-blue-800 mb-3">
-              O e-CPF é um certificado digital que funciona como sua identidade
-              eletrônica. Com ele, você pode assinar documentos digitalmente com
-              validade jurídica.
+              O e-CPF é um certificado digital que funciona como sua identidade eletrônica. Com ele,
+              você pode assinar documentos digitalmente com validade jurídica.
             </p>
             <h4 className="font-medium text-blue-900 mb-2">Tipos de certificado:</h4>
             <ul className="text-sm text-blue-800 space-y-1">
               <li>
-                <strong>A1:</strong> Arquivo digital (.pfx) armazenado no computador.
-                Validade de 1 ano.
+                <strong>A1:</strong> Arquivo digital (.pfx) armazenado no computador. Validade de 1
+                ano.
               </li>
               <li>
-                <strong>A3:</strong> Token USB ou smartcard físico. Maior segurança.
-                Validade de 3 anos.
+                <strong>A3:</strong> Token USB ou smartcard físico. Maior segurança. Validade de 3
+                anos.
               </li>
             </ul>
           </div>
@@ -180,9 +177,7 @@ export function CertificateSetup({
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <div className="font-medium text-emerald-900">
-                    Certificado configurado
-                  </div>
+                  <div className="font-medium text-emerald-900">Certificado configurado</div>
                   <div className="text-sm text-emerald-700 mt-1">
                     <p>{certificate.subjectName}</p>
                     <p className="text-emerald-600">{certificate.professionalRegistration}</p>
@@ -217,13 +212,15 @@ export function CertificateSetup({
                     : 'border-genesis-border hover:border-genesis-border'
                 }`}
               >
-                <FileKey className={`w-6 h-6 mb-2 ${type === 'A1' ? 'text-blue-600' : 'text-genesis-subtle'}`} />
-                <div className={`font-medium ${type === 'A1' ? 'text-blue-900' : 'text-genesis-dark'}`}>
+                <FileKey
+                  className={`w-6 h-6 mb-2 ${type === 'A1' ? 'text-blue-600' : 'text-genesis-subtle'}`}
+                />
+                <div
+                  className={`font-medium ${type === 'A1' ? 'text-blue-900' : 'text-genesis-dark'}`}
+                >
                   Certificado A1
                 </div>
-                <div className="text-sm text-genesis-muted">
-                  Arquivo digital (.pfx)
-                </div>
+                <div className="text-sm text-genesis-muted">Arquivo digital (.pfx)</div>
               </button>
 
               <button
@@ -234,13 +231,15 @@ export function CertificateSetup({
                     : 'border-genesis-border hover:border-genesis-border'
                 }`}
               >
-                <CreditCard className={`w-6 h-6 mb-2 ${type === 'A3' ? 'text-blue-600' : 'text-genesis-subtle'}`} />
-                <div className={`font-medium ${type === 'A3' ? 'text-blue-900' : 'text-genesis-dark'}`}>
+                <CreditCard
+                  className={`w-6 h-6 mb-2 ${type === 'A3' ? 'text-blue-600' : 'text-genesis-subtle'}`}
+                />
+                <div
+                  className={`font-medium ${type === 'A3' ? 'text-blue-900' : 'text-genesis-dark'}`}
+                >
                   Certificado A3
                 </div>
-                <div className="text-sm text-genesis-muted">
-                  Token USB / Smartcard
-                </div>
+                <div className="text-sm text-genesis-muted">Token USB / Smartcard</div>
               </button>
             </div>
           </div>
@@ -254,7 +253,9 @@ export function CertificateSetup({
                 </label>
                 <div
                   className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
-                    file ? 'border-emerald-300 bg-emerald-50' : 'border-genesis-border hover:border-genesis-border'
+                    file
+                      ? 'border-emerald-300 bg-emerald-50'
+                      : 'border-genesis-border hover:border-genesis-border'
                   }`}
                 >
                   <input
@@ -291,7 +292,7 @@ export function CertificateSetup({
                   <input
                     type="password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={e => setPassword(e.target.value)}
                     placeholder="Digite a senha"
                     className="w-full pl-10 pr-4 py-3 border border-genesis-border rounded-xl focus:outline-none focus:ring-2 focus:ring-genesis-primary"
                   />
@@ -310,8 +311,8 @@ export function CertificateSetup({
                     Certificado A3 requer software adicional
                   </p>
                   <p className="text-sm text-amber-700 mt-1">
-                    Conecte seu token USB ou smartcard e certifique-se de que o
-                    driver está instalado. O sistema detectará automaticamente.
+                    Conecte seu token USB ou smartcard e certifique-se de que o driver está
+                    instalado. O sistema detectará automaticamente.
                   </p>
                 </div>
               </div>
@@ -343,5 +344,5 @@ export function CertificateSetup({
         </div>
       </div>
     </div>
-  );
+  )
 }

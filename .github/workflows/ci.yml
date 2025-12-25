@@ -44,6 +44,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Mock Audit
+        run: npm run audit:mocks
+
       - name: Run Tests
         run: npm run test -- --run --reporter=verbose
 

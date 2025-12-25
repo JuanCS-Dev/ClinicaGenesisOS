@@ -18,14 +18,45 @@ import type { Clinic, UserProfile, SpecialtyType } from '@/types'
 // ============================================================================
 
 /**
- * Public-facing clinic info for booking pages.
+ * Address structure for clinic.
+ */
+export interface ClinicAddress {
+  street: string
+  number: string
+  complement?: string
+  neighborhood: string
+  city: string
+  state: string
+  zipCode: string
+}
+
+/**
+ * Working hours entry.
+ */
+export interface WorkingHoursEntry {
+  day: string
+  hours: string
+}
+
+/**
+ * Public-facing clinic info for booking and profile pages.
  */
 export interface PublicClinicInfo {
   id: string
   name: string
-  address?: string
+  address?: ClinicAddress | string
   phone?: string
+  email?: string
   logo?: string
+  coverImage?: string
+  description?: string
+  website?: string
+  rating?: number
+  reviewCount?: number
+  foundedYear?: number
+  specialties?: SpecialtyType[]
+  services?: string[]
+  workingHours?: WorkingHoursEntry[]
 }
 
 /**
@@ -72,7 +103,17 @@ function toPublicClinicInfo(clinic: Clinic): PublicClinicInfo {
     name: clinic.name,
     address: clinic.address,
     phone: clinic.phone,
+    email: clinic.email,
     logo: clinic.logo,
+    coverImage: clinic.coverImage,
+    description: clinic.description,
+    website: clinic.website,
+    rating: clinic.rating,
+    reviewCount: clinic.reviewCount,
+    foundedYear: clinic.foundedYear,
+    specialties: clinic.specialties as SpecialtyType[],
+    services: clinic.services,
+    workingHours: clinic.workingHours,
   }
 }
 

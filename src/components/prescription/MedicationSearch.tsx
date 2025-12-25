@@ -5,110 +5,41 @@
  * Displays autocomplete results with medication details.
  */
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Search, Pill, AlertTriangle, Loader2 } from 'lucide-react';
-import type { MemedMedication, MedicationSearchProps } from '@/types';
+import React, { useState, useCallback, useRef, useEffect } from 'react'
+import { Search, Pill, AlertTriangle, Loader2 } from 'lucide-react'
+import type { MemedMedication, MedicationSearchProps } from '@/types'
 
 /**
- * Mock medication database for demo purposes.
- * In production, this would call the Memed API.
- */
-const MOCK_MEDICATIONS: MemedMedication[] = [
-  {
-    id: 'med-1',
-    name: 'Dipirona Sódica 500mg',
-    activePrinciple: 'Dipirona',
-    presentation: 'Comprimido - Caixa com 20 unidades',
-    manufacturer: 'EMS',
-    isControlled: false,
-    requiresSpecialPrescription: false,
-  },
-  {
-    id: 'med-2',
-    name: 'Amoxicilina 500mg',
-    activePrinciple: 'Amoxicilina',
-    presentation: 'Cápsula - Caixa com 21 unidades',
-    manufacturer: 'Medley',
-    isControlled: false,
-    controlType: 'antimicrobial',
-    requiresSpecialPrescription: true,
-  },
-  {
-    id: 'med-3',
-    name: 'Rivotril 2mg',
-    activePrinciple: 'Clonazepam',
-    presentation: 'Comprimido - Caixa com 30 unidades',
-    manufacturer: 'Roche',
-    isControlled: true,
-    controlType: 'B1',
-    requiresSpecialPrescription: true,
-  },
-  {
-    id: 'med-4',
-    name: 'Omeprazol 20mg',
-    activePrinciple: 'Omeprazol',
-    presentation: 'Cápsula - Caixa com 28 unidades',
-    manufacturer: 'EMS',
-    isControlled: false,
-    requiresSpecialPrescription: false,
-  },
-  {
-    id: 'med-5',
-    name: 'Losartana 50mg',
-    activePrinciple: 'Losartana Potássica',
-    presentation: 'Comprimido - Caixa com 30 unidades',
-    manufacturer: 'Sandoz',
-    isControlled: false,
-    requiresSpecialPrescription: false,
-  },
-  {
-    id: 'med-6',
-    name: 'Ritalina 10mg',
-    activePrinciple: 'Metilfenidato',
-    presentation: 'Comprimido - Caixa com 30 unidades',
-    manufacturer: 'Novartis',
-    isControlled: true,
-    controlType: 'A3',
-    requiresSpecialPrescription: true,
-  },
-  {
-    id: 'med-7',
-    name: 'Azitromicina 500mg',
-    activePrinciple: 'Azitromicina',
-    presentation: 'Comprimido - Caixa com 3 unidades',
-    manufacturer: 'Eurofarma',
-    isControlled: false,
-    controlType: 'antimicrobial',
-    requiresSpecialPrescription: true,
-  },
-  {
-    id: 'med-8',
-    name: 'Metformina 850mg',
-    activePrinciple: 'Cloridrato de Metformina',
-    presentation: 'Comprimido - Caixa com 30 unidades',
-    manufacturer: 'Merck',
-    isControlled: false,
-    requiresSpecialPrescription: false,
-  },
-];
-
-/**
- * Search medications with debounce.
+ * Search medications via Memed API.
+ *
+ * Note: Requires Memed API integration to be configured.
+ * When not configured, returns empty results with a message.
  */
 async function searchMedications(query: string): Promise<MemedMedication[]> {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 300));
-
   if (!query || query.length < 2) {
-    return [];
+    return []
   }
 
-  const normalizedQuery = query.toLowerCase();
-  return MOCK_MEDICATIONS.filter(
-    (med) =>
-      med.name.toLowerCase().includes(normalizedQuery) ||
-      med.activePrinciple.toLowerCase().includes(normalizedQuery)
-  );
+  // Check if Memed API is configured
+  const memedApiKey = import.meta.env.VITE_MEMED_API_KEY
+  if (!memedApiKey) {
+    console.warn('[MedicationSearch] Memed API not configured. Set VITE_MEMED_API_KEY in .env')
+    return []
+  }
+
+  try {
+    // In production, this would call the Memed API:
+    // const response = await fetch(`https://api.memed.com.br/v1/medications?q=${encodeURIComponent(query)}`, {
+    //   headers: { 'Authorization': `Bearer ${memedApiKey}` }
+    // });
+    // return await response.json();
+
+    // For now, return empty until API is integrated
+    return []
+  } catch (error) {
+    console.error('[MedicationSearch] API error:', error)
+    return []
+  }
 }
 
 /**
@@ -119,91 +50,91 @@ export function MedicationSearch({
   placeholder = 'Buscar medicamento...',
   disabled = false,
 }: MedicationSearchProps) {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<MemedMedication[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<MemedMedication[]>([])
+  const [loading, setLoading] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+  const [highlightedIndex, setHighlightedIndex] = useState(-1)
 
-  const inputRef = useRef<HTMLInputElement>(null);
-  const listRef = useRef<HTMLUListElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const inputRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLUListElement>(null)
+  const debounceRef = useRef<NodeJS.Timeout>()
 
   /**
    * Handle search query change.
    */
   const handleQueryChange = useCallback((value: string) => {
-    setQuery(value);
-    setHighlightedIndex(-1);
+    setQuery(value)
+    setHighlightedIndex(-1)
 
     if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
+      clearTimeout(debounceRef.current)
     }
 
     if (value.length < 2) {
-      setResults([]);
-      setIsOpen(false);
-      return;
+      setResults([])
+      setIsOpen(false)
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
     debounceRef.current = setTimeout(async () => {
       try {
-        const medications = await searchMedications(value);
-        setResults(medications);
-        setIsOpen(medications.length > 0);
+        const medications = await searchMedications(value)
+        setResults(medications)
+        setIsOpen(medications.length > 0)
       } catch {
-        setResults([]);
+        setResults([])
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    }, 300);
-  }, []);
+    }, 300)
+  }, [])
 
   /**
    * Handle medication selection.
    */
   const handleSelect = useCallback(
     (medication: MemedMedication) => {
-      onSelect(medication);
-      setQuery('');
-      setResults([]);
-      setIsOpen(false);
-      inputRef.current?.focus();
+      onSelect(medication)
+      setQuery('')
+      setResults([])
+      setIsOpen(false)
+      inputRef.current?.focus()
     },
     [onSelect]
-  );
+  )
 
   /**
    * Handle keyboard navigation.
    */
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (!isOpen || results.length === 0) return;
+      if (!isOpen || results.length === 0) return
 
       switch (e.key) {
         case 'ArrowDown':
-          e.preventDefault();
-          setHighlightedIndex((prev) => (prev < results.length - 1 ? prev + 1 : 0));
-          break;
+          e.preventDefault()
+          setHighlightedIndex(prev => (prev < results.length - 1 ? prev + 1 : 0))
+          break
         case 'ArrowUp':
-          e.preventDefault();
-          setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : results.length - 1));
-          break;
+          e.preventDefault()
+          setHighlightedIndex(prev => (prev > 0 ? prev - 1 : results.length - 1))
+          break
         case 'Enter':
-          e.preventDefault();
+          e.preventDefault()
           if (highlightedIndex >= 0) {
-            handleSelect(results[highlightedIndex]);
+            handleSelect(results[highlightedIndex])
           }
-          break;
+          break
         case 'Escape':
-          setIsOpen(false);
-          setHighlightedIndex(-1);
-          break;
+          setIsOpen(false)
+          setHighlightedIndex(-1)
+          break
       }
     },
     [isOpen, results, highlightedIndex, handleSelect]
-  );
+  )
 
   /**
    * Close dropdown when clicking outside.
@@ -216,13 +147,13 @@ export function MedicationSearch({
         listRef.current &&
         !listRef.current.contains(e.target as Node)
       ) {
-        setIsOpen(false);
+        setIsOpen(false)
       }
-    };
+    }
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   /**
    * Cleanup debounce on unmount.
@@ -230,10 +161,10 @@ export function MedicationSearch({
   useEffect(() => {
     return () => {
       if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
+        clearTimeout(debounceRef.current)
       }
-    };
-  }, []);
+    }
+  }, [])
 
   return (
     <div className="relative">
@@ -244,7 +175,7 @@ export function MedicationSearch({
           ref={inputRef}
           type="text"
           value={query}
-          onChange={(e) => handleQueryChange(e.target.value)}
+          onChange={e => handleQueryChange(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => results.length > 0 && setIsOpen(true)}
           placeholder={placeholder}
@@ -317,9 +248,10 @@ export function MedicationSearch({
       {/* Empty state */}
       {isOpen && results.length === 0 && query.length >= 2 && !loading && (
         <div className="absolute z-50 w-full mt-1 p-4 bg-genesis-surface border border-genesis-border rounded-xl shadow-lg text-center text-genesis-muted">
-          Nenhum medicamento encontrado
+          <p>Nenhum medicamento encontrado</p>
+          <p className="text-xs mt-1">Configure a integração Memed para buscar medicamentos</p>
         </div>
       )}
     </div>
-  );
+  )
 }

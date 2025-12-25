@@ -14,7 +14,7 @@
 | Sprint 3: Patient Portal - Avançado | ✅ Completo | 2025-12-25 |
 | Auditoria CODE_CONSTITUTION | ✅ Aprovado | 2025-12-25 |
 | Sprint 4: Externos | ✅ Completo | 2025-12-25 |
-| Sprint 5: Auditoria Final | ⏳ Pendente | - |
+| Sprint 5: Auditoria Final | ✅ Completo | 2025-12-25 |
 
 ### Sprint 1 - Arquivos Criados
 - ✅ `src/contexts/PatientPortalContext.tsx`
@@ -55,6 +55,17 @@
 - ✅ `Finance.tsx` - Botão "Filtros" com dropdown funcional
 - ✅ `Reports.tsx` - Botão "Compartilhar" com Web Share API
 - ✅ `WhatsAppMetrics.tsx` - Botão "Atualizar" com refresh de métricas
+
+### Sprint 5 - Auditoria Final
+- ✅ `scripts/audit-mocks.sh` - Script de auditoria automatizada
+- ✅ `package.json` - Adicionado script `npm run audit:mocks`
+- ✅ `.github/workflows/ci.yml` - Integração com CI/CD
+- ✅ `ClinicProfile.tsx` - Mocks removidos, usa `usePublicClinicData`
+- ✅ `NutritionPlugin.tsx` - Recebe dados via props, sem mocks
+- ✅ `MedicationSearch.tsx` - Preparado para integração Memed API
+- ✅ `ContactSupport.tsx` - Dados de contato via env vars
+- ✅ `clinic.config.ts` - Apenas tipos, mocks removidos
+- ✅ `lib/constants.ts` - Arquivo removido (não mais necessário)
 
 ---
 

@@ -5,8 +5,8 @@
  * Inspired by Zocdoc clinic profiles and Google Business.
  */
 
-import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import React from 'react'
+import { Link, useParams } from 'react-router-dom'
 import {
   MapPin,
   Phone,
@@ -22,14 +22,10 @@ import {
   Apple,
   CheckCircle2,
   ExternalLink,
-} from 'lucide-react';
-import type { SpecialtyType } from '@/types';
-import {
-  MOCK_CLINIC,
-  MOCK_PROFESSIONALS,
-  type PublicClinic,
-  type ClinicProfessional,
-} from './clinic.config';
+} from 'lucide-react'
+import type { SpecialtyType } from '@/types'
+import { usePublicClinicData } from '@/hooks/usePublicClinicData'
+import type { PublicClinic, ClinicProfessional } from './clinic.config'
 
 // ============================================================================
 // Specialty Configuration
@@ -54,16 +50,16 @@ const SPECIALTY_CONFIG: Record<
     icon: Brain,
     color: 'text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-900/30',
   },
-};
+}
 
 // ============================================================================
 // Sub-Components
 // ============================================================================
 
 const InfoCard: React.FC<{
-  icon: React.ElementType;
-  title: string;
-  children: React.ReactNode;
+  icon: React.ElementType
+  title: string
+  children: React.ReactNode
 }> = ({ icon: Icon, title, children }) => (
   <div className="p-4 bg-genesis-surface rounded-xl border border-genesis-border-subtle">
     <div className="flex items-center gap-3 mb-2">
@@ -74,14 +70,14 @@ const InfoCard: React.FC<{
     </div>
     <div className="text-genesis-medium text-sm">{children}</div>
   </div>
-);
+)
 
 const ProfessionalCard: React.FC<{
-  professional: ClinicProfessional;
-  clinicSlug: string;
+  professional: ClinicProfessional
+  clinicSlug: string
 }> = ({ professional, clinicSlug }) => {
-  const config = SPECIALTY_CONFIG[professional.specialty];
-  const Icon = config.icon;
+  const config = SPECIALTY_CONFIG[professional.specialty]
+  const Icon = config.icon
 
   return (
     <Link
@@ -117,15 +113,15 @@ const ProfessionalCard: React.FC<{
         <ChevronRight className="w-5 h-5 text-genesis-muted flex-shrink-0" />
       </div>
     </Link>
-  );
-};
+  )
+}
 
 const ServiceItem: React.FC<{ service: string }> = ({ service }) => (
   <div className="flex items-center gap-2 text-sm text-genesis-medium">
     <CheckCircle2 className="w-4 h-4 text-genesis-primary flex-shrink-0" />
     <span>{service}</span>
   </div>
-);
+)
 
 // ============================================================================
 // Loading Skeleton
@@ -148,38 +144,86 @@ function ProfileSkeleton() {
             </div>
           </div>
           <div className="mt-8 grid gap-6 md:grid-cols-2">
-            {[1, 2, 3, 4].map((i) => (
+            {[1, 2, 3, 4].map(i => (
               <div key={i} className="h-32 bg-genesis-surface rounded-xl" />
             ))}
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 // ============================================================================
 // Main Component
 // ============================================================================
 
+/**
+ * Parse address from various formats to structured address.
+ */
+function parseAddress(address: unknown): PublicClinic['address'] {
+  if (!address) {
+    return { street: '', number: '', neighborhood: '', city: '', state: '', zipCode: '' }
+  }
+  if (typeof address === 'string') {
+    // Parse string address (simplified)
+    return { street: address, number: '', neighborhood: '', city: '', state: '', zipCode: '' }
+  }
+  if (typeof address === 'object') {
+    const addr = address as Record<string, string>
+    return {
+      street: addr.street || '',
+      number: addr.number || '',
+      complement: addr.complement,
+      neighborhood: addr.neighborhood || '',
+      city: addr.city || '',
+      state: addr.state || '',
+      zipCode: addr.zipCode || '',
+    }
+  }
+  return { street: '', number: '', neighborhood: '', city: '', state: '', zipCode: '' }
+}
+
 export default function ClinicProfile(): React.ReactElement {
-  const { clinicSlug } = useParams<{ clinicSlug: string }>();
-  const [clinic, setClinic] = useState<PublicClinic | null>(null);
-  const [professionals, setProfessionals] = useState<ClinicProfessional[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { clinicSlug } = useParams<{ clinicSlug: string }>()
+  const {
+    clinic: rawClinic,
+    professionals: rawProfessionals,
+    loading,
+  } = usePublicClinicData(clinicSlug)
 
-  useEffect(() => {
-    const loadClinic = async () => {
-      setLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setClinic(MOCK_CLINIC);
-      setProfessionals(MOCK_PROFESSIONALS);
-      setLoading(false);
-    };
-    loadClinic();
-  }, [clinicSlug]);
+  // Map to PublicClinic format
+  const clinic: PublicClinic | null = rawClinic
+    ? {
+        id: rawClinic.id,
+        name: rawClinic.name,
+        slug: clinicSlug || '',
+        description: rawClinic.description || 'Cuidando da sua saúde com excelência.',
+        logo: rawClinic.logo,
+        coverImage: rawClinic.coverImage,
+        phone: rawClinic.phone || '',
+        email: rawClinic.email || '',
+        website: rawClinic.website,
+        rating: rawClinic.rating,
+        reviewCount: rawClinic.reviewCount,
+        foundedYear: rawClinic.foundedYear,
+        specialties: (rawClinic.specialties || []) as SpecialtyType[],
+        services: rawClinic.services || [],
+        address: parseAddress(rawClinic.address),
+        workingHours: rawClinic.workingHours || [],
+      }
+    : null
 
-  if (loading) return <ProfileSkeleton />;
+  // Map professionals
+  const professionals: ClinicProfessional[] = rawProfessionals.map(p => ({
+    id: p.id,
+    name: p.name,
+    specialty: p.specialty as SpecialtyType,
+    avatar: p.avatar,
+    bio: p.bio,
+  }))
+
+  if (loading) return <ProfileSkeleton />
 
   if (!clinic) {
     return (
@@ -198,17 +242,22 @@ export default function ClinicProfile(): React.ReactElement {
           </Link>
         </div>
       </div>
-    );
+    )
   }
 
-  const fullAddress = `${clinic.address.street}, ${clinic.address.number}${clinic.address.complement ? ` - ${clinic.address.complement}` : ''}, ${clinic.address.neighborhood}, ${clinic.address.city} - ${clinic.address.state}`;
+  const fullAddress = `${clinic.address.street}, ${clinic.address.number}${clinic.address.complement ? ` - ${clinic.address.complement}` : ''}, ${clinic.address.neighborhood}, ${clinic.address.city} - ${clinic.address.state}`
 
   return (
     <div className="min-h-screen bg-genesis-soft">
       {/* Cover */}
       <div className="h-48 bg-gradient-to-br from-genesis-primary to-genesis-primary/70 relative">
         {clinic.coverImage && (
-          <img src={clinic.coverImage} alt="" loading="lazy" className="w-full h-full object-cover opacity-30" />
+          <img
+            src={clinic.coverImage}
+            alt=""
+            loading="lazy"
+            className="w-full h-full object-cover opacity-30"
+          />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
       </div>
@@ -246,9 +295,9 @@ export default function ClinicProfile(): React.ReactElement {
                   </div>
                 )}
                 <div className="flex flex-wrap gap-2 mt-3">
-                  {clinic.specialties.map((specialty) => {
-                    const config = SPECIALTY_CONFIG[specialty];
-                    const Icon = config.icon;
+                  {clinic.specialties.map(specialty => {
+                    const config = SPECIALTY_CONFIG[specialty]
+                    const Icon = config.icon
                     return (
                       <span
                         key={specialty}
@@ -257,7 +306,7 @@ export default function ClinicProfile(): React.ReactElement {
                         <Icon className="w-3.5 h-3.5" />
                         {config.label}
                       </span>
-                    );
+                    )
                   })}
                 </div>
                 <p className="text-genesis-medium text-sm mt-4 leading-relaxed">
@@ -362,7 +411,7 @@ export default function ClinicProfile(): React.ReactElement {
             </div>
           </div>
           <div className="space-y-3">
-            {professionals.map((p) => (
+            {professionals.map(p => (
               <ProfessionalCard key={p.id} professional={p} clinicSlug={clinic.slug} />
             ))}
           </div>
@@ -386,5 +435,5 @@ export default function ClinicProfile(): React.ReactElement {
         </div>
       </div>
     </div>
-  );
+  )
 }

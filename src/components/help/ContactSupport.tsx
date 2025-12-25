@@ -11,30 +11,22 @@
  * - Multiple contact channels
  */
 
-import React, { useState, useCallback } from 'react';
-import {
-  Send,
-  Mail,
-  MessageCircle,
-  Phone,
-  Loader2,
-  CheckCircle,
-  AlertCircle,
-} from 'lucide-react';
+import React, { useState, useCallback } from 'react'
+import { Send, Mail, MessageCircle, Phone, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 
 interface ContactFormData {
-  category: string;
-  priority: 'low' | 'medium' | 'high';
-  subject: string;
-  message: string;
-  email: string;
+  category: string
+  priority: 'low' | 'medium' | 'high'
+  subject: string
+  message: string
+  email: string
 }
 
 interface ContactSupportProps {
   /** User's email (pre-filled if available) */
-  userEmail?: string;
+  userEmail?: string
   /** Callback when form is submitted */
-  onSubmit?: (data: ContactFormData) => Promise<void>;
+  onSubmit?: (data: ContactFormData) => Promise<void>
 }
 
 /**
@@ -48,7 +40,7 @@ const SUPPORT_CATEGORIES = [
   { value: 'whatsapp', label: 'Integração WhatsApp' },
   { value: 'sugestao', label: 'Sugestão de Melhoria' },
   { value: 'outro', label: 'Outro Assunto' },
-];
+]
 
 /**
  * Priority levels.
@@ -57,7 +49,7 @@ const PRIORITY_LEVELS = [
   { value: 'low', label: 'Baixa', description: 'Pode esperar alguns dias' },
   { value: 'medium', label: 'Média', description: 'Preciso de ajuda em breve' },
   { value: 'high', label: 'Alta', description: 'Urgente, afeta meu trabalho' },
-];
+]
 
 /**
  * Contact support form with multiple channels.
@@ -80,50 +72,47 @@ export function ContactSupport({
     subject: '',
     message: '',
     email: userEmail,
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
-  const handleChange = useCallback(
-    (field: keyof ContactFormData, value: string) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-    },
-    []
-  );
+  const handleChange = useCallback((field: keyof ContactFormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }, [])
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
-      e.preventDefault();
-      setIsSubmitting(true);
-      setSubmitStatus('idle');
+      e.preventDefault()
+      setIsSubmitting(true)
+      setSubmitStatus('idle')
 
       try {
         if (onSubmit) {
-          await onSubmit(formData);
+          await onSubmit(formData)
         }
-        setSubmitStatus('success');
-        setFormData((prev) => ({
+        setSubmitStatus('success')
+        setFormData(prev => ({
           ...prev,
           subject: '',
           message: '',
-        }));
+        }))
       } catch {
-        setSubmitStatus('error');
+        setSubmitStatus('error')
       } finally {
-        setIsSubmitting(false);
+        setIsSubmitting(false)
       }
     },
     [formData, onSubmit]
-  );
+  )
 
-  const isValid = formData.category && formData.subject && formData.message && formData.email;
+  const isValid = formData.category && formData.subject && formData.message && formData.email
 
   return (
     <div className="space-y-8">
       {/* Contact Channels */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <a
-          href="mailto:suporte@genesis.clinic"
+          href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL || 'suporte@clinicagenesis.com.br'}`}
           className="
             flex items-center gap-3 p-4 rounded-xl
             bg-genesis-surface border border-genesis-border-subtle
@@ -138,12 +127,14 @@ export function ContactSupport({
             <p className="font-medium text-genesis-dark text-sm group-hover:text-genesis-primary transition-colors">
               E-mail
             </p>
-            <p className="text-xs text-genesis-muted">suporte@genesis.clinic</p>
+            <p className="text-xs text-genesis-muted">
+              {import.meta.env.VITE_SUPPORT_EMAIL || 'suporte@clinicagenesis.com.br'}
+            </p>
           </div>
         </a>
 
         <a
-          href="https://wa.me/5511999999999"
+          href={`https://wa.me/${import.meta.env.VITE_SUPPORT_WHATSAPP || ''}`}
           target="_blank"
           rel="noopener noreferrer"
           className="
@@ -160,12 +151,14 @@ export function ContactSupport({
             <p className="font-medium text-genesis-dark text-sm group-hover:text-genesis-primary transition-colors">
               WhatsApp
             </p>
-            <p className="text-xs text-genesis-muted">(11) 99999-9999</p>
+            <p className="text-xs text-genesis-muted">
+              {import.meta.env.VITE_SUPPORT_WHATSAPP_DISPLAY || 'Configurar em .env'}
+            </p>
           </div>
         </a>
 
         <a
-          href="tel:+551140028922"
+          href={`tel:${import.meta.env.VITE_SUPPORT_PHONE || ''}`}
           className="
             flex items-center gap-3 p-4 rounded-xl
             bg-genesis-surface border border-genesis-border-subtle
@@ -180,7 +173,9 @@ export function ContactSupport({
             <p className="font-medium text-genesis-dark text-sm group-hover:text-genesis-primary transition-colors">
               Telefone
             </p>
-            <p className="text-xs text-genesis-muted">(11) 4002-8922</p>
+            <p className="text-xs text-genesis-muted">
+              {import.meta.env.VITE_SUPPORT_PHONE_DISPLAY || 'Configurar em .env'}
+            </p>
           </div>
         </a>
       </div>
@@ -212,7 +207,7 @@ export function ContactSupport({
               </label>
               <select
                 value={formData.category}
-                onChange={(e) => handleChange('category', e.target.value)}
+                onChange={e => handleChange('category', e.target.value)}
                 className="
                   w-full px-4 py-2.5 rounded-lg
                   bg-genesis-bg border border-genesis-border
@@ -222,7 +217,7 @@ export function ContactSupport({
                 required
               >
                 <option value="">Selecione uma categoria</option>
-                {SUPPORT_CATEGORIES.map((cat) => (
+                {SUPPORT_CATEGORIES.map(cat => (
                   <option key={cat.value} value={cat.value}>
                     {cat.label}
                   </option>
@@ -232,11 +227,9 @@ export function ContactSupport({
 
             {/* Priority */}
             <div>
-              <label className="block text-sm font-medium text-genesis-dark mb-2">
-                Prioridade
-              </label>
+              <label className="block text-sm font-medium text-genesis-dark mb-2">Prioridade</label>
               <div className="grid grid-cols-3 gap-3">
-                {PRIORITY_LEVELS.map((level) => (
+                {PRIORITY_LEVELS.map(level => (
                   <button
                     key={level.value}
                     type="button"
@@ -251,9 +244,7 @@ export function ContactSupport({
                     `}
                   >
                     <span className="block text-sm font-medium">{level.label}</span>
-                    <span className="block text-[10px] opacity-70 mt-0.5">
-                      {level.description}
-                    </span>
+                    <span className="block text-[10px] opacity-70 mt-0.5">{level.description}</span>
                   </button>
                 ))}
               </div>
@@ -267,7 +258,7 @@ export function ContactSupport({
               <input
                 type="email"
                 value={formData.email}
-                onChange={(e) => handleChange('email', e.target.value)}
+                onChange={e => handleChange('email', e.target.value)}
                 placeholder="seu@email.com"
                 className="
                   w-full px-4 py-2.5 rounded-lg
@@ -281,13 +272,11 @@ export function ContactSupport({
 
             {/* Subject */}
             <div>
-              <label className="block text-sm font-medium text-genesis-dark mb-2">
-                Assunto *
-              </label>
+              <label className="block text-sm font-medium text-genesis-dark mb-2">Assunto *</label>
               <input
                 type="text"
                 value={formData.subject}
-                onChange={(e) => handleChange('subject', e.target.value)}
+                onChange={e => handleChange('subject', e.target.value)}
                 placeholder="Descreva brevemente o assunto"
                 className="
                   w-full px-4 py-2.5 rounded-lg
@@ -301,12 +290,10 @@ export function ContactSupport({
 
             {/* Message */}
             <div>
-              <label className="block text-sm font-medium text-genesis-dark mb-2">
-                Mensagem *
-              </label>
+              <label className="block text-sm font-medium text-genesis-dark mb-2">Mensagem *</label>
               <textarea
                 value={formData.message}
-                onChange={(e) => handleChange('message', e.target.value)}
+                onChange={e => handleChange('message', e.target.value)}
                 placeholder="Descreva seu problema ou dúvida em detalhes..."
                 rows={5}
                 className="
@@ -356,7 +343,7 @@ export function ContactSupport({
         )}
       </div>
     </div>
-  );
+  )
 }
 
-export default ContactSupport;
+export default ContactSupport
