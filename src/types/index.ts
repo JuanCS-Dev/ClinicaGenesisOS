@@ -53,3 +53,6 @@ export * from './scribe'
 
 // Tasks
 export * from './task'
+
+// Lab Results (Patient Portal)
+export * from './lab-result'

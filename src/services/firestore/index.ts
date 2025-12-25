@@ -32,3 +32,5 @@ export { operadoraService } from './operadora.service'
 export { guiaService } from './guia.service'
 
 export { taskService } from './task.service'
+
+export { labResultService } from './lab-result.service'
