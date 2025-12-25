@@ -116,6 +116,125 @@ describe('ThemeToggle', () => {
       expect(button.className).toContain('custom-toggle');
     });
   });
+
+  describe('showSystemOption cycling', () => {
+    it('cycles light -> dark -> system -> light when showSystemOption true', () => {
+      render(
+        <ThemeProvider defaultTheme="light">
+          <ThemeToggle showSystemOption />
+        </ThemeProvider>
+      );
+
+      const button = screen.getByRole('button');
+
+      // Start at light, click to go to dark
+      fireEvent.click(button);
+      expect(document.documentElement.classList.contains('dark')).toBe(true);
+
+      // Click again to go to system
+      fireEvent.click(button);
+      // In system mode, theme follows system preference (mocked as light)
+      expect(document.documentElement.classList.contains('dark')).toBe(false);
+
+      // Click again to go back to light
+      fireEvent.click(button);
+      expect(document.documentElement.classList.contains('dark')).toBe(false);
+    });
+
+    it('shows Monitor icon when theme is system', () => {
+      render(
+        <ThemeProvider defaultTheme="system">
+          <ThemeToggle showSystemOption />
+        </ThemeProvider>
+      );
+
+      const button = screen.getByRole('button');
+      const svg = button.querySelector('svg');
+      expect(svg).toBeInTheDocument();
+      // Monitor icon should be shown (has class lucide-monitor)
+      expect(svg?.classList.contains('lucide-monitor')).toBe(true);
+    });
+  });
+
+  describe('showLabel prop', () => {
+    it('shows label when showLabel is true', () => {
+      render(
+        <ThemeProvider defaultTheme="light">
+          <ThemeToggle showLabel />
+        </ThemeProvider>
+      );
+
+      expect(screen.getByText('Claro')).toBeInTheDocument();
+    });
+
+    it('shows Escuro label in dark mode', () => {
+      render(
+        <ThemeProvider defaultTheme="dark">
+          <ThemeToggle showLabel />
+        </ThemeProvider>
+      );
+
+      expect(screen.getByText('Escuro')).toBeInTheDocument();
+    });
+
+    it('shows Sistema label in system mode', () => {
+      render(
+        <ThemeProvider defaultTheme="system">
+          <ThemeToggle showLabel />
+        </ThemeProvider>
+      );
+
+      expect(screen.getByText('Sistema')).toBeInTheDocument();
+    });
+  });
+
+  describe('size variants', () => {
+    it('renders sm size', () => {
+      render(
+        <ThemeProvider>
+          <ThemeToggle size="sm" />
+        </ThemeProvider>
+      );
+
+      const button = screen.getByRole('button');
+      expect(button.className).toContain('p-1.5');
+    });
+
+    it('renders lg size', () => {
+      render(
+        <ThemeProvider>
+          <ThemeToggle size="lg" />
+        </ThemeProvider>
+      );
+
+      const button = screen.getByRole('button');
+      expect(button.className).toContain('p-2.5');
+    });
+  });
+
+  describe('aria attributes', () => {
+    it('has correct aria-label', () => {
+      render(
+        <ThemeProvider defaultTheme="light">
+          <ThemeToggle />
+        </ThemeProvider>
+      );
+
+      const button = screen.getByRole('button');
+      expect(button.getAttribute('aria-label')).toContain('Tema atual: Claro');
+    });
+
+    it('has title attribute', () => {
+      render(
+        <ThemeProvider defaultTheme="dark">
+          <ThemeToggle />
+        </ThemeProvider>
+      );
+
+      const button = screen.getByRole('button');
+      expect(button.getAttribute('title')).toBe('Tema: Escuro');
+    });
+  });
 });
 
 describe('ThemeSegmented', () => {

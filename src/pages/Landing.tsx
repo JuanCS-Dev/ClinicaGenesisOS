@@ -137,12 +137,18 @@ export const Landing: React.FC = () => {
             </button>
           </div>
 
-          <div className="flex justify-center mb-16">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
             <button
-              onClick={() => navigate('/portal')}
+              onClick={() => navigate('/portal/demo')}
+              className="px-6 py-3 bg-genesis-primary/10 text-genesis-primary border border-genesis-primary/20 rounded-xl font-medium hover:bg-genesis-primary/20 transition-all flex items-center gap-2"
+            >
+              Ver Demo Paciente <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => navigate('/portal/login')}
               className="text-sm text-genesis-muted hover:text-genesis-primary transition-colors flex items-center gap-2"
             >
-              Acessar como Paciente <ArrowRight className="w-4 h-4" />
+              Já sou paciente - Login <ArrowRight className="w-4 h-4" />
             </button>
           </div>
 
@@ -305,7 +311,7 @@ export const Landing: React.FC = () => {
                 <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary"/> Agenda Simples</li>
               </ul>
               <button onClick={handleApply} className="w-full py-3 bg-genesis-soft text-genesis-dark font-semibold rounded-lg hover:bg-genesis-hover transition-colors">
-                Começar Grátis
+                Começar Agora
               </button>
             </div>
 

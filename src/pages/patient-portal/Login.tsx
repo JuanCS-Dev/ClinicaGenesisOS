@@ -15,6 +15,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowRight, CheckCircle2, Loader2, Shield } from 'lucide-react';
 import { usePatientAuth } from '../../contexts/PatientAuthContext';
+import { DEMO_CONFIG } from '@/config/demo';
 
 export function PatientLogin(): React.ReactElement {
   const { sendMagicLink, loading, error, clearError } = usePatientAuth();
@@ -26,10 +27,9 @@ export function PatientLogin(): React.ReactElement {
     clearError();
 
     try {
-      // For now, using a default clinic ID
-      // In production, this would be determined by the clinic's subdomain or URL
-      const clinicId = 'default-clinic';
-      await sendMagicLink(email, clinicId);
+      // TODO: In production, determine clinic from URL/subdomain or email lookup
+      // For now using the demo clinic
+      await sendMagicLink(email, DEMO_CONFIG.clinicId);
       setSent(true);
     } catch {
       // Error handled by context
@@ -80,7 +80,7 @@ export function PatientLogin(): React.ReactElement {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-genesis-primary to-genesis-primary-dark flex items-center justify-center mb-4 shadow-lg shadow-genesis-primary/20">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-genesis-primary flex items-center justify-center mb-4 shadow-lg shadow-genesis-primary/20">
             <span className="text-white font-bold text-2xl">G</span>
           </div>
           <h1 className="text-2xl font-bold text-genesis-dark">

@@ -61,6 +61,19 @@ service cloud.firestore {
     }
 
     // ========================================
+    // PATIENT PORTAL USERS
+    // ========================================
+
+    /**
+     * Patient portal profiles are stored in /patientPortalUsers/{userId}
+     * Each patient can only read/write their own profile.
+     * Used for magic link (passwordless) authentication.
+     */
+    match /patientPortalUsers/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ========================================
     // CLINICS
     // ========================================
 

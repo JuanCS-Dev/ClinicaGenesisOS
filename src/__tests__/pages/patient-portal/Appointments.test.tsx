@@ -6,13 +6,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-
-vi.mock('../../../contexts/PatientAuthContext', () => ({
-  usePatientAuth: vi.fn(() => ({
-    patient: { id: 'patient-123', name: 'Maria Santos' },
-    isAuthenticated: true,
-  })),
-}));
+// Import setup to activate mocks (hoisted automatically)
+import { resetPatientPortalMocks } from './setup';
 
 import { PatientAppointments } from '../../../pages/patient-portal/Appointments';
 
@@ -26,7 +21,7 @@ const renderAppointments = () => {
 
 describe('PatientAppointments', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    resetPatientPortalMocks();
   });
 
   describe('smoke tests', () => {

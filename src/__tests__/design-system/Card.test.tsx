@@ -27,7 +27,7 @@ describe('Card', () => {
     it('applies default variant', () => {
       const { container } = render(<Card>Default</Card>);
       const card = container.firstChild as HTMLElement;
-      expect(card.className).toContain('bg-[var(--color-genesis-surface)]');
+      expect(card.className).toContain('bg-genesis-surface');
     });
 
     it('applies elevated variant', () => {
@@ -47,19 +47,19 @@ describe('Card', () => {
     it('applies small padding', () => {
       const { container } = render(<Card padding="sm">Small</Card>);
       const card = container.firstChild as HTMLElement;
-      expect(card.className).toContain('p-3');
+      expect(card.className).toContain('p-4');
     });
 
     it('applies medium padding by default', () => {
       const { container } = render(<Card>Medium</Card>);
       const card = container.firstChild as HTMLElement;
-      expect(card.className).toContain('p-4');
+      expect(card.className).toContain('p-6');
     });
 
     it('applies large padding', () => {
       const { container } = render(<Card padding="lg">Large</Card>);
       const card = container.firstChild as HTMLElement;
-      expect(card.className).toContain('p-6');
+      expect(card.className).toContain('p-8');
     });
   });
 

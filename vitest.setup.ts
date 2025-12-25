@@ -1,6 +1,17 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+// Mock ResizeObserver (not implemented in jsdom, required by cmdk)
+class MockResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+global.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver;
+
+// Mock scrollIntoView (not implemented in jsdom, required by cmdk)
+Element.prototype.scrollIntoView = vi.fn();
+
 // Mock window.matchMedia (not implemented in jsdom)
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

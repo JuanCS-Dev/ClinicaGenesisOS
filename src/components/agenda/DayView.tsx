@@ -28,7 +28,7 @@ export function DayView({ date, appointments, hours }: DayViewProps) {
     <div className="flex-1 overflow-y-auto relative custom-scrollbar bg-genesis-soft/50">
       {hours.map((hour) => (
         <div key={hour} className="flex min-h-[120px] group relative border-b border-genesis-border-subtle/50">
-          <div className="w-20 p-3 text-[11px] font-bold text-genesis-medium/70 text-center border-r border-genesis-border-subtle/50 bg-[#F5F5F7]/40 backdrop-blur-sm">
+          <div className="w-20 p-3 text-[11px] font-bold text-genesis-muted text-center border-r border-genesis-border-subtle/50 bg-genesis-soft/60 backdrop-blur-sm">
             {hour}:00
           </div>
 
@@ -47,15 +47,15 @@ export function DayView({ date, appointments, hours }: DayViewProps) {
       {/* Current Time Indicator (only shown when viewing today) */}
       {isCurrentDay && (
         <div
-          className="absolute left-0 right-0 h-px bg-red-500 z-20 pointer-events-none flex items-center shadow-[0_0_4px_rgba(239,68,68,0.4)]"
+          className="absolute left-0 right-0 h-px bg-danger z-20 pointer-events-none flex items-center shadow-[0_0_4px_rgba(239,68,68,0.4)]"
           style={{
             top: `${(new Date().getHours() - 8) * 120 + (new Date().getMinutes() / 60) * 120}px`,
           }}
         >
-          <div className="w-20 bg-red-50/80 text-red-500 text-[10px] font-bold text-right pr-2 backdrop-blur-sm">
+          <div className="w-20 bg-danger-soft text-danger text-[10px] font-bold text-right pr-2 backdrop-blur-sm">
             {format(new Date(), 'HH:mm')}
           </div>
-          <div className="w-2.5 h-2.5 bg-red-500 rounded-full -ml-1.5 border-2 border-[#F5F5F7]" />
+          <div className="w-2.5 h-2.5 bg-danger rounded-full -ml-1.5 border-2 border-genesis-surface" />
         </div>
       )}
     </div>

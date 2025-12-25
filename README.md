@@ -5,8 +5,8 @@
 > Plataforma completa com diagnóstico assistido por IA, telemedicina, prescrição digital e faturamento TISS.
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)]()
-[![Tests](https://img.shields.io/badge/tests-1028%20passing-brightgreen)]()
-[![Coverage](https://img.shields.io/badge/coverage-91%25-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-2636%20passing-brightgreen)]()
+[![Coverage](https://img.shields.io/badge/coverage-90%25-brightgreen)]()
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)]()
 [![React](https://img.shields.io/badge/React-19-61dafb)]()
 
@@ -146,7 +146,7 @@ npm run lint:fix         # Corrige erros automaticamente
 npm run typecheck        # Verifica tipos TypeScript
 
 # 🧪 Testes
-npm test                 # Roda testes (1028 testes)
+npm test                 # Roda testes (2636 testes)
 npm run test:coverage    # Testes com cobertura
 npm run test:ui          # Interface gráfica de testes
 ```
@@ -157,8 +157,8 @@ npm run test:ui          # Interface gráfica de testes
 
 | Métrica | Valor |
 |---------|-------|
-| **Testes** | 1028 passando |
-| **Cobertura** | 91%+ |
+| **Testes** | 2636 passando |
+| **Cobertura** | 90%+ |
 | **Lint Errors** | 0 |
 | **Type Errors** | 0 |
 | **Arquivos > 500 linhas** | 0 |

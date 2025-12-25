@@ -146,7 +146,7 @@ export function Membership() {
       description: 'Para clínicas que buscam excelência',
       icon: Rocket,
       highlighted: true,
-      ctaText: 'Começar Teste Grátis',
+      ctaText: 'Começar Agora',
       features: [
         'Pacientes ilimitados',
         'Tudo do Solo +',
@@ -219,8 +219,8 @@ export function Membership() {
           </h1>
 
           <p className="text-xl text-genesis-medium leading-relaxed max-w-2xl mx-auto mb-12">
-            Escolha o plano ideal para sua prática. Todos incluem 14 dias grátis
-            para você experimentar sem compromisso.
+            Escolha o plano ideal para sua prática e transforme
+            a gestão da sua clínica.
           </p>
 
           {/* Billing Toggle */}
@@ -424,9 +424,9 @@ export function Membership() {
       <section className="py-16 text-white text-center" style={{ background: 'linear-gradient(to bottom right, #0f766e, #115e59)' }}>
         <div className="max-w-2xl mx-auto px-6">
           <Zap className="w-12 h-12 mx-auto mb-6 opacity-80" />
-          <h2 className="text-3xl font-bold mb-4">Comece seu teste grátis hoje</h2>
+          <h2 className="text-3xl font-bold mb-4">Transforme sua prática hoje</h2>
           <p className="text-white/80 mb-8">
-            14 dias grátis. Sem cartão de crédito. Cancele quando quiser.
+            Comece agora e leve sua clínica ao próximo nível.
           </p>
           <button
             onClick={() => navigate('/apply')}

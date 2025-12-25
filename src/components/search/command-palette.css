@@ -1,0 +1,189 @@
+/**
+ * Command Palette Styles
+ * ======================
+ *
+ * Styles for cmdk-based Command Palette.
+ * Uses CSS variables from the design system.
+ */
+
+/* Dialog backdrop */
+[cmdk-dialog] {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+/* Main container */
+.command-palette-container {
+  width: 100%;
+  max-width: 640px;
+  background-color: var(--color-genesis-surface);
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--color-genesis-border);
+  overflow: hidden;
+}
+
+/* Header with search input */
+.command-palette-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--color-genesis-border-subtle);
+}
+
+/* Search input */
+.command-palette-input {
+  flex: 1;
+  font-size: 1.125rem;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-genesis-dark);
+}
+
+.command-palette-input::placeholder {
+  color: var(--color-genesis-subtle);
+}
+
+/* ESC keyboard hint */
+.command-palette-kbd {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-family: ui-monospace, monospace;
+  background-color: var(--color-genesis-hover);
+  border-radius: 6px;
+  color: var(--color-genesis-muted);
+}
+
+/* Results list */
+.command-palette-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+/* Empty state */
+.command-palette-empty {
+  padding: 32px;
+  text-align: center;
+  color: var(--color-genesis-muted);
+}
+
+/* Group container */
+.command-palette-group {
+  padding: 8px 0;
+}
+
+/* Group heading */
+[cmdk-group-heading] {
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-genesis-muted);
+}
+
+/* Individual item */
+.command-palette-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.command-palette-item:hover,
+.command-palette-item[data-selected="true"],
+[cmdk-item][aria-selected="true"] {
+  background-color: var(--color-genesis-hover);
+}
+
+/* Item icon container */
+.command-palette-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+/* Item content */
+.command-palette-item-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Item label */
+.command-palette-item-label {
+  font-weight: 500;
+  color: var(--color-genesis-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Item subtitle */
+.command-palette-item-subtitle {
+  font-size: 0.875rem;
+  color: var(--color-genesis-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Footer */
+.command-palette-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--color-genesis-border-subtle);
+  background-color: var(--color-genesis-soft);
+}
+
+.command-palette-footer-hints {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--color-genesis-muted);
+}
+
+.command-palette-footer-hints kbd {
+  padding: 2px 6px;
+  margin-right: 4px;
+  font-family: ui-monospace, monospace;
+  background-color: var(--color-genesis-surface);
+  border: 1px solid var(--color-genesis-border);
+  border-radius: 4px;
+}
+
+/* Scrollbar */
+.command-palette-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.command-palette-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.command-palette-list::-webkit-scrollbar-thumb {
+  background-color: var(--color-genesis-border);
+  border-radius: 4px;
+}
+
+.command-palette-list::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-genesis-muted);
+}

@@ -41,7 +41,7 @@ interface PatientPortalContextValue extends PatientPortalState {
 // Context
 // ============================================================================
 
-const PatientPortalContext = createContext<PatientPortalContextValue | undefined>(undefined)
+export const PatientPortalContext = createContext<PatientPortalContextValue | undefined>(undefined)
 
 // ============================================================================
 // Provider

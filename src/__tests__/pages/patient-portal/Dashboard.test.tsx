@@ -6,22 +6,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-
-vi.mock('../../../contexts/PatientAuthContext', () => ({
-  usePatientAuth: vi.fn(() => ({
-    profile: {
-      id: 'patient-123',
-      name: 'Maria Santos',
-      email: 'maria@email.com',
-    },
-    patient: {
-      id: 'patient-123',
-      name: 'Maria Santos',
-      email: 'maria@email.com',
-    },
-    isAuthenticated: true,
-  })),
-}));
+// Import setup to activate mocks (hoisted automatically)
+import { mockPatientProfile, resetPatientPortalMocks } from './setup';
 
 import { PatientDashboard } from '../../../pages/patient-portal/Dashboard';
 
@@ -35,7 +21,7 @@ const renderDashboard = () => {
 
 describe('PatientDashboard', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    resetPatientPortalMocks();
   });
 
   describe('smoke tests', () => {
@@ -48,7 +34,8 @@ describe('PatientDashboard', () => {
   describe('header', () => {
     it('should display welcome message with patient name', () => {
       renderDashboard();
-      const mariaElements = screen.getAllByText(/Maria/i);
+      const firstName = mockPatientProfile.name.split(' ')[0];
+      const mariaElements = screen.getAllByText(new RegExp(firstName, 'i'));
       expect(mariaElements.length).toBeGreaterThan(0);
     });
   });

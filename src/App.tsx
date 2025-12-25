@@ -48,6 +48,7 @@ const ClinicProfile = lazy(() => import('./pages/public/ClinicProfile'));
 
 // Patient Portal pages
 const PatientLogin = lazy(() => import('./pages/patient-portal/Login'));
+const CompleteSignIn = lazy(() => import('./pages/patient-portal/CompleteSignIn'));
 const PatientDashboard = lazy(() => import('./pages/patient-portal/Dashboard'));
 const PatientAppointments = lazy(() => import('./pages/patient-portal/Appointments'));
 const PatientHistory = lazy(() => import('./pages/patient-portal/History'));
@@ -59,6 +60,9 @@ const PatientTelehealth = lazy(() => import('./pages/patient-portal/Telehealth')
 
 // Patient Portal Layout
 const PatientPortalLayout = lazy(() => import('./components/patient-portal/PatientPortalLayout'));
+
+// Patient Portal Demo
+const DemoEntry = lazy(() => import('./pages/patient-portal/DemoEntry'));
 
 /**
  * Loading spinner component for async operations.
@@ -182,6 +186,7 @@ function App() {
 
             {/* Patient Portal Routes */}
             <Route path="/portal/login" element={<PatientLogin />} />
+            <Route path="/portal/complete-signin" element={<CompleteSignIn />} />
             <Route element={<PatientPortalLayout />}>
               <Route path="/portal" element={<PatientDashboard />} />
               <Route path="/portal/consultas" element={<PatientAppointments />} />
@@ -191,6 +196,18 @@ function App() {
               <Route path="/portal/mensagens" element={<PatientMessages />} />
               <Route path="/portal/financeiro" element={<PatientBilling />} />
               <Route path="/portal/teleconsulta" element={<PatientTelehealth />} />
+            </Route>
+
+            {/* Patient Portal Demo Routes - No auth required */}
+            <Route element={<DemoEntry />}>
+              <Route path="/portal/demo" element={<PatientDashboard />} />
+              <Route path="/portal/demo/consultas" element={<PatientAppointments />} />
+              <Route path="/portal/demo/historico" element={<PatientHistory />} />
+              <Route path="/portal/demo/exames" element={<PatientLabResults />} />
+              <Route path="/portal/demo/receitas" element={<PatientPrescriptions />} />
+              <Route path="/portal/demo/mensagens" element={<PatientMessages />} />
+              <Route path="/portal/demo/financeiro" element={<PatientBilling />} />
+              <Route path="/portal/demo/teleconsulta" element={<PatientTelehealth />} />
             </Route>
 
             {/* Auth Routes */}

@@ -211,8 +211,267 @@ describe('ThemeContext', () => {
           <ThemeConsumer />
         </ThemeProvider>
       );
-      
+
       expect(screen.getByTestId('theme').textContent).toBe('dark');
+    });
+  });
+
+  describe('meta theme-color', () => {
+    it('updates meta theme-color for dark theme', () => {
+      // Add meta theme-color element
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'theme-color');
+      meta.setAttribute('content', '#F8FAFC');
+      document.head.appendChild(meta);
+
+      render(
+        <ThemeProvider>
+          <ThemeConsumer />
+        </ThemeProvider>
+      );
+
+      fireEvent.click(screen.getByText('Dark'));
+      expect(meta.getAttribute('content')).toBe('#0F172A');
+
+      // Cleanup
+      document.head.removeChild(meta);
+    });
+
+    it('updates meta theme-color for light theme', () => {
+      // Add meta theme-color element
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'theme-color');
+      meta.setAttribute('content', '#0F172A');
+      document.head.appendChild(meta);
+
+      render(
+        <ThemeProvider>
+          <ThemeConsumer />
+        </ThemeProvider>
+      );
+
+      fireEvent.click(screen.getByText('Light'));
+      expect(meta.getAttribute('content')).toBe('#F8FAFC');
+
+      // Cleanup
+      document.head.removeChild(meta);
+    });
+  });
+
+  describe('system preference change', () => {
+    it('responds to system preference change when theme is system', () => {
+      let changeHandler: ((e: MediaQueryListEvent) => void) | null = null;
+
+      const mediaQueryMock = {
+        matches: false,
+        media: '(prefers-color-scheme: dark)',
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn((event: string, handler: (e: MediaQueryListEvent) => void) => {
+          if (event === 'change') changeHandler = handler;
+        }),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      };
+
+      window.matchMedia = vi.fn().mockImplementation(() => mediaQueryMock);
+
+      render(
+        <ThemeProvider>
+          <ThemeConsumer />
+        </ThemeProvider>
+      );
+
+      // Initially light (system preference is false = light)
+      expect(screen.getByTestId('resolved').textContent).toBe('light');
+
+      // Simulate system preference change to dark
+      act(() => {
+        if (changeHandler) {
+          changeHandler({ matches: true } as MediaQueryListEvent);
+        }
+      });
+
+      expect(screen.getByTestId('resolved').textContent).toBe('dark');
+    });
+
+    it('ignores system preference change when theme is explicit', () => {
+      let changeHandler: ((e: MediaQueryListEvent) => void) | null = null;
+
+      const mediaQueryMock = {
+        matches: false,
+        media: '(prefers-color-scheme: dark)',
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn((event: string, handler: (e: MediaQueryListEvent) => void) => {
+          if (event === 'change') changeHandler = handler;
+        }),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      };
+
+      window.matchMedia = vi.fn().mockImplementation(() => mediaQueryMock);
+
+      render(
+        <ThemeProvider>
+          <ThemeConsumer />
+        </ThemeProvider>
+      );
+
+      // Set explicit light theme
+      fireEvent.click(screen.getByText('Light'));
+      expect(screen.getByTestId('theme').textContent).toBe('light');
+
+      // Simulate system preference change to dark
+      act(() => {
+        if (changeHandler) {
+          changeHandler({ matches: true } as MediaQueryListEvent);
+        }
+      });
+
+      // Should still be light because theme is explicit
+      expect(screen.getByTestId('resolved').textContent).toBe('light');
+    });
+
+    it('cleans up event listener on unmount', () => {
+      const removeEventListenerMock = vi.fn();
+      const mediaQueryMock = {
+        matches: false,
+        media: '(prefers-color-scheme: dark)',
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: removeEventListenerMock,
+        dispatchEvent: vi.fn(),
+      };
+
+      window.matchMedia = vi.fn().mockImplementation(() => mediaQueryMock);
+
+      const { unmount } = render(
+        <ThemeProvider>
+          <ThemeConsumer />
+        </ThemeProvider>
+      );
+
+      unmount();
+      expect(removeEventListenerMock).toHaveBeenCalledWith('change', expect.any(Function));
+    });
+  });
+
+  describe('toggleTheme', () => {
+    const ToggleConsumer: React.FC = () => {
+      const { resolvedTheme, toggleTheme } = useTheme();
+      return (
+        <div>
+          <span data-testid="resolved">{resolvedTheme}</span>
+          <button onClick={toggleTheme}>Toggle</button>
+        </div>
+      );
+    };
+
+    it('toggles from light to dark', () => {
+      window.matchMedia = vi.fn().mockImplementation(() => matchMediaMock(false));
+
+      render(
+        <ThemeProvider>
+          <ToggleConsumer />
+        </ThemeProvider>
+      );
+
+      expect(screen.getByTestId('resolved').textContent).toBe('light');
+      fireEvent.click(screen.getByText('Toggle'));
+      expect(screen.getByTestId('resolved').textContent).toBe('dark');
+    });
+
+    it('toggles from dark to light', () => {
+      window.matchMedia = vi.fn().mockImplementation(() => matchMediaMock(true));
+
+      render(
+        <ThemeProvider>
+          <ToggleConsumer />
+        </ThemeProvider>
+      );
+
+      expect(screen.getByTestId('resolved').textContent).toBe('dark');
+      fireEvent.click(screen.getByText('Toggle'));
+      expect(screen.getByTestId('resolved').textContent).toBe('light');
+    });
+  });
+
+  describe('isDark', () => {
+    const IsDarkConsumer: React.FC = () => {
+      const { isDark } = useTheme();
+      return <span data-testid="is-dark">{isDark.toString()}</span>;
+    };
+
+    it('returns true when dark theme', () => {
+      render(
+        <ThemeProvider defaultTheme="dark">
+          <IsDarkConsumer />
+        </ThemeProvider>
+      );
+      expect(screen.getByTestId('is-dark').textContent).toBe('true');
+    });
+
+    it('returns false when light theme', () => {
+      render(
+        <ThemeProvider defaultTheme="light">
+          <IsDarkConsumer />
+        </ThemeProvider>
+      );
+      expect(screen.getByTestId('is-dark').textContent).toBe('false');
+    });
+  });
+
+  describe('localStorage errors', () => {
+    it('handles localStorage getItem error gracefully', () => {
+      const originalLocalStorage = window.localStorage;
+      Object.defineProperty(window, 'localStorage', {
+        value: {
+          getItem: () => { throw new Error('Storage error'); },
+          setItem: vi.fn(),
+        },
+        configurable: true,
+      });
+
+      // Should not throw, defaults to system
+      const { container } = render(
+        <ThemeProvider>
+          <ThemeConsumer />
+        </ThemeProvider>
+      );
+      expect(container).toBeDefined();
+      expect(screen.getByTestId('theme').textContent).toBe('system');
+
+      // Restore
+      Object.defineProperty(window, 'localStorage', {
+        value: originalLocalStorage,
+        configurable: true,
+      });
+    });
+
+    it('handles localStorage setItem error gracefully', () => {
+      Object.defineProperty(window, 'localStorage', {
+        value: {
+          getItem: () => null,
+          setItem: () => { throw new Error('Storage error'); },
+        },
+        configurable: true,
+      });
+
+      render(
+        <ThemeProvider>
+          <ThemeConsumer />
+        </ThemeProvider>
+      );
+
+      // Should not throw when setting theme
+      expect(() => {
+        fireEvent.click(screen.getByText('Dark'));
+      }).not.toThrow();
     });
   });
 });

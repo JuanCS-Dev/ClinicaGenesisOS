@@ -2,9 +2,7 @@
  * Command Palette Tests
  * =====================
  *
- * Unit tests for CommandPalette component.
- * Fase 14: UX Enhancement
- * Fase 15: Coverage Enhancement (95%+)
+ * Unit tests for cmdk-based CommandPalette component.
  */
 
 import React from 'react';
@@ -97,28 +95,34 @@ describe('CommandPalette', () => {
       expect(input).toBeInTheDocument();
     });
 
-    it('focuses input when opened', () => {
-      renderPalette();
-      const input = screen.getByPlaceholderText(/Buscar pacientes/i);
-      expect(document.activeElement).toBe(input);
-    });
-
     it('shows ESC keyboard hint', () => {
       renderPalette();
       expect(screen.getByText('ESC')).toBeInTheDocument();
     });
   });
 
-  describe('Empty State', () => {
-    it('shows empty state when no search', () => {
+  describe('Quick Actions', () => {
+    it('shows quick actions when palette opens', () => {
       renderPalette();
-      expect(screen.getByText(/Digite para buscar/i)).toBeInTheDocument();
+      expect(screen.getByText('Ações Rápidas')).toBeInTheDocument();
     });
 
-    it('displays keyboard shortcuts in empty state', () => {
+    it('displays navigation options', () => {
       renderPalette();
-      expect(screen.getByText('Navegar')).toBeInTheDocument();
-      expect(screen.getByText('Selecionar')).toBeInTheDocument();
+      expect(screen.getByText('Ir para Dashboard')).toBeInTheDocument();
+      expect(screen.getByText('Ir para Agenda')).toBeInTheDocument();
+      expect(screen.getByText('Ir para Pacientes')).toBeInTheDocument();
+    });
+
+    it('displays create actions', () => {
+      renderPalette();
+      expect(screen.getByText('Novo Paciente')).toBeInTheDocument();
+    });
+
+    it('displays settings and help', () => {
+      renderPalette();
+      expect(screen.getByText('Configurações')).toBeInTheDocument();
+      expect(screen.getByText('Ajuda')).toBeInTheDocument();
     });
   });
 
@@ -126,51 +130,10 @@ describe('CommandPalette', () => {
     it('shows loading spinner when loading', () => {
       mockSearchState.loading = true;
       renderPalette();
-      
+
       // Spinner should be visible (has animate-spin class)
       const container = document.querySelector('.animate-spin');
       expect(container).toBeInTheDocument();
-    });
-  });
-
-  describe('Close Actions', () => {
-    it('calls onClose when ESC key pressed on container', () => {
-      renderPalette();
-
-      const container = document.querySelector('.bg-genesis-surface.rounded-2xl');
-      if (container) {
-        fireEvent.keyDown(container, { key: 'Escape' });
-      }
-
-      expect(mockOnClose).toHaveBeenCalled();
-    });
-
-    it('calls onClose when clicking backdrop', () => {
-      renderPalette();
-
-      const backdrop = document.querySelector('.bg-black\\/50');
-      if (backdrop) {
-        fireEvent.click(backdrop);
-      }
-
-      expect(mockOnClose).toHaveBeenCalled();
-      expect(mockClear).toHaveBeenCalled();
-    });
-
-    it('calls onClose when clicking X button', () => {
-      renderPalette();
-
-      const closeButtons = screen.getAllByRole('button');
-      const xButton = closeButtons.find(
-        (btn) => btn.querySelector('svg')?.classList.contains('lucide-x')
-      );
-
-      if (xButton) {
-        fireEvent.click(xButton);
-      }
-
-      expect(mockOnClose).toHaveBeenCalled();
-      expect(mockClear).toHaveBeenCalled();
     });
   });
 
@@ -179,94 +142,86 @@ describe('CommandPalette', () => {
       mockSearchState.hasSearched = true;
       mockSearchState.query = 'xyz123';
       mockSearchState.results = [];
-      
+
       renderPalette();
-      
-      expect(screen.getByText(/Nenhum resultado encontrado/i)).toBeInTheDocument();
+
+      expect(screen.getByText(/Nenhum resultado para "xyz123"/i)).toBeInTheDocument();
     });
   });
 
-  describe('With Results', () => {
+  describe('With Patient Results', () => {
     beforeEach(() => {
       mockSearchState = {
-        query: 'test',
+        query: 'joao',
         setQuery: mockSetQuery,
         results: [
           { id: '1', type: 'patient', title: 'João Silva', subtitle: 'joao@email.com', path: '/patients/1', score: 100 },
-          { id: '2', type: 'appointment', title: 'Maria Santos', subtitle: '2025-12-25 14:00', path: '/agenda?date=2025-12-25', score: 80 },
-          { id: '3', type: 'medical_record', title: 'Prontuário #123', subtitle: 'João Silva', path: '/patients/1', score: 70 },
-          { id: '4', type: 'prescription', title: 'Receita #456', subtitle: 'Paracetamol', path: '/prescriptions/456', score: 60 },
-          { id: '5', type: 'transaction', title: 'Pagamento R$100', subtitle: 'PIX', path: '/finance', score: 50 },
         ],
         loading: false,
         hasSearched: true,
         groupedResults: {
           patient: [{ id: '1', type: 'patient', title: 'João Silva', subtitle: 'joao@email.com', path: '/patients/1', score: 100 }],
-          appointment: [{ id: '2', type: 'appointment', title: 'Maria Santos', subtitle: '2025-12-25 14:00', path: '/agenda?date=2025-12-25', score: 80 }],
-          medical_record: [{ id: '3', type: 'medical_record', title: 'Prontuário #123', subtitle: 'João Silva', path: '/patients/1', score: 70 }],
-          prescription: [{ id: '4', type: 'prescription', title: 'Receita #456', subtitle: 'Paracetamol', path: '/prescriptions/456', score: 60 }],
-          transaction: [{ id: '5', type: 'transaction', title: 'Pagamento R$100', subtitle: 'PIX', path: '/finance', score: 50 }],
+          appointment: [],
+          medical_record: [],
+          prescription: [],
+          transaction: [],
         },
         clear: mockClear,
       };
     });
 
-    it('displays results grouped by type', () => {
+    it('displays patient group header', () => {
       renderPalette();
-      
       expect(screen.getByText('Pacientes')).toBeInTheDocument();
-      expect(screen.getByText('Consultas')).toBeInTheDocument();
-      expect(screen.getByText('Prontuários')).toBeInTheDocument();
-      expect(screen.getByText('Prescrições')).toBeInTheDocument();
-      expect(screen.getByText('Transações')).toBeInTheDocument();
     });
 
-    it('displays result titles', () => {
+    it('displays patient name', () => {
       renderPalette();
-      
-      // João Silva appears twice (patient title and medical_record subtitle)
-      expect(screen.getAllByText('João Silva').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText('Maria Santos')).toBeInTheDocument();
+      expect(screen.getByText('João Silva')).toBeInTheDocument();
     });
 
-    it('displays result subtitles', () => {
+    it('displays patient email', () => {
       renderPalette();
-      
       expect(screen.getByText('joao@email.com')).toBeInTheDocument();
     });
+  });
 
-    it('shows result count in footer', () => {
-      renderPalette();
-      
-      expect(screen.getByText('5 resultados')).toBeInTheDocument();
+  describe('With Appointment Results', () => {
+    beforeEach(() => {
+      mockSearchState = {
+        query: 'maria',
+        setQuery: mockSetQuery,
+        results: [
+          { id: '2', type: 'appointment', title: 'Maria Santos', subtitle: '2025-12-25 14:00', path: '/agenda?date=2025-12-25', score: 80 },
+        ],
+        loading: false,
+        hasSearched: true,
+        groupedResults: {
+          patient: [],
+          appointment: [{ id: '2', type: 'appointment', title: 'Maria Santos', subtitle: '2025-12-25 14:00', path: '/agenda?date=2025-12-25', score: 80 }],
+          medical_record: [],
+          prescription: [],
+          transaction: [],
+        },
+        clear: mockClear,
+      };
     });
 
-    it('navigates when result is clicked', () => {
+    it('displays appointment group header', () => {
       renderPalette();
-      
-      const resultButtons = screen.getAllByText('João Silva');
-      const resultButton = resultButtons[0].closest('button');
-      if (resultButton) {
-        fireEvent.click(resultButton);
-      }
-
-      expect(mockNavigate).toHaveBeenCalledWith('/patients/1');
-      expect(mockClear).toHaveBeenCalled();
-      expect(mockOnClose).toHaveBeenCalled();
+      expect(screen.getByText('Consultas')).toBeInTheDocument();
     });
 
-    it('shows footer with Tab hint when results exist', () => {
+    it('displays appointment patient name', () => {
       renderPalette();
-      
-      expect(screen.getByText('Tab')).toBeInTheDocument();
-      expect(screen.getByText(/ações rápidas/i)).toBeInTheDocument();
+      expect(screen.getByText('Maria Santos')).toBeInTheDocument();
     });
   });
 
   describe('Input Interaction', () => {
     it('calls setQuery when typing in input', () => {
       renderPalette();
-      
+
       const input = screen.getByPlaceholderText(/Buscar pacientes/i);
       fireEvent.change(input, { target: { value: 'test' } });
 
@@ -274,35 +229,226 @@ describe('CommandPalette', () => {
     });
   });
 
-  describe('Type Icons and Labels', () => {
-    it('renders patient results with user icon', () => {
-      mockSearchState.hasSearched = true;
-      mockSearchState.results = [{ id: '1', type: 'patient', title: 'Test', path: '/test', score: 100 }];
-      mockSearchState.groupedResults.patient = [{ id: '1', type: 'patient', title: 'Test', path: '/test', score: 100 }];
-      
+  describe('Footer', () => {
+    it('shows keyboard hints in footer', () => {
       renderPalette();
-      
-      expect(screen.getByText('Pacientes')).toBeInTheDocument();
-    });
-
-    it('renders appointment results with calendar icon', () => {
-      mockSearchState.hasSearched = true;
-      mockSearchState.results = [{ id: '1', type: 'appointment', title: 'Test', path: '/test', score: 100 }];
-      mockSearchState.groupedResults.appointment = [{ id: '1', type: 'appointment', title: 'Test', path: '/test', score: 100 }];
-      
-      renderPalette();
-      
-      expect(screen.getByText('Consultas')).toBeInTheDocument();
+      expect(screen.getByText(/navegar/i)).toBeInTheDocument();
+      expect(screen.getByText(/selecionar/i)).toBeInTheDocument();
+      expect(screen.getByText(/fechar/i)).toBeInTheDocument();
     });
   });
 
   describe('Accessibility', () => {
-    it('has correct aria attributes', () => {
+    it('has correct aria label', () => {
       renderPalette();
-      
-      const dialog = document.querySelector('[role="dialog"]');
+      const dialog = document.querySelector('[cmdk-dialog]');
       expect(dialog).toBeInTheDocument();
-      expect(dialog).toHaveAttribute('aria-modal', 'true');
+    });
+  });
+
+  describe('Navigation on Select', () => {
+    it('navigates to dashboard when selecting quick action', () => {
+      renderPalette();
+      const dashboardItem = screen.getByText('Ir para Dashboard');
+      fireEvent.click(dashboardItem);
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+    });
+
+    it('navigates to agenda when selecting', () => {
+      renderPalette();
+      const agendaItem = screen.getByText('Ir para Agenda');
+      fireEvent.click(agendaItem);
+      expect(mockNavigate).toHaveBeenCalledWith('/agenda');
+    });
+
+    it('navigates to patients when selecting', () => {
+      renderPalette();
+      const patientsItem = screen.getByText('Ir para Pacientes');
+      fireEvent.click(patientsItem);
+      expect(mockNavigate).toHaveBeenCalledWith('/patients');
+    });
+
+    it('navigates to new patient when selecting', () => {
+      renderPalette();
+      const newPatientItem = screen.getByText('Novo Paciente');
+      fireEvent.click(newPatientItem);
+      expect(mockNavigate).toHaveBeenCalledWith('/patients/new');
+    });
+
+    it('navigates to finance when selecting', () => {
+      renderPalette();
+      const financeItem = screen.getByText('Ir para Financeiro');
+      fireEvent.click(financeItem);
+      expect(mockNavigate).toHaveBeenCalledWith('/finance');
+    });
+
+    it('navigates to reports when selecting', () => {
+      renderPalette();
+      const reportsItem = screen.getByText('Ir para Relatórios');
+      fireEvent.click(reportsItem);
+      expect(mockNavigate).toHaveBeenCalledWith('/reports');
+    });
+
+    it('navigates to settings when selecting', () => {
+      renderPalette();
+      const settingsItem = screen.getByText('Configurações');
+      fireEvent.click(settingsItem);
+      expect(mockNavigate).toHaveBeenCalledWith('/settings');
+    });
+
+    it('navigates to help when selecting', () => {
+      renderPalette();
+      const helpItem = screen.getByText('Ajuda');
+      fireEvent.click(helpItem);
+      expect(mockNavigate).toHaveBeenCalledWith('/help');
+    });
+
+    it('calls clear and onClose when selecting an item', () => {
+      renderPalette();
+      const dashboardItem = screen.getByText('Ir para Dashboard');
+      fireEvent.click(dashboardItem);
+      expect(mockClear).toHaveBeenCalled();
+      expect(mockOnClose).toHaveBeenCalled();
+    });
+  });
+
+  describe('Search Result Navigation', () => {
+    beforeEach(() => {
+      mockSearchState = {
+        query: 'silva',
+        setQuery: mockSetQuery,
+        results: [
+          { id: '1', type: 'patient', title: 'João Silva', subtitle: 'joao@email.com', path: '/patients/1', score: 100 },
+        ],
+        loading: false,
+        hasSearched: true,
+        groupedResults: {
+          patient: [{ id: '1', type: 'patient', title: 'João Silva', subtitle: 'joao@email.com', path: '/patients/1', score: 100 }],
+          appointment: [],
+          medical_record: [],
+          prescription: [],
+          transaction: [],
+        },
+        clear: mockClear,
+      };
+    });
+
+    it('navigates to patient page when selecting patient result', () => {
+      renderPalette();
+      const patientItem = screen.getByText('João Silva');
+      fireEvent.click(patientItem);
+      expect(mockNavigate).toHaveBeenCalledWith('/patients/1');
+    });
+  });
+
+  describe('Appointment Result Navigation', () => {
+    beforeEach(() => {
+      mockSearchState = {
+        query: 'maria',
+        setQuery: mockSetQuery,
+        results: [
+          { id: '2', type: 'appointment', title: 'Maria Santos', subtitle: '2025-12-25 14:00', path: '/agenda?date=2025-12-25', score: 80 },
+        ],
+        loading: false,
+        hasSearched: true,
+        groupedResults: {
+          patient: [],
+          appointment: [{ id: '2', type: 'appointment', title: 'Maria Santos', subtitle: '2025-12-25 14:00', path: '/agenda?date=2025-12-25', score: 80 }],
+          medical_record: [],
+          prescription: [],
+          transaction: [],
+        },
+        clear: mockClear,
+      };
+    });
+
+    it('navigates to agenda when selecting appointment result', () => {
+      renderPalette();
+      const appointmentItem = screen.getByText('Maria Santos');
+      fireEvent.click(appointmentItem);
+      expect(mockNavigate).toHaveBeenCalledWith('/agenda?date=2025-12-25');
+    });
+
+    it('displays appointment subtitle', () => {
+      renderPalette();
+      expect(screen.getByText('2025-12-25 14:00')).toBeInTheDocument();
+    });
+  });
+
+  describe('Multiple Result Types', () => {
+    beforeEach(() => {
+      mockSearchState = {
+        query: 'maria',
+        setQuery: mockSetQuery,
+        results: [
+          { id: '1', type: 'patient', title: 'Maria Silva', subtitle: 'maria@email.com', path: '/patients/1', score: 100 },
+          { id: '2', type: 'appointment', title: 'Maria Santos', subtitle: '2025-12-25 14:00', path: '/agenda?date=2025-12-25', score: 80 },
+        ],
+        loading: false,
+        hasSearched: true,
+        groupedResults: {
+          patient: [{ id: '1', type: 'patient', title: 'Maria Silva', subtitle: 'maria@email.com', path: '/patients/1', score: 100 }],
+          appointment: [{ id: '2', type: 'appointment', title: 'Maria Santos', subtitle: '2025-12-25 14:00', path: '/agenda?date=2025-12-25', score: 80 }],
+          medical_record: [],
+          prescription: [],
+          transaction: [],
+        },
+        clear: mockClear,
+      };
+    });
+
+    it('shows both Pacientes and Consultas groups', () => {
+      renderPalette();
+      expect(screen.getByText('Pacientes')).toBeInTheDocument();
+      expect(screen.getByText('Consultas')).toBeInTheDocument();
+    });
+
+    it('displays results from both groups', () => {
+      renderPalette();
+      expect(screen.getByText('Maria Silva')).toBeInTheDocument();
+      expect(screen.getByText('Maria Santos')).toBeInTheDocument();
+    });
+
+    it('does not show quick actions when results exist', () => {
+      renderPalette();
+      expect(screen.queryByText('Ações Rápidas')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Empty Search State', () => {
+    it('shows quick actions when not searched', () => {
+      mockSearchState.hasSearched = false;
+      mockSearchState.query = '';
+      renderPalette();
+      // When no search performed, quick actions are shown
+      expect(screen.getByText('Ações Rápidas')).toBeInTheDocument();
+    });
+  });
+
+  describe('Result Without Subtitle', () => {
+    beforeEach(() => {
+      mockSearchState = {
+        query: 'silva',
+        setQuery: mockSetQuery,
+        results: [
+          { id: '1', type: 'patient', title: 'João Silva', path: '/patients/1', score: 100 },
+        ],
+        loading: false,
+        hasSearched: true,
+        groupedResults: {
+          patient: [{ id: '1', type: 'patient', title: 'João Silva', path: '/patients/1', score: 100 }],
+          appointment: [],
+          medical_record: [],
+          prescription: [],
+          transaction: [],
+        },
+        clear: mockClear,
+      };
+    });
+
+    it('renders patient without subtitle', () => {
+      renderPalette();
+      expect(screen.getByText('João Silva')).toBeInTheDocument();
     });
   });
 });

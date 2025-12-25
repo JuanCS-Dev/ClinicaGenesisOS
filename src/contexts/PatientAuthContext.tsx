@@ -55,7 +55,7 @@ interface PatientAuthContextValue extends PatientAuthState {
 // Context
 // ============================================================================
 
-const PatientAuthContext = createContext<PatientAuthContextValue | undefined>(undefined);
+export const PatientAuthContext = createContext<PatientAuthContextValue | undefined>(undefined);
 
 // Action settings for magic link
 const actionCodeSettings = {
@@ -130,10 +130,35 @@ export function PatientAuthProvider({ children }: { children: React.ReactNode })
       window.localStorage.setItem('patientClinicId', clinicId);
       setState((prev) => ({ ...prev, loading: false }));
     } catch (error) {
+      // Log real error for debugging
+      console.error('sendMagicLink error:', error);
+
+      // Map Firebase error codes to Portuguese messages
+      const firebaseError = error as { code?: string };
+      let errorMessage = 'Erro ao enviar link de acesso';
+
+      switch (firebaseError.code) {
+        case 'auth/invalid-email':
+          errorMessage = 'Email inválido';
+          break;
+        case 'auth/missing-email':
+          errorMessage = 'Email é obrigatório';
+          break;
+        case 'auth/unauthorized-domain':
+          errorMessage = 'Domínio não autorizado. Verifique as configurações do Firebase.';
+          break;
+        case 'auth/operation-not-allowed':
+          errorMessage = 'Login por email não está habilitado. Contate o suporte.';
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = 'Muitas tentativas. Aguarde alguns minutos.';
+          break;
+      }
+
       setState((prev) => ({
         ...prev,
         loading: false,
-        error: 'Erro ao enviar link de acesso',
+        error: errorMessage,
       }));
       throw error;
     }
