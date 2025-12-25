@@ -1,7 +1,46 @@
 # Plano: Eliminação de Mocks - Patient Portal & Sistema Completo
 
 **Data**: 2025-12-24
-**Status**: Aprovado, aguardando implementação
+**Status**: Em execução
+
+---
+
+## Progresso
+
+| Sprint | Status | Data |
+|--------|--------|------|
+| Sprint 1: Infraestrutura | ✅ Completo | 2025-12-25 |
+| Sprint 2: Patient Portal - Core | ✅ Completo | 2025-12-25 |
+| Sprint 3: Patient Portal - Avançado | ✅ Completo | 2025-12-25 |
+| Auditoria CODE_CONSTITUTION | ✅ Aprovado | 2025-12-25 |
+| Sprint 4: Externos | ⏳ Pendente | - |
+| Sprint 5: Auditoria Final | ⏳ Pendente | - |
+
+### Sprint 1 - Arquivos Criados
+- ✅ `src/contexts/PatientPortalContext.tsx`
+- ✅ `src/types/lab-result/lab-result.ts`
+- ✅ `src/types/lab-result/index.ts`
+- ✅ `src/services/firestore/lab-result.service.ts`
+- ✅ `src/hooks/useLabResults.ts`
+- ✅ `src/hooks/usePatientPortal.ts` (hooks agregados)
+
+### Sprint 2 - Páginas Refatoradas
+- ✅ `patient-portal/Dashboard.tsx` - Mocks removidos, usa `usePatientPortalAppointments`, `usePatientPortalPrescriptions`
+- ✅ `patient-portal/Appointments.tsx` - Mocks removidos, usa `usePatientPortalAppointments`
+- ✅ `patient-portal/Prescriptions.tsx` - Mocks removidos, usa `usePatientPortalPrescriptions`
+- ✅ `patient-portal/Billing.tsx` - Mocks removidos, usa `usePatientPortalBilling`
+
+### Sprint 3 - Arquivos Criados
+- ✅ `src/types/message/message.ts` - Tipos para sistema de mensagens
+- ✅ `src/types/message/index.ts` - Re-exports
+- ✅ `src/services/firestore/message.service.ts` - CRUD de conversas e mensagens
+- ✅ `src/hooks/usePatientMessages.ts` - Hook para mensagens do paciente
+- ✅ `src/hooks/usePatientTelehealth.ts` - Hook para teleconsultas do paciente
+
+### Sprint 3 - Páginas Refatoradas
+- ✅ `patient-portal/LabResults.tsx` - Mocks removidos, usa `useLabResults`
+- ✅ `patient-portal/Messages.tsx` - Mocks removidos, usa `usePatientMessages`
+- ✅ `patient-portal/Telehealth.tsx` - Mocks removidos, usa `usePatientTelehealth`
 
 ---
 
@@ -16,9 +55,9 @@ Eliminar todos os mocks do sistema, começando pelo Patient Portal (7 páginas) 
 
 ---
 
-## Fase 1: Infraestrutura Base
+## Fase 1: Infraestrutura Base ✅
 
-### 1.1 Patient Context
+### 1.1 Patient Context ✅
 **Arquivo**: `src/contexts/PatientPortalContext.tsx`
 
 Contexto para identificar o paciente logado e fornecer acesso aos seus dados.
@@ -31,7 +70,7 @@ interface PatientPortalContextType {
 }
 ```
 
-### 1.2 Lab Results Types
+### 1.2 Lab Results Types ✅
 **Arquivo**: `src/types/lab-result/lab-result.ts`
 
 ```typescript
@@ -52,86 +91,134 @@ export interface LabResult {
 }
 ```
 
-### 1.3 Lab Results Service
+### 1.3 Lab Results Service ✅
 **Arquivo**: `src/services/firestore/lab-result.service.ts`
 
 - Path: `/clinics/{clinicId}/lab-results/{resultId}`
 - Métodos: `getByPatient`, `create`, `update`, `uploadFile`
 - Subscriptions: `subscribeByPatient`
 
-### 1.4 Lab Results Hook
+### 1.4 Lab Results Hook ✅
 **Arquivo**: `src/hooks/useLabResults.ts`
 
 ---
 
-## Fase 2: Patient Portal - Páginas (7 arquivos)
+## Fase 2: Patient Portal - Core ✅
 
-### 2.1 Dashboard (`patient-portal/Dashboard.tsx`)
-**Remover**: `MOCK_NEXT_APPOINTMENT`, `MOCK_NOTIFICATIONS`
+### 2.1 Dashboard (`patient-portal/Dashboard.tsx`) ✅
+**Removido**: `MOCK_NEXT_APPOINTMENT`, `MOCK_NOTIFICATIONS`
 
-**Substituir por**:
-- `usePatientAppointments(patientId)` - próxima consulta real
-- `usePatientNotifications(patientId)` - notificações reais (criar hook)
-
----
-
-### 2.2 Appointments (`patient-portal/Appointments.tsx`)
-**Remover**: `MOCK_APPOINTMENTS`
-
-**Substituir por**:
-- `usePatientAppointments(patientId)` - já existe parcialmente
-- Filtrar por status (upcoming, past)
+**Implementado**:
+- `usePatientPortalAppointments()` - próxima consulta real
+- `usePatientPortalPrescriptions()` - para notificações de receitas expirando
+- Skeleton loading states
+- Empty states quando não há dados
 
 ---
 
-### 2.3 Lab Results (`patient-portal/LabResults.tsx`)
-**Remover**: `MOCK_RESULTS`
+### 2.2 Appointments (`patient-portal/Appointments.tsx`) ✅
+**Removido**: `MOCK_APPOINTMENTS`
 
-**Substituir por**:
-- `useLabResults(patientId)` - novo hook
-- Componente de visualização de PDF
-- Filtros por tipo e status
-
----
-
-### 2.4 Prescriptions (`patient-portal/Prescriptions.tsx`)
-**Remover**: `MOCK_PRESCRIPTIONS`
-
-**Substituir por**:
-- Reutilizar `prescriptionService.getByPatient`
-- Criar `usePatientPrescriptions(patientId)`
+**Implementado**:
+- `usePatientPortalAppointments()` - lista de consultas
+- Filtro por status (upcoming, past)
+- Skeleton loading states
+- Empty states quando não há dados
 
 ---
 
-### 2.5 Messages (`patient-portal/Messages.tsx`)
-**Remover**: `MOCK_CONVERSATIONS`
+### 2.3 Prescriptions (`patient-portal/Prescriptions.tsx`) ✅
+**Removido**: `MOCK_PRESCRIPTIONS`
 
-**Substituir por**:
-- Novo `messageService` com estrutura de conversas
-- `usePatientMessages(patientId)`
-
----
-
-### 2.6 Billing (`patient-portal/Billing.tsx`)
-**Remover**: `MOCK_INVOICES`
-
-**Substituir por**:
-- Reutilizar `transactionService` (Finance)
-- Filtrar por `patientId`
-- `usePatientBilling(patientId)`
+**Implementado**:
+- `usePatientPortalPrescriptions()` - lista de receitas
+- Filtro por busca e status (ativa/expirada)
+- Skeleton loading states
+- Empty states quando não há dados
 
 ---
 
-### 2.7 Telehealth (`patient-portal/Telehealth.tsx`)
-**Remover**: `MOCK_TELECONSULTA`
+### 2.4 Billing (`patient-portal/Billing.tsx`) ✅
+**Removido**: `MOCK_INVOICES`
 
-**Substituir por**:
-- Reutilizar `telemedicineService`
-- `usePatientTeleconsultas(patientId)`
+**Implementado**:
+- `usePatientPortalBilling()` - transações do paciente
+- Resumo de pagos/pendentes calculado de dados reais
+- Skeleton loading states
+- Empty states quando não há dados
 
 ---
 
-## Fase 3: Public Booking
+## Fase 3: Patient Portal - Avançado ✅
+
+### 3.1 Lab Results (`patient-portal/LabResults.tsx`) ✅
+**Removido**: `MOCK_RESULTS`
+
+**Implementado**:
+- `useLabResults()` - hook que usa PatientPortalContext
+- Skeleton loading states
+- Empty states quando não há dados
+- Ações funcionais (visualizar, download)
+- Status 'viewed' para marcar exames já vistos
+
+---
+
+### 3.2 Messages (`patient-portal/Messages.tsx`) ✅
+**Removido**: `MOCK_CONVERSATIONS`
+
+**Implementado**:
+- `src/types/message/` - tipos completos (Message, Conversation, etc.)
+- `messageService` - CRUD de conversas e mensagens com real-time
+- `usePatientMessages()` - hook com subscriptions em tempo real
+- Conversa em tempo real com auto-scroll
+- Status de leitura de mensagens
+
+---
+
+### 3.3 Telehealth (`patient-portal/Telehealth.tsx`) ✅
+**Removido**: `MOCK_TELECONSULTA`
+
+**Implementado**:
+- `usePatientTelehealth()` - hook para próxima teleconsulta
+- Busca próxima teleconsulta a partir de appointments
+- Calcula `canJoin` e `minutesUntilJoin` dinamicamente
+- Empty state quando não há teleconsulta agendada
+
+---
+
+## Auditoria CODE_CONSTITUTION ✅
+
+**Data**: 2025-12-25
+**Auditor**: Claude Code
+
+### Resultado por Critério
+
+| Critério | Status |
+|----------|--------|
+| 1. Padrão Pagani (Zero Placeholders) | ✅ APROVADO |
+| 2. Limites de Arquivo (<500 linhas) | ✅ APROVADO |
+| 3. Type Hints (100% cobertura) | ✅ APROVADO |
+| 4. Naming Conventions | ✅ APROVADO |
+| 5. Docstrings/JSDoc | ✅ APROVADO |
+| 6. Error Handling | ✅ APROVADO |
+| 7. Security (no hardcoded secrets) | ✅ APROVADO |
+
+### Detalhes
+
+**Limites de Arquivo:**
+- 🏆 EXCELLENT (<300): 9 arquivos
+- ✅ IDEAL (<400): 5 arquivos
+- ⚠️ WARNING (400-499): 3 arquivos (message.service.ts, prescription.service.ts, Dashboard.tsx)
+- ❌ FORBIDDEN (≥500): 0 arquivos
+
+**Recomendações Futuras:**
+1. Refatorar arquivos >400 linhas
+2. Adicionar tipo explícito em `useClinicLabResults`
+3. History.tsx ainda tem MOCK (Sprint 4)
+
+---
+
+## Fase 4: Public Booking
 
 ### 3.1 BookAppointment (`public/BookAppointment.tsx`)
 **Remover**: `MOCK_CLINIC`, `MOCK_PROFESSIONALS`

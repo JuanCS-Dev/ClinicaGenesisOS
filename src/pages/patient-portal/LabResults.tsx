@@ -5,10 +5,10 @@
  * View and download laboratory exam results.
  *
  * @module pages/patient-portal/LabResults
- * @version 1.0.0
+ * @version 2.0.0
  */
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
   FlaskConical,
   Download,
@@ -19,84 +19,18 @@ import {
   Clock,
   Search,
   Filter,
-  AlertTriangle,
+  User,
 } from 'lucide-react'
-
-// ============================================================================
-// Types
-// ============================================================================
-
-type ResultStatus = 'ready' | 'pending' | 'partial'
-
-interface LabResult {
-  id: string
-  name: string
-  category: string
-  date: string
-  status: ResultStatus
-  doctor: string
-  hasAbnormal: boolean
-  pdfUrl?: string
-}
-
-// ============================================================================
-// Mock Data
-// ============================================================================
-
-const MOCK_RESULTS: LabResult[] = [
-  {
-    id: '1',
-    name: 'Hemograma Completo',
-    category: 'Hematologia',
-    date: '2024-12-20',
-    status: 'ready',
-    doctor: 'Dr. João Silva',
-    hasAbnormal: false,
-  },
-  {
-    id: '2',
-    name: 'Glicemia de Jejum',
-    category: 'Bioquímica',
-    date: '2024-12-20',
-    status: 'ready',
-    doctor: 'Dr. João Silva',
-    hasAbnormal: true,
-  },
-  {
-    id: '3',
-    name: 'Perfil Lipídico',
-    category: 'Bioquímica',
-    date: '2024-12-18',
-    status: 'ready',
-    doctor: 'Dra. Maria Santos',
-    hasAbnormal: false,
-  },
-  {
-    id: '4',
-    name: 'TSH e T4 Livre',
-    category: 'Hormônios',
-    date: '2024-12-22',
-    status: 'pending',
-    doctor: 'Dr. João Silva',
-    hasAbnormal: false,
-  },
-  {
-    id: '5',
-    name: 'Urina Tipo I',
-    category: 'Urinálise',
-    date: '2024-12-22',
-    status: 'partial',
-    doctor: 'Dr. João Silva',
-    hasAbnormal: false,
-  },
-]
+import { useLabResults } from '../../hooks/useLabResults'
+import { Skeleton } from '../../components/ui/Skeleton'
+import type { LabResult, LabExamType } from '@/types'
 
 // ============================================================================
 // Helpers
 // ============================================================================
 
 const STATUS_CONFIG: Record<
-  ResultStatus,
+  LabResult['status'],
   { label: string; color: string; icon: React.ElementType }
 > = {
   ready: {
@@ -109,11 +43,20 @@ const STATUS_CONFIG: Record<
     color: 'text-warning bg-warning-soft',
     icon: Clock,
   },
-  partial: {
-    label: 'Parcial',
+  viewed: {
+    label: 'Visualizado',
     color: 'text-info bg-info-soft',
-    icon: Clock,
+    icon: CheckCircle2,
   },
+}
+
+const EXAM_TYPE_LABELS: Record<LabExamType, string> = {
+  hemograma: 'Hematologia',
+  bioquimica: 'Bioquímica',
+  hormonal: 'Hormônios',
+  urina: 'Urinálise',
+  imagem: 'Imagem',
+  outros: 'Outros',
 }
 
 function formatDate(dateStr: string): string {
@@ -129,13 +72,41 @@ function formatDate(dateStr: string): string {
 // Components
 // ============================================================================
 
-interface ResultCardProps {
-  result: LabResult
+function ResultCardSkeleton() {
+  return (
+    <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-4">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-6 w-20 rounded-lg" />
+          <Skeleton className="h-6 w-16 rounded-lg" />
+        </div>
+      </div>
+      <div className="flex items-center gap-3 mb-3">
+        <Skeleton variant="rect" className="w-12 h-12 rounded-xl" />
+        <div className="space-y-2">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+      </div>
+      <Skeleton className="h-4 w-36 mb-4" />
+      <div className="flex gap-2">
+        <Skeleton className="h-10 flex-1 rounded-xl" />
+        <Skeleton className="h-10 w-12 rounded-xl" />
+      </div>
+    </div>
+  )
 }
 
-const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
-  const statusConfig = STATUS_CONFIG[result.status]
+interface ResultCardProps {
+  result: LabResult
+  onView: (result: LabResult) => void
+  onDownload: (result: LabResult) => void
+}
+
+const ResultCard: React.FC<ResultCardProps> = ({ result, onView, onDownload }) => {
+  const statusConfig = STATUS_CONFIG[result.status] || STATUS_CONFIG.pending
   const StatusIcon = statusConfig.icon
+  const categoryLabel = EXAM_TYPE_LABELS[result.examType] || result.examType
 
   return (
     <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-4 hover:shadow-lg transition-all">
@@ -147,14 +118,8 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
             <StatusIcon className="w-3 h-3" />
             {statusConfig.label}
           </div>
-          {result.hasAbnormal && (
-            <div className="px-2.5 py-1 rounded-lg text-xs font-medium bg-danger-soft text-danger flex items-center gap-1">
-              <AlertTriangle className="w-3 h-3" />
-              Atenção
-            </div>
-          )}
         </div>
-        <span className="text-xs text-genesis-muted">{result.category}</span>
+        <span className="text-xs text-genesis-muted">{categoryLabel}</span>
       </div>
 
       <div className="flex items-center gap-3 mb-3">
@@ -162,25 +127,36 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
           <FlaskConical className="w-6 h-6 text-purple-600" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-genesis-dark truncate">{result.name}</p>
+          <p className="font-semibold text-genesis-dark truncate">{result.examName}</p>
           <p className="text-sm text-genesis-muted flex items-center gap-1">
             <Calendar className="w-3 h-3" />
-            {formatDate(result.date)}
+            {formatDate(result.requestedAt)}
           </p>
         </div>
       </div>
 
-      <p className="text-xs text-genesis-muted mb-4">Solicitado por: {result.doctor}</p>
+      <p className="text-xs text-genesis-muted mb-4 flex items-center gap-1">
+        <User className="w-3 h-3" />
+        Solicitado por: {result.requestedByName || 'Médico'}
+      </p>
 
-      {result.status === 'ready' && (
+      {(result.status === 'ready' || result.status === 'viewed') && (
         <div className="flex gap-2">
-          <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
+          <button
+            onClick={() => onView(result)}
+            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+          >
             <Eye className="w-4 h-4" />
             Visualizar
           </button>
-          <button className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-genesis-border text-genesis-medium text-sm font-medium hover:bg-genesis-hover hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
-            <Download className="w-4 h-4" />
-          </button>
+          {result.fileUrl && (
+            <button
+              onClick={() => onDownload(result)}
+              className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-genesis-border text-genesis-medium text-sm font-medium hover:bg-genesis-hover hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+          )}
         </div>
       )}
 
@@ -188,13 +164,6 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
         <div className="py-2 text-center text-sm text-genesis-muted">
           Resultado em processamento
         </div>
-      )}
-
-      {result.status === 'partial' && (
-        <button className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-genesis-border text-genesis-medium text-sm font-medium hover:bg-genesis-hover hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
-          <Eye className="w-4 h-4" />
-          Ver Parcial
-        </button>
       )}
     </div>
   )
@@ -205,18 +174,88 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
 // ============================================================================
 
 export function PatientLabResults(): React.ReactElement {
+  const { results, pendingResults, readyResults, loading, markAsViewed } = useLabResults()
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<'all' | 'ready' | 'pending'>('all')
 
-  const filteredResults = MOCK_RESULTS.filter(result => {
-    if (filter === 'ready' && result.status !== 'ready') return false
-    if (filter === 'pending' && result.status === 'ready') return false
-    if (search && !result.name.toLowerCase().includes(search.toLowerCase())) return false
-    return true
-  })
+  const filteredResults = useMemo(() => {
+    let filtered = results
 
-  const readyCount = MOCK_RESULTS.filter(r => r.status === 'ready').length
-  const pendingCount = MOCK_RESULTS.filter(r => r.status !== 'ready').length
+    if (filter === 'ready') {
+      filtered = filtered.filter(r => r.status === 'ready' || r.status === 'viewed')
+    } else if (filter === 'pending') {
+      filtered = filtered.filter(r => r.status === 'pending')
+    }
+
+    if (search) {
+      const searchLower = search.toLowerCase()
+      filtered = filtered.filter(
+        r =>
+          r.examName.toLowerCase().includes(searchLower) ||
+          r.requestedByName?.toLowerCase().includes(searchLower)
+      )
+    }
+
+    // Sort by date (most recent first)
+    return filtered.sort(
+      (a, b) => new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime()
+    )
+  }, [results, filter, search])
+
+  const readyCount = readyResults.length
+  const pendingCount = pendingResults.length
+
+  const handleView = async (result: LabResult) => {
+    // Mark as viewed if not already
+    if (result.status === 'ready') {
+      try {
+        await markAsViewed(result.id)
+      } catch (error) {
+        console.error('Error marking as viewed:', error)
+      }
+    }
+    // Open PDF or viewer
+    if (result.fileUrl) {
+      window.open(result.fileUrl, '_blank')
+    }
+  }
+
+  const handleDownload = (result: LabResult) => {
+    if (result.fileUrl) {
+      const link = document.createElement('a')
+      link.href = result.fileUrl
+      link.download = result.fileName || `${result.examName}.pdf`
+      link.click()
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-enter pb-8">
+        {/* Header Skeleton */}
+        <div>
+          <div className="flex items-center gap-3">
+            <FlaskConical className="w-7 h-7 text-purple-600" />
+            <Skeleton className="h-8 w-40" />
+          </div>
+          <Skeleton className="h-4 w-48 mt-2" />
+        </div>
+
+        {/* Search/Filter Skeleton */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <Skeleton className="h-10 flex-1 rounded-xl" />
+          <Skeleton className="h-10 w-64 rounded-xl" />
+        </div>
+
+        {/* Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <ResultCardSkeleton />
+          <ResultCardSkeleton />
+          <ResultCardSkeleton />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 animate-enter pb-8">
@@ -274,7 +313,12 @@ export function PatientLabResults(): React.ReactElement {
       {filteredResults.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredResults.map(result => (
-            <ResultCard key={result.id} result={result} />
+            <ResultCard
+              key={result.id}
+              result={result}
+              onView={handleView}
+              onDownload={handleDownload}
+            />
           ))}
         </div>
       ) : (
@@ -296,8 +340,8 @@ export function PatientLabResults(): React.ReactElement {
               Sobre seus resultados
             </p>
             <p className="text-sm text-purple-700 dark:text-purple-300 mt-1">
-              Resultados marcados com "Atenção" indicam valores fora da faixa de referência.
-              Consulte seu médico para interpretação.
+              Os resultados ficam disponíveis para download após liberação do laboratório. Consulte
+              seu médico para interpretação dos valores.
             </p>
           </div>
         </div>

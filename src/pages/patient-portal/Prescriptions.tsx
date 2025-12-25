@@ -5,10 +5,10 @@
  * View and manage prescriptions and medications.
  *
  * @module pages/patient-portal/Prescriptions
- * @version 1.0.0
+ * @version 2.0.0
  */
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
   Pill,
   Download,
@@ -22,92 +22,9 @@ import {
   FileText,
   QrCode,
 } from 'lucide-react'
-
-// ============================================================================
-// Types
-// ============================================================================
-
-interface Medication {
-  name: string
-  dosage: string
-  frequency: string
-  duration: string
-}
-
-interface Prescription {
-  id: string
-  date: string
-  doctor: string
-  specialty: string
-  medications: Medication[]
-  status: 'active' | 'expired' | 'renewed'
-  expiresAt: string
-  hasDigitalSignature: boolean
-}
-
-// ============================================================================
-// Mock Data
-// ============================================================================
-
-const MOCK_PRESCRIPTIONS: Prescription[] = [
-  {
-    id: '1',
-    date: '2024-12-15',
-    doctor: 'Dr. João Silva',
-    specialty: 'Clínica Geral',
-    medications: [
-      {
-        name: 'Losartana 50mg',
-        dosage: '1 comprimido',
-        frequency: '1x ao dia',
-        duration: '30 dias',
-      },
-      {
-        name: 'Metformina 850mg',
-        dosage: '1 comprimido',
-        frequency: '2x ao dia',
-        duration: '30 dias',
-      },
-    ],
-    status: 'active',
-    expiresAt: '2025-01-15',
-    hasDigitalSignature: true,
-  },
-  {
-    id: '2',
-    date: '2024-11-20',
-    doctor: 'Dra. Maria Santos',
-    specialty: 'Cardiologia',
-    medications: [
-      {
-        name: 'AAS 100mg',
-        dosage: '1 comprimido',
-        frequency: '1x ao dia',
-        duration: 'Uso contínuo',
-      },
-    ],
-    status: 'active',
-    expiresAt: '2025-02-20',
-    hasDigitalSignature: true,
-  },
-  {
-    id: '3',
-    date: '2024-10-01',
-    doctor: 'Dr. João Silva',
-    specialty: 'Clínica Geral',
-    medications: [
-      {
-        name: 'Amoxicilina 500mg',
-        dosage: '1 comprimido',
-        frequency: '3x ao dia',
-        duration: '7 dias',
-      },
-    ],
-    status: 'expired',
-    expiresAt: '2024-10-31',
-    hasDigitalSignature: false,
-  },
-]
+import { usePatientPortalPrescriptions } from '../../hooks/usePatientPortal'
+import { Skeleton } from '../../components/ui/Skeleton'
+import type { Prescription } from '@/types'
 
 // ============================================================================
 // Helpers
@@ -122,16 +39,58 @@ function formatDate(dateStr: string): string {
   })
 }
 
-function getDaysUntilExpiry(expiresAt: string): number {
+function getDaysUntilExpiry(expiresAt: string | undefined): number {
+  if (!expiresAt) return 999
   const today = new Date()
   const expiry = new Date(expiresAt)
   const diff = expiry.getTime() - today.getTime()
   return Math.ceil(diff / (1000 * 60 * 60 * 24))
 }
 
+function isPrescriptionActive(prescription: Prescription): boolean {
+  if (prescription.status === 'canceled' || prescription.status === 'expired') {
+    return false
+  }
+  if (prescription.expiresAt) {
+    return new Date(prescription.expiresAt) > new Date()
+  }
+  return true
+}
+
 // ============================================================================
 // Components
 // ============================================================================
+
+function PrescriptionCardSkeleton() {
+  return (
+    <div className="bg-genesis-surface rounded-2xl border border-genesis-border overflow-hidden">
+      <div className="p-4 border-b border-genesis-border">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-6 w-16 rounded-lg" />
+            <Skeleton className="h-6 w-16 rounded-lg" />
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <Skeleton variant="rect" className="w-10 h-10 rounded-xl" />
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-4 w-40" />
+          </div>
+        </div>
+      </div>
+      <div className="p-4 space-y-3">
+        <Skeleton className="h-4 w-28" />
+        <Skeleton className="h-16 rounded-xl" />
+        <Skeleton className="h-16 rounded-xl" />
+      </div>
+      <div className="p-4 pt-0 flex gap-2">
+        <Skeleton className="h-10 flex-1 rounded-xl" />
+        <Skeleton className="h-10 w-10 rounded-xl" />
+      </div>
+    </div>
+  )
+}
 
 interface PrescriptionCardProps {
   prescription: Prescription
@@ -141,6 +100,7 @@ const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ prescription }) => 
   const daysLeft = getDaysUntilExpiry(prescription.expiresAt)
   const isExpiringSoon = daysLeft > 0 && daysLeft <= 7
   const isExpired = daysLeft <= 0
+  const hasDigitalSignature = !!prescription.signature
 
   return (
     <div className="bg-genesis-surface rounded-2xl border border-genesis-border overflow-hidden hover:shadow-lg transition-all">
@@ -164,7 +124,7 @@ const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ prescription }) => 
                 Ativa
               </div>
             )}
-            {prescription.hasDigitalSignature && (
+            {hasDigitalSignature && (
               <div className="px-2.5 py-1 rounded-lg text-xs font-medium bg-info-soft text-info flex items-center gap-1">
                 <QrCode className="w-3 h-3" />
                 Digital
@@ -180,11 +140,11 @@ const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ prescription }) => 
           <div>
             <p className="font-semibold text-genesis-dark flex items-center gap-2">
               <User className="w-4 h-4 text-genesis-muted" />
-              {prescription.doctor}
+              {prescription.professionalName}
             </p>
             <p className="text-sm text-genesis-muted flex items-center gap-1">
               <Calendar className="w-3 h-3" />
-              {formatDate(prescription.date)} • {prescription.specialty}
+              {formatDate(prescription.prescribedAt)}
             </p>
           </div>
         </div>
@@ -193,16 +153,23 @@ const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ prescription }) => 
       {/* Medications */}
       <div className="p-4 space-y-3">
         <p className="text-xs font-medium text-genesis-muted uppercase tracking-wide">
-          Medicamentos ({prescription.medications.length})
+          Medicamentos ({prescription.medications?.length || 0})
         </p>
-        {prescription.medications.map((med, index) => (
+        {prescription.medications?.map((med, index) => (
           <div key={index} className="bg-genesis-soft rounded-xl p-3">
-            <p className="font-medium text-genesis-dark text-sm">{med.name}</p>
+            <p className="font-medium text-genesis-dark text-sm">
+              {med.name} {med.concentration}
+            </p>
             <p className="text-xs text-genesis-muted mt-1">
               {med.dosage} • {med.frequency} • {med.duration}
             </p>
           </div>
         ))}
+        {(!prescription.medications || prescription.medications.length === 0) && (
+          <div className="bg-genesis-soft rounded-xl p-3 text-center">
+            <p className="text-sm text-genesis-muted">Nenhum medicamento registrado</p>
+          </div>
+        )}
       </div>
 
       {/* Actions */}
@@ -226,25 +193,55 @@ const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ prescription }) => 
 // ============================================================================
 
 export function PatientPrescriptions(): React.ReactElement {
+  const { prescriptions, activePrescriptions, loading } = usePatientPortalPrescriptions()
   const [search, setSearch] = useState('')
   const [showExpired, setShowExpired] = useState(false)
 
-  const filteredPrescriptions = MOCK_PRESCRIPTIONS.filter(rx => {
-    if (!showExpired && rx.status === 'expired') return false
-    if (search) {
-      const searchLower = search.toLowerCase()
-      const matchesMed = rx.medications.some(m => m.name.toLowerCase().includes(searchLower))
-      const matchesDoctor = rx.doctor.toLowerCase().includes(searchLower)
-      return matchesMed || matchesDoctor
-    }
-    return true
-  })
+  const filteredPrescriptions = useMemo(() => {
+    return prescriptions.filter(rx => {
+      // Filter by expired status
+      if (!showExpired && !isPrescriptionActive(rx)) return false
 
-  const activeCount = MOCK_PRESCRIPTIONS.filter(rx => rx.status === 'active').length
-  const totalMeds = MOCK_PRESCRIPTIONS.filter(rx => rx.status === 'active').reduce(
-    (sum, rx) => sum + rx.medications.length,
-    0
-  )
+      // Filter by search term
+      if (search) {
+        const searchLower = search.toLowerCase()
+        const matchesMed = rx.medications?.some(m => m.name.toLowerCase().includes(searchLower))
+        const matchesDoctor = rx.professionalName?.toLowerCase().includes(searchLower)
+        return matchesMed || matchesDoctor
+      }
+      return true
+    })
+  }, [prescriptions, search, showExpired])
+
+  const activeCount = activePrescriptions.length
+  const totalMeds = activePrescriptions.reduce((sum, rx) => sum + (rx.medications?.length || 0), 0)
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-enter pb-8">
+        {/* Header Skeleton */}
+        <div>
+          <div className="flex items-center gap-3">
+            <Pill className="w-7 h-7 text-green-600" />
+            <Skeleton className="h-8 w-40" />
+          </div>
+          <Skeleton className="h-4 w-48 mt-2" />
+        </div>
+
+        {/* Search Skeleton */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <Skeleton className="h-10 flex-1 rounded-xl" />
+          <Skeleton className="h-6 w-36" />
+        </div>
+
+        {/* Cards Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <PrescriptionCardSkeleton />
+          <PrescriptionCardSkeleton />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 animate-enter pb-8">

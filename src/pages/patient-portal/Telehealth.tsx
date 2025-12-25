@@ -5,7 +5,7 @@
  * Video consultation waiting room and join interface.
  *
  * @module pages/patient-portal/Telehealth
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 import React, { useState } from 'react'
@@ -21,23 +21,37 @@ import {
   CheckCircle2,
   AlertCircle,
 } from 'lucide-react'
-
-// ============================================================================
-// Mock Data
-// ============================================================================
-
-const MOCK_TELECONSULTA = {
-  id: '1',
-  date: '2024-12-28',
-  time: '14:30',
-  provider: 'Dr. João Silva',
-  specialty: 'Clínica Geral',
-  status: 'scheduled', // 'scheduled' | 'waiting' | 'in_progress' | 'completed'
-}
+import { usePatientTelehealth } from '../../hooks/usePatientTelehealth'
+import { Skeleton } from '../../components/ui/Skeleton'
+import type { Appointment } from '@/types'
 
 // ============================================================================
 // Components
 // ============================================================================
+
+function TelehealthSkeleton() {
+  return (
+    <div className="space-y-6 animate-enter pb-8">
+      {/* Header Skeleton */}
+      <div>
+        <div className="flex items-center gap-3">
+          <Video className="w-7 h-7 text-purple-600" />
+          <Skeleton className="h-8 w-40" />
+        </div>
+        <Skeleton className="h-4 w-64 mt-2" />
+      </div>
+
+      {/* Main Grid Skeleton */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Skeleton className="h-80 rounded-2xl" />
+        <Skeleton className="h-80 rounded-2xl" />
+      </div>
+
+      {/* Instructions Skeleton */}
+      <Skeleton className="h-40 rounded-2xl" />
+    </div>
+  )
+}
 
 function DeviceCheck() {
   const [videoEnabled, setVideoEnabled] = useState(true)
@@ -57,7 +71,7 @@ function DeviceCheck() {
             <User className="w-16 h-16 text-genesis-muted" />
           </div>
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-genesis-dark">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-genesis-dark">
             <VideoOff className="w-12 h-12 text-genesis-muted" />
             <p className="text-genesis-muted text-sm mt-2">Câmera desligada</p>
           </div>
@@ -104,11 +118,22 @@ function DeviceCheck() {
   )
 }
 
-function AppointmentInfo({ appointment }: { appointment: typeof MOCK_TELECONSULTA }) {
-  const appointmentDate = new Date(`${appointment.date}T${appointment.time}`)
-  const now = new Date()
-  const isToday = appointmentDate.toDateString() === now.toDateString()
-  const canJoin = isToday && now >= new Date(appointmentDate.getTime() - 15 * 60 * 1000)
+interface AppointmentInfoProps {
+  appointment: Appointment
+  canJoin: boolean
+  minutesUntilJoin: number | null
+  onJoin: () => void
+  joining: boolean
+}
+
+function AppointmentInfo({
+  appointment,
+  canJoin,
+  minutesUntilJoin,
+  onJoin,
+  joining,
+}: AppointmentInfoProps) {
+  const appointmentDate = new Date(appointment.date)
 
   return (
     <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-6">
@@ -117,8 +142,8 @@ function AppointmentInfo({ appointment }: { appointment: typeof MOCK_TELECONSULT
           <User className="w-7 h-7 text-genesis-primary" />
         </div>
         <div>
-          <p className="font-semibold text-genesis-dark">{appointment.provider}</p>
-          <p className="text-sm text-genesis-muted">{appointment.specialty}</p>
+          <p className="font-semibold text-genesis-dark">{appointment.professional}</p>
+          <p className="text-sm text-genesis-muted">{appointment.specialty || 'Médico'}</p>
         </div>
       </div>
 
@@ -135,21 +160,41 @@ function AppointmentInfo({ appointment }: { appointment: typeof MOCK_TELECONSULT
         </div>
         <div className="flex items-center gap-3 text-genesis-medium">
           <Clock className="w-5 h-5 text-genesis-muted" />
-          <span>{appointment.time}</span>
+          <span>
+            {appointmentDate.toLocaleTimeString('pt-BR', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </span>
         </div>
       </div>
 
       {canJoin ? (
-        <button className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-success text-white font-medium hover:bg-success/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
+        <button
+          onClick={onJoin}
+          disabled={joining}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-success text-white font-medium hover:bg-success/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
+        >
           <Video className="w-5 h-5" />
-          Entrar na Sala
+          {joining ? 'Entrando...' : 'Entrar na Sala'}
         </button>
       ) : (
         <div className="text-center">
           <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 mb-4">
             <AlertCircle className="w-6 h-6 text-amber-600 mx-auto mb-2" />
             <p className="text-sm text-amber-700 dark:text-amber-300">
-              A sala estará disponível 15 minutos antes do horário agendado.
+              {minutesUntilJoin !== null ? (
+                <>
+                  A sala estará disponível em{' '}
+                  <strong>
+                    {minutesUntilJoin > 60
+                      ? `${Math.floor(minutesUntilJoin / 60)}h ${minutesUntilJoin % 60}min`
+                      : `${minutesUntilJoin} minutos`}
+                  </strong>
+                </>
+              ) : (
+                'A sala estará disponível 15 minutos antes do horário agendado.'
+              )}
             </p>
           </div>
           <button
@@ -165,11 +210,50 @@ function AppointmentInfo({ appointment }: { appointment: typeof MOCK_TELECONSULT
   )
 }
 
+function NoAppointment() {
+  return (
+    <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-6 text-center">
+      <Video className="w-12 h-12 text-genesis-muted mx-auto mb-4" />
+      <p className="font-medium text-genesis-dark">Nenhuma teleconsulta agendada</p>
+      <p className="text-sm text-genesis-muted mt-2">
+        Você não possui teleconsultas agendadas no momento.
+      </p>
+      <a
+        href="/portal/consultas"
+        className="inline-flex items-center justify-center gap-2 mt-4 px-4 py-2 rounded-xl bg-genesis-primary text-white font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+      >
+        Agendar Consulta
+      </a>
+    </div>
+  )
+}
+
 // ============================================================================
 // Main Component
 // ============================================================================
 
 export function PatientTelehealth(): React.ReactElement {
+  const { nextTeleconsulta, loading, canJoin, minutesUntilJoin, joinWaitingRoom } =
+    usePatientTelehealth()
+
+  const [joining, setJoining] = useState(false)
+
+  const handleJoin = async () => {
+    setJoining(true)
+    try {
+      await joinWaitingRoom()
+    } catch (error) {
+      console.error('Error joining waiting room:', error)
+      // Could show toast here
+    } finally {
+      setJoining(false)
+    }
+  }
+
+  if (loading) {
+    return <TelehealthSkeleton />
+  }
+
   return (
     <div className="space-y-6 animate-enter pb-8">
       {/* Header */}
@@ -189,7 +273,17 @@ export function PatientTelehealth(): React.ReactElement {
         <DeviceCheck />
 
         {/* Appointment Info */}
-        <AppointmentInfo appointment={MOCK_TELECONSULTA} />
+        {nextTeleconsulta.appointment ? (
+          <AppointmentInfo
+            appointment={nextTeleconsulta.appointment}
+            canJoin={canJoin}
+            minutesUntilJoin={minutesUntilJoin}
+            onJoin={handleJoin}
+            joining={joining}
+          />
+        ) : (
+          <NoAppointment />
+        )}
       </div>
 
       {/* Instructions */}

@@ -56,3 +56,6 @@ export * from './task'
 
 // Lab Results (Patient Portal)
 export * from './lab-result'
+
+// Messages (Patient Portal)
+export * from './message'

@@ -34,3 +34,5 @@ export { guiaService } from './guia.service'
 export { taskService } from './task.service'
 
 export { labResultService } from './lab-result.service'
+
+export { messageService } from './message.service'

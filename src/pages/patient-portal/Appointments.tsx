@@ -6,10 +6,10 @@
  * Request new appointments or reschedule.
  *
  * @module pages/patient-portal/Appointments
- * @version 1.0.0
+ * @version 2.0.0
  */
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
   Calendar,
   Clock,
@@ -23,106 +23,48 @@ import {
   ChevronRight,
   Filter,
 } from 'lucide-react'
-
-// ============================================================================
-// Types
-// ============================================================================
-
-type AppointmentStatus = 'confirmed' | 'pending' | 'completed' | 'cancelled'
-
-interface Appointment {
-  id: string
-  date: string
-  time: string
-  professional: string
-  specialty: string
-  location: string
-  status: AppointmentStatus
-  type: 'presencial' | 'teleconsulta'
-}
-
-// ============================================================================
-// Mock Data
-// ============================================================================
-
-const MOCK_APPOINTMENTS: Appointment[] = [
-  {
-    id: '1',
-    date: '2024-12-28',
-    time: '14:30',
-    professional: 'Dr. João Silva',
-    specialty: 'Clínica Geral',
-    location: 'Sala 3',
-    status: 'confirmed',
-    type: 'presencial',
-  },
-  {
-    id: '2',
-    date: '2025-01-15',
-    time: '10:00',
-    professional: 'Dra. Maria Santos',
-    specialty: 'Cardiologia',
-    location: 'Sala 5',
-    status: 'pending',
-    type: 'presencial',
-  },
-  {
-    id: '3',
-    date: '2024-12-15',
-    time: '09:00',
-    professional: 'Dr. João Silva',
-    specialty: 'Clínica Geral',
-    location: 'Online',
-    status: 'completed',
-    type: 'teleconsulta',
-  },
-  {
-    id: '4',
-    date: '2024-11-20',
-    time: '15:30',
-    professional: 'Dr. Pedro Costa',
-    specialty: 'Ortopedia',
-    location: 'Sala 2',
-    status: 'completed',
-    type: 'presencial',
-  },
-  {
-    id: '5',
-    date: '2024-10-10',
-    time: '11:00',
-    professional: 'Dra. Ana Oliveira',
-    specialty: 'Dermatologia',
-    location: 'Sala 4',
-    status: 'cancelled',
-    type: 'presencial',
-  },
-]
+import { usePatientPortalAppointments } from '../../hooks/usePatientPortal'
+import { Skeleton } from '../../components/ui/Skeleton'
+import { Status } from '@/types'
+import type { Appointment } from '@/types'
 
 // ============================================================================
 // Helpers
 // ============================================================================
 
-const STATUS_CONFIG: Record<
-  AppointmentStatus,
-  { label: string; color: string; icon: React.ElementType }
-> = {
-  confirmed: {
+const STATUS_CONFIG: Record<Status, { label: string; color: string; icon: React.ElementType }> = {
+  [Status.CONFIRMED]: {
     label: 'Confirmada',
     color: 'text-success bg-success-soft',
     icon: CheckCircle2,
   },
-  pending: {
+  [Status.PENDING]: {
     label: 'Pendente',
+    color: 'text-warning bg-warning-soft',
+    icon: Clock,
+  },
+  [Status.ARRIVED]: {
+    label: 'Chegou',
+    color: 'text-info bg-info-soft',
+    icon: CheckCircle2,
+  },
+  [Status.IN_PROGRESS]: {
+    label: 'Em Atendimento',
     color: 'text-warning bg-warning-soft',
     icon: AlertCircle,
   },
-  completed: {
+  [Status.FINISHED]: {
     label: 'Realizada',
     color: 'text-info bg-info-soft',
     icon: CheckCircle2,
   },
-  cancelled: {
+  [Status.CANCELED]: {
     label: 'Cancelada',
+    color: 'text-danger bg-danger-soft',
+    icon: XCircle,
+  },
+  [Status.NO_SHOW]: {
+    label: 'Não Compareceu',
     color: 'text-danger bg-danger-soft',
     icon: XCircle,
   },
@@ -138,6 +80,14 @@ function formatDate(dateStr: string): string {
   })
 }
 
+function formatTime(dateStr: string): string {
+  const date = new Date(dateStr)
+  return date.toLocaleTimeString('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 function isUpcoming(dateStr: string): boolean {
   return new Date(dateStr) >= new Date(new Date().toDateString())
 }
@@ -146,14 +96,39 @@ function isUpcoming(dateStr: string): boolean {
 // Components
 // ============================================================================
 
+function AppointmentCardSkeleton() {
+  return (
+    <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-4">
+      <div className="flex items-start justify-between mb-3">
+        <Skeleton className="h-6 w-24 rounded-lg" />
+        <Skeleton className="h-5 w-5 rounded" />
+      </div>
+      <div className="flex items-center gap-3 mb-3">
+        <Skeleton variant="rect" className="w-12 h-12 rounded-xl" />
+        <div className="space-y-2">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-4 w-20" />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="h-4 w-24" />
+      </div>
+    </div>
+  )
+}
+
 interface AppointmentCardProps {
   appointment: Appointment
 }
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment }) => {
-  const statusConfig = STATUS_CONFIG[appointment.status]
+  const statusConfig = STATUS_CONFIG[appointment.status] || STATUS_CONFIG[Status.PENDING]
   const StatusIcon = statusConfig.icon
   const upcoming = isUpcoming(appointment.date)
+  const isTeleconsulta =
+    appointment.notes?.toLowerCase().includes('online') ||
+    appointment.notes?.toLowerCase().includes('teleconsulta')
 
   return (
     <div
@@ -169,8 +144,8 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment }) => {
             <StatusIcon className="w-3 h-3" />
             {statusConfig.label}
           </div>
-          {appointment.type === 'teleconsulta' && (
-            <div className="px-2.5 py-1 rounded-lg text-xs font-medium bg-purple-50 text-purple-600 flex items-center gap-1">
+          {isTeleconsulta && (
+            <div className="px-2.5 py-1 rounded-lg text-xs font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 flex items-center gap-1">
               <Video className="w-3 h-3" />
               Online
             </div>
@@ -185,7 +160,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment }) => {
         </div>
         <div>
           <p className="font-semibold text-genesis-dark">{formatDate(appointment.date)}</p>
-          <p className="text-sm text-genesis-muted">{appointment.time}</p>
+          <p className="text-sm text-genesis-muted">{formatTime(appointment.date)}</p>
         </div>
       </div>
 
@@ -193,18 +168,21 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment }) => {
         <div className="flex items-center gap-2 text-genesis-medium">
           <User className="w-4 h-4 text-genesis-muted" />
           <span>
-            {appointment.professional} - {appointment.specialty}
+            {appointment.professional}
+            {appointment.specialty && ` - ${appointment.specialty}`}
           </span>
         </div>
-        <div className="flex items-center gap-2 text-genesis-medium">
-          <MapPin className="w-4 h-4 text-genesis-muted" />
-          <span>{appointment.location}</span>
-        </div>
+        {appointment.procedure && (
+          <div className="flex items-center gap-2 text-genesis-medium">
+            <MapPin className="w-4 h-4 text-genesis-muted" />
+            <span>{appointment.procedure}</span>
+          </div>
+        )}
       </div>
 
-      {upcoming && appointment.status !== 'cancelled' && (
+      {upcoming && appointment.status !== Status.CANCELED && (
         <div className="flex gap-2 mt-4 pt-4 border-t border-genesis-border">
-          {appointment.type === 'teleconsulta' && (
+          {isTeleconsulta && (
             <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
               <Video className="w-4 h-4" />
               Entrar
@@ -227,15 +205,48 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment }) => {
 // ============================================================================
 
 export function PatientAppointments(): React.ReactElement {
+  const { appointments, upcomingAppointments, loading } = usePatientPortalAppointments()
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all')
 
-  const filteredAppointments = MOCK_APPOINTMENTS.filter(apt => {
-    if (filter === 'upcoming') return isUpcoming(apt.date)
-    if (filter === 'past') return !isUpcoming(apt.date)
-    return true
-  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  const filteredAppointments = useMemo(() => {
+    let result = appointments
+    if (filter === 'upcoming') {
+      result = appointments.filter(apt => isUpcoming(apt.date))
+    } else if (filter === 'past') {
+      result = appointments.filter(apt => !isUpcoming(apt.date))
+    }
+    return result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  }, [appointments, filter])
 
-  const upcomingCount = MOCK_APPOINTMENTS.filter(apt => isUpcoming(apt.date)).length
+  const upcomingCount = upcomingAppointments.length
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-enter pb-8">
+        {/* Header Skeleton */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3">
+              <Calendar className="w-7 h-7 text-genesis-primary" />
+              <Skeleton className="h-8 w-48" />
+            </div>
+            <Skeleton className="h-4 w-32 mt-2" />
+          </div>
+          <Skeleton className="h-10 w-36 rounded-xl" />
+        </div>
+
+        {/* Filter Skeleton */}
+        <Skeleton className="h-10 w-64 rounded-xl" />
+
+        {/* Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <AppointmentCardSkeleton />
+          <AppointmentCardSkeleton />
+          <AppointmentCardSkeleton />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 animate-enter pb-8">

@@ -5,97 +5,14 @@
  * Secure messaging with healthcare providers.
  *
  * @module pages/patient-portal/Messages
- * @version 1.0.0
+ * @version 2.0.0
  */
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { MessageCircle, Send, User, Clock, CheckCheck, Paperclip, Search, Plus } from 'lucide-react'
-
-// ============================================================================
-// Types
-// ============================================================================
-
-interface Message {
-  id: string
-  content: string
-  sender: 'patient' | 'provider'
-  timestamp: string
-  read: boolean
-}
-
-interface Conversation {
-  id: string
-  provider: string
-  specialty: string
-  lastMessage: string
-  lastMessageTime: string
-  unreadCount: number
-  messages: Message[]
-}
-
-// ============================================================================
-// Mock Data
-// ============================================================================
-
-const MOCK_CONVERSATIONS: Conversation[] = [
-  {
-    id: '1',
-    provider: 'Dr. João Silva',
-    specialty: 'Clínica Geral',
-    lastMessage: 'Os resultados dos seus exames estão normais.',
-    lastMessageTime: '2024-12-22T10:30:00',
-    unreadCount: 1,
-    messages: [
-      {
-        id: '1',
-        content: 'Dr. João, recebi meus exames. Poderia verificar os resultados?',
-        sender: 'patient',
-        timestamp: '2024-12-22T09:00:00',
-        read: true,
-      },
-      {
-        id: '2',
-        content: 'Claro! Vou analisar e retorno em breve.',
-        sender: 'provider',
-        timestamp: '2024-12-22T09:30:00',
-        read: true,
-      },
-      {
-        id: '3',
-        content:
-          'Os resultados dos seus exames estão normais. Todos os valores dentro da referência. Podemos conversar na próxima consulta sobre prevenção.',
-        sender: 'provider',
-        timestamp: '2024-12-22T10:30:00',
-        read: false,
-      },
-    ],
-  },
-  {
-    id: '2',
-    provider: 'Dra. Maria Santos',
-    specialty: 'Cardiologia',
-    lastMessage: 'Continue tomando a medicação conforme prescrito.',
-    lastMessageTime: '2024-12-20T15:00:00',
-    unreadCount: 0,
-    messages: [
-      {
-        id: '1',
-        content: 'Dra. Maria, estou sentindo tontura com a nova medicação.',
-        sender: 'patient',
-        timestamp: '2024-12-20T14:00:00',
-        read: true,
-      },
-      {
-        id: '2',
-        content:
-          'Tontura leve pode ocorrer nos primeiros dias. Se persistir por mais de uma semana, me avise. Continue tomando a medicação conforme prescrito.',
-        sender: 'provider',
-        timestamp: '2024-12-20T15:00:00',
-        read: true,
-      },
-    ],
-  },
-]
+import { usePatientMessages } from '../../hooks/usePatientMessages'
+import { Skeleton } from '../../components/ui/Skeleton'
+import type { Conversation, ConversationWithMessages } from '@/types'
 
 // ============================================================================
 // Helpers
@@ -122,15 +39,58 @@ function formatTime(timestamp: string): string {
 // Components
 // ============================================================================
 
-function ConversationList({
-  conversations,
-  selectedId,
-  onSelect,
-}: {
+function MessagesSkeleton() {
+  return (
+    <div className="space-y-6 animate-enter pb-8">
+      {/* Header Skeleton */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3">
+            <MessageCircle className="w-7 h-7 text-amber-600" />
+            <Skeleton className="h-8 w-32" />
+          </div>
+          <Skeleton className="h-4 w-40 mt-2" />
+        </div>
+        <Skeleton className="h-10 w-36 rounded-xl" />
+      </div>
+
+      {/* Main Content Skeleton */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[500px]">
+        {/* Conversation List Skeleton */}
+        <div className="lg:col-span-1 space-y-4">
+          <Skeleton className="h-10 w-full rounded-xl" />
+          <div className="space-y-2">
+            <Skeleton className="h-24 rounded-xl" />
+            <Skeleton className="h-24 rounded-xl" />
+            <Skeleton className="h-24 rounded-xl" />
+          </div>
+        </div>
+
+        {/* Chat View Skeleton */}
+        <div className="lg:col-span-2">
+          <Skeleton className="h-[500px] rounded-2xl" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+interface ConversationListProps {
   conversations: Conversation[]
   selectedId: string | null
   onSelect: (id: string) => void
-}) {
+}
+
+function ConversationList({ conversations, selectedId, onSelect }: ConversationListProps) {
+  if (conversations.length === 0) {
+    return (
+      <div className="text-center py-8 bg-genesis-surface rounded-xl border border-genesis-border">
+        <MessageCircle className="w-10 h-10 text-genesis-muted mx-auto mb-3" />
+        <p className="text-sm text-genesis-muted">Nenhuma conversa</p>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-2">
       {conversations.map(conv => (
@@ -149,17 +109,17 @@ function ConversationList({
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <p className="font-medium text-genesis-dark text-sm truncate">{conv.provider}</p>
-                <span className="text-xs text-genesis-muted">
-                  {formatTime(conv.lastMessageTime)}
-                </span>
+                <p className="font-medium text-genesis-dark text-sm truncate">
+                  {conv.providerName}
+                </p>
+                <span className="text-xs text-genesis-muted">{formatTime(conv.lastMessageAt)}</span>
               </div>
-              <p className="text-xs text-genesis-muted">{conv.specialty}</p>
+              <p className="text-xs text-genesis-muted">{conv.providerSpecialty}</p>
               <p className="text-sm text-genesis-medium mt-1 truncate">{conv.lastMessage}</p>
             </div>
-            {conv.unreadCount > 0 && (
+            {conv.unreadCountPatient > 0 && (
               <span className="w-5 h-5 rounded-full bg-genesis-primary text-white text-xs flex items-center justify-center flex-shrink-0">
-                {conv.unreadCount}
+                {conv.unreadCountPatient}
               </span>
             )}
           </div>
@@ -169,13 +129,40 @@ function ConversationList({
   )
 }
 
-function ChatView({ conversation }: { conversation: Conversation }) {
-  const [message, setMessage] = useState('')
+interface ChatViewProps {
+  conversation: ConversationWithMessages
+  onSendMessage: (content: string) => Promise<void>
+}
 
-  const handleSend = () => {
-    if (!message.trim()) return
-    // Would send message to backend
-    setMessage('')
+function ChatView({ conversation, onSendMessage }: ChatViewProps) {
+  const [message, setMessage] = useState('')
+  const [sending, setSending] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [conversation.messages])
+
+  const handleSend = async () => {
+    if (!message.trim() || sending) return
+
+    setSending(true)
+    try {
+      await onSendMessage(message.trim())
+      setMessage('')
+    } catch (error) {
+      console.error('Error sending message:', error)
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
+    }
   }
 
   return (
@@ -187,46 +174,54 @@ function ChatView({ conversation }: { conversation: Conversation }) {
             <User className="w-5 h-5 text-genesis-primary" />
           </div>
           <div>
-            <p className="font-medium text-genesis-dark">{conversation.provider}</p>
-            <p className="text-xs text-genesis-muted">{conversation.specialty}</p>
+            <p className="font-medium text-genesis-dark">{conversation.providerName}</p>
+            <p className="text-xs text-genesis-muted">{conversation.providerSpecialty}</p>
           </div>
         </div>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {conversation.messages.map(msg => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.sender === 'patient' ? 'justify-end' : 'justify-start'}`}
-          >
+        {conversation.messages.length === 0 ? (
+          <div className="text-center py-8">
+            <MessageCircle className="w-10 h-10 text-genesis-muted mx-auto mb-3" />
+            <p className="text-sm text-genesis-muted">Nenhuma mensagem ainda</p>
+          </div>
+        ) : (
+          conversation.messages.map(msg => (
             <div
-              className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
-                msg.sender === 'patient'
-                  ? 'bg-genesis-primary text-white'
-                  : 'bg-genesis-soft text-genesis-dark'
-              }`}
+              key={msg.id}
+              className={`flex ${msg.sender === 'patient' ? 'justify-end' : 'justify-start'}`}
             >
-              <p className="text-sm">{msg.content}</p>
               <div
-                className={`flex items-center gap-1 mt-1 ${
-                  msg.sender === 'patient' ? 'justify-end' : 'justify-start'
+                className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
+                  msg.sender === 'patient'
+                    ? 'bg-genesis-primary text-white'
+                    : 'bg-genesis-soft text-genesis-dark'
                 }`}
               >
-                <Clock className="w-3 h-3 opacity-60" />
-                <span className="text-xs opacity-60">
-                  {new Date(msg.timestamp).toLocaleTimeString('pt-BR', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </span>
-                {msg.sender === 'patient' && msg.read && (
-                  <CheckCheck className="w-3 h-3 opacity-60" />
-                )}
+                <p className="text-sm">{msg.content}</p>
+                <div
+                  className={`flex items-center gap-1 mt-1 ${
+                    msg.sender === 'patient' ? 'justify-end' : 'justify-start'
+                  }`}
+                >
+                  <Clock className="w-3 h-3 opacity-60" />
+                  <span className="text-xs opacity-60">
+                    {new Date(msg.createdAt).toLocaleTimeString('pt-BR', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                  {msg.sender === 'patient' && msg.status === 'read' && (
+                    <CheckCheck className="w-3 h-3 opacity-60" />
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
@@ -239,13 +234,14 @@ function ChatView({ conversation }: { conversation: Conversation }) {
             type="text"
             value={message}
             onChange={e => setMessage(e.target.value)}
-            onKeyPress={e => e.key === 'Enter' && handleSend()}
+            onKeyPress={handleKeyPress}
             placeholder="Digite sua mensagem..."
-            className="flex-1 px-4 py-2.5 rounded-xl border border-genesis-border bg-genesis-soft text-genesis-dark placeholder:text-genesis-muted focus:outline-none focus:ring-2 focus:ring-genesis-primary focus:border-transparent"
+            disabled={sending}
+            className="flex-1 px-4 py-2.5 rounded-xl border border-genesis-border bg-genesis-soft text-genesis-dark placeholder:text-genesis-muted focus:outline-none focus:ring-2 focus:ring-genesis-primary focus:border-transparent disabled:opacity-50"
           />
           <button
             onClick={handleSend}
-            disabled={!message.trim()}
+            disabled={!message.trim() || sending}
             className="p-2.5 rounded-xl bg-genesis-primary text-white hover:bg-genesis-primary-dark hover:scale-[1.05] active:scale-[0.95] transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100"
           >
             <Send className="w-5 h-5" />
@@ -256,24 +252,61 @@ function ChatView({ conversation }: { conversation: Conversation }) {
   )
 }
 
+function EmptyChat() {
+  return (
+    <div className="h-full flex items-center justify-center bg-genesis-surface rounded-2xl border border-genesis-border">
+      <div className="text-center">
+        <MessageCircle className="w-12 h-12 text-genesis-muted mx-auto mb-4" />
+        <p className="text-genesis-dark font-medium">Selecione uma conversa</p>
+        <p className="text-genesis-muted text-sm mt-1">Ou inicie uma nova mensagem</p>
+      </div>
+    </div>
+  )
+}
+
 // ============================================================================
 // Main Component
 // ============================================================================
 
 export function PatientMessages(): React.ReactElement {
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(
-    MOCK_CONVERSATIONS[0]?.id || null
-  )
+  const {
+    conversations,
+    activeConversation,
+    totalUnread,
+    loading,
+    selectConversation,
+    sendMessage,
+  } = usePatientMessages()
+
   const [search, setSearch] = useState('')
 
-  const filteredConversations = MOCK_CONVERSATIONS.filter(conv => {
+  // Auto-select first conversation on load
+  useEffect(() => {
+    if (!activeConversation && conversations.length > 0) {
+      selectConversation(conversations[0].id)
+    }
+  }, [conversations, activeConversation, selectConversation])
+
+  const filteredConversations = conversations.filter(conv => {
     if (!search) return true
-    return conv.provider.toLowerCase().includes(search.toLowerCase())
+    return conv.providerName.toLowerCase().includes(search.toLowerCase())
   })
 
-  const activeConversation = MOCK_CONVERSATIONS.find(c => c.id === selectedConversation)
+  const handleSelectConversation = async (conversationId: string) => {
+    try {
+      await selectConversation(conversationId)
+    } catch (error) {
+      console.error('Error selecting conversation:', error)
+    }
+  }
 
-  const totalUnread = MOCK_CONVERSATIONS.reduce((sum, c) => sum + c.unreadCount, 0)
+  const handleSendMessage = async (content: string) => {
+    await sendMessage(content)
+  }
+
+  if (loading) {
+    return <MessagesSkeleton />
+  }
 
   return (
     <div className="space-y-6 animate-enter pb-8">
@@ -314,23 +347,17 @@ export function PatientMessages(): React.ReactElement {
 
           <ConversationList
             conversations={filteredConversations}
-            selectedId={selectedConversation}
-            onSelect={setSelectedConversation}
+            selectedId={activeConversation?.id || null}
+            onSelect={handleSelectConversation}
           />
         </div>
 
         {/* Chat View */}
         <div className="lg:col-span-2 h-[500px]">
           {activeConversation ? (
-            <ChatView conversation={activeConversation} />
+            <ChatView conversation={activeConversation} onSendMessage={handleSendMessage} />
           ) : (
-            <div className="h-full flex items-center justify-center bg-genesis-surface rounded-2xl border border-genesis-border">
-              <div className="text-center">
-                <MessageCircle className="w-12 h-12 text-genesis-muted mx-auto mb-4" />
-                <p className="text-genesis-dark font-medium">Selecione uma conversa</p>
-                <p className="text-genesis-muted text-sm mt-1">Ou inicie uma nova mensagem</p>
-              </div>
-            </div>
+            <EmptyChat />
           )}
         </div>
       </div>

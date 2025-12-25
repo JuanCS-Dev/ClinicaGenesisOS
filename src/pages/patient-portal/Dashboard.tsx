@@ -8,7 +8,7 @@
  * Inspired by Epic MyChart patient dashboard.
  *
  * @module pages/patient-portal/Dashboard
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 import React from 'react'
@@ -29,39 +29,15 @@ import {
   Activity,
 } from 'lucide-react'
 import { usePatientAuth } from '../../contexts/PatientAuthContext'
+import {
+  usePatientPortalAppointments,
+  usePatientPortalPrescriptions,
+} from '../../hooks/usePatientPortal'
+import { Skeleton } from '../../components/ui/Skeleton'
 
 // ============================================================================
-// Mock Data (would come from Firestore)
+// Constants (Navigation actions - not mock data)
 // ============================================================================
-
-const MOCK_NEXT_APPOINTMENT = {
-  id: '1',
-  date: '2024-12-28',
-  time: '14:30',
-  professional: 'Dr. João Silva',
-  specialty: 'Clínica Geral',
-  location: 'Sala 3',
-  status: 'confirmed',
-}
-
-const MOCK_NOTIFICATIONS = [
-  {
-    id: '1',
-    type: 'exam',
-    title: 'Resultado de exame disponível',
-    description: 'Hemograma Completo',
-    date: '2024-12-20',
-    read: false,
-  },
-  {
-    id: '2',
-    type: 'appointment',
-    title: 'Lembrete de consulta',
-    description: 'Consulta em 3 dias',
-    date: '2024-12-22',
-    read: true,
-  },
-]
 
 const QUICK_ACTIONS = [
   {
@@ -94,8 +70,49 @@ const QUICK_ACTIONS = [
 // Components
 // ============================================================================
 
+function NextAppointmentSkeleton() {
+  return (
+    <div className="bg-gradient-to-br from-genesis-primary to-genesis-primary-dark rounded-2xl p-6 text-white shadow-lg shadow-genesis-primary/20">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <Skeleton className="h-4 w-24 bg-white/20" />
+          <Skeleton className="h-6 w-48 mt-2 bg-white/20" />
+        </div>
+        <Skeleton variant="rect" className="w-12 h-12 rounded-xl bg-white/20" />
+      </div>
+      <div className="space-y-3">
+        <Skeleton className="h-4 w-20 bg-white/20" />
+        <Skeleton className="h-4 w-40 bg-white/20" />
+        <Skeleton className="h-4 w-24 bg-white/20" />
+      </div>
+    </div>
+  )
+}
+
 function NextAppointmentCard() {
-  const appointment = MOCK_NEXT_APPOINTMENT
+  const { nextAppointment, loading } = usePatientPortalAppointments()
+
+  if (loading) {
+    return <NextAppointmentSkeleton />
+  }
+
+  if (!nextAppointment) {
+    return (
+      <div className="bg-genesis-surface rounded-2xl p-6 border border-genesis-border">
+        <div className="text-center py-4">
+          <Calendar className="w-12 h-12 text-genesis-muted mx-auto mb-3" />
+          <p className="font-medium text-genesis-dark">Nenhuma consulta agendada</p>
+          <p className="text-sm text-genesis-muted mt-1">Agende sua próxima consulta</p>
+          <Link
+            to="/portal/consultas"
+            className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-xl bg-genesis-primary text-white font-medium hover:bg-genesis-primary-dark transition-colors"
+          >
+            Agendar Consulta
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
@@ -106,12 +123,20 @@ function NextAppointmentCard() {
     })
   }
 
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr)
+    return date.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
   return (
     <div className="bg-gradient-to-br from-genesis-primary to-genesis-primary-dark rounded-2xl p-6 text-white shadow-lg shadow-genesis-primary/20">
       <div className="flex items-start justify-between mb-4">
         <div>
           <p className="text-white/70 text-sm font-medium">Próxima Consulta</p>
-          <h3 className="text-xl font-bold mt-1">{formatDate(appointment.date)}</h3>
+          <h3 className="text-xl font-bold mt-1">{formatDate(nextAppointment.date)}</h3>
         </div>
         <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
           <Calendar className="w-6 h-6" />
@@ -121,18 +146,21 @@ function NextAppointmentCard() {
       <div className="space-y-3">
         <div className="flex items-center gap-3">
           <Clock className="w-4 h-4 text-white/70" />
-          <span>{appointment.time}</span>
+          <span>{formatTime(nextAppointment.date)}</span>
         </div>
         <div className="flex items-center gap-3">
           <User className="w-4 h-4 text-white/70" />
           <span>
-            {appointment.professional} - {appointment.specialty}
+            {nextAppointment.professional}
+            {nextAppointment.specialty && ` - ${nextAppointment.specialty}`}
           </span>
         </div>
-        <div className="flex items-center gap-3">
-          <MapPin className="w-4 h-4 text-white/70" />
-          <span>{appointment.location}</span>
-        </div>
+        {nextAppointment.notes && (
+          <div className="flex items-center gap-3">
+            <MapPin className="w-4 h-4 text-white/70" />
+            <span>{nextAppointment.notes}</span>
+          </div>
+        )}
       </div>
 
       <div className="flex gap-3 mt-6">
@@ -175,7 +203,78 @@ function QuickActionsGrid() {
 }
 
 function NotificationsCard() {
-  const unreadCount = MOCK_NOTIFICATIONS.filter(n => !n.read).length
+  const { upcomingAppointments, loading } = usePatientPortalAppointments()
+  const { activePrescriptions, loading: prescriptionsLoading } = usePatientPortalPrescriptions()
+
+  const isLoading = loading || prescriptionsLoading
+
+  // Generate notifications from real data
+  const notifications = React.useMemo(() => {
+    const items: Array<{
+      id: string
+      type: 'appointment' | 'prescription'
+      title: string
+      description: string
+      read: boolean
+    }> = []
+
+    const now = new Date()
+
+    // Upcoming appointments as reminders
+    upcomingAppointments.slice(0, 2).forEach(apt => {
+      const daysUntil = Math.ceil(
+        (new Date(apt.date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      )
+      if (daysUntil <= 7 && daysUntil > 0) {
+        items.push({
+          id: `apt-${apt.id}`,
+          type: 'appointment',
+          title: 'Lembrete de consulta',
+          description: `Consulta em ${daysUntil} dia${daysUntil !== 1 ? 's' : ''}`,
+          read: false,
+        })
+      }
+    })
+
+    // Prescriptions expiring soon
+    activePrescriptions.slice(0, 2).forEach(rx => {
+      if (rx.expiresAt) {
+        const daysUntil = Math.ceil(
+          (new Date(rx.expiresAt).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+        )
+        if (daysUntil <= 7 && daysUntil > 0) {
+          items.push({
+            id: `rx-${rx.id}`,
+            type: 'prescription',
+            title: 'Receita expirando',
+            description: `Expira em ${daysUntil} dia${daysUntil !== 1 ? 's' : ''}`,
+            read: false,
+          })
+        }
+      }
+    })
+
+    return items.slice(0, 3)
+  }, [upcomingAppointments, activePrescriptions])
+
+  const unreadCount = notifications.filter(n => !n.read).length
+
+  if (isLoading) {
+    return (
+      <div className="bg-genesis-surface rounded-2xl border border-genesis-border overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b border-genesis-border">
+          <div className="flex items-center gap-2">
+            <Bell className="w-5 h-5 text-genesis-primary" />
+            <Skeleton className="h-5 w-24" />
+          </div>
+        </div>
+        <div className="p-4 space-y-3">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-genesis-surface rounded-2xl border border-genesis-border overflow-hidden">
@@ -194,34 +293,67 @@ function NotificationsCard() {
         </Link>
       </div>
 
-      <div className="divide-y divide-genesis-border">
-        {MOCK_NOTIFICATIONS.map(notification => (
-          <div
-            key={notification.id}
-            className={`p-4 hover:bg-genesis-hover transition-colors ${
-              !notification.read ? 'bg-genesis-primary/5' : ''
-            }`}
-          >
-            <div className="flex items-start gap-3">
-              <div
-                className={`w-2 h-2 rounded-full mt-2 ${
-                  !notification.read ? 'bg-genesis-primary' : 'bg-transparent'
-                }`}
-              />
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-genesis-dark text-sm">{notification.title}</p>
-                <p className="text-genesis-muted text-xs mt-0.5">{notification.description}</p>
+      {notifications.length === 0 ? (
+        <div className="p-6 text-center">
+          <Bell className="w-8 h-8 text-genesis-muted mx-auto mb-2" />
+          <p className="text-sm text-genesis-muted">Nenhuma notificação</p>
+        </div>
+      ) : (
+        <div className="divide-y divide-genesis-border">
+          {notifications.map(notification => (
+            <div
+              key={notification.id}
+              className={`p-4 hover:bg-genesis-hover transition-colors ${
+                !notification.read ? 'bg-genesis-primary/5' : ''
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className={`w-2 h-2 rounded-full mt-2 ${
+                    !notification.read ? 'bg-genesis-primary' : 'bg-transparent'
+                  }`}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-genesis-dark text-sm">{notification.title}</p>
+                  <p className="text-genesis-muted text-xs mt-0.5">{notification.description}</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-genesis-muted flex-shrink-0" />
               </div>
-              <ChevronRight className="w-4 h-4 text-genesis-muted flex-shrink-0" />
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
 
 function HealthSummaryCard() {
+  const { pastAppointments, loading: appointmentsLoading } = usePatientPortalAppointments()
+  const { activePrescriptions, loading: prescriptionsLoading } = usePatientPortalPrescriptions()
+
+  const isLoading = appointmentsLoading || prescriptionsLoading
+
+  const lastAppointment = pastAppointments[0]
+  const activeMedicationsCount = activePrescriptions.reduce(
+    (sum, rx) => sum + (rx.medications?.length || 0),
+    0
+  )
+
+  if (isLoading) {
+    return (
+      <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Heart className="w-5 h-5 text-red-500" />
+          <Skeleton className="h-5 w-24" />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <Skeleton className="h-16 rounded-xl" />
+          <Skeleton className="h-16 rounded-xl" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-4">
       <div className="flex items-center gap-2 mb-4">
@@ -235,14 +367,18 @@ function HealthSummaryCard() {
             <Activity className="w-4 h-4 text-genesis-primary" />
             <span className="text-xs text-genesis-muted">Última Consulta</span>
           </div>
-          <p className="font-semibold text-genesis-dark text-sm">15/12/2024</p>
+          <p className="font-semibold text-genesis-dark text-sm">
+            {lastAppointment
+              ? new Date(lastAppointment.date).toLocaleDateString('pt-BR')
+              : 'Nenhuma'}
+          </p>
         </div>
         <div className="bg-genesis-soft rounded-xl p-3">
           <div className="flex items-center gap-2 mb-1">
             <FileText className="w-4 h-4 text-genesis-primary" />
-            <span className="text-xs text-genesis-muted">Exames Pendentes</span>
+            <span className="text-xs text-genesis-muted">Medicamentos Ativos</span>
           </div>
-          <p className="font-semibold text-genesis-dark text-sm">2</p>
+          <p className="font-semibold text-genesis-dark text-sm">{activeMedicationsCount}</p>
         </div>
       </div>
 
