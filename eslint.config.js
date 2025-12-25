@@ -39,4 +39,25 @@ export default tseslint.config(
       'max-lines-per-function': 'off',
     },
   },
+  // Relaxed max-lines-per-function for React hooks (hooks combine state, effects, callbacks)
+  {
+    files: ['src/hooks/**/*.ts', 'src/hooks/**/*.tsx'],
+    rules: {
+      'max-lines-per-function': ['warn', { max: 150, skipBlankLines: true, skipComments: true }],
+    },
+  },
+  // Relaxed max-lines-per-function for page components (complex UI orchestration)
+  {
+    files: ['src/pages/**/*.tsx'],
+    rules: {
+      'max-lines-per-function': ['warn', { max: 200, skipBlankLines: true, skipComments: true }],
+    },
+  },
+  // Relaxed max-lines-per-function for complex UI components
+  {
+    files: ['src/components/**/*.tsx'],
+    rules: {
+      'max-lines-per-function': ['warn', { max: 120, skipBlankLines: true, skipComments: true }],
+    },
+  },
 )

@@ -8,37 +8,41 @@
  */
 
 import {
+  collection,
   doc,
   getDoc,
+  getDocs,
+  query,
+  where,
   setDoc,
   updateDoc,
   onSnapshot,
   serverTimestamp,
   Timestamp,
-} from 'firebase/firestore';
-import { db } from '../firebase';
-import type { UserProfile, UserRole, SpecialtyType } from '@/types';
+} from 'firebase/firestore'
+import { db } from '../firebase'
+import type { UserProfile, UserRole, SpecialtyType } from '@/types'
 
 /**
  * Input type for creating a new user profile.
  */
 export interface CreateUserProfileInput {
-  email: string;
-  displayName: string;
-  role?: UserRole;
-  specialty?: SpecialtyType;
-  avatar?: string;
+  email: string
+  displayName: string
+  role?: UserRole
+  specialty?: SpecialtyType
+  avatar?: string
 }
 
 /**
  * Input type for updating an existing user profile.
  */
 export interface UpdateUserProfileInput {
-  displayName?: string;
-  clinicId?: string | null;
-  role?: UserRole;
-  specialty?: SpecialtyType;
-  avatar?: string;
+  displayName?: string
+  clinicId?: string | null
+  role?: UserRole
+  specialty?: SpecialtyType
+  avatar?: string
 }
 
 /**
@@ -61,7 +65,7 @@ function toUserProfile(id: string, data: Record<string, unknown>): UserProfile {
       data.updatedAt instanceof Timestamp
         ? data.updatedAt.toDate().toISOString()
         : (data.updatedAt as string),
-  };
+  }
 }
 
 /**
@@ -75,14 +79,14 @@ export const userService = {
    * @returns The user profile or null if not found
    */
   async getById(userId: string): Promise<UserProfile | null> {
-    const docRef = doc(db, 'users', userId);
-    const docSnap = await getDoc(docRef);
+    const docRef = doc(db, 'users', userId)
+    const docSnap = await getDoc(docRef)
 
     if (!docSnap.exists()) {
-      return null;
+      return null
     }
 
-    return toUserProfile(docSnap.id, docSnap.data());
+    return toUserProfile(docSnap.id, docSnap.data())
   },
 
   /**
@@ -93,7 +97,7 @@ export const userService = {
    * @returns The created user profile
    */
   async create(userId: string, data: CreateUserProfileInput): Promise<UserProfile> {
-    const docRef = doc(db, 'users', userId);
+    const docRef = doc(db, 'users', userId)
 
     const profileData = {
       email: data.email,
@@ -104,9 +108,9 @@ export const userService = {
       avatar: data.avatar || null,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-    };
+    }
 
-    await setDoc(docRef, profileData);
+    await setDoc(docRef, profileData)
 
     return {
       id: userId,
@@ -118,7 +122,7 @@ export const userService = {
       avatar: data.avatar,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    };
+    }
   },
 
   /**
@@ -128,21 +132,21 @@ export const userService = {
    * @param data - The fields to update
    */
   async update(userId: string, data: UpdateUserProfileInput): Promise<void> {
-    const docRef = doc(db, 'users', userId);
+    const docRef = doc(db, 'users', userId)
 
     const updateData: Record<string, unknown> = {
       ...data,
       updatedAt: serverTimestamp(),
-    };
+    }
 
     // Remove undefined values
-    Object.keys(updateData).forEach((key) => {
+    Object.keys(updateData).forEach(key => {
       if (updateData[key] === undefined) {
-        delete updateData[key];
+        delete updateData[key]
       }
-    });
+    })
 
-    await updateDoc(docRef, updateData);
+    await updateDoc(docRef, updateData)
   },
 
   /**
@@ -152,26 +156,23 @@ export const userService = {
    * @param callback - Function called with updated profile
    * @returns Unsubscribe function
    */
-  subscribe(
-    userId: string,
-    callback: (profile: UserProfile | null) => void
-  ): () => void {
-    const docRef = doc(db, 'users', userId);
+  subscribe(userId: string, callback: (profile: UserProfile | null) => void): () => void {
+    const docRef = doc(db, 'users', userId)
 
     return onSnapshot(
       docRef,
-      (docSnap) => {
+      docSnap => {
         if (!docSnap.exists()) {
-          callback(null);
-          return;
+          callback(null)
+          return
         }
-        callback(toUserProfile(docSnap.id, docSnap.data()));
+        callback(toUserProfile(docSnap.id, docSnap.data()))
       },
-      (error) => {
-        console.error('Error subscribing to user profile:', error);
-        callback(null);
+      error => {
+        console.error('Error subscribing to user profile:', error)
+        callback(null)
       }
-    );
+    )
   },
 
   /**
@@ -181,9 +182,9 @@ export const userService = {
    * @returns True if profile exists
    */
   async exists(userId: string): Promise<boolean> {
-    const docRef = doc(db, 'users', userId);
-    const docSnap = await getDoc(docRef);
-    return docSnap.exists();
+    const docRef = doc(db, 'users', userId)
+    const docSnap = await getDoc(docRef)
+    return docSnap.exists()
   },
 
   /**
@@ -198,7 +199,7 @@ export const userService = {
     clinicId: string,
     role: UserRole = 'professional'
   ): Promise<void> {
-    await this.update(userId, { clinicId, role });
+    await this.update(userId, { clinicId, role })
   },
 
   /**
@@ -207,6 +208,20 @@ export const userService = {
    * @param userId - The Firebase Auth user ID
    */
   async leaveClinic(userId: string): Promise<void> {
-    await this.update(userId, { clinicId: null, role: 'professional' });
+    await this.update(userId, { clinicId: null, role: 'professional' })
   },
-};
+
+  /**
+   * Get all professionals for a clinic.
+   *
+   * @param clinicId - The clinic ID
+   * @returns Array of user profiles associated with the clinic
+   */
+  async getByClinic(clinicId: string): Promise<UserProfile[]> {
+    const usersRef = collection(db, 'users')
+    const q = query(usersRef, where('clinicId', '==', clinicId))
+    const querySnapshot = await getDocs(q)
+
+    return querySnapshot.docs.map(docSnap => toUserProfile(docSnap.id, docSnap.data()))
+  },
+}

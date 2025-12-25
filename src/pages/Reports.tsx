@@ -8,7 +8,7 @@
  * Note: Uses explicit hex colors for Tailwind 4 compatibility.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react'
 import {
   PieChart,
   Pie,
@@ -19,7 +19,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-} from 'recharts';
+} from 'recharts'
 import {
   Download,
   Share2,
@@ -30,32 +30,29 @@ import {
   FileText,
   CheckCircle,
   TrendingUp,
-} from 'lucide-react';
-import { useReports } from '../hooks/useReports';
-import { exportReportToPDF } from '../services/export.service';
-import type { SpecialtyType } from '@/types';
+} from 'lucide-react'
+import { toast } from 'sonner'
+import { useReports } from '../hooks/useReports'
+import { exportReportToPDF } from '../services/export.service'
+import type { SpecialtyType } from '@/types'
 
 /**
  * Insight card component for KPI display.
  */
 interface InsightCardProps {
-  title: string;
-  value: string;
-  footer?: string;
-  loading?: boolean;
-  icon?: React.ReactNode;
+  title: string
+  value: string
+  footer?: string
+  loading?: boolean
+  icon?: React.ReactNode
 }
 
-const InsightCard: React.FC<InsightCardProps> = ({
-  title,
-  value,
-  footer,
-  loading,
-  icon,
-}) => (
+const InsightCard: React.FC<InsightCardProps> = ({ title, value, footer, loading, icon }) => (
   <div className="bg-genesis-surface p-6 rounded-2xl border border-genesis-border-subtle shadow-md flex flex-col justify-between group hover:shadow-lg transition-all duration-300">
     <div className="flex justify-between items-start">
-      <h4 className="text-[11px] font-semibold text-genesis-muted uppercase tracking-wider">{title}</h4>
+      <h4 className="text-[11px] font-semibold text-genesis-muted uppercase tracking-wider">
+        {title}
+      </h4>
       {icon || (
         <Info className="w-4 h-4 text-genesis-subtle hover:text-genesis-primary cursor-pointer transition-colors" />
       )}
@@ -73,17 +70,17 @@ const InsightCard: React.FC<InsightCardProps> = ({
       {footer && <p className="text-xs text-genesis-medium mt-2 font-medium">{footer}</p>}
     </div>
   </div>
-);
+)
 
 /**
  * Filter bar component.
  */
 interface FilterBarProps {
   filters: {
-    specialty?: SpecialtyType;
-    professional?: string;
-  };
-  onFilterChange: (filters: { specialty?: SpecialtyType; professional?: string }) => void;
+    specialty?: SpecialtyType
+    professional?: string
+  }
+  onFilterChange: (filters: { specialty?: SpecialtyType; professional?: string }) => void
 }
 
 const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange }) => {
@@ -91,7 +88,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange }) => {
     <div className="flex gap-3 flex-wrap">
       <select
         value={filters.specialty || ''}
-        onChange={(e) =>
+        onChange={e =>
           onFilterChange({
             ...filters,
             specialty: (e.target.value as SpecialtyType) || undefined,
@@ -109,8 +106,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange }) => {
         Este Mês
       </button>
     </div>
-  );
-};
+  )
+}
 
 /**
  * Empty state component.
@@ -120,19 +117,45 @@ const EmptyState: React.FC<{ message: string }> = ({ message }) => (
     <FileText className="w-12 h-12 mb-3 text-genesis-subtle" />
     <p className="text-sm">{message}</p>
   </div>
-);
+)
 
 /**
  * Main Reports page component.
  */
 export const Reports: React.FC = () => {
-  const { loading, demographics, procedureStats, metrics, filters, setFilters } =
-    useReports();
-  const [exporting, setExporting] = useState(false);
+  const { loading, demographics, procedureStats, metrics, filters, setFilters } = useReports()
+  const [exporting, setExporting] = useState(false)
+
+  // Share handler - uses Web Share API or clipboard fallback
+  const handleShare = useCallback(async () => {
+    const shareData = {
+      title: 'Relatórios Clínicos - Clínica Genesis',
+      text: `Relatório: ${metrics?.totalPatients || 0} pacientes, ${metrics?.appointmentsCount || 0} agendamentos, ${metrics?.completionRate || 0}% taxa de conclusão`,
+      url: window.location.href,
+    }
+
+    if (navigator.share && navigator.canShare?.(shareData)) {
+      try {
+        await navigator.share(shareData)
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          toast.error('Erro ao compartilhar')
+        }
+      }
+    } else {
+      // Fallback: copy link to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href)
+        toast.success('Link copiado para a área de transferência')
+      } catch {
+        toast.error('Erro ao copiar link')
+      }
+    }
+  }, [metrics])
 
   // Handle export (async due to dynamic imports for bundle optimization)
   const handleExport = async () => {
-    setExporting(true);
+    setExporting(true)
     try {
       await exportReportToPDF(
         {
@@ -144,11 +167,11 @@ export const Reports: React.FC = () => {
           demographics,
         },
         'Clínica Genesis'
-      );
+      )
     } finally {
-      setExporting(false);
+      setExporting(false)
     }
-  };
+  }
 
   return (
     <div className="space-y-8 animate-enter pb-12">
@@ -168,7 +191,7 @@ export const Reports: React.FC = () => {
               specialty: filters.specialty,
               professional: filters.professional,
             }}
-            onFilterChange={(f) =>
+            onFilterChange={f =>
               setFilters({
                 ...filters,
                 specialty: f.specialty,
@@ -176,7 +199,11 @@ export const Reports: React.FC = () => {
               })
             }
           />
-          <button className="p-2.5 bg-genesis-surface border border-genesis-border rounded-xl text-genesis-dark hover:bg-genesis-soft transition-colors shadow-sm">
+          <button
+            onClick={handleShare}
+            className="p-2.5 bg-genesis-surface border border-genesis-border rounded-xl text-genesis-dark hover:bg-genesis-soft hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm"
+            title="Compartilhar relatório"
+          >
             <Share2 className="w-4 h-4" />
           </button>
           <button
@@ -240,11 +267,7 @@ export const Reports: React.FC = () => {
             <EmptyState message="Nenhum procedimento registrado" />
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={procedureStats}
-                layout="vertical"
-                margin={{ left: 20 }}
-              >
+              <BarChart data={procedureStats} layout="vertical" margin={{ left: 20 }}>
                 <XAxis type="number" hide />
                 <YAxis
                   dataKey="name"
@@ -263,10 +286,7 @@ export const Reports: React.FC = () => {
                     backgroundColor: 'var(--color-genesis-surface)',
                     color: 'var(--color-genesis-dark)',
                   }}
-                  formatter={(value: number) => [
-                    `${value} agendamentos`,
-                    'Total',
-                  ]}
+                  formatter={(value: number) => [`${value} agendamentos`, 'Total']}
                 />
                 <Bar
                   dataKey="value"
@@ -285,19 +305,14 @@ export const Reports: React.FC = () => {
           {/* Gender Distribution */}
           <div className="bg-genesis-surface p-6 rounded-3xl border border-genesis-border-subtle shadow-md flex items-center justify-between min-h-0">
             <div>
-              <h3 className="text-base font-semibold text-genesis-dark mb-3">
-                Gênero
-              </h3>
+              <h3 className="text-base font-semibold text-genesis-dark mb-3">Gênero</h3>
               {loading ? (
                 <Loader2 className="w-6 h-6 animate-spin text-genesis-subtle" />
               ) : demographics?.gender && demographics.gender.length > 0 ? (
                 <div className="space-y-2">
                   {demographics.gender.map((g, i) => (
                     <div key={i} className="flex items-center gap-2">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: g.color }}
-                      />
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: g.color }} />
                       <span className="text-sm text-genesis-medium">
                         {g.name} ({g.value}%)
                       </span>
@@ -322,11 +337,7 @@ export const Reports: React.FC = () => {
                       dataKey="value"
                     >
                       {demographics.gender.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={entry.color}
-                          stroke="none"
-                        />
+                        <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
                       ))}
                     </Pie>
                   </PieChart>
@@ -351,19 +362,14 @@ export const Reports: React.FC = () => {
             ) : demographics?.ageGroups && demographics.ageGroups.length > 0 ? (
               <div className="flex items-end justify-between h-full gap-4 px-4">
                 {demographics.ageGroups.map((d, i) => (
-                  <div
-                    key={i}
-                    className="flex flex-col items-center gap-2 w-full group"
-                  >
+                  <div key={i} className="flex flex-col items-center gap-2 w-full group">
                     <div className="w-full bg-genesis-soft rounded-t-xl relative overflow-hidden h-24 flex items-end">
                       <div
                         className="w-full bg-genesis-primary/60 group-hover:bg-genesis-primary transition-colors duration-500 rounded-t-xl"
                         style={{ height: `${Math.max(d.value * 2, 10)}%` }}
                       />
                     </div>
-                    <span className="text-xs font-semibold text-genesis-medium">
-                      {d.name}
-                    </span>
+                    <span className="text-xs font-semibold text-genesis-medium">{d.name}</span>
                   </div>
                 ))}
               </div>
@@ -374,7 +380,7 @@ export const Reports: React.FC = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Reports;
+export default Reports

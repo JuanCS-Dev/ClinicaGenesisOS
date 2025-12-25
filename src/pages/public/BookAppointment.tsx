@@ -9,96 +9,125 @@
  * 2. Choose date/time
  * 3. Fill patient info
  * 4. Confirm booking
+ *
+ * @module pages/public/BookAppointment
+ * @version 2.0.0
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Loader2, Building2, MapPin } from 'lucide-react';
-import { addDays, startOfDay } from 'date-fns';
+import React, { useState, useMemo, useCallback } from 'react'
+import { useParams, Link } from 'react-router-dom'
+import { ArrowLeft, ArrowRight, Loader2, Building2, MapPin, AlertCircle } from 'lucide-react'
+import { addDays, startOfDay } from 'date-fns'
 import {
   ProfessionalSelector,
   AvailabilityCalendar,
   generateDaySlots,
   type PublicProfessional,
   type DayAvailability,
-} from '@/components/booking';
+} from '@/components/booking'
 import {
   StepIndicator,
   PatientInfoForm,
   BookingSummary,
   type BookingStep,
   type PatientInfo,
-  type ClinicInfo,
-} from '@/components/booking/BookingComponents';
-
-// ============================================================================
-// Mock Data (will be replaced with Firestore fetch)
-// ============================================================================
-
-const MOCK_CLINIC: ClinicInfo = {
-  id: 'clinic-1',
-  name: 'Clínica Genesis',
-  address: 'Av. Paulista, 1000 - São Paulo, SP',
-  phone: '(11) 4002-8922',
-  logo: undefined,
-};
-
-const MOCK_PROFESSIONALS: PublicProfessional[] = [
-  {
-    id: 'prof-1',
-    name: 'Dr. João Silva',
-    specialty: 'medicina',
-    bio: 'Clínico geral com 15 anos de experiência. Especialista em medicina preventiva.',
-    rating: 4.9,
-    reviewCount: 127,
-    nextAvailable: 'Hoje, 14:00',
-  },
-  {
-    id: 'prof-2',
-    name: 'Dra. Maria Santos',
-    specialty: 'nutricao',
-    bio: 'Nutricionista esportiva e funcional. Atendimento personalizado.',
-    rating: 4.8,
-    reviewCount: 89,
-    nextAvailable: 'Amanhã, 09:00',
-  },
-  {
-    id: 'prof-3',
-    name: 'Dr. Pedro Oliveira',
-    specialty: 'psicologia',
-    bio: 'Psicólogo clínico especializado em terapia cognitivo-comportamental.',
-    rating: 5.0,
-    reviewCount: 64,
-    nextAvailable: 'Hoje, 16:00',
-  },
-];
+} from '@/components/booking/BookingComponents'
+import { usePublicClinicData } from '@/hooks/usePublicClinicData'
+import { Skeleton } from '@/components/ui/Skeleton'
 
 // ============================================================================
 // Validation
 // ============================================================================
 
 function validatePatientInfo(info: PatientInfo): Partial<Record<keyof PatientInfo, string>> {
-  const errors: Partial<Record<keyof PatientInfo, string>> = {};
+  const errors: Partial<Record<keyof PatientInfo, string>> = {}
 
   if (!info.name.trim()) {
-    errors.name = 'Nome é obrigatório';
+    errors.name = 'Nome é obrigatório'
   } else if (info.name.trim().length < 3) {
-    errors.name = 'Nome deve ter pelo menos 3 caracteres';
+    errors.name = 'Nome deve ter pelo menos 3 caracteres'
   }
 
   if (!info.phone.trim()) {
-    errors.phone = 'Telefone é obrigatório';
+    errors.phone = 'Telefone é obrigatório'
   } else if (!/^\(?[1-9]{2}\)?\s?9?[0-9]{4}-?[0-9]{4}$/.test(info.phone.replace(/\s/g, ''))) {
-    errors.phone = 'Telefone inválido';
+    errors.phone = 'Telefone inválido'
   }
 
   if (!info.email.trim()) {
-    errors.email = 'E-mail é obrigatório';
+    errors.email = 'E-mail é obrigatório'
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(info.email)) {
-    errors.email = 'E-mail inválido';
+    errors.email = 'E-mail inválido'
   }
 
-  return errors;
+  return errors
+}
+
+// ============================================================================
+// Components
+// ============================================================================
+
+function BookingSkeleton() {
+  return (
+    <div className="min-h-screen bg-genesis-soft">
+      {/* Header Skeleton */}
+      <header className="bg-genesis-surface border-b border-genesis-border-subtle sticky top-0 z-10">
+        <div className="max-w-3xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <Skeleton className="w-9 h-9 rounded-lg" />
+            <div className="flex items-center gap-3">
+              <Skeleton className="w-10 h-10 rounded-lg" />
+              <div>
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-3 w-48 mt-1" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Content Skeleton */}
+      <main className="max-w-3xl mx-auto px-4 py-8">
+        <Skeleton className="h-12 w-full rounded-xl mb-6" />
+        <Skeleton className="h-96 w-full rounded-2xl" />
+      </main>
+    </div>
+  )
+}
+
+function ClinicNotFound({ clinicSlug }: { clinicSlug?: string }) {
+  return (
+    <div className="min-h-screen bg-genesis-soft flex items-center justify-center p-4">
+      <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-8 text-center max-w-md">
+        <AlertCircle className="w-12 h-12 text-danger mx-auto mb-4" />
+        <h1 className="text-xl font-bold text-genesis-dark mb-2">Clínica não encontrada</h1>
+        <p className="text-genesis-muted mb-6">
+          {clinicSlug
+            ? `Não foi possível encontrar a clínica "${clinicSlug}".`
+            : 'O link de agendamento está incompleto.'}
+        </p>
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-genesis-primary text-white font-medium hover:bg-genesis-primary-dark transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          Voltar ao início
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+function NoProfessionalsAvailable() {
+  return (
+    <div className="text-center py-8">
+      <Building2 className="w-12 h-12 text-genesis-muted mx-auto mb-4" />
+      <h3 className="font-medium text-genesis-dark mb-2">Nenhum profissional disponível</h3>
+      <p className="text-sm text-genesis-muted">
+        No momento não há profissionais cadastrados para agendamento online.
+      </p>
+    </div>
+  )
 }
 
 // ============================================================================
@@ -109,108 +138,122 @@ function validatePatientInfo(info: PatientInfo): Partial<Record<keyof PatientInf
  * Public booking page.
  */
 export function BookAppointment(): React.ReactElement {
-  // clinicSlug will be used to fetch clinic data from Firestore in production
-  const { clinicSlug: _clinicSlug } = useParams<{ clinicSlug: string }>();
+  const { clinicSlug } = useParams<{ clinicSlug: string }>()
+
+  // Fetch clinic data from Firestore
+  const { clinic, professionals, loading, notFound } = usePublicClinicData(clinicSlug)
+
+  // Convert professionals to the format expected by ProfessionalSelector
+  const publicProfessionals: PublicProfessional[] = useMemo(() => {
+    return professionals.map(p => ({
+      id: p.id,
+      name: p.name,
+      specialty: p.specialty,
+      avatar: p.avatar,
+      bio: p.bio,
+      nextAvailable: p.nextAvailable,
+    }))
+  }, [professionals])
 
   // State
-  const [step, setStep] = useState<BookingStep>('professional');
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [selectedProfessional, setSelectedProfessional] = useState<PublicProfessional | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [step, setStep] = useState<BookingStep>('professional')
+  const [submitting, setSubmitting] = useState(false)
+  const [selectedProfessional, setSelectedProfessional] = useState<PublicProfessional | null>(null)
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
   const [patientInfo, setPatientInfo] = useState<PatientInfo>({
     name: '',
     phone: '',
     email: '',
     notes: '',
-  });
-  const [formErrors, setFormErrors] = useState<Partial<Record<keyof PatientInfo, string>>>({});
-
-  // Mock loading
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
+  })
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof PatientInfo, string>>>({})
 
   // Generate availability for next 4 weeks
   const availability: DayAvailability[] = useMemo(() => {
-    const days: DayAvailability[] = [];
-    const today = startOfDay(new Date());
+    const days: DayAvailability[] = []
+    const today = startOfDay(new Date())
 
     for (let i = 0; i < 28; i++) {
-      const date = addDays(today, i);
-      const dayOfWeek = date.getDay();
+      const date = addDays(today, i)
+      const dayOfWeek = date.getDay()
 
       // Skip weekends
-      if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+      if (dayOfWeek === 0 || dayOfWeek === 6) continue
 
       // Generate slots with some random booking
-      const bookedSlots: string[] = [];
-      const slots = generateDaySlots(date, undefined, bookedSlots);
+      const bookedSlots: string[] = []
+      const slots = generateDaySlots(date, undefined, bookedSlots)
 
-      days.push({ date, slots });
+      days.push({ date, slots })
     }
 
-    return days;
-  }, []);
+    return days
+  }, [])
 
   // Navigation handlers
   const canGoNext = useCallback((): boolean => {
     switch (step) {
       case 'professional':
-        return selectedProfessional !== null;
+        return selectedProfessional !== null
       case 'datetime':
-        return selectedSlot !== null;
+        return selectedSlot !== null
       case 'info':
-        return Object.keys(validatePatientInfo(patientInfo)).length === 0;
+        return Object.keys(validatePatientInfo(patientInfo)).length === 0
       default:
-        return false;
+        return false
     }
-  }, [step, selectedProfessional, selectedSlot, patientInfo]);
+  }, [step, selectedProfessional, selectedSlot, patientInfo])
 
   const goToNextStep = useCallback(() => {
     if (step === 'info') {
-      const errors = validatePatientInfo(patientInfo);
+      const errors = validatePatientInfo(patientInfo)
       if (Object.keys(errors).length > 0) {
-        setFormErrors(errors);
-        return;
+        setFormErrors(errors)
+        return
       }
-      setFormErrors({});
+      setFormErrors({})
     }
 
-    const steps: BookingStep[] = ['professional', 'datetime', 'info', 'confirm'];
-    const currentIndex = steps.indexOf(step);
+    const steps: BookingStep[] = ['professional', 'datetime', 'info', 'confirm']
+    const currentIndex = steps.indexOf(step)
 
     if (step === 'info') {
       // Submit booking
-      setSubmitting(true);
+      setSubmitting(true)
       setTimeout(() => {
-        setSubmitting(false);
-        setStep('confirm');
-      }, 1500);
+        setSubmitting(false)
+        setStep('confirm')
+      }, 1500)
     } else if (currentIndex < steps.length - 1) {
-      setStep(steps[currentIndex + 1]);
+      setStep(steps[currentIndex + 1])
     }
-  }, [step, patientInfo]);
+  }, [step, patientInfo])
 
   const goToPreviousStep = useCallback(() => {
-    const steps: BookingStep[] = ['professional', 'datetime', 'info', 'confirm'];
-    const currentIndex = steps.indexOf(step);
+    const steps: BookingStep[] = ['professional', 'datetime', 'info', 'confirm']
+    const currentIndex = steps.indexOf(step)
     if (currentIndex > 0) {
-      setStep(steps[currentIndex - 1]);
+      setStep(steps[currentIndex - 1])
     }
-  }, [step]);
+  }, [step])
 
   // Loading state
   if (loading) {
-    return (
-      <div className="min-h-screen bg-genesis-soft flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 text-genesis-primary animate-spin" />
-          <span className="text-genesis-medium font-medium">Carregando...</span>
-        </div>
-      </div>
-    );
+    return <BookingSkeleton />
+  }
+
+  // Not found state
+  if (notFound || !clinic) {
+    return <ClinicNotFound clinicSlug={clinicSlug} />
+  }
+
+  // Build clinic info for BookingSummary
+  const clinicInfo = {
+    id: clinic.id,
+    name: clinic.name,
+    address: clinic.address || '',
+    phone: clinic.phone || '',
+    logo: clinic.logo,
   }
 
   return (
@@ -220,16 +263,16 @@ export function BookAppointment(): React.ReactElement {
         <div className="max-w-3xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Link
-              to={`/clinica/${_clinicSlug || 'clinica-genesis'}`}
+              to={`/clinica/${clinicSlug}`}
               className="p-2 rounded-lg hover:bg-genesis-hover transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-genesis-dark" />
             </Link>
             <div className="flex items-center gap-3">
-              {MOCK_CLINIC.logo ? (
+              {clinic.logo ? (
                 <img
-                  src={MOCK_CLINIC.logo}
-                  alt={MOCK_CLINIC.name}
+                  src={clinic.logo}
+                  alt={clinic.name}
                   loading="lazy"
                   className="w-10 h-10 rounded-lg object-cover"
                 />
@@ -239,11 +282,13 @@ export function BookAppointment(): React.ReactElement {
                 </div>
               )}
               <div>
-                <h1 className="font-semibold text-genesis-dark">{MOCK_CLINIC.name}</h1>
-                <p className="text-xs text-genesis-muted flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
-                  {MOCK_CLINIC.address}
-                </p>
+                <h1 className="font-semibold text-genesis-dark">{clinic.name}</h1>
+                {clinic.address && (
+                  <p className="text-xs text-genesis-muted flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    {clinic.address}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -260,23 +305,23 @@ export function BookAppointment(): React.ReactElement {
           {/* Step 1: Professional */}
           {step === 'professional' && (
             <div>
-              <h2 className="text-lg font-bold text-genesis-dark mb-4">
-                Escolha o profissional
-              </h2>
-              <ProfessionalSelector
-                professionals={MOCK_PROFESSIONALS}
-                selectedId={selectedProfessional?.id}
-                onSelect={setSelectedProfessional}
-              />
+              <h2 className="text-lg font-bold text-genesis-dark mb-4">Escolha o profissional</h2>
+              {publicProfessionals.length === 0 ? (
+                <NoProfessionalsAvailable />
+              ) : (
+                <ProfessionalSelector
+                  professionals={publicProfessionals}
+                  selectedId={selectedProfessional?.id}
+                  onSelect={setSelectedProfessional}
+                />
+              )}
             </div>
           )}
 
           {/* Step 2: Date/Time */}
           {step === 'datetime' && (
             <div>
-              <h2 className="text-lg font-bold text-genesis-dark mb-4">
-                Escolha data e horário
-              </h2>
+              <h2 className="text-lg font-bold text-genesis-dark mb-4">Escolha data e horário</h2>
               <AvailabilityCalendar
                 availability={availability}
                 selectedSlot={selectedSlot || undefined}
@@ -299,7 +344,7 @@ export function BookAppointment(): React.ReactElement {
               professional={selectedProfessional}
               datetime={selectedSlot}
               patient={patientInfo}
-              clinic={MOCK_CLINIC}
+              clinic={clinicInfo}
             />
           )}
         </div>
@@ -353,7 +398,7 @@ export function BookAppointment(): React.ReactElement {
         )}
       </main>
     </div>
-  );
+  )
 }
 
-export default BookAppointment;
+export default BookAppointment

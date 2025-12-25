@@ -5,7 +5,7 @@
  * Components extracted to src/components/whatsapp/ for modularity.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react'
 import {
   MessageCircle,
   CheckCheck,
@@ -18,10 +18,11 @@ import {
   CalendarX,
   Loader2,
   RefreshCw,
-} from 'lucide-react';
-import { format, subDays } from 'date-fns';
-import { useWhatsAppMetrics } from '../hooks/useWhatsAppMetrics';
-import { formatPercent } from '../services/whatsapp-metrics.service';
+} from 'lucide-react'
+import { toast } from 'sonner'
+import { format, subDays } from 'date-fns'
+import { useWhatsAppMetrics } from '../hooks/useWhatsAppMetrics'
+import { formatPercent } from '../services/whatsapp-metrics.service'
 import {
   MetricCard,
   StatusBreakdown,
@@ -35,10 +36,16 @@ import {
   LazyBarChart,
   LazyBar,
   ChartSuspense,
-} from '../components/whatsapp';
+} from '../components/whatsapp'
 
 export function WhatsAppMetrics() {
-  const { metrics, loading, error } = useWhatsAppMetrics();
+  const { metrics, loading, error, refresh } = useWhatsAppMetrics()
+
+  // Refresh handler with toast feedback
+  const handleRefresh = useCallback(() => {
+    refresh()
+    toast.success('Métricas atualizadas')
+  }, [refresh])
 
   // Format chart data
   const chartData = useMemo(() => {
@@ -49,13 +56,13 @@ export function WhatsAppMetrics() {
         delivered: 0,
         read: 0,
         confirmed: 0,
-      }));
+      }))
     }
-    return metrics.dailyStats.map((day) => ({
+    return metrics.dailyStats.map(day => ({
       ...day,
       date: format(new Date(day.date), 'dd/MM'),
-    }));
-  }, [metrics.dailyStats]);
+    }))
+  }, [metrics.dailyStats])
 
   // No-show comparison data
   const noShowData = useMemo(
@@ -64,14 +71,14 @@ export function WhatsAppMetrics() {
       { name: 'Sem Lembrete', value: metrics.noShowsWithoutReminder, fill: '#FF3B30' },
     ],
     [metrics.noShowsWithReminder, metrics.noShowsWithoutReminder]
-  );
+  )
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 text-genesis-primary animate-spin" />
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -80,7 +87,7 @@ export function WhatsAppMetrics() {
         <AlertCircle className="w-8 h-8 mb-2" />
         <p>Erro ao carregar métricas</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -100,7 +107,10 @@ export function WhatsAppMetrics() {
             Métricas de engajamento e confirmações de consulta via WhatsApp.
           </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-genesis-primary text-white rounded-xl text-sm font-medium hover:bg-genesis-primary-dark transition-colors shadow-lg shadow-genesis-primary/20">
+        <button
+          onClick={handleRefresh}
+          className="flex items-center gap-2 px-4 py-2.5 bg-genesis-primary text-white rounded-xl text-sm font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-genesis-primary/20"
+        >
           <RefreshCw className="w-4 h-4" /> Atualizar
         </button>
       </div>
@@ -174,12 +184,53 @@ export function WhatsAppMetrics() {
                     </linearGradient>
                   </defs>
                   <LazyCartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F2F2F7" />
-                  <LazyXAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#86868B', fontSize: 12 }} dy={10} />
-                  <LazyYAxis axisLine={false} tickLine={false} tick={{ fill: '#86868B', fontSize: 12 }} />
-                  <LazyTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)' }} cursor={{ stroke: '#E5E5EA', strokeWidth: 1 }} />
-                  <LazyArea type="monotone" dataKey="sent" stroke="#F59E0B" strokeWidth={2} fillOpacity={1} fill="url(#colorSent)" name="Enviados" />
-                  <LazyArea type="monotone" dataKey="delivered" stroke="#34C759" strokeWidth={2} fillOpacity={1} fill="url(#colorDelivered)" name="Entregues" />
-                  <LazyArea type="monotone" dataKey="read" stroke="#007AFF" strokeWidth={2} fillOpacity={1} fill="url(#colorRead)" name="Lidos" />
+                  <LazyXAxis
+                    dataKey="date"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#86868B', fontSize: 12 }}
+                    dy={10}
+                  />
+                  <LazyYAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#86868B', fontSize: 12 }}
+                  />
+                  <LazyTooltip
+                    contentStyle={{
+                      borderRadius: '12px',
+                      border: 'none',
+                      boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)',
+                    }}
+                    cursor={{ stroke: '#E5E5EA', strokeWidth: 1 }}
+                  />
+                  <LazyArea
+                    type="monotone"
+                    dataKey="sent"
+                    stroke="#F59E0B"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorSent)"
+                    name="Enviados"
+                  />
+                  <LazyArea
+                    type="monotone"
+                    dataKey="delivered"
+                    stroke="#34C759"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorDelivered)"
+                    name="Entregues"
+                  />
+                  <LazyArea
+                    type="monotone"
+                    dataKey="read"
+                    stroke="#007AFF"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorRead)"
+                    name="Lidos"
+                  />
                 </LazyAreaChart>
               </LazyResponsiveContainer>
             </ChartSuspense>
@@ -197,10 +248,27 @@ export function WhatsAppMetrics() {
           <div className="h-[200px] mb-4">
             <ChartSuspense>
               <LazyResponsiveContainer width="100%" height="100%">
-                <LazyBarChart data={noShowData} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
+                <LazyBarChart
+                  data={noShowData}
+                  layout="vertical"
+                  margin={{ top: 0, right: 20, left: 0, bottom: 0 }}
+                >
                   <LazyXAxis type="number" hide />
-                  <LazyYAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#86868B', fontSize: 12 }} width={100} />
-                  <LazyTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)' }} />
+                  <LazyYAxis
+                    type="category"
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#86868B', fontSize: 12 }}
+                    width={100}
+                  />
+                  <LazyTooltip
+                    contentStyle={{
+                      borderRadius: '12px',
+                      border: 'none',
+                      boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)',
+                    }}
+                  />
                   <LazyBar dataKey="value" radius={[0, 8, 8, 0]} />
                 </LazyBarChart>
               </LazyResponsiveContainer>
@@ -210,7 +278,8 @@ export function WhatsAppMetrics() {
             <div className="flex items-center gap-2 mb-1">
               <TrendingDown className="w-4 h-4 text-green-600" />
               <span className="text-sm font-bold text-green-700">
-                {metrics.noShowReduction > 0 ? '-' : ''}{formatPercent(Math.abs(metrics.noShowReduction))}
+                {metrics.noShowReduction > 0 ? '-' : ''}
+                {formatPercent(Math.abs(metrics.noShowReduction))}
               </span>
             </div>
             <p className="text-xs text-green-600">Redução de no-shows com lembretes WhatsApp</p>
@@ -220,13 +289,31 @@ export function WhatsAppMetrics() {
 
       {/* Status Breakdown Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatusBreakdown title="Confirmação" data={metrics.confirmation} icon={Send} accentColor="bg-purple-500" />
-        <StatusBreakdown title="Lembrete 24h" data={metrics.reminder24h} icon={Clock} accentColor="bg-blue-500" />
-        <StatusBreakdown title="Lembrete 2h" data={metrics.reminder2h} icon={Clock} accentColor="bg-amber-500" />
+        <StatusBreakdown
+          title="Confirmação"
+          data={metrics.confirmation}
+          icon={Send}
+          accentColor="bg-purple-500"
+        />
+        <StatusBreakdown
+          title="Lembrete 24h"
+          data={metrics.reminder24h}
+          icon={Clock}
+          accentColor="bg-blue-500"
+        />
+        <StatusBreakdown
+          title="Lembrete 2h"
+          data={metrics.reminder2h}
+          icon={Clock}
+          accentColor="bg-amber-500"
+        />
       </div>
 
       {/* Response Summary */}
-      <div className="rounded-2xl p-8 text-white shadow-xl border border-genesis-border-subtle" style={{ background: 'linear-gradient(to bottom right, #0f172a, #000000)' }}>
+      <div
+        className="rounded-2xl p-8 text-white shadow-xl border border-genesis-border-subtle"
+        style={{ background: 'linear-gradient(to bottom right, #0f172a, #000000)' }}
+      >
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-bold mb-1">Resumo de Respostas</h3>
@@ -257,5 +344,5 @@ export function WhatsAppMetrics() {
         </div>
       </div>
     </div>
-  );
+  )
 }

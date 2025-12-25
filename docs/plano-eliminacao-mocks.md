@@ -13,7 +13,7 @@
 | Sprint 2: Patient Portal - Core | ✅ Completo | 2025-12-25 |
 | Sprint 3: Patient Portal - Avançado | ✅ Completo | 2025-12-25 |
 | Auditoria CODE_CONSTITUTION | ✅ Aprovado | 2025-12-25 |
-| Sprint 4: Externos | ⏳ Pendente | - |
+| Sprint 4: Externos | ✅ Completo | 2025-12-25 |
 | Sprint 5: Auditoria Final | ⏳ Pendente | - |
 
 ### Sprint 1 - Arquivos Criados
@@ -41,6 +41,20 @@
 - ✅ `patient-portal/LabResults.tsx` - Mocks removidos, usa `useLabResults`
 - ✅ `patient-portal/Messages.tsx` - Mocks removidos, usa `usePatientMessages`
 - ✅ `patient-portal/Telehealth.tsx` - Mocks removidos, usa `usePatientTelehealth`
+
+### Sprint 4 - Arquivos Criados/Modificados
+- ✅ `src/hooks/usePublicClinicData.ts` - Hook para dados públicos de clínicas
+- ✅ `src/services/firestore/user.service.ts` - Adicionado método `getByClinic`
+
+### Sprint 4 - Páginas Refatoradas
+- ✅ `patient-portal/History.tsx` - MOCK_RECORDS removidos, usa `usePatientPortalAppointments`
+- ✅ `public/BookAppointment.tsx` - MOCK_CLINIC, MOCK_PROFESSIONALS removidos, usa `usePublicClinicData`
+
+### Sprint 4 - Botões Fantasma Corrigidos
+- ✅ `Analytics.tsx` - Botões "Atualizar" e "Exportar" funcionais
+- ✅ `Finance.tsx` - Botão "Filtros" com dropdown funcional
+- ✅ `Reports.tsx` - Botão "Compartilhar" com Web Share API
+- ✅ `WhatsAppMetrics.tsx` - Botão "Atualizar" com refresh de métricas
 
 ---
 

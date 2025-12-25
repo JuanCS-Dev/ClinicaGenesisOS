@@ -5,9 +5,8 @@
  * Supports day/week/month views with date navigation.
  */
 
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Filter, Plus, Loader2, Calendar, X, User, Clock } from 'lucide-react';
-import { toast } from 'sonner';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
+import { ChevronLeft, ChevronRight, Filter, Plus, Loader2, Calendar } from 'lucide-react'
 import {
   format,
   addDays,
@@ -21,10 +20,10 @@ import {
   startOfMonth,
   endOfMonth,
   isToday,
-} from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { useAppointments } from '../hooks/useAppointments';
-import { Status, type SpecialtyType, type Appointment } from '@/types';
+} from 'date-fns'
+import { ptBR } from 'date-fns/locale'
+import { useAppointments } from '../hooks/useAppointments'
+import { Status, type SpecialtyType, type Appointment } from '@/types'
 import {
   DraggableDayView,
   WeekView,
@@ -32,144 +31,144 @@ import {
   FilterPanel,
   AppointmentModal,
   type LocalFilters,
-} from '../components/agenda';
-import { TelemedicineModal } from '../components/telemedicine';
-import { expandRecurringAppointments } from '@/lib/recurrence';
-import { usePatients } from '@/hooks/usePatients';
-import { Modal } from '@/design-system';
+} from '../components/agenda'
+import { TelemedicineModal } from '../components/telemedicine'
+import { expandRecurringAppointments } from '@/lib/recurrence'
 
 /** View modes for the agenda. */
-type ViewMode = 'day' | 'week' | 'month';
+type ViewMode = 'day' | 'week' | 'month'
 
 /**
  * Format a date to YYYY-MM-DD for filtering.
  */
 function toDateString(date: Date): string {
-  return format(date, 'yyyy-MM-dd');
+  return format(date, 'yyyy-MM-dd')
 }
 
 export function Agenda() {
   // Selected date and view mode
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [viewMode, setViewMode] = useState<ViewMode>('day');
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [viewMode, setViewMode] = useState<ViewMode>('day')
 
   // Filter panel state
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(false)
   const [localFilters, setLocalFilters] = useState<LocalFilters>({
     statuses: [],
     specialties: [],
-  });
-  const filterRef = useRef<HTMLDivElement>(null);
+  })
+  const filterRef = useRef<HTMLDivElement>(null)
 
   // Telemedicine modal state
-  const [telemedicineModalOpen, setTelemedicineModalOpen] = useState(false);
-  const [selectedAppointmentForTele, setSelectedAppointmentForTele] = useState<Appointment | null>(null);
+  const [telemedicineModalOpen, setTelemedicineModalOpen] = useState(false)
+  const [selectedAppointmentForTele, setSelectedAppointmentForTele] = useState<Appointment | null>(
+    null
+  )
 
   // New appointment modal state
-  const [appointmentModalOpen, setAppointmentModalOpen] = useState(false);
+  const [appointmentModalOpen, setAppointmentModalOpen] = useState(false)
 
   // For week view, we need all appointments (no date filter)
   // For day view, we filter by specific date
-  const shouldFilterByDate = viewMode === 'day';
+  const shouldFilterByDate = viewMode === 'day'
 
   // Get appointments
   const { appointments, loading, setFilters, updateAppointment } = useAppointments(
     shouldFilterByDate ? { date: toDateString(selectedDate) } : {}
-  );
+  )
 
   // Working hours (8am to 8pm)
-  const hours = Array.from({ length: 13 }, (_, i) => i + 8);
+  const hours = Array.from({ length: 13 }, (_, i) => i + 8)
 
   // Calculate week dates for week view
   const weekDates = useMemo(() => {
-    const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 }); // Sunday
-    return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  }, [selectedDate]);
+    const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 }) // Sunday
+    return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
+  }, [selectedDate])
 
   // Week display range (e.g., "15 - 21 de Dezembro")
   const weekDisplay = useMemo(() => {
-    const start = weekDates[0];
-    const end = weekDates[6];
+    const start = weekDates[0]
+    const end = weekDates[6]
     if (format(start, 'MMMM', { locale: ptBR }) === format(end, 'MMMM', { locale: ptBR })) {
-      return `${format(start, 'd')} - ${format(end, "d 'de' MMMM", { locale: ptBR })}`;
+      return `${format(start, 'd')} - ${format(end, "d 'de' MMMM", { locale: ptBR })}`
     }
-    return `${format(start, "d 'de' MMM", { locale: ptBR })} - ${format(end, "d 'de' MMM", { locale: ptBR })}`;
-  }, [weekDates]);
+    return `${format(start, "d 'de' MMM", { locale: ptBR })} - ${format(end, "d 'de' MMM", { locale: ptBR })}`
+  }, [weekDates])
 
   // Calculate the date range for the current view (for recurring expansion)
   const viewDateRange = useMemo(() => {
     switch (viewMode) {
       case 'month': {
         // For month view, we need the full calendar grid (may include days from adjacent months)
-        const monthStart = startOfMonth(selectedDate);
-        const monthEnd = endOfMonth(selectedDate);
+        const monthStart = startOfMonth(selectedDate)
+        const monthEnd = endOfMonth(selectedDate)
         return {
           start: startOfWeek(monthStart, { weekStartsOn: 0 }),
           end: endOfWeek(monthEnd, { weekStartsOn: 0 }),
-        };
+        }
       }
       case 'week':
         return {
           start: weekDates[0],
           end: weekDates[6],
-        };
+        }
       default:
         // Day view: just the selected day
         return {
           start: selectedDate,
           end: selectedDate,
-        };
+        }
     }
-  }, [viewMode, selectedDate, weekDates]);
+  }, [viewMode, selectedDate, weekDates])
 
   // Close filter panel when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
-        setShowFilters(false);
+        setShowFilters(false)
       }
     }
     if (showFilters) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside)
     }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showFilters]);
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showFilters])
 
   /**
    * Toggle a status in the filter.
    */
   const toggleStatusFilter = useCallback((status: Status) => {
-    setLocalFilters((prev) => ({
+    setLocalFilters(prev => ({
       ...prev,
       statuses: prev.statuses.includes(status)
-        ? prev.statuses.filter((s) => s !== status)
+        ? prev.statuses.filter(s => s !== status)
         : [...prev.statuses, status],
-    }));
-  }, []);
+    }))
+  }, [])
 
   /**
    * Toggle a specialty in the filter.
    */
   const toggleSpecialtyFilter = useCallback((specialty: SpecialtyType) => {
-    setLocalFilters((prev) => ({
+    setLocalFilters(prev => ({
       ...prev,
       specialties: prev.specialties.includes(specialty)
-        ? prev.specialties.filter((s) => s !== specialty)
+        ? prev.specialties.filter(s => s !== specialty)
         : [...prev.specialties, specialty],
-    }));
-  }, []);
+    }))
+  }, [])
 
   /**
    * Clear all local filters.
    */
   const clearLocalFilters = useCallback(() => {
-    setLocalFilters({ statuses: [], specialties: [] });
-  }, []);
+    setLocalFilters({ statuses: [], specialties: [] })
+  }, [])
 
   /**
    * Check if any filter is active.
    */
-  const hasActiveFilters = localFilters.statuses.length > 0 || localFilters.specialties.length > 0;
+  const hasActiveFilters = localFilters.statuses.length > 0 || localFilters.specialties.length > 0
 
   /**
    * Expand recurring appointments and filter based on local filters.
@@ -180,115 +179,121 @@ export function Agenda() {
       appointments,
       viewDateRange.start,
       viewDateRange.end
-    );
+    )
 
     // Then apply local filters
-    return expanded.filter((app) => {
+    return expanded.filter(app => {
       // Status filter
       if (localFilters.statuses.length > 0 && !localFilters.statuses.includes(app.status)) {
-        return false;
+        return false
       }
       // Specialty filter
-      if (localFilters.specialties.length > 0 && !localFilters.specialties.includes(app.specialty)) {
-        return false;
+      if (
+        localFilters.specialties.length > 0 &&
+        !localFilters.specialties.includes(app.specialty)
+      ) {
+        return false
       }
-      return true;
-    });
-  }, [appointments, localFilters, viewDateRange]);
+      return true
+    })
+  }, [appointments, localFilters, viewDateRange])
 
   /**
    * Navigate to previous period (day, week, or month based on view mode).
    */
   const goToPrevious = useCallback(() => {
-    let newDate: Date;
+    let newDate: Date
     switch (viewMode) {
       case 'month': {
-        newDate = subMonths(selectedDate, 1);
-        break;
+        newDate = subMonths(selectedDate, 1)
+        break
       }
       case 'week': {
-        newDate = subWeeks(selectedDate, 1);
-        break;
+        newDate = subWeeks(selectedDate, 1)
+        break
       }
       default: {
-        newDate = subDays(selectedDate, 1);
+        newDate = subDays(selectedDate, 1)
       }
     }
-    setSelectedDate(newDate);
+    setSelectedDate(newDate)
     if (viewMode === 'day') {
-      setFilters({ date: toDateString(newDate) });
+      setFilters({ date: toDateString(newDate) })
     }
-  }, [selectedDate, setFilters, viewMode]);
+  }, [selectedDate, setFilters, viewMode])
 
   /**
    * Navigate to next period (day, week, or month based on view mode).
    */
   const goToNext = useCallback(() => {
-    let newDate: Date;
+    let newDate: Date
     switch (viewMode) {
       case 'month': {
-        newDate = addMonths(selectedDate, 1);
-        break;
+        newDate = addMonths(selectedDate, 1)
+        break
       }
       case 'week': {
-        newDate = addWeeks(selectedDate, 1);
-        break;
+        newDate = addWeeks(selectedDate, 1)
+        break
       }
       default: {
-        newDate = addDays(selectedDate, 1);
+        newDate = addDays(selectedDate, 1)
       }
     }
-    setSelectedDate(newDate);
+    setSelectedDate(newDate)
     if (viewMode === 'day') {
-      setFilters({ date: toDateString(newDate) });
+      setFilters({ date: toDateString(newDate) })
     }
-  }, [selectedDate, setFilters, viewMode]);
+  }, [selectedDate, setFilters, viewMode])
 
   /**
    * Navigate to today.
    */
   const goToToday = useCallback(() => {
-    const today = new Date();
-    setSelectedDate(today);
+    const today = new Date()
+    setSelectedDate(today)
     if (viewMode === 'day') {
-      setFilters({ date: toDateString(today) });
+      setFilters({ date: toDateString(today) })
     }
-  }, [setFilters, viewMode]);
+  }, [setFilters, viewMode])
 
   /**
    * Handle clicking a day in week view - switches to day view.
    */
-  const handleDayClick = useCallback((date: Date) => {
-    setSelectedDate(date);
-    setViewMode('day');
-    setFilters({ date: toDateString(date) });
-  }, [setFilters]);
+  const handleDayClick = useCallback(
+    (date: Date) => {
+      setSelectedDate(date)
+      setViewMode('day')
+      setFilters({ date: toDateString(date) })
+    },
+    [setFilters]
+  )
 
   /**
    * Handle drag-and-drop reschedule of an appointment.
    */
   const handleReschedule = useCallback(
     async (appointmentId: string, newDate: Date): Promise<void> => {
-      await updateAppointment(appointmentId, { date: newDate.toISOString() });
+      await updateAppointment(appointmentId, { date: newDate.toISOString() })
     },
     [updateAppointment]
-  );
+  )
 
   /**
    * Handle starting a telemedicine session from an appointment.
    */
   const handleStartTelemedicine = useCallback((appointment: Appointment) => {
-    setSelectedAppointmentForTele(appointment);
-    setTelemedicineModalOpen(true);
-  }, []);
+    setSelectedAppointmentForTele(appointment)
+    setTelemedicineModalOpen(true)
+  }, [])
 
   /**
    * Handle closing the telemedicine modal.
    */
   const handleCloseTelemedicine = useCallback(() => {
-    setTelemedicineModalOpen(false);
-    setSelectedAppointmentForTele(null);
-  }, []);
+    setTelemedicineModalOpen(false)
+    setSelectedAppointmentForTele(null)
+  }, [])
 
   /**
    * Formatted date display based on view mode.
@@ -296,25 +301,25 @@ export function Agenda() {
   const dateDisplay = useMemo(() => {
     switch (viewMode) {
       case 'month':
-        return format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR });
+        return format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })
       case 'week':
-        return weekDisplay;
+        return weekDisplay
       default:
-        return format(selectedDate, "dd 'de' MMMM", { locale: ptBR });
+        return format(selectedDate, "dd 'de' MMMM", { locale: ptBR })
     }
-  }, [selectedDate, viewMode, weekDisplay]);
+  }, [selectedDate, viewMode, weekDisplay])
 
   /**
    * Check if selected date is today.
    */
-  const isSelectedToday = isToday(selectedDate);
+  const isSelectedToday = isToday(selectedDate)
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 text-genesis-primary animate-spin" />
       </div>
-    );
+    )
   }
 
   return (
@@ -403,7 +408,9 @@ export function Agenda() {
                   : 'border-genesis-border bg-genesis-surface text-genesis-dark hover:bg-genesis-soft'
               }`}
             >
-              <Filter className={`w-3.5 h-3.5 ${hasActiveFilters ? 'text-genesis-primary' : 'text-genesis-medium'}`} />
+              <Filter
+                className={`w-3.5 h-3.5 ${hasActiveFilters ? 'text-genesis-primary' : 'text-genesis-medium'}`}
+              />
               Filtros
               {hasActiveFilters && (
                 <span className="flex items-center justify-center w-5 h-5 bg-genesis-primary text-white text-[10px] font-bold rounded-full">
@@ -481,5 +488,5 @@ export function Agenda() {
         initialDate={selectedDate}
       />
     </div>
-  );
+  )
 }

@@ -9,16 +9,8 @@
  * Note: Uses explicit hex colors for Tailwind 4 compatibility.
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
-import {
-  Download,
-  Filter,
-  Plus,
-  Loader2,
-  Calendar,
-  Search,
-  QrCode,
-} from 'lucide-react';
+import React, { useState, useMemo, useCallback } from 'react'
+import { Download, Filter, Plus, Loader2, Calendar, Search, QrCode } from 'lucide-react'
 import {
   AreaChart,
   Area,
@@ -27,103 +19,152 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-} from 'recharts';
-import { useFinance } from '../hooks/useFinance';
-import { formatCurrency, type Transaction } from '../types';
-import {
-  exportTransactionsToExcel,
-  exportTransactionsToPDF,
-} from '../services/export.service';
-import { FinanceCard, TransactionForm, TransactionRow } from '../components/finance';
-import { DirectPixModal } from '../components/payments';
+} from 'recharts'
+import { useFinance } from '../hooks/useFinance'
+import { formatCurrency, type Transaction } from '../types'
+import { exportTransactionsToExcel, exportTransactionsToPDF } from '../services/export.service'
+import { FinanceCard, TransactionForm, TransactionRow } from '../components/finance'
+import { DirectPixModal } from '../components/payments'
 
 /**
  * Main Finance page component.
  */
 export const Finance: React.FC = () => {
-  const { transactions, loading, summary, monthlyData, addTransaction } = useFinance();
-  const [showForm, setShowForm] = useState(false);
-  const [showExportMenu, setShowExportMenu] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const { transactions, loading, summary, monthlyData, addTransaction } = useFinance()
+  const [showForm, setShowForm] = useState(false)
+  const [showExportMenu, setShowExportMenu] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all')
 
   // PIX Payment Modal state
-  const [showPixModal, setShowPixModal] = useState(false);
+  const [showPixModal, setShowPixModal] = useState(false)
   const [pixModalData, setPixModalData] = useState<{
-    transactionId?: string;
-    amount?: number;
-    description?: string;
-  }>({});
+    transactionId?: string
+    amount?: number
+    description?: string
+  }>({})
 
   // Handle export (async due to dynamic imports for bundle optimization)
   const handleExportPDF = async () => {
-    setShowExportMenu(false);
-    await exportTransactionsToPDF(transactions, summary, 'Clínica Genesis');
-  };
+    setShowExportMenu(false)
+    await exportTransactionsToPDF(transactions, summary, 'Clínica Genesis')
+  }
 
   const handleExportExcel = async () => {
-    setShowExportMenu(false);
-    await exportTransactionsToExcel(transactions);
-  };
+    setShowExportMenu(false)
+    await exportTransactionsToExcel(transactions)
+  }
 
   // Convert monthly data for chart (from cents to currency)
   const chartData = useMemo(() => {
-    return monthlyData.map((d) => ({
+    return monthlyData.map(d => ({
       month: d.month,
       receita: d.income / 100,
       despesa: d.expenses / 100,
-    }));
-  }, [monthlyData]);
+    }))
+  }, [monthlyData])
 
-  // Filter transactions by search
+  // Filter transactions by search and type
   const filteredTransactions = useMemo((): Transaction[] => {
-    if (!searchTerm) return transactions.slice(0, 10);
-    const term = searchTerm.toLowerCase();
-    return transactions
-      .filter(
-        (t) =>
-          t.description.toLowerCase().includes(term) ||
-          t.patientName?.toLowerCase().includes(term)
+    let filtered = transactions
+
+    // Apply type filter
+    if (filterType !== 'all') {
+      filtered = filtered.filter(t => t.type === filterType)
+    }
+
+    // Apply search filter
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase()
+      filtered = filtered.filter(
+        t =>
+          t.description.toLowerCase().includes(term) || t.patientName?.toLowerCase().includes(term)
       )
-      .slice(0, 10);
-  }, [transactions, searchTerm]);
+    }
+
+    return filtered.slice(0, 10)
+  }, [transactions, searchTerm, filterType])
 
   // Calculate margin
   const margin =
     summary && summary.totalIncome > 0
       ? Math.round((summary.netBalance / summary.totalIncome) * 100)
-      : 0;
+      : 0
 
   // Handle PIX generation from transaction form
   const handleGeneratePix = useCallback(
     (transactionId: string, amount: number, description: string) => {
-      setPixModalData({ transactionId, amount, description });
-      setShowPixModal(true);
+      setPixModalData({ transactionId, amount, description })
+      setShowPixModal(true)
     },
     []
-  );
+  )
 
   // Handle standalone PIX payment
   const handleNewPix = useCallback(() => {
-    setPixModalData({});
-    setShowPixModal(true);
-  }, []);
+    setPixModalData({})
+    setShowPixModal(true)
+  }, [])
 
   return (
     <div className="space-y-8 animate-enter pb-10">
       {/* Header */}
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-2xl font-bold text-genesis-dark tracking-tight">
-            Gestão Financeira
-          </h1>
+          <h1 className="text-2xl font-bold text-genesis-dark tracking-tight">Gestão Financeira</h1>
           <p className="text-genesis-medium text-sm">
             Fluxo de caixa e demonstrações do mês atual.
           </p>
         </div>
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-genesis-surface border border-genesis-border rounded-xl text-sm font-medium text-genesis-dark hover:bg-genesis-soft transition-colors shadow-sm">
-            <Filter className="w-4 h-4 text-genesis-medium" /> Filtros
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2 px-4 py-2.5 border rounded-xl text-sm font-medium transition-all hover:scale-[1.02] active:scale-[0.98] shadow-sm ${
+                filterType !== 'all'
+                  ? 'bg-genesis-primary/10 border-genesis-primary text-genesis-primary'
+                  : 'bg-genesis-surface border-genesis-border text-genesis-dark hover:bg-genesis-soft'
+              }`}
+            >
+              <Filter className="w-4 h-4" />
+              Filtros
+              {filterType !== 'all' && <span className="w-2 h-2 rounded-full bg-genesis-primary" />}
+            </button>
+            {showFilters && (
+              <div className="absolute left-0 mt-2 w-48 bg-genesis-surface rounded-xl shadow-lg border border-genesis-border-subtle py-2 z-20">
+                <button
+                  onClick={() => {
+                    setFilterType('all')
+                    setShowFilters(false)
+                  }}
+                  className={`w-full px-4 py-2 text-left text-sm hover:bg-genesis-soft flex items-center gap-2 ${filterType === 'all' ? 'text-genesis-primary font-medium' : 'text-genesis-dark'}`}
+                >
+                  Todas
+                </button>
+                <button
+                  onClick={() => {
+                    setFilterType('income')
+                    setShowFilters(false)
+                  }}
+                  className={`w-full px-4 py-2 text-left text-sm hover:bg-genesis-soft flex items-center gap-2 ${filterType === 'income' ? 'text-genesis-primary font-medium' : 'text-genesis-dark'}`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-success" />
+                  Receitas
+                </button>
+                <button
+                  onClick={() => {
+                    setFilterType('expense')
+                    setShowFilters(false)
+                  }}
+                  className={`w-full px-4 py-2 text-left text-sm hover:bg-genesis-soft flex items-center gap-2 ${filterType === 'expense' ? 'text-genesis-primary font-medium' : 'text-genesis-dark'}`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-danger" />
+                  Despesas
+                </button>
+              </div>
+            )}
+          </div>
           <div className="relative">
             <button
               onClick={() => setShowExportMenu(!showExportMenu)}
@@ -204,16 +245,11 @@ export const Finance: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[500px]">
         {/* Main Chart */}
         <div className="lg:col-span-2 bg-genesis-surface rounded-3xl border border-genesis-border-subtle shadow-md p-8 flex flex-col">
-          <h3 className="text-lg font-bold text-genesis-dark mb-6">
-            Fluxo de Caixa (Semestral)
-          </h3>
+          <h3 className="text-lg font-bold text-genesis-dark mb-6">Fluxo de Caixa (Semestral)</h3>
           <div className="flex-1 w-full min-h-0">
             {chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={chartData}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                >
+                <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorReceita" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#007AFF" stopOpacity={0.2} />
@@ -236,7 +272,7 @@ export const Finance: React.FC = () => {
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: '#86868B', fontSize: 12 }}
-                    tickFormatter={(value) => `R$ ${(value / 1000).toFixed(0)}k`}
+                    tickFormatter={value => `R$ ${(value / 1000).toFixed(0)}k`}
                   />
                   <Tooltip
                     contentStyle={{
@@ -269,11 +305,7 @@ export const Finance: React.FC = () => {
               </ResponsiveContainer>
             ) : (
               <div className="h-full flex items-center justify-center text-genesis-subtle">
-                {loading ? (
-                  <Loader2 className="w-8 h-8 animate-spin" />
-                ) : (
-                  'Nenhum dado disponível'
-                )}
+                {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : 'Nenhum dado disponível'}
               </div>
             )}
           </div>
@@ -284,16 +316,14 @@ export const Finance: React.FC = () => {
           <div className="p-6 border-b border-genesis-border-subtle flex flex-col gap-3 bg-genesis-surface/50 backdrop-blur-sm sticky top-0 z-10">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-bold text-genesis-dark">Transações</h3>
-              <span className="text-xs text-genesis-medium">
-                {transactions.length} total
-              </span>
+              <span className="text-xs text-genesis-medium">{transactions.length} total</span>
             </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-genesis-subtle" />
               <input
                 type="text"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 placeholder="Buscar..."
                 className="w-full pl-10 pr-4 py-2 text-sm border border-genesis-border-subtle rounded-lg focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] outline-none"
               />
@@ -316,9 +346,7 @@ export const Finance: React.FC = () => {
                 </button>
               </div>
             ) : (
-              filteredTransactions.map((t) => (
-                <TransactionRow key={t.id} transaction={t} />
-              ))
+              filteredTransactions.map(t => <TransactionRow key={t.id} transaction={t} />)
             )}
           </div>
         </div>
@@ -340,17 +368,17 @@ export const Finance: React.FC = () => {
           description={pixModalData.description || ''}
           transactionId={pixModalData.transactionId}
           onClose={() => {
-            setShowPixModal(false);
-            setPixModalData({});
+            setShowPixModal(false)
+            setPixModalData({})
           }}
           onConfirmPayment={() => {
-            setShowPixModal(false);
-            setPixModalData({});
+            setShowPixModal(false)
+            setPixModalData({})
           }}
         />
       )}
     </div>
-  );
-};
+  )
+}
 
-export default Finance;
+export default Finance

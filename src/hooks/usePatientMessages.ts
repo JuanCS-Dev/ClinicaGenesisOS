@@ -3,9 +3,12 @@
  *
  * Provides real-time access to patient's messaging conversations.
  * Includes message sending and conversation management.
+ *
+ * @module hooks/usePatientMessages
+ * @version 2.0.0 - Refactored for maintainability
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { usePatientPortal } from '@/contexts/PatientPortalContext'
 import { messageService } from '@/services/firestore'
 import type {
@@ -15,18 +18,29 @@ import type {
   UsePatientMessagesReturn,
 } from '@/types'
 
+// ============================================================================
+// Error Helper
+// ============================================================================
+
+/**
+ * Wrap an async operation with error handling.
+ */
+function handleError(err: unknown, fallbackMessage: string): Error {
+  return err instanceof Error ? err : new Error(fallbackMessage)
+}
+
+// ============================================================================
+// Hook
+// ============================================================================
+
 /**
  * Hook for managing patient messages with real-time updates.
- *
- * @returns Messages data and operations
- *
- * @example
- * const { conversations, activeConversation, sendMessage } = usePatientMessages();
  */
 export function usePatientMessages(): UsePatientMessagesReturn {
   const { patientId, patientData, clinicId } = usePatientPortal()
   const patientName = patientData?.name || 'Paciente'
 
+  // State
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [activeConversation, setActiveConversation] = useState<ConversationWithMessages | null>(
     null
@@ -34,7 +48,9 @@ export function usePatientMessages(): UsePatientMessagesReturn {
   const [messages, setMessages] = useState<Message[]>([])
   const [error, setError] = useState<Error | null>(null)
   const [hasReceived, setHasReceived] = useState(false)
-  const [messagesUnsubscribe, setMessagesUnsubscribe] = useState<(() => void) | null>(null)
+
+  // Ref to avoid stale closure in cleanup
+  const messagesUnsubscribeRef = useRef<(() => void) | null>(null)
 
   // Subscribe to conversations
   useEffect(() => {
@@ -45,7 +61,6 @@ export function usePatientMessages(): UsePatientMessagesReturn {
     }
 
     let isActive = true
-
     const unsubscribe = messageService.subscribeByPatient(clinicId, patientId, data => {
       if (isActive) {
         setConversations(data)
@@ -62,84 +77,56 @@ export function usePatientMessages(): UsePatientMessagesReturn {
 
   // Update active conversation when messages change
   useEffect(() => {
-    setActiveConversation(prev =>
-      prev
-        ? {
-            ...prev,
-            messages,
-          }
-        : null
-    )
+    setActiveConversation(prev => (prev ? { ...prev, messages } : null))
   }, [messages])
 
   // Cleanup messages subscription on unmount
   useEffect(() => {
-    return () => {
-      if (messagesUnsubscribe) {
-        messagesUnsubscribe()
-      }
-    }
-  }, [messagesUnsubscribe])
+    return () => messagesUnsubscribeRef.current?.()
+  }, [])
 
-  // Calculate total unread count
-  const totalUnread = useMemo(() => {
-    return conversations.reduce((sum, conv) => sum + conv.unreadCountPatient, 0)
-  }, [conversations])
-
-  // Loading state
+  // Calculated values
+  const totalUnread = useMemo(
+    () => conversations.reduce((sum, conv) => sum + conv.unreadCountPatient, 0),
+    [conversations]
+  )
   const loading = !hasReceived && Boolean(clinicId && patientId)
 
-  /**
-   * Select a conversation and load its messages.
-   */
+  // ============================================================================
+  // Actions
+  // ============================================================================
+
   const selectConversation = useCallback(
     async (conversationId: string): Promise<void> => {
-      if (!clinicId) {
-        throw new Error('No clinic selected')
-      }
+      if (!clinicId) throw new Error('No clinic selected')
 
-      // Unsubscribe from previous messages
-      if (messagesUnsubscribe) {
-        messagesUnsubscribe()
-      }
+      messagesUnsubscribeRef.current?.()
 
       try {
-        // Get conversation details
         const conversation = conversations.find(c => c.id === conversationId)
-        if (!conversation) {
-          throw new Error('Conversation not found')
-        }
+        if (!conversation) throw new Error('Conversation not found')
 
-        // Subscribe to messages
         const unsubscribe = messageService.subscribeToMessages(clinicId, conversationId, msgs => {
           setMessages(msgs)
-          setActiveConversation({
-            ...conversation,
-            messages: msgs,
-          })
+          setActiveConversation({ ...conversation, messages: msgs })
         })
+        messagesUnsubscribeRef.current = unsubscribe
 
-        setMessagesUnsubscribe(() => unsubscribe)
-
-        // Mark as read
         if (conversation.unreadCountPatient > 0) {
           await messageService.markAsRead(clinicId, conversationId, 'patient')
         }
       } catch (err) {
-        const error = err instanceof Error ? err : new Error('Failed to load conversation')
-        setError(error)
-        throw error
+        const e = handleError(err, 'Failed to load conversation')
+        setError(e)
+        throw e
       }
     },
-    [clinicId, conversations, messagesUnsubscribe]
+    [clinicId, conversations]
   )
 
-  /**
-   * Send a message in the active conversation.
-   */
   const sendMessage = useCallback(
     async (content: string, attachment?: File): Promise<void> => {
-      if (!clinicId || !patientId || !patientName || !activeConversation) {
+      if (!clinicId || !patientId || !activeConversation) {
         throw new Error('No active conversation')
       }
 
@@ -153,17 +140,14 @@ export function usePatientMessages(): UsePatientMessagesReturn {
           attachment,
         })
       } catch (err) {
-        const error = err instanceof Error ? err : new Error('Failed to send message')
-        setError(error)
-        throw error
+        const e = handleError(err, 'Failed to send message')
+        setError(e)
+        throw e
       }
     },
     [clinicId, patientId, patientName, activeConversation]
   )
 
-  /**
-   * Start a new conversation with a provider.
-   */
   const startConversation = useCallback(
     async (
       providerId: string,
@@ -171,12 +155,10 @@ export function usePatientMessages(): UsePatientMessagesReturn {
       providerSpecialty: string,
       message: string
     ): Promise<string> => {
-      if (!clinicId || !patientId || !patientName) {
-        throw new Error('No patient context')
-      }
+      if (!clinicId || !patientId) throw new Error('No patient context')
 
       try {
-        const conversationId = await messageService.createConversation(clinicId, {
+        return await messageService.createConversation(clinicId, {
           patientId,
           patientName,
           providerId,
@@ -184,64 +166,49 @@ export function usePatientMessages(): UsePatientMessagesReturn {
           providerSpecialty,
           initialMessage: message,
         })
-
-        return conversationId
       } catch (err) {
-        const error = err instanceof Error ? err : new Error('Failed to start conversation')
-        setError(error)
-        throw error
+        const e = handleError(err, 'Failed to start conversation')
+        setError(e)
+        throw e
       }
     },
     [clinicId, patientId, patientName]
   )
 
-  /**
-   * Mark conversation as read.
-   */
   const markAsRead = useCallback(
     async (conversationId: string): Promise<void> => {
-      if (!clinicId) {
-        throw new Error('No clinic selected')
-      }
+      if (!clinicId) throw new Error('No clinic selected')
 
       try {
         await messageService.markAsRead(clinicId, conversationId, 'patient')
       } catch (err) {
-        const error = err instanceof Error ? err : new Error('Failed to mark as read')
-        setError(error)
-        throw error
+        const e = handleError(err, 'Failed to mark as read')
+        setError(e)
+        throw e
       }
     },
     [clinicId]
   )
 
-  /**
-   * Archive a conversation.
-   */
   const archiveConversation = useCallback(
     async (conversationId: string): Promise<void> => {
-      if (!clinicId) {
-        throw new Error('No clinic selected')
-      }
+      if (!clinicId) throw new Error('No clinic selected')
 
       try {
         await messageService.archiveConversation(clinicId, conversationId)
 
-        // Clear active if it was the archived one
         if (activeConversation?.id === conversationId) {
           setActiveConversation(null)
-          if (messagesUnsubscribe) {
-            messagesUnsubscribe()
-            setMessagesUnsubscribe(null)
-          }
+          messagesUnsubscribeRef.current?.()
+          messagesUnsubscribeRef.current = null
         }
       } catch (err) {
-        const error = err instanceof Error ? err : new Error('Failed to archive conversation')
-        setError(error)
-        throw error
+        const e = handleError(err, 'Failed to archive conversation')
+        setError(e)
+        throw e
       }
     },
-    [clinicId, activeConversation, messagesUnsubscribe]
+    [clinicId, activeConversation]
   )
 
   return {

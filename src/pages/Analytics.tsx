@@ -11,24 +11,31 @@
  * @version 1.0.0
  */
 
-import React, { useState } from 'react';
-import {
-  BarChart3,
-  TrendingUp,
-  Heart,
-  Download,
-  RefreshCw,
-} from 'lucide-react';
-import { FinancialWellness, PatientInsights } from '../components/analytics';
+import React, { useState, useCallback } from 'react'
+import { BarChart3, TrendingUp, Heart, Download, RefreshCw } from 'lucide-react'
+import { toast } from 'sonner'
+import { FinancialWellness, PatientInsights } from '../components/analytics'
 
-type AnalyticsTab = 'financial' | 'patients';
+type AnalyticsTab = 'financial' | 'patients'
 
 /**
  * Analytics page component.
  */
 export const Analytics: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<AnalyticsTab>('financial');
-  const [dateRange, setDateRange] = useState('month');
+  const [activeTab, setActiveTab] = useState<AnalyticsTab>('financial')
+  const [dateRange, setDateRange] = useState('month')
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  // Refresh handler - forces re-render of child components
+  const handleRefresh = useCallback(() => {
+    setRefreshKey(prev => prev + 1)
+    toast.success('Dados atualizados')
+  }, [])
+
+  // Export handler - analytics export coming soon
+  const handleExport = useCallback(() => {
+    toast.info('Exportação de analytics em desenvolvimento')
+  }, [])
 
   const tabs = [
     {
@@ -43,7 +50,7 @@ export const Analytics: React.FC = () => {
       icon: Heart,
       description: 'Retenção, NPS e engajamento',
     },
-  ];
+  ]
 
   return (
     <div className="space-y-8 animate-enter pb-10">
@@ -62,7 +69,7 @@ export const Analytics: React.FC = () => {
         <div className="flex items-center gap-3">
           {/* Date Range Selector */}
           <div className="flex items-center gap-2 bg-genesis-surface border border-genesis-border rounded-xl p-1">
-            {['week', 'month', 'quarter', 'year'].map((range) => (
+            {['week', 'month', 'quarter', 'year'].map(range => (
               <button
                 key={range}
                 onClick={() => setDateRange(range)}
@@ -81,11 +88,17 @@ export const Analytics: React.FC = () => {
           </div>
 
           {/* Actions */}
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-genesis-surface border border-genesis-border rounded-xl text-sm font-medium text-genesis-dark hover:bg-genesis-soft transition-colors">
+          <button
+            onClick={handleRefresh}
+            className="flex items-center gap-2 px-4 py-2.5 bg-genesis-surface border border-genesis-border rounded-xl text-sm font-medium text-genesis-dark hover:bg-genesis-soft hover:scale-[1.02] active:scale-[0.98] transition-all"
+          >
             <RefreshCw className="w-4 h-4" />
             Atualizar
           </button>
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-genesis-surface border border-genesis-border rounded-xl text-sm font-medium text-genesis-dark hover:bg-genesis-soft transition-colors">
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 px-4 py-2.5 bg-genesis-surface border border-genesis-border rounded-xl text-sm font-medium text-genesis-dark hover:bg-genesis-soft hover:scale-[1.02] active:scale-[0.98] transition-all"
+          >
             <Download className="w-4 h-4" />
             Exportar
           </button>
@@ -94,7 +107,7 @@ export const Analytics: React.FC = () => {
 
       {/* Tab Navigation */}
       <div className="flex gap-4 border-b border-genesis-border">
-        {tabs.map((tab) => (
+        {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -112,11 +125,11 @@ export const Analytics: React.FC = () => {
 
       {/* Tab Content */}
       <div className="mt-6">
-        {activeTab === 'financial' && <FinancialWellness />}
-        {activeTab === 'patients' && <PatientInsights />}
+        {activeTab === 'financial' && <FinancialWellness key={`fin-${refreshKey}`} />}
+        {activeTab === 'patients' && <PatientInsights key={`pat-${refreshKey}`} />}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Analytics;
+export default Analytics

@@ -5,100 +5,99 @@
  * Used in Header for quick access to settings, help, and logout.
  */
 
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   User,
   Settings,
   HelpCircle,
   LogOut,
   ChevronDown,
-  Bell,
   Shield,
   CreditCard,
   Building2,
   Moon,
   Sun,
   Monitor,
-} from 'lucide-react';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { useClinicContext } from '@/contexts/ClinicContext';
-import { useTheme } from '@/design-system';
+} from 'lucide-react'
+import { useAuthContext } from '@/contexts/AuthContext'
+import { useClinicContext } from '@/contexts/ClinicContext'
+import { useTheme } from '@/design-system'
 
 interface UserDropdownProps {
-  className?: string;
+  className?: string
 }
 
 export function UserDropdown({ className = '' }: UserDropdownProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-  const { user, logout } = useAuthContext();
-  const { userProfile, clinic } = useClinicContext();
-  const { theme, setTheme } = useTheme();
+  const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
+  const { user, logout } = useAuthContext()
+  const { userProfile, clinic } = useClinicContext()
+  const { theme, setTheme } = useTheme()
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+        setIsOpen(false)
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   // Close on escape
   useEffect(() => {
     function handleEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') setIsOpen(false);
+      if (event.key === 'Escape') setIsOpen(false)
     }
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, []);
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [])
 
   const getInitials = (name: string | null | undefined) => {
-    if (!name) return 'U';
-    return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
-  };
+    if (!name) return 'U'
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
 
   const getSpecialtyLabel = (specialty?: string) => {
     const labels: Record<string, string> = {
       medicina: 'Médico(a)',
       nutricao: 'Nutricionista',
       psicologia: 'Psicólogo(a)',
-    };
-    return labels[specialty || ''] || 'Profissional';
-  };
+    }
+    return labels[specialty || ''] || 'Profissional'
+  }
 
   const handleLogout = async () => {
     try {
-      await logout();
-      navigate('/');
+      await logout()
+      navigate('/')
     } catch (err) {
-      console.error('Logout failed:', err);
+      console.error('Logout failed:', err)
     }
-  };
+  }
 
   const handleNavigate = (path: string) => {
-    setIsOpen(false);
-    navigate(path);
-  };
+    setIsOpen(false)
+    navigate(path)
+  }
 
   const cycleTheme = () => {
-    const themes: ('light' | 'dark' | 'system')[] = ['light', 'dark', 'system'];
-    const currentIndex = themes.indexOf(theme);
-    const nextIndex = (currentIndex + 1) % themes.length;
-    setTheme(themes[nextIndex]);
-  };
+    const themes: ('light' | 'dark' | 'system')[] = ['light', 'dark', 'system']
+    const currentIndex = themes.indexOf(theme)
+    const nextIndex = (currentIndex + 1) % themes.length
+    setTheme(themes[nextIndex])
+  }
 
-  const getThemeIcon = () => {
-    if (theme === 'dark') return Moon;
-    if (theme === 'light') return Sun;
-    return Monitor;
-  };
-
-  const ThemeIcon = getThemeIcon();
+  // Get theme icon based on current theme
+  const ThemeIcon = theme === 'dark' ? Moon : theme === 'light' ? Sun : Monitor
 
   return (
     <div ref={dropdownRef} className={`relative ${className}`}>
@@ -140,7 +139,12 @@ export function UserDropdown({ className = '' }: UserDropdownProps) {
       {isOpen && (
         <div className="absolute right-0 top-full mt-2 w-72 bg-genesis-surface rounded-2xl shadow-xl border border-genesis-border-subtle overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
           {/* User Info Header */}
-          <div className="p-4 border-b border-genesis-border-subtle" style={{ background: 'linear-gradient(to bottom right, rgba(15, 118, 110, 0.05), transparent)' }}>
+          <div
+            className="p-4 border-b border-genesis-border-subtle"
+            style={{
+              background: 'linear-gradient(to bottom right, rgba(15, 118, 110, 0.05), transparent)',
+            }}
+          >
             <div className="flex items-center gap-3">
               {user?.photoURL ? (
                 <img
@@ -271,7 +275,7 @@ export function UserDropdown({ className = '' }: UserDropdownProps) {
         </div>
       )}
     </div>
-  );
+  )
 }
 
-export default UserDropdown;
+export default UserDropdown
