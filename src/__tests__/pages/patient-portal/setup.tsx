@@ -72,6 +72,22 @@ export const mockTransactions = [
 
 // Module-level mocks (these are hoisted automatically by vitest)
 
+// Mock ClinicContext
+vi.mock('../../../contexts/ClinicContext', () => ({
+  useClinicContext: vi.fn(() => ({
+    clinic: {
+      id: 'clinic-123',
+      name: 'Clínica Genesis Demo',
+      settings: {
+        workingHours: { startHour: 8, endHour: 18 },
+      },
+    },
+    loading: false,
+    error: null,
+  })),
+  ClinicProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 // Mock PatientAuthContext
 vi.mock('../../../contexts/PatientAuthContext', () => ({
   usePatientAuth: vi.fn(() => ({
@@ -156,6 +172,8 @@ vi.mock('../../../hooks/usePatientPortal', () => ({
     },
     loading: false,
     error: null,
+    cancelAppointment: vi.fn(),
+    rescheduleAppointment: vi.fn(),
   })),
   usePatientPortalPrescriptions: vi.fn(() => ({
     prescriptions: [

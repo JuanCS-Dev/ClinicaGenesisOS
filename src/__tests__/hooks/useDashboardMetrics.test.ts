@@ -22,6 +22,17 @@ vi.mock('../../hooks/usePatients', () => ({
   })),
 }));
 
+vi.mock('../../contexts/ClinicContext', () => ({
+  useClinicContext: vi.fn(() => ({
+    clinic: {
+      id: 'clinic-123',
+      settings: {
+        averageTicket: 350,
+      },
+    },
+  })),
+}));
+
 import { useAppointments } from '../../hooks/useAppointments';
 import { usePatients } from '../../hooks/usePatients';
 

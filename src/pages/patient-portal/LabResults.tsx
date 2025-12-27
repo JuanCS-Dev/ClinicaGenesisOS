@@ -20,9 +20,13 @@ import {
   Search,
   Filter,
   User,
+  Loader2,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { useLabResults } from '../../hooks/useLabResults'
+import { useClinicContext } from '../../contexts/ClinicContext'
 import { Skeleton } from '../../components/ui/Skeleton'
+import { downloadLabResultPDF } from '../../services/pdf-generation.service'
 import type { LabResult, LabExamType } from '@/types'
 
 // ============================================================================
@@ -101,12 +105,23 @@ interface ResultCardProps {
   result: LabResult
   onView: (result: LabResult) => void
   onDownload: (result: LabResult) => void
+  onDownloadSummary: (result: LabResult) => Promise<void>
 }
 
-const ResultCard: React.FC<ResultCardProps> = ({ result, onView, onDownload }) => {
+const ResultCard: React.FC<ResultCardProps> = ({ result, onView, onDownload, onDownloadSummary }) => {
+  const [downloading, setDownloading] = useState(false)
   const statusConfig = STATUS_CONFIG[result.status] || STATUS_CONFIG.pending
   const StatusIcon = statusConfig.icon
   const categoryLabel = EXAM_TYPE_LABELS[result.examType] || result.examType
+
+  const handleDownloadSummary = async () => {
+    setDownloading(true)
+    try {
+      await onDownloadSummary(result)
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   return (
     <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-4 hover:shadow-lg transition-all">
@@ -123,8 +138,8 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onView, onDownload }) =
       </div>
 
       <div className="flex items-center gap-3 mb-3">
-        <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
-          <FlaskConical className="w-6 h-6 text-purple-600" />
+        <div className="w-12 h-12 rounded-xl bg-clinical-soft flex items-center justify-center">
+          <FlaskConical className="w-6 h-6 text-clinical-start" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-genesis-dark truncate">{result.examName}</p>
@@ -142,19 +157,34 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onView, onDownload }) =
 
       {(result.status === 'ready' || result.status === 'viewed') && (
         <div className="flex gap-2">
-          <button
-            onClick={() => onView(result)}
-            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
-          >
-            <Eye className="w-4 h-4" />
-            Visualizar
-          </button>
-          {result.fileUrl && (
+          {result.fileUrl ? (
+            <>
+              <button
+                onClick={() => onView(result)}
+                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+              >
+                <Eye className="w-4 h-4" />
+                Visualizar
+              </button>
+              <button
+                onClick={() => onDownload(result)}
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-genesis-border text-genesis-medium text-sm font-medium hover:bg-genesis-hover hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+            </>
+          ) : (
             <button
-              onClick={() => onDownload(result)}
-              className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-genesis-border text-genesis-medium text-sm font-medium hover:bg-genesis-hover hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+              onClick={handleDownloadSummary}
+              disabled={downloading}
+              className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
             >
-              <Download className="w-4 h-4" />
+              {downloading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              {downloading ? 'Gerando...' : 'Baixar Resumo'}
             </button>
           )}
         </div>
@@ -175,8 +205,23 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onView, onDownload }) =
 
 export function PatientLabResults(): React.ReactElement {
   const { results, pendingResults, readyResults, loading, markAsViewed } = useLabResults()
+  const { clinic } = useClinicContext()
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<'all' | 'ready' | 'pending'>('all')
+
+  const handleDownloadSummary = async (result: LabResult) => {
+    try {
+      await downloadLabResultPDF(
+        result,
+        clinic?.name || 'Clinica Genesis',
+        clinic?.address
+      )
+      toast.success('PDF gerado com sucesso!')
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      toast.error('Erro ao gerar PDF. Tente novamente.')
+    }
+  }
 
   const filteredResults = useMemo(() => {
     let filtered = results
@@ -235,7 +280,7 @@ export function PatientLabResults(): React.ReactElement {
         {/* Header Skeleton */}
         <div>
           <div className="flex items-center gap-3">
-            <FlaskConical className="w-7 h-7 text-purple-600" />
+            <FlaskConical className="w-7 h-7 text-clinical-start" />
             <Skeleton className="h-8 w-40" />
           </div>
           <Skeleton className="h-4 w-48 mt-2" />
@@ -262,7 +307,7 @@ export function PatientLabResults(): React.ReactElement {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-genesis-dark flex items-center gap-3">
-          <FlaskConical className="w-7 h-7 text-purple-600" />
+          <FlaskConical className="w-7 h-7 text-clinical-start" />
           Meus Exames
         </h1>
         <p className="text-genesis-muted text-sm mt-1">
@@ -318,6 +363,7 @@ export function PatientLabResults(): React.ReactElement {
               result={result}
               onView={handleView}
               onDownload={handleDownload}
+              onDownloadSummary={handleDownloadSummary}
             />
           ))}
         </div>
@@ -332,14 +378,14 @@ export function PatientLabResults(): React.ReactElement {
       )}
 
       {/* Info Card */}
-      <div className="bg-purple-50 dark:bg-purple-900/20 rounded-2xl p-4 border border-purple-100 dark:border-purple-800">
+      <div className="bg-clinical-soft rounded-2xl p-4 border border-clinical-muted/20">
         <div className="flex gap-3">
-          <FileText className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+          <FileText className="w-5 h-5 text-clinical-start flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-purple-800 dark:text-purple-200">
+            <p className="text-sm font-medium text-genesis-dark">
               Sobre seus resultados
             </p>
-            <p className="text-sm text-purple-700 dark:text-purple-300 mt-1">
+            <p className="text-sm text-genesis-medium mt-1">
               Os resultados ficam disponíveis para download após liberação do laboratório. Consulte
               seu médico para interpretação dos valores.
             </p>

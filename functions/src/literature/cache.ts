@@ -6,6 +6,7 @@
  * TTL: 30 days (medical literature doesn't change frequently)
  */
 
+import { logger } from 'firebase-functions';
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import type { ScientificArticle, LiteratureCacheEntry } from './types.js';
 
@@ -52,7 +53,7 @@ export async function getCachedResults(
     // Cache hit
     return data.articles;
   } catch (error) {
-    console.error('[LiteratureCache] Get error:', error);
+    logger.error('[LiteratureCache] Get error:', { error });
     return null;
   }
 }
@@ -82,7 +83,7 @@ export async function setCachedResults(
     await db.collection(COLLECTION).doc(cacheKey).set(entry);
     // Articles cached successfully
   } catch (error) {
-    console.error('[LiteratureCache] Set error:', error);
+    logger.error('[LiteratureCache] Set error:', { error });
     // Non-fatal: continue without caching
   }
 }
@@ -96,7 +97,7 @@ export async function invalidateCache(cacheKey: string): Promise<void> {
     await db.collection(COLLECTION).doc(cacheKey).delete();
     // Cache invalidated
   } catch (error) {
-    console.error('[LiteratureCache] Invalidate error:', error);
+    logger.error('[LiteratureCache] Invalidate error:', { error });
   }
 }
 

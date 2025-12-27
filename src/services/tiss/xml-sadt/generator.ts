@@ -14,7 +14,7 @@ import {
   formatDate,
   padString,
   xmlElement,
-  generateSimpleHash,
+  generateSHA1Hash,
 } from '../xml-common';
 import {
   generateBeneficiarioXml,
@@ -28,11 +28,13 @@ import {
 /**
  * Generate TISS XML for Guia SP/SADT.
  *
+ * Generates XML conforming to TISS 4.02.00 standard with proper SHA-1 hash.
+ *
  * @param guia - Complete GuiaSADT data
  * @param options - XML generation options
- * @returns XML string
+ * @returns Promise resolving to XML string
  */
-export function generateXmlSADT(guia: GuiaSADT, options: TissXmlOptions = {}): string {
+export async function generateXmlSADT(guia: GuiaSADT, options: TissXmlOptions = {}): Promise<string> {
   const {
     includeDeclaration = true,
     prettyPrint = true,
@@ -134,9 +136,12 @@ export function generateXmlSADT(guia: GuiaSADT, options: TissXmlOptions = {}): s
   xml += `${i2}</ans:loteGuias>${newline}`;
   xml += `${indent}</ans:prestadorParaOperadora>${newline}`;
 
-  // Hash
+  // Generate SHA-1 hash of XML content (before epilogo)
+  const contentToHash = xml;
+  const hash = await generateSHA1Hash(contentToHash);
+
   xml += `${indent}<ans:epilogo>${newline}`;
-  xml += xmlElement('hash', generateSimpleHash(xml), i2);
+  xml += xmlElement('hash', hash, i2);
   xml += `${indent}</ans:epilogo>${newline}`;
 
   xml += `</ans:mensagemTISS>${newline}`;

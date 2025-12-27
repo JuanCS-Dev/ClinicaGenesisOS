@@ -3,7 +3,10 @@
  * =========================
  *
  * Type definitions for the telemedicine (teleconsultation) feature.
- * Integrates with Jitsi Meet for E2E encrypted video calls.
+ * Supports Google Meet (primary) and Jitsi Meet (legacy) for video calls.
+ *
+ * Google Meet: Uses Calendar API with conferenceDataVersion=1
+ * Jitsi Meet: Legacy support for existing sessions
  *
  * @module types/telemedicine
  */
@@ -61,8 +64,12 @@ export interface TelemedicineSession {
   professionalId: string;
   /** Professional name (denormalized) */
   professionalName: string;
-  /** Unique room name for Jitsi */
+  /** Unique room name for Jitsi (legacy) */
   roomName: string;
+  /** Google Meet link (primary) */
+  meetLink?: string;
+  /** Google Calendar event ID for Meet integration */
+  calendarEventId?: string;
   /** Current session status */
   status: TelemedicineStatus;
   /** Session participants */
@@ -126,7 +133,7 @@ export interface JitsiConfig {
 }
 
 /**
- * Default Jitsi configuration for Genesis.
+ * Default Jitsi configuration for Genesis (legacy).
  */
 export const DEFAULT_JITSI_CONFIG: JitsiConfig = {
   domain: 'meet.jit.si',
@@ -147,7 +154,43 @@ export const DEFAULT_JITSI_CONFIG: JitsiConfig = {
 };
 
 /**
- * Props for VideoRoom component.
+ * Google Meet session creation input.
+ * Used by Cloud Function to create Calendar event with Meet.
+ */
+export interface CreateMeetSessionInput {
+  /** Appointment ID for correlation */
+  appointmentId: string;
+  /** Patient display name */
+  patientName: string;
+  /** Patient email for calendar invite */
+  patientEmail: string;
+  /** Professional display name */
+  professionalName: string;
+  /** Professional email for calendar invite */
+  professionalEmail: string;
+  /** Scheduled start time (ISO 8601) */
+  scheduledAt: string;
+  /** Duration in minutes */
+  durationMinutes: number;
+  /** Clinic name for event description */
+  clinicName: string;
+}
+
+/**
+ * Google Meet session creation output.
+ * Returned by Cloud Function after creating Calendar event.
+ */
+export interface CreateMeetSessionOutput {
+  /** Google Meet link (e.g., https://meet.google.com/xxx-yyyy-zzz) */
+  meetLink: string;
+  /** Google Calendar event ID */
+  calendarEventId: string;
+  /** Meeting code (xxx-yyyy-zzz) */
+  meetingCode: string;
+}
+
+/**
+ * Props for VideoRoom component (Jitsi - legacy).
  */
 export interface VideoRoomProps {
   /** Teleconsultation session */
@@ -162,6 +205,23 @@ export interface VideoRoomProps {
   onParticipantJoin?: (participant: TelemedicineParticipant) => void;
   /** Callback when participant leaves */
   onParticipantLeave?: (participant: TelemedicineParticipant) => void;
+}
+
+/**
+ * Props for MeetRoom component (Google Meet - primary).
+ * Simplified: just opens Meet link in new tab.
+ */
+export interface MeetRoomProps {
+  /** Teleconsultation session with meetLink */
+  session: TelemedicineSession;
+  /** Display name of current user */
+  displayName: string;
+  /** Whether current user is the professional */
+  isProfessional: boolean;
+  /** Callback when user clicks to join Meet */
+  onJoinMeet: () => void;
+  /** Callback when user ends/leaves session */
+  onEndSession: () => void;
 }
 
 /**
@@ -194,6 +254,10 @@ export interface UseTelemedicineReturn {
   isInWaitingRoom: boolean;
   /** Whether user is in active call */
   isInCall: boolean;
+  /** Whether this is a Google Meet session (vs legacy Jitsi) */
+  isMeetSession: boolean;
+  /** Google Meet link if available */
+  meetLink: string | null;
   /** Start a new teleconsultation */
   startSession: (input: CreateTelemedicineSessionInput) => Promise<string>;
   /** Join waiting room for a session */
@@ -206,6 +270,8 @@ export interface UseTelemedicineReturn {
   cancelSession: (sessionId: string, reason?: string) => Promise<void>;
   /** Get session by appointment ID */
   getSessionByAppointment: (appointmentId: string) => Promise<TelemedicineSession | null>;
+  /** Open Google Meet in new tab (for Meet sessions) */
+  openMeet: () => void;
 }
 
 /**

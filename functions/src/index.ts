@@ -86,3 +86,12 @@ export {
   cleanupExpiredSessions,
   cleanupOldHandoffs,
 } from './companion/index.js'
+
+// ============================================
+// Google Calendar + Meet (Teleconsultation)
+// ============================================
+export {
+  createMeetSession,
+  cancelMeetSession,
+  updateMeetSession,
+} from './calendar/index.js'

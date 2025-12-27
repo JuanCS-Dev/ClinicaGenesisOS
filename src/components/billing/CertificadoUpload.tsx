@@ -25,7 +25,8 @@ import { toast } from 'sonner';
 import {
   type CertificadoInfo,
   getStatusDisplay,
-  mockValidateCertificate,
+  storeCertificate,
+  deleteCertificate as deleteCertificateApi,
 } from './certificate-utils';
 import { CertificateDisplay } from './CertificateDisplay';
 
@@ -33,6 +34,8 @@ import { CertificateDisplay } from './CertificateDisplay';
 export type { CertificadoInfo } from './certificate-utils';
 
 interface CertificadoUploadProps {
+  /** The clinic ID for certificate storage */
+  clinicId: string;
   /** Current certificate info (if configured) */
   certificado?: CertificadoInfo;
   /** Callback when certificate is configured */
@@ -45,6 +48,7 @@ interface CertificadoUploadProps {
  * CertificadoUpload - UI for clinic to upload their e-CNPJ.
  */
 export function CertificadoUpload({
+  clinicId,
   certificado,
   onCertificateConfigured,
   onCertificateRemoved,
@@ -109,11 +113,17 @@ export function CertificadoUpload({
       return;
     }
 
+    if (!clinicId) {
+      setError('ID da clínica não encontrado');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const certInfo = await mockValidateCertificate(file, password);
+      // Use real Cloud Function to validate and store certificate
+      const certInfo = await storeCertificate(file, password, clinicId);
       onCertificateConfigured(certInfo);
       setShowUploadForm(false);
       setFile(null);
@@ -126,17 +136,32 @@ export function CertificadoUpload({
     } finally {
       setLoading(false);
     }
-  }, [file, password, onCertificateConfigured]);
+  }, [file, password, clinicId, onCertificateConfigured]);
 
   /**
    * Handle certificate removal.
    */
-  const handleRemove = useCallback(() => {
-    onCertificateRemoved?.();
-    setConfirmRemove(false);
-    setShowUploadForm(true);
-    toast.success('Certificado removido');
-  }, [onCertificateRemoved]);
+  const handleRemove = useCallback(async () => {
+    if (!clinicId) {
+      toast.error('ID da clínica não encontrado');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Use real Cloud Function to delete certificate
+      await deleteCertificateApi(clinicId);
+      onCertificateRemoved?.();
+      setConfirmRemove(false);
+      setShowUploadForm(true);
+      toast.success('Certificado removido');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao remover certificado';
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  }, [clinicId, onCertificateRemoved]);
 
   return (
     <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle overflow-hidden">

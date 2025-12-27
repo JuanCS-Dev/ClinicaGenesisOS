@@ -8,7 +8,7 @@
  * This reduces Firestore reads by ~80% since clinic/user data rarely changes.
  * Data is refreshed after mutations (create, update) ensuring consistency.
  */
-/* eslint-disable react-refresh/only-export-components */
+ 
 
 import React, {
   createContext,

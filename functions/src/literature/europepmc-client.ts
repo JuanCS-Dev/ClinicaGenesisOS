@@ -7,6 +7,7 @@
  * @see https://europepmc.org/RestfulWebService
  */
 
+import { logger } from 'firebase-functions';
 import type { ScientificArticle, EuropePMCResponse, EuropePMCArticle } from './types.js';
 
 const EUROPEPMC_BASE_URL = 'https://www.ebi.ac.uk/europepmc/webservices/rest';
@@ -50,7 +51,7 @@ export async function searchEuropePMC(
 
     return articles;
   } catch (error) {
-    console.error('[EuropePMC] Search error:', error);
+    logger.error('[EuropePMC] Search error:', { error });
     return [];
   }
 }

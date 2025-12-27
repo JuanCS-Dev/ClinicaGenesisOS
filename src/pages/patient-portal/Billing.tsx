@@ -8,7 +8,7 @@
  * @version 2.0.0
  */
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useState, useCallback } from 'react'
 import {
   CreditCard,
   Download,
@@ -18,8 +18,10 @@ import {
   Calendar,
   FileText,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { usePatientPortalBilling } from '../../hooks/usePatientPortal'
 import { Skeleton } from '../../components/ui/Skeleton'
+import { PixPaymentModal } from '../../components/patient-portal/PixPaymentModal'
 import type { Transaction } from '@/types'
 
 // ============================================================================
@@ -89,7 +91,7 @@ function BillingSkeleton() {
       {/* Header Skeleton */}
       <div>
         <div className="flex items-center gap-3">
-          <CreditCard className="w-7 h-7 text-emerald-600" />
+          <CreditCard className="w-7 h-7 text-genesis-primary" />
           <Skeleton className="h-8 w-32" />
         </div>
         <Skeleton className="h-4 w-64 mt-2" />
@@ -137,6 +139,31 @@ function BillingSkeleton() {
 export function PatientBilling(): React.ReactElement {
   const { transactions, totalPending, loading } = usePatientPortalBilling()
 
+  // PIX payment modal state
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+
+  // Handle opening payment modal
+  const handlePayClick = useCallback((transaction: Transaction) => {
+    setSelectedTransaction(transaction)
+    setShowPaymentModal(true)
+  }, [])
+
+  // Handle payment completion
+  const handlePaymentComplete = useCallback((_transactionId: string) => {
+    // In a real implementation, this would update the transaction status via API
+    // For now, we show a success message
+    toast.success('Pagamento registrado! Aguarde a confirmacao.')
+    setShowPaymentModal(false)
+    setSelectedTransaction(null)
+  }, [])
+
+  // Handle closing payment modal
+  const handleClosePaymentModal = useCallback(() => {
+    setShowPaymentModal(false)
+    setSelectedTransaction(null)
+  }, [])
+
   // Calculate totals from real data
   const totalPaid = useMemo(() => {
     const paid = transactions.filter(t => t.status === 'paid' && t.type === 'income')
@@ -159,7 +186,7 @@ export function PatientBilling(): React.ReactElement {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-genesis-dark flex items-center gap-3">
-          <CreditCard className="w-7 h-7 text-emerald-600" />
+          <CreditCard className="w-7 h-7 text-genesis-primary" />
           Financeiro
         </h1>
         <p className="text-genesis-muted text-sm mt-1">
@@ -169,24 +196,24 @@ export function PatientBilling(): React.ReactElement {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-green-50 dark:bg-green-900/20 rounded-2xl p-6 border border-green-100 dark:border-green-800">
+        <div className="bg-success-soft rounded-2xl p-6 border border-success/20">
           <div className="flex items-center gap-3 mb-2">
-            <CheckCircle2 className="w-5 h-5 text-green-600" />
-            <span className="text-sm font-medium text-green-700 dark:text-green-300">
+            <CheckCircle2 className="w-5 h-5 text-success" />
+            <span className="text-sm font-medium text-genesis-dark">
               Total Pago
             </span>
           </div>
-          <p className="text-2xl font-bold text-green-800 dark:text-green-200">
+          <p className="text-2xl font-bold text-success">
             {formatCurrency(totalPaid)}
           </p>
         </div>
 
-        <div className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl p-6 border border-amber-100 dark:border-amber-800">
+        <div className="bg-warning-soft rounded-2xl p-6 border border-warning/20">
           <div className="flex items-center gap-3 mb-2">
-            <Clock className="w-5 h-5 text-amber-600" />
-            <span className="text-sm font-medium text-amber-700 dark:text-amber-300">Pendente</span>
+            <Clock className="w-5 h-5 text-warning" />
+            <span className="text-sm font-medium text-genesis-dark">Pendente</span>
           </div>
-          <p className="text-2xl font-bold text-amber-800 dark:text-amber-200">
+          <p className="text-2xl font-bold text-warning">
             {formatCurrency(totalPending)}
           </p>
         </div>
@@ -249,7 +276,10 @@ export function PatientBilling(): React.ReactElement {
                       </div>
 
                       {(transaction.status === 'pending' || transaction.status === 'overdue') && (
-                        <button className="px-3 py-1.5 rounded-lg bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
+                        <button
+                          onClick={() => handlePayClick(transaction)}
+                          className="px-3 py-1.5 rounded-lg bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                        >
                           Pagar
                         </button>
                       )}
@@ -267,6 +297,14 @@ export function PatientBilling(): React.ReactElement {
           </div>
         )}
       </div>
+
+      {/* PIX Payment Modal */}
+      <PixPaymentModal
+        isOpen={showPaymentModal}
+        transaction={selectedTransaction}
+        onClose={handleClosePaymentModal}
+        onPaymentComplete={handlePaymentComplete}
+      />
     </div>
   )
 }

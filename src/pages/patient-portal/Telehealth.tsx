@@ -3,9 +3,10 @@
  * ===========================
  *
  * Video consultation waiting room and join interface.
+ * Supports Google Meet (primary) and Jitsi (legacy).
  *
  * @module pages/patient-portal/Telehealth
- * @version 2.0.0
+ * @version 3.0.0
  */
 
 import React, { useState } from 'react'
@@ -20,7 +21,11 @@ import {
   Calendar,
   CheckCircle2,
   AlertCircle,
+  ExternalLink,
+  Copy,
+  Check,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { usePatientTelehealth } from '../../hooks/usePatientTelehealth'
 import { Skeleton } from '../../components/ui/Skeleton'
 import type { Appointment } from '@/types'
@@ -35,7 +40,7 @@ function TelehealthSkeleton() {
       {/* Header Skeleton */}
       <div>
         <div className="flex items-center gap-3">
-          <Video className="w-7 h-7 text-purple-600" />
+          <Video className="w-7 h-7 text-clinical-start" />
           <Skeleton className="h-8 w-40" />
         </div>
         <Skeleton className="h-4 w-64 mt-2" />
@@ -122,7 +127,10 @@ interface AppointmentInfoProps {
   appointment: Appointment
   canJoin: boolean
   minutesUntilJoin: number | null
+  meetLink: string | null
+  isMeetSession: boolean
   onJoin: () => void
+  onOpenMeet: () => void
   joining: boolean
 }
 
@@ -130,10 +138,26 @@ function AppointmentInfo({
   appointment,
   canJoin,
   minutesUntilJoin,
+  meetLink,
+  isMeetSession,
   onJoin,
+  onOpenMeet,
   joining,
 }: AppointmentInfoProps) {
+  const [copied, setCopied] = useState(false)
   const appointmentDate = new Date(appointment.date)
+
+  const handleCopyLink = async () => {
+    if (!meetLink) return
+    try {
+      await navigator.clipboard.writeText(meetLink)
+      setCopied(true)
+      toast.success('Link copiado!')
+      setTimeout(() => setCopied(false), 3000)
+    } catch {
+      toast.error('Erro ao copiar link')
+    }
+  }
 
   return (
     <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-6">
@@ -143,7 +167,7 @@ function AppointmentInfo({
         </div>
         <div>
           <p className="font-semibold text-genesis-dark">{appointment.professional}</p>
-          <p className="text-sm text-genesis-muted">{appointment.specialty || 'Médico'}</p>
+          <p className="text-sm text-genesis-muted">{appointment.specialty || 'Medico'}</p>
         </div>
       </div>
 
@@ -170,22 +194,63 @@ function AppointmentInfo({
       </div>
 
       {canJoin ? (
-        <button
-          onClick={onJoin}
-          disabled={joining}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-success text-white font-medium hover:bg-success/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
-        >
-          <Video className="w-5 h-5" />
-          {joining ? 'Entrando...' : 'Entrar na Sala'}
-        </button>
+        <div className="space-y-3">
+          {/* Main action button - Meet or legacy */}
+          {isMeetSession ? (
+            <button
+              onClick={onOpenMeet}
+              disabled={joining}
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-success text-white font-bold text-lg shadow-lg hover:bg-success/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
+            >
+              <ExternalLink className="w-6 h-6" />
+              Entrar no Google Meet
+            </button>
+          ) : (
+            <button
+              onClick={onJoin}
+              disabled={joining}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-success text-white font-medium hover:bg-success/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
+            >
+              <Video className="w-5 h-5" />
+              {joining ? 'Entrando...' : 'Entrar na Sala'}
+            </button>
+          )}
+
+          {/* Copy link option for Meet sessions */}
+          {isMeetSession && meetLink && (
+            <button
+              onClick={handleCopyLink}
+              className="w-full flex items-center justify-center gap-2 py-2 text-genesis-muted hover:text-genesis-dark transition-colors"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4 text-success" />
+                  <span className="text-success text-sm">Link copiado!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  <span className="text-sm">Copiar link do Meet</span>
+                </>
+              )}
+            </button>
+          )}
+
+          {/* Google Meet badge */}
+          {isMeetSession && (
+            <p className="text-xs text-center text-genesis-muted">
+              A consulta abrira no Google Meet
+            </p>
+          )}
+        </div>
       ) : (
         <div className="text-center">
-          <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 mb-4">
-            <AlertCircle className="w-6 h-6 text-amber-600 mx-auto mb-2" />
-            <p className="text-sm text-amber-700 dark:text-amber-300">
+          <div className="bg-warning-soft rounded-xl p-4 mb-4">
+            <AlertCircle className="w-6 h-6 text-warning mx-auto mb-2" />
+            <p className="text-sm text-genesis-medium">
               {minutesUntilJoin !== null ? (
                 <>
-                  A sala estará disponível em{' '}
+                  A sala estara disponivel em{' '}
                   <strong>
                     {minutesUntilJoin > 60
                       ? `${Math.floor(minutesUntilJoin / 60)}h ${minutesUntilJoin % 60}min`
@@ -193,7 +258,7 @@ function AppointmentInfo({
                   </strong>
                 </>
               ) : (
-                'A sala estará disponível 15 minutos antes do horário agendado.'
+                'A sala estara disponivel 15 minutos antes do horario agendado.'
               )}
             </p>
           </div>
@@ -202,7 +267,7 @@ function AppointmentInfo({
             className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-genesis-muted/30 text-genesis-muted font-medium cursor-not-allowed"
           >
             <Video className="w-5 h-5" />
-            Aguardando horário
+            Aguardando horario
           </button>
         </div>
       )}
@@ -233,8 +298,16 @@ function NoAppointment() {
 // ============================================================================
 
 export function PatientTelehealth(): React.ReactElement {
-  const { nextTeleconsulta, loading, canJoin, minutesUntilJoin, joinWaitingRoom } =
-    usePatientTelehealth()
+  const {
+    nextTeleconsulta,
+    loading,
+    canJoin,
+    minutesUntilJoin,
+    meetLink,
+    isMeetSession,
+    joinWaitingRoom,
+    openMeet,
+  } = usePatientTelehealth()
 
   const [joining, setJoining] = useState(false)
 
@@ -244,10 +317,14 @@ export function PatientTelehealth(): React.ReactElement {
       await joinWaitingRoom()
     } catch (error) {
       console.error('Error joining waiting room:', error)
-      // Could show toast here
+      toast.error('Erro ao entrar na sala')
     } finally {
       setJoining(false)
     }
+  }
+
+  const handleOpenMeet = () => {
+    openMeet()
   }
 
   if (loading) {
@@ -259,55 +336,68 @@ export function PatientTelehealth(): React.ReactElement {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-genesis-dark flex items-center gap-3">
-          <Video className="w-7 h-7 text-purple-600" />
+          <Video className="w-7 h-7 text-clinical-start" />
           Teleconsulta
         </h1>
         <p className="text-genesis-muted text-sm mt-1">
-          Sala de espera virtual para consulta online
+          {isMeetSession
+            ? 'Consulta online via Google Meet'
+            : 'Sala de espera virtual para consulta online'}
         </p>
       </div>
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Device Check */}
-        <DeviceCheck />
+        {/* Device Check - only show for non-Meet sessions or when waiting */}
+        {(!isMeetSession || !canJoin) && <DeviceCheck />}
 
-        {/* Appointment Info */}
+        {/* Meet Session Info - larger when Meet is ready */}
         {nextTeleconsulta.appointment ? (
-          <AppointmentInfo
-            appointment={nextTeleconsulta.appointment}
-            canJoin={canJoin}
-            minutesUntilJoin={minutesUntilJoin}
-            onJoin={handleJoin}
-            joining={joining}
-          />
+          <div className={isMeetSession && canJoin ? 'lg:col-span-2' : ''}>
+            <AppointmentInfo
+              appointment={nextTeleconsulta.appointment}
+              canJoin={canJoin}
+              minutesUntilJoin={minutesUntilJoin}
+              meetLink={meetLink}
+              isMeetSession={isMeetSession}
+              onJoin={handleJoin}
+              onOpenMeet={handleOpenMeet}
+              joining={joining}
+            />
+          </div>
         ) : (
           <NoAppointment />
         )}
       </div>
 
       {/* Instructions */}
-      <div className="bg-purple-50 dark:bg-purple-900/20 rounded-2xl p-6 border border-purple-100 dark:border-purple-800">
-        <h3 className="font-semibold text-purple-800 dark:text-purple-200 mb-4">
-          Preparação para a Teleconsulta
+      <div className="bg-clinical-soft rounded-2xl p-6 border border-clinical-start/20">
+        <h3 className="font-semibold text-genesis-dark mb-4">
+          Preparacao para a Teleconsulta
         </h3>
-        <ul className="space-y-2 text-sm text-purple-700 dark:text-purple-300">
+        <ul className="space-y-2 text-sm text-genesis-medium">
           <li className="flex items-start gap-2">
             <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
             <span>Escolha um local silencioso e bem iluminado</span>
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
-            <span>Verifique sua conexão com a internet</span>
+            <span>Verifique sua conexao com a internet</span>
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
-            <span>Tenha seus documentos e exames em mãos</span>
+            <span>Tenha seus documentos e exames em maos</span>
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
-            <span>Use fones de ouvido para melhor qualidade de áudio</span>
+            <span>Use fones de ouvido para melhor qualidade de audio</span>
           </li>
+          {isMeetSession && (
+            <li className="flex items-start gap-2">
+              <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-success" />
+              <span>O Meet abrira em nova aba - permita camera e microfone</span>
+            </li>
+          )}
         </ul>
       </div>
     </div>

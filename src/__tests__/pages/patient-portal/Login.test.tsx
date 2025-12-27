@@ -49,9 +49,10 @@ describe('PatientLogin', () => {
       expect(screen.getByText(/Portal do Paciente/i)).toBeInTheDocument();
     });
 
-    it('should render clinic name', () => {
+    it('should render demo mode notice', () => {
       renderLogin();
-      expect(screen.getByText(/Clínica Genesis/i)).toBeInTheDocument();
+      // In demo mode, shows demo banner instead of clinic name
+      expect(screen.getByText(/Modo demonstração/i)).toBeInTheDocument();
     });
   });
 

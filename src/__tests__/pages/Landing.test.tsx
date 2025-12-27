@@ -45,23 +45,24 @@ describe('Landing', () => {
 
     it('renders hero headline', () => {
       renderLanding();
-      expect(screen.getByText(/Médicos querem cuidar de pacientes/i)).toBeInTheDocument();
+      expect(screen.getByText(/Mesmo preço dos concorrentes/i)).toBeInTheDocument();
+      expect(screen.getByText(/10x mais tecnologia/i)).toBeInTheDocument();
     });
 
     it('renders hero subtext', () => {
       renderLanding();
-      expect(screen.getByText(/Elimine 40% da burocracia/i)).toBeInTheDocument();
+      expect(screen.getByText(/AI Scribe transcreve consultas/i)).toBeInTheDocument();
     });
 
     it('renders platform badge', () => {
       renderLanding();
-      expect(screen.getByText(/plataforma de gestão clínica mais inteligente/i)).toBeInTheDocument();
+      expect(screen.getByText(/O único software médico com IA de verdade/i)).toBeInTheDocument();
     });
 
     it('renders CTA buttons', () => {
       renderLanding();
-      // Multiple "Começar Agora" buttons exist (hero + pricing)
-      expect(screen.getAllByRole('button', { name: /Começar Agora/i }).length).toBeGreaterThan(0);
+      // Multiple "Começar" buttons exist
+      expect(screen.getAllByRole('button', { name: /Começar/i }).length).toBeGreaterThan(0);
       expect(screen.getByRole('button', { name: /Ver Demo Médico/i })).toBeInTheDocument();
     });
 
@@ -73,33 +74,33 @@ describe('Landing', () => {
   });
 
   describe('metrics section', () => {
-    it('renders engineering metrics', () => {
+    it('renders engineering metrics heading', () => {
       renderLanding();
       expect(screen.getByText('Engenharia de Verdade')).toBeInTheDocument();
     });
 
-    it('renders code lines metric', () => {
+    it('renders hours saved metric', () => {
       renderLanding();
-      expect(screen.getByText('50k+')).toBeInTheDocument();
-      expect(screen.getByText('Linhas de Código')).toBeInTheDocument();
+      expect(screen.getByText('40h')).toBeInTheDocument();
+      expect(screen.getByText('Horas economizadas/mês')).toBeInTheDocument();
     });
 
     it('renders test count metric', () => {
       renderLanding();
-      expect(screen.getByText('1.028')).toBeInTheDocument();
+      expect(screen.getByText('2.636')).toBeInTheDocument();
       expect(screen.getByText('Testes Automatizados')).toBeInTheDocument();
-    });
-
-    it('renders coverage metric', () => {
-      renderLanding();
-      expect(screen.getByText('91%')).toBeInTheDocument();
-      expect(screen.getByText('Cobertura de Código')).toBeInTheDocument();
     });
 
     it('renders uptime metric', () => {
       renderLanding();
       expect(screen.getByText('99.9%')).toBeInTheDocument();
       expect(screen.getByText('Uptime Garantido')).toBeInTheDocument();
+    });
+
+    it('renders bureaucracy reduction metric', () => {
+      renderLanding();
+      expect(screen.getByText('-40%')).toBeInTheDocument();
+      expect(screen.getByText('Menos tempo em burocracia')).toBeInTheDocument();
     });
   });
 
@@ -136,13 +137,20 @@ describe('Landing', () => {
     it('renders AI Scribe feature', () => {
       renderLanding();
       expect(screen.getByText('AI Scribe')).toBeInTheDocument();
-      expect(screen.getByText(/Transcrição automática de consultas/i)).toBeInTheDocument();
+      expect(screen.getByText(/Economize 15 minutos por consulta/i)).toBeInTheDocument();
     });
 
-    it('renders Diagnóstico Assistido feature', () => {
+    it('renders Diagnóstico Multi-LLM feature', () => {
       renderLanding();
-      expect(screen.getByText('Diagnóstico Assistido')).toBeInTheDocument();
-      expect(screen.getByText(/Consenso Multi-LLM/i)).toBeInTheDocument();
+      // Appears in features and comparison sections
+      expect(screen.getAllByText('Diagnóstico Multi-LLM').length).toBeGreaterThan(0);
+      expect(screen.getByText(/3 IAs.*analisam o caso/i)).toBeInTheDocument();
+    });
+
+    it('renders Análise de Exames feature', () => {
+      renderLanding();
+      // Appears in features and comparison sections
+      expect(screen.getAllByText('Análise de Exames com IA').length).toBeGreaterThan(0);
     });
 
     it('renders TISS feature', () => {
@@ -153,6 +161,12 @@ describe('Landing', () => {
     it('renders Telemedicina feature', () => {
       renderLanding();
       expect(screen.getByText('Telemedicina E2E')).toBeInTheDocument();
+    });
+
+    it('renders Portal do Paciente feature', () => {
+      renderLanding();
+      // Portal appears in features and pricing sections
+      expect(screen.getAllByText('Portal do Paciente').length).toBeGreaterThan(0);
     });
 
     it('renders compliance badges', () => {
@@ -167,46 +181,50 @@ describe('Landing', () => {
   describe('comparison section', () => {
     it('renders comparison headline', () => {
       renderLanding();
-      expect(screen.getByText('Por que migrar para o Genesis?')).toBeInTheDocument();
+      expect(screen.getByText(/Mesmo preço. Tecnologia incomparável/i)).toBeInTheDocument();
     });
 
     it('renders competitor names in table', () => {
       renderLanding();
       expect(screen.getByText('Genesis')).toBeInTheDocument();
       expect(screen.getByText('iClinic')).toBeInTheDocument();
-      expect(screen.getByText('Doctoralia')).toBeInTheDocument();
+      expect(screen.getByText('Amplimed')).toBeInTheDocument();
+      expect(screen.getByText('Feegow')).toBeInTheDocument();
     });
 
     it('renders comparison features', () => {
       renderLanding();
-      expect(screen.getByText('IA Diagnóstico (Multi-LLM)')).toBeInTheDocument();
-      expect(screen.getByText('AI Scribe (Transcrição)')).toBeInTheDocument();
+      // Both Diagnóstico Multi-LLM in feature and comparison sections
+      expect(screen.getAllByText(/Diagnóstico Multi-LLM/i).length).toBeGreaterThan(0);
+      // AI Scribe comparison row
+      expect(screen.getByText(/AI Scribe \(Áudio → SOAP\)/i)).toBeInTheDocument();
     });
   });
 
   describe('pricing section', () => {
     it('renders pricing headline', () => {
       renderLanding();
-      expect(screen.getByText('Preço justo, sem surpresas')).toBeInTheDocument();
+      expect(screen.getByText(/Preço justo. IA inclusa/i)).toBeInTheDocument();
     });
 
     it('renders Starter plan', () => {
       renderLanding();
       expect(screen.getByText('Starter')).toBeInTheDocument();
-      expect(screen.getByText('R$ 199')).toBeInTheDocument();
+      expect(screen.getByText('R$149')).toBeInTheDocument();
     });
 
-    it('renders Professional plan', () => {
+    it('renders Pro plan', () => {
       renderLanding();
-      expect(screen.getByText('Professional')).toBeInTheDocument();
-      expect(screen.getByText('R$ 399')).toBeInTheDocument();
+      expect(screen.getByText('Pro')).toBeInTheDocument();
+      // R$299 appears multiple times (hero and pricing)
+      expect(screen.getAllByText('R$299').length).toBeGreaterThan(0);
       expect(screen.getByText('Mais Popular')).toBeInTheDocument();
     });
 
-    it('renders Clinic plan', () => {
+    it('renders Business plan', () => {
       renderLanding();
-      expect(screen.getByText('Clinic')).toBeInTheDocument();
-      expect(screen.getByText('R$ 799')).toBeInTheDocument();
+      expect(screen.getByText('Business')).toBeInTheDocument();
+      expect(screen.getByText('R$449')).toBeInTheDocument();
     });
   });
 
@@ -256,11 +274,11 @@ describe('Landing', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/portal/login');
     });
 
-    it('navigates to apply from pricing buttons', () => {
+    it('navigates to apply from pricing trial buttons', () => {
       renderLanding();
-      // Find "Escolher Professional" button
-      const professionalButton = screen.getByRole('button', { name: /Escolher Professional/i });
-      fireEvent.click(professionalButton);
+      // Find "Começar Trial Grátis" buttons
+      const trialButtons = screen.getAllByRole('button', { name: /Começar Trial Grátis/i });
+      fireEvent.click(trialButtons[0]);
       expect(mockNavigate).toHaveBeenCalledWith('/apply');
     });
 

@@ -296,7 +296,9 @@ describe('PatientMessages', () => {
       fireEvent.click(sendButton!);
 
       await waitFor(() => {
-        expect(mockSendMessage).toHaveBeenCalledWith('Hello doctor');
+        // sendMessage may take additional optional parameters
+        expect(mockSendMessage).toHaveBeenCalled();
+        expect(mockSendMessage.mock.calls[0][0]).toBe('Hello doctor');
       });
     });
 
@@ -320,7 +322,9 @@ describe('PatientMessages', () => {
       fireEvent.keyPress(input, { key: 'Enter', code: 'Enter', charCode: 13 });
 
       await waitFor(() => {
-        expect(mockSendMessage).toHaveBeenCalledWith('Enter message');
+        // sendMessage may take additional optional parameters
+        expect(mockSendMessage).toHaveBeenCalled();
+        expect(mockSendMessage.mock.calls[0][0]).toBe('Enter message');
       });
     });
 

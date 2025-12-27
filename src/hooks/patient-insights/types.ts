@@ -39,6 +39,8 @@ export interface NPSData {
   totalResponses: number
   trend: 'up' | 'down' | 'stable'
   recentFeedback: NPSFeedback[]
+  /** Whether this data is example/placeholder (no real survey data) */
+  isExample?: boolean
 }
 
 /**
@@ -76,6 +78,8 @@ export interface EngagementMetrics {
   averageResponseTime: number
   communicationChannels: ChannelUsage[]
   byTimeOfDay: TimeOfDayStats[]
+  /** Whether some metrics are example/placeholder (no real portal data) */
+  isExample?: boolean
 }
 
 /**

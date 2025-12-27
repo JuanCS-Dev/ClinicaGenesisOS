@@ -12,6 +12,7 @@
  */
 
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
+import { logger } from 'firebase-functions';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { getVertexAIClient, isFeatureEnabled } from '../utils/config.js';
 import { detectAllPatterns, PatternContext } from './correlations/index.js';
@@ -59,7 +60,7 @@ export const analyzeLabResults = onDocumentCreated(
   async (event) => {
     const snapshot = event.data;
     if (!snapshot) {
-      console.error('No data in event');
+      logger.error('No data in event');
       return;
     }
 
@@ -178,7 +179,7 @@ export const analyzeLabResults = onDocumentCreated(
           validated,
         });
 
-      console.warn(`Lab analysis ${sessionId} completed in ${processingTimeMs}ms`);
+      logger.info(`Lab analysis ${sessionId} completed in ${processingTimeMs}ms`);
 
       // Step 8: Search for scientific literature backing (async, non-blocking)
       // Only for medium/high complexity diagnoses (confidence < 95%)
@@ -187,10 +188,10 @@ export const analyzeLabResults = onDocumentCreated(
         differentialDiagnosis,
         specialty
       ).catch((err) => {
-        console.warn(`[LiteratureBacking] Non-fatal error: ${err.message}`);
+        logger.warn(`[LiteratureBacking] Non-fatal error: ${err.message}`);
       });
     } catch (error) {
-      console.error(`Error analyzing lab results ${sessionId}:`, error);
+      logger.error(`Error analyzing lab results ${sessionId}:`, { error });
 
       await sessionRef.update({
         status: 'error',

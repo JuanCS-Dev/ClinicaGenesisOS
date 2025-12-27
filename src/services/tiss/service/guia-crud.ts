@@ -70,7 +70,7 @@ export async function createGuiaConsulta(
   }
 
   // Generate XML
-  const xmlContent = generateXmlConsulta(guia);
+  const xmlContent = await generateXmlConsulta(guia);
 
   // Save to Firestore
   const guiaDoc: Omit<GuiaFirestore, 'id'> = {
@@ -145,7 +145,7 @@ export async function createGuiaSADT(
   }
 
   // Generate XML
-  const xmlContent = generateXmlSADT(guia);
+  const xmlContent = await generateXmlSADT(guia);
 
   // Save to Firestore
   const guiaDoc: Omit<GuiaFirestore, 'id'> = {

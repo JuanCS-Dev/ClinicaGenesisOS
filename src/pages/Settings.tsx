@@ -220,7 +220,8 @@ export function Settings(): React.ReactElement {
         {activeTab === 'convenios' && (
           <div className="animate-in fade-in zoom-in-95">
             <ConvenioSettings
-              cnes={clinic?.cnpj ? undefined : undefined}
+              clinicId={clinic?.id || ''}
+              cnes={clinic?.cnes}
               cnpj={clinic?.cnpj}
             />
           </div>

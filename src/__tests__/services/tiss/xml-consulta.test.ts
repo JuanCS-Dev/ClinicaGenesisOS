@@ -43,8 +43,8 @@ const validGuiaConsulta: GuiaConsulta = {
 
 describe('XML Consulta Generator', () => {
   describe('generateXmlConsulta', () => {
-    it('generates valid XML structure', () => {
-      const xml = generateXmlConsulta(validGuiaConsulta);
+    it('generates valid XML structure', async () => {
+      const xml = await generateXmlConsulta(validGuiaConsulta);
 
       expect(xml).toContain('<?xml version="1.0" encoding="UTF-8"?>');
       expect(xml).toContain('mensagemTISS');
@@ -53,64 +53,64 @@ describe('XML Consulta Generator', () => {
       expect(xml).toContain('ans:epilogo');
     });
 
-    it('includes registro ANS', () => {
-      const xml = generateXmlConsulta(validGuiaConsulta);
+    it('includes registro ANS', async () => {
+      const xml = await generateXmlConsulta(validGuiaConsulta);
       expect(xml).toContain('<ans:registroANS>123456</ans:registroANS>');
     });
 
-    it('includes numero guia prestador', () => {
-      const xml = generateXmlConsulta(validGuiaConsulta);
+    it('includes numero guia prestador', async () => {
+      const xml = await generateXmlConsulta(validGuiaConsulta);
       expect(xml).toContain('<ans:numeroGuiaPrestador>TEST-001</ans:numeroGuiaPrestador>');
     });
 
-    it('includes beneficiario data', () => {
-      const xml = generateXmlConsulta(validGuiaConsulta);
+    it('includes beneficiario data', async () => {
+      const xml = await generateXmlConsulta(validGuiaConsulta);
       expect(xml).toContain('<ans:dadosBeneficiario>');
       expect(xml).toContain('<ans:numeroCarteira>12345678901234567</ans:numeroCarteira>');
       expect(xml).toContain('<ans:nomeBeneficiario>Maria Silva</ans:nomeBeneficiario>');
     });
 
-    it('includes procedimento data', () => {
-      const xml = generateXmlConsulta(validGuiaConsulta);
+    it('includes procedimento data', async () => {
+      const xml = await generateXmlConsulta(validGuiaConsulta);
       expect(xml).toContain('<ans:codigoProcedimento>0010101012</ans:codigoProcedimento>');
       expect(xml).toContain('<ans:valorProcedimento>150.00</ans:valorProcedimento>');
     });
 
-    it('includes tipo consulta', () => {
-      const xml = generateXmlConsulta(validGuiaConsulta);
+    it('includes tipo consulta', async () => {
+      const xml = await generateXmlConsulta(validGuiaConsulta);
       expect(xml).toContain('<ans:tipoConsulta>1</ans:tipoConsulta>');
     });
 
-    it('includes indicacao clinica when provided', () => {
-      const xml = generateXmlConsulta(validGuiaConsulta);
+    it('includes indicacao clinica when provided', async () => {
+      const xml = await generateXmlConsulta(validGuiaConsulta);
       expect(xml).toContain('<ans:indicacaoClinica>Avaliação clínica geral</ans:indicacaoClinica>');
     });
 
-    it('includes hash in epilogo', () => {
-      const xml = generateXmlConsulta(validGuiaConsulta);
+    it('includes hash in epilogo', async () => {
+      const xml = await generateXmlConsulta(validGuiaConsulta);
       expect(xml).toMatch(/<ans:hash>[A-F0-9]+<\/ans:hash>/);
     });
 
-    it('includes TISS version', () => {
-      const xml = generateXmlConsulta(validGuiaConsulta);
+    it('includes TISS version', async () => {
+      const xml = await generateXmlConsulta(validGuiaConsulta);
       expect(xml).toContain('<ans:versaoPadrao>4.02.00</ans:versaoPadrao>');
     });
 
-    it('respects includeDeclaration option', () => {
-      const withDecl = generateXmlConsulta(validGuiaConsulta, { includeDeclaration: true });
-      const withoutDecl = generateXmlConsulta(validGuiaConsulta, { includeDeclaration: false });
+    it('respects includeDeclaration option', async () => {
+      const withDecl = await generateXmlConsulta(validGuiaConsulta, { includeDeclaration: true });
+      const withoutDecl = await generateXmlConsulta(validGuiaConsulta, { includeDeclaration: false });
 
       expect(withDecl).toContain('<?xml version');
       expect(withoutDecl).not.toContain('<?xml version');
     });
 
-    it('escapes special XML characters', () => {
+    it('escapes special XML characters', async () => {
       const guiaWithSpecialChars: GuiaConsulta = {
         ...validGuiaConsulta,
         observacao: 'Test with <special> & "chars"',
       };
 
-      const xml = generateXmlConsulta(guiaWithSpecialChars);
+      const xml = await generateXmlConsulta(guiaWithSpecialChars);
       expect(xml).toContain('&lt;special&gt;');
       expect(xml).toContain('&amp;');
       expect(xml).toContain('&quot;chars&quot;');

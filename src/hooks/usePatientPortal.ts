@@ -9,12 +9,13 @@
  * @version 1.0.0
  */
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { usePatientPortal } from '../contexts/PatientPortalContext'
 import { appointmentService } from '../services/firestore/appointment.service'
 import { prescriptionService } from '../services/firestore/prescription.service'
 import { transactionService } from '../services/firestore/transaction.service'
 import type { Appointment, Prescription, Transaction } from '@/types'
+import { Status } from '@/types'
 
 // ============================================================================
 // Types
@@ -33,6 +34,10 @@ export interface UsePatientPortalAppointmentsReturn {
   loading: boolean
   /** Error state */
   error: Error | null
+  /** Cancel an appointment */
+  cancelAppointment: (appointmentId: string) => Promise<void>
+  /** Reschedule an appointment to a new date/time */
+  rescheduleAppointment: (appointmentId: string, newDate: string) => Promise<void>
 }
 
 export interface UsePatientPortalPrescriptionsReturn {
@@ -144,6 +149,26 @@ export function usePatientPortalAppointments(): UsePatientPortalAppointmentsRetu
 
   const effectiveLoading = clinicId && patientId ? !hasReceived : false
 
+  const cancelAppointment = useCallback(
+    async (appointmentId: string): Promise<void> => {
+      if (!clinicId) {
+        throw new Error('Clinic ID not available')
+      }
+      await appointmentService.updateStatus(clinicId, appointmentId, Status.CANCELED)
+    },
+    [clinicId]
+  )
+
+  const rescheduleAppointment = useCallback(
+    async (appointmentId: string, newDate: string): Promise<void> => {
+      if (!clinicId) {
+        throw new Error('Clinic ID not available')
+      }
+      await appointmentService.update(clinicId, appointmentId, { date: newDate })
+    },
+    [clinicId]
+  )
+
   return {
     appointments,
     upcomingAppointments,
@@ -151,6 +176,8 @@ export function usePatientPortalAppointments(): UsePatientPortalAppointmentsRetu
     nextAppointment,
     loading: contextLoading || effectiveLoading,
     error,
+    cancelAppointment,
+    rescheduleAppointment,
   }
 }
 

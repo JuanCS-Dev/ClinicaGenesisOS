@@ -79,9 +79,27 @@ export function xmlElement(
 }
 
 /**
- * Generate a simple hash for the XML content.
+ * Generate SHA-1 hash for TISS XML content.
+ *
+ * Uses Web Crypto API for proper SHA-1 hash generation
+ * as required by ANS TISS 4.02.00 specification.
+ *
+ * @param content - The XML content to hash (excluding epilogo)
+ * @returns Promise resolving to SHA-1 hash as uppercase hex string (40 characters)
+ */
+export async function generateSHA1Hash(content: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(content);
+  const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+
+/**
+ * @deprecated Use generateSHA1Hash instead
  */
 export function generateSimpleHash(content: string): string {
+  console.warn('generateSimpleHash is deprecated. Use generateSHA1Hash instead.');
   let hash = 0;
   for (let i = 0; i < content.length; i++) {
     const char = content.charCodeAt(i);

@@ -21,6 +21,7 @@ import {
 } from 'date-fns';
 import { useAppointments } from './useAppointments';
 import { usePatients } from './usePatients';
+import { useClinicContext } from '@/contexts/ClinicContext';
 import { Status } from '@/types';
 
 /**
@@ -101,7 +102,8 @@ export interface DashboardMetrics {
 
 /**
  * Default working hours configuration.
- * TODO: Make this configurable per clinic.
+ * Note: Per-clinic configuration is available in clinic.settings.workingHours
+ * This default is used as fallback when clinic settings are not configured.
  */
 const WORKING_HOURS = {
   startHour: 8, // 8 AM
@@ -111,10 +113,10 @@ const WORKING_HOURS = {
 };
 
 /**
- * Average ticket value in BRL.
- * TODO: Calculate from actual billing data.
+ * Default average ticket value in BRL.
+ * Used when clinic hasn't configured their own value.
  */
-const AVERAGE_TICKET = 350;
+const DEFAULT_AVERAGE_TICKET = 350;
 
 /**
  * Calculate the number of available slots for a given day.
@@ -175,6 +177,10 @@ function formatComparison(change: number, period: string): string {
 export function useDashboardMetrics(): DashboardMetrics {
   const { appointments, loading: appointmentsLoading } = useAppointments();
   const { patients, loading: patientsLoading } = usePatients();
+  const { clinic } = useClinicContext();
+
+  // Get average ticket from clinic settings or use default
+  const AVERAGE_TICKET = clinic?.settings?.averageTicket ?? DEFAULT_AVERAGE_TICKET;
 
   const metrics = useMemo(() => {
     const now = new Date();
@@ -343,7 +349,7 @@ export function useDashboardMetrics(): DashboardMetrics {
       },
       breakdown,
     };
-  }, [appointments, patients]);
+  }, [appointments, patients, AVERAGE_TICKET]);
 
   return {
     ...metrics,

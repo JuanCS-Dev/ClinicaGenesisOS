@@ -25,7 +25,7 @@ function HistorySkeleton() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <FileText className="w-7 h-7 text-blue-600" />
+            <FileText className="w-7 h-7 text-genesis-primary" />
             <Skeleton className="h-8 w-32" />
           </div>
           <Skeleton className="h-4 w-64 mt-2" />
@@ -73,11 +73,11 @@ const HistoryRecord: React.FC<HistoryRecordProps> = ({ appointment, isLast }) =>
     <div className="relative pl-8 before:absolute before:left-3 before:top-0 before:bottom-0 before:w-px before:bg-genesis-border">
       {/* Timeline Dot */}
       <div className="absolute left-0 top-4 w-6 h-6 rounded-full bg-genesis-primary flex items-center justify-center">
-        <div className="w-2 h-2 rounded-full bg-white" />
+        <div className="w-2 h-2 rounded-full bg-genesis-surface" />
       </div>
 
       {/* Card */}
-      <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-4 hover:shadow-lg transition-all">
+      <div className="group bg-genesis-surface rounded-2xl border border-genesis-border-subtle hover:border-genesis-primary/30 p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -153,7 +153,7 @@ export function PatientHistory(): React.ReactElement {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-genesis-dark flex items-center gap-3">
-            <FileText className="w-7 h-7 text-blue-600" />
+            <FileText className="w-7 h-7 text-genesis-primary" />
             Meu Histórico
           </h1>
           <p className="text-genesis-muted text-sm mt-1">

@@ -11,6 +11,7 @@
  * Updated in Fase 3.3.8 to support Multi-LLM Consensus (Gemini + GPT-4o-mini)
  */
 
+import { logger } from 'firebase-functions';
 import { getVertexAIClient } from '../utils/config.js';
 import {
   TRIAGE_SYSTEM_PROMPT,
@@ -270,7 +271,7 @@ FORMATO DE SAÍDA (JSON):
         investigates: t.investigates,
       }));
     } catch (parseError) {
-      console.error('[FusionLayer] Failed to parse Gemini response:', parseError);
+      logger.error('[FusionLayer] Failed to parse Gemini response:', { parseError });
     }
   }
 
@@ -321,7 +322,7 @@ FORMATO DE SAÍDA (JSON):
       },
     };
 
-    console.warn(
+    logger.info(
       `[FusionLayer] Multi-LLM consensus: ${consensusMetrics.strongConsensusRate}% strong, ` +
       `${consensusMetrics.divergentCount} divergent`
     );
@@ -334,7 +335,7 @@ FORMATO DE SAÍDA (JSON):
       modelTimings: { gemini: geminiTimeMs },
     };
 
-    console.warn('[FusionLayer] Single model fallback (GPT-4o unavailable)');
+    logger.warn('[FusionLayer] Single model fallback (GPT-4o unavailable)');
   }
 
   return {

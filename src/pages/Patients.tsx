@@ -45,6 +45,7 @@ export function Patients() {
   }, [patients, searchTerm]);
 
   // TanStack Virtual - only renders visible rows for 60 FPS scrolling
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual is designed this way
   const rowVirtualizer = useVirtualizer({
     count: filteredPatients.length,
     getScrollElement: () => parentRef.current,

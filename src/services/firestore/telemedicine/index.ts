@@ -3,6 +3,7 @@
  *
  * Handles CRUD operations for teleconsultation sessions in Firestore.
  * Sessions are stored as subcollections under clinics for multi-tenancy.
+ * Supports Google Meet (primary) and Jitsi Meet (legacy).
  *
  * Collection: /clinics/{clinicId}/teleconsultations/{sessionId}
  * Logs: /clinics/{clinicId}/teleconsultations/{sessionId}/logs/{logId}
@@ -28,6 +29,11 @@ import {
   addNotes,
   reportTechnicalIssue,
   addLog,
+  // Google Meet functions
+  createWithMeet,
+  setMeetLink,
+  cancelWithMeet,
+  type CreateWithMeetInput,
 } from './mutations';
 
 import { subscribe, subscribeActive } from './subscriptions';
@@ -43,7 +49,7 @@ export const telemedicineService = {
   getActiveByPatient,
   getLogs,
 
-  // Mutation operations
+  // Mutation operations (legacy Jitsi)
   create,
   updateStatus,
   addParticipant,
@@ -52,6 +58,11 @@ export const telemedicineService = {
   addNotes,
   reportTechnicalIssue,
   addLog,
+
+  // Google Meet operations (primary)
+  createWithMeet,
+  setMeetLink,
+  cancelWithMeet,
 
   // Subscription operations
   subscribe,
@@ -66,7 +77,7 @@ export {
   getByAppointment,
   getActiveByPatient,
   getLogs,
-  // Mutations
+  // Mutations (legacy Jitsi)
   create,
   updateStatus,
   addParticipant,
@@ -75,6 +86,11 @@ export {
   addNotes,
   reportTechnicalIssue,
   addLog,
+  // Google Meet operations (primary)
+  createWithMeet,
+  setMeetLink,
+  cancelWithMeet,
+  type CreateWithMeetInput,
   // Subscriptions
   subscribe,
   subscribeActive,

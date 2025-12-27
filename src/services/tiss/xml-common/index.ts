@@ -15,5 +15,6 @@ export {
   formatCurrency,
   padString,
   xmlElement,
+  generateSHA1Hash,
   generateSimpleHash,
 } from './helpers';

@@ -15,6 +15,7 @@ import {
   CACHE_SIZE_UNLIMITED,
 } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
+import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -51,3 +52,20 @@ export const db = initializeFirestore(app, {
 })
 
 export const storage = getStorage(app)
+
+/**
+ * Firebase Analytics (initialized only in production if supported).
+ * Used for tracking demo access and web vitals.
+ */
+let analytics: Analytics | null = null
+
+// Initialize analytics only in browser environment and if supported
+if (typeof window !== 'undefined') {
+  isSupported().then(supported => {
+    if (supported) {
+      analytics = getAnalytics(app)
+    }
+  })
+}
+
+export { analytics }

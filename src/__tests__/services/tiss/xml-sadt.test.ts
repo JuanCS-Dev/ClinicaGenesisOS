@@ -77,8 +77,8 @@ const validGuiaSADT: GuiaSADT = {
 
 describe('XML SADT Generator', () => {
   describe('generateXmlSADT', () => {
-    it('generates valid XML structure', () => {
-      const xml = generateXmlSADT(validGuiaSADT);
+    it('generates valid XML structure', async () => {
+      const xml = await generateXmlSADT(validGuiaSADT);
 
       expect(xml).toContain('<?xml version="1.0" encoding="UTF-8"?>');
       expect(xml).toContain('mensagemTISS');
@@ -87,87 +87,87 @@ describe('XML SADT Generator', () => {
       expect(xml).toContain('ans:epilogo');
     });
 
-    it('includes registro ANS', () => {
-      const xml = generateXmlSADT(validGuiaSADT);
+    it('includes registro ANS', async () => {
+      const xml = await generateXmlSADT(validGuiaSADT);
       expect(xml).toContain('<ans:registroANS>123456</ans:registroANS>');
     });
 
-    it('includes numero guia prestador', () => {
-      const xml = generateXmlSADT(validGuiaSADT);
+    it('includes numero guia prestador', async () => {
+      const xml = await generateXmlSADT(validGuiaSADT);
       expect(xml).toContain('<ans:numeroGuiaPrestador>TEST-SADT-001</ans:numeroGuiaPrestador>');
     });
 
-    it('includes beneficiario data', () => {
-      const xml = generateXmlSADT(validGuiaSADT);
+    it('includes beneficiario data', async () => {
+      const xml = await generateXmlSADT(validGuiaSADT);
       expect(xml).toContain('<ans:dadosBeneficiario>');
       expect(xml).toContain('<ans:numeroCarteira>12345678901234567</ans:numeroCarteira>');
       expect(xml).toContain('<ans:nomeBeneficiario>João Silva</ans:nomeBeneficiario>');
     });
 
-    it('includes solicitante data', () => {
-      const xml = generateXmlSADT(validGuiaSADT);
+    it('includes solicitante data', async () => {
+      const xml = await generateXmlSADT(validGuiaSADT);
       expect(xml).toContain('<ans:dadosSolicitante>');
       expect(xml).toContain('<ans:contratadoSolicitante>');
       expect(xml).toContain('<ans:profissionalSolicitante>');
     });
 
-    it('includes executante data', () => {
-      const xml = generateXmlSADT(validGuiaSADT);
+    it('includes executante data', async () => {
+      const xml = await generateXmlSADT(validGuiaSADT);
       expect(xml).toContain('<ans:dadosExecutante>');
       expect(xml).toContain('<ans:contratadoExecutante>');
       expect(xml).toContain('<ans:profissionalExecutante>');
     });
 
-    it('includes procedimentos realizados', () => {
-      const xml = generateXmlSADT(validGuiaSADT);
+    it('includes procedimentos realizados', async () => {
+      const xml = await generateXmlSADT(validGuiaSADT);
       expect(xml).toContain('<ans:procedimentosRealizados>');
       expect(xml).toContain('<ans:codigoProcedimento>0040301117</ans:codigoProcedimento>');
       expect(xml).toContain('<ans:descricaoProcedimento>Hemograma completo</ans:descricaoProcedimento>');
     });
 
-    it('includes valor total', () => {
-      const xml = generateXmlSADT(validGuiaSADT);
+    it('includes valor total', async () => {
+      const xml = await generateXmlSADT(validGuiaSADT);
       expect(xml).toContain('<ans:valorTotal>');
       expect(xml).toContain('<ans:valorProcedimentos>40.00</ans:valorProcedimentos>');
       expect(xml).toContain('<ans:valorTotalGeral>40.00</ans:valorTotalGeral>');
     });
 
-    it('includes indicacao clinica', () => {
-      const xml = generateXmlSADT(validGuiaSADT);
+    it('includes indicacao clinica', async () => {
+      const xml = await generateXmlSADT(validGuiaSADT);
       expect(xml).toContain('<ans:indicacaoClinica>Investigação diagnóstica - fadiga crônica</ans:indicacaoClinica>');
     });
 
-    it('includes hash in epilogo', () => {
-      const xml = generateXmlSADT(validGuiaSADT);
+    it('includes hash in epilogo', async () => {
+      const xml = await generateXmlSADT(validGuiaSADT);
       expect(xml).toMatch(/<ans:hash>[A-F0-9]+<\/ans:hash>/);
     });
 
-    it('includes TISS version', () => {
-      const xml = generateXmlSADT(validGuiaSADT);
+    it('includes TISS version', async () => {
+      const xml = await generateXmlSADT(validGuiaSADT);
       expect(xml).toContain('<ans:versaoPadrao>4.02.00</ans:versaoPadrao>');
     });
 
-    it('respects includeDeclaration option', () => {
-      const withDecl = generateXmlSADT(validGuiaSADT, { includeDeclaration: true });
-      const withoutDecl = generateXmlSADT(validGuiaSADT, { includeDeclaration: false });
+    it('respects includeDeclaration option', async () => {
+      const withDecl = await generateXmlSADT(validGuiaSADT, { includeDeclaration: true });
+      const withoutDecl = await generateXmlSADT(validGuiaSADT, { includeDeclaration: false });
 
       expect(withDecl).toContain('<?xml version');
       expect(withoutDecl).not.toContain('<?xml version');
     });
 
-    it('escapes special XML characters in observacao', () => {
+    it('escapes special XML characters in observacao', async () => {
       const guiaWithObs: GuiaSADT = {
         ...validGuiaSADT,
         observacao: 'Test with <special> & "chars"',
       };
 
-      const xml = generateXmlSADT(guiaWithObs);
+      const xml = await generateXmlSADT(guiaWithObs);
       expect(xml).toContain('&lt;special&gt;');
       expect(xml).toContain('&amp;');
       expect(xml).toContain('&quot;chars&quot;');
     });
 
-    it('includes optional fields when provided', () => {
+    it('includes optional fields when provided', async () => {
       const guiaWithOptional: GuiaSADT = {
         ...validGuiaSADT,
         numeroGuiaPrincipal: 'MAIN-001',
@@ -182,7 +182,7 @@ describe('XML SADT Generator', () => {
         valorTotalOPME: 20.00,
       };
 
-      const xml = generateXmlSADT(guiaWithOptional);
+      const xml = await generateXmlSADT(guiaWithOptional);
       expect(xml).toContain('<ans:numeroGuiaPrincipal>MAIN-001</ans:numeroGuiaPrincipal>');
       expect(xml).toContain('<ans:senha>ABC123</ans:senha>');
       expect(xml).toContain('<ans:valorTaxasAlugueis>5.00</ans:valorTaxasAlugueis>');
@@ -191,13 +191,13 @@ describe('XML SADT Generator', () => {
       expect(xml).toContain('<ans:valorOPME>20.00</ans:valorOPME>');
     });
 
-    it('formats time correctly in procedimentos', () => {
-      const xml = generateXmlSADT(validGuiaSADT);
+    it('formats time correctly in procedimentos', async () => {
+      const xml = await generateXmlSADT(validGuiaSADT);
       expect(xml).toContain('<ans:horaInicial>08:30</ans:horaInicial>');
       expect(xml).toContain('<ans:horaFinal>08:35</ans:horaFinal>');
     });
 
-    it('includes viaAcesso and tecnicaUtilizada when provided', () => {
+    it('includes viaAcesso and tecnicaUtilizada when provided', async () => {
       const guiaWithVia: GuiaSADT = {
         ...validGuiaSADT,
         procedimentosRealizados: [
@@ -209,7 +209,7 @@ describe('XML SADT Generator', () => {
         ],
       };
 
-      const xml = generateXmlSADT(guiaWithVia);
+      const xml = await generateXmlSADT(guiaWithVia);
       expect(xml).toContain('<ans:viaAcesso>1</ans:viaAcesso>');
       expect(xml).toContain('<ans:tecnicaUtilizada>2</ans:tecnicaUtilizada>');
     });

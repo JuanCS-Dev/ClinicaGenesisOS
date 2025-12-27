@@ -2,7 +2,17 @@
  * Certificate utilities for TISS billing
  *
  * Helper functions for certificate validation and status display.
+ * Connects to Cloud Functions for secure certificate handling.
+ *
+ * @module components/billing/certificate-utils
  */
+
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { app } from '@/services/firebase';
+
+// Initialize Firebase Functions
+// TISS functions are deployed to us-central1
+const functions = getFunctions(app, 'us-central1');
 
 /**
  * Certificate status type
@@ -82,32 +92,147 @@ export function getStatusDisplay(status: CertificateStatus): StatusDisplay {
 }
 
 /**
- * Mock certificate validation - simulates reading certificate info.
- * In production, this would use a Cloud Function to securely parse the .pfx
+ * Response from Cloud Function
  */
-export async function mockValidateCertificate(
-  file: File,
-  _password: string
-): Promise<CertificadoInfo> {
-  // Simulate server validation delay
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+interface CloudFunctionResponse {
+  valid: boolean;
+  error?: string;
+  info?: {
+    subject: string;
+    cnpj: string;
+    issuer: string;
+    serialNumber: string;
+    validFrom: string;
+    validUntil: string;
+    type: 'A1' | 'A3';
+    daysUntilExpiry: number;
+  };
+}
 
-  // Simulate 10% chance of wrong password
-  if (Math.random() < 0.1) {
-    throw new Error('Senha incorreta ou certificado inválido');
+/**
+ * Convert file to Base64.
+ */
+async function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      // Remove data URL prefix (data:application/x-pkcs12;base64,)
+      const base64 = result.split(',')[1] || result;
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Validate a certificate using Cloud Function.
+ * Checks if the certificate is valid, extracts info, but does NOT store it.
+ *
+ * @param file - The .pfx or .p12 file
+ * @param password - Certificate password
+ * @param clinicId - The clinic ID
+ * @returns Certificate info if valid
+ * @throws Error if validation fails
+ */
+export async function validateCertificate(
+  file: File,
+  password: string,
+  clinicId: string
+): Promise<CertificadoInfo> {
+  const certificateBase64 = await fileToBase64(file);
+
+  const validateFn = httpsCallable<
+    { certificateBase64: string; password: string; clinicId: string },
+    CloudFunctionResponse
+  >(functions, 'validateCertificate');
+
+  const result = await validateFn({
+    certificateBase64,
+    password,
+    clinicId,
+  });
+
+  if (!result.data.valid || !result.data.info) {
+    throw new Error(result.data.error || 'Certificado inválido');
   }
 
-  // Return mock certificate info
-  const validoAte = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+  const { info } = result.data;
 
   return {
     configurado: true,
-    tipo: 'A1',
+    tipo: info.type,
     nomeArquivo: file.name,
-    razaoSocial: 'Clínica Exemplo LTDA',
-    cnpj: '12.345.678/0001-90',
-    emissor: 'AC SERASA RFB V5',
-    validoAte,
-    status: getCertificateStatus(validoAte),
+    razaoSocial: info.subject,
+    cnpj: info.cnpj,
+    emissor: info.issuer,
+    validoAte: info.validUntil,
+    status: getCertificateStatus(info.validUntil),
   };
+}
+
+/**
+ * Store a certificate securely using Cloud Function.
+ * Validates, encrypts, and stores the certificate in Firestore.
+ *
+ * @param file - The .pfx or .p12 file
+ * @param password - Certificate password
+ * @param clinicId - The clinic ID
+ * @returns Certificate info
+ * @throws Error if storage fails
+ */
+export async function storeCertificate(
+  file: File,
+  password: string,
+  clinicId: string
+): Promise<CertificadoInfo> {
+  const certificateBase64 = await fileToBase64(file);
+
+  const storeFn = httpsCallable<
+    { certificateBase64: string; password: string; clinicId: string },
+    CloudFunctionResponse
+  >(functions, 'storeCertificate');
+
+  const result = await storeFn({
+    certificateBase64,
+    password,
+    clinicId,
+  });
+
+  if (!result.data.valid || !result.data.info) {
+    throw new Error(result.data.error || 'Erro ao armazenar certificado');
+  }
+
+  const { info } = result.data;
+
+  return {
+    configurado: true,
+    tipo: info.type,
+    nomeArquivo: file.name,
+    razaoSocial: info.subject,
+    cnpj: info.cnpj,
+    emissor: info.issuer,
+    validoAte: info.validUntil,
+    status: getCertificateStatus(info.validUntil),
+  };
+}
+
+/**
+ * Delete a certificate using Cloud Function.
+ *
+ * @param clinicId - The clinic ID
+ * @throws Error if deletion fails
+ */
+export async function deleteCertificate(clinicId: string): Promise<void> {
+  const deleteFn = httpsCallable<
+    { clinicId: string },
+    { success: boolean; error?: string }
+  >(functions, 'deleteCertificate');
+
+  const result = await deleteFn({ clinicId });
+
+  if (!result.data.success) {
+    throw new Error(result.data.error || 'Erro ao remover certificado');
+  }
 }

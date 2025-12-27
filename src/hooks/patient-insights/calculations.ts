@@ -128,9 +128,11 @@ export function calculateRetention(
 /**
  * Calculate NPS data.
  * Note: In production, this would come from actual survey data.
+ * Currently returns example data with isExample flag.
  */
 export function calculateNPS(patientCount: number): NPSData {
-  // Simulated survey responses based on patient count
+  // Example survey responses - will be replaced with real data when NPS surveys are implemented
+  // See: isExample flag in return value
   const totalResponses = Math.max(10, Math.floor(patientCount * 0.3))
   const promoters = Math.floor(totalResponses * 0.6)
   const passives = Math.floor(totalResponses * 0.25)
@@ -143,8 +145,9 @@ export function calculateNPS(patientCount: number): NPSData {
     detractors,
     totalResponses,
     trend: 'up',
-    // TODO: Replace with real survey data from Firestore
     recentFeedback: [],
+    // Flag to indicate this is example data (no real survey data yet)
+    isExample: true,
   }
 }
 
@@ -241,6 +244,7 @@ export function identifyPatientsAtRisk(
 
 /**
  * Calculate patient engagement metrics.
+ * Some metrics are calculated from real data, others are example placeholders.
  */
 export function calculateEngagement(appointments: Appointment[]): EngagementMetrics {
   const totalAppointments = appointments.length
@@ -249,7 +253,7 @@ export function calculateEngagement(appointments: Appointment[]): EngagementMetr
   ).length
   const noShows = appointments.filter(a => a.status === Status.NO_SHOW).length
 
-  // Time of day distribution
+  // Time of day distribution - calculated from real appointments
   const byTimeOfDay = [
     { period: 'Manhã (8h-12h)', appointments: 0 },
     { period: 'Tarde (12h-18h)', appointments: 0 },
@@ -263,12 +267,14 @@ export function calculateEngagement(appointments: Appointment[]): EngagementMetr
     else if (hour >= 18 && hour < 21) byTimeOfDay[2].appointments++
   })
 
+  // Confirmation rate and no-show rate are calculated from real data
+  // Portal adoption, response time, and channel usage are example data (see isExample flag)
   return {
-    portalAdoption: 45, // TODO: Calculate from real portal usage data
+    portalAdoption: 45, // Example data - real tracking requires portal analytics integration
     appointmentConfirmationRate:
       totalAppointments > 0 ? Math.round((confirmed / totalAppointments) * 100) : 0,
     noShowRate: totalAppointments > 0 ? Math.round((noShows / totalAppointments) * 100) : 0,
-    averageResponseTime: 2.5, // TODO: Calculate from real response data
+    averageResponseTime: 2.5, // Example data - real tracking requires message timestamp analysis
     communicationChannels: [
       { channel: 'WhatsApp', usage: 65 },
       { channel: 'Telefone', usage: 20 },
@@ -276,6 +282,8 @@ export function calculateEngagement(appointments: Appointment[]): EngagementMetr
       { channel: 'Portal', usage: 5 },
     ],
     byTimeOfDay,
+    // Flag to indicate some metrics are example data (portalAdoption, responseTime, channels)
+    isExample: true,
   }
 }
 
@@ -339,7 +347,7 @@ export function calculateDemographics(patients: Patient[]): PatientDemographics 
       }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 5),
-    // TODO: Replace with real condition data from patient records
+    // Condition data requires ICD-10 coding in patient records (not yet implemented)
     topConditions: [],
   }
 }

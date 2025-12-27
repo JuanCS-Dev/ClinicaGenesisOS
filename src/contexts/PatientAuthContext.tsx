@@ -20,6 +20,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
+import { patientService } from '../services/firestore/patient.service';
 
 // ============================================================================
 // Types
@@ -170,33 +171,60 @@ export function PatientAuthProvider({ children }: { children: React.ReactNode })
       throw new Error('Link inválido');
     }
 
-    const email = window.localStorage.getItem('patientEmailForSignIn');
-    const clinicId = window.localStorage.getItem('patientClinicId');
+    const storedEmail = window.localStorage.getItem('patientEmailForSignIn');
+    const storedClinicId = window.localStorage.getItem('patientClinicId');
 
-    if (!email || !clinicId) {
+    if (!storedEmail || !storedClinicId) {
       throw new Error('Dados de login não encontrados');
     }
 
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const result = await signInWithEmailLink(auth, email, url);
+      const result = await signInWithEmailLink(auth, storedEmail, url);
+
+      // Security validation: Verify email matches
+      if (result.user.email?.toLowerCase() !== storedEmail.toLowerCase()) {
+        await signOut(auth);
+        window.localStorage.removeItem('patientEmailForSignIn');
+        window.localStorage.removeItem('patientClinicId');
+        throw new Error('Email não corresponde. Tente novamente.');
+      }
+
+      // Security validation: Verify patient exists in the clinic
+      const patient = await patientService.getByEmail(storedClinicId, storedEmail);
+      if (!patient) {
+        await signOut(auth);
+        window.localStorage.removeItem('patientEmailForSignIn');
+        window.localStorage.removeItem('patientClinicId');
+        throw new Error('Paciente não encontrado nesta clínica. Verifique o email cadastrado.');
+      }
 
       // Create or update patient portal profile
       const profileRef = doc(db, 'patientPortalUsers', result.user.uid);
       const existingProfile = await getDoc(profileRef);
 
       if (!existingProfile.exists()) {
-        // Find patient by email in the clinic
-        // This links the portal user to their patient record
+        // Link portal user to their patient record
         await setDoc(profileRef, {
-          email,
-          clinicId,
+          email: storedEmail,
+          name: patient.name,
+          clinicId: storedClinicId,
+          patientId: patient.id,
           createdAt: serverTimestamp(),
           lastLogin: serverTimestamp(),
         });
       } else {
-        await setDoc(profileRef, { lastLogin: serverTimestamp() }, { merge: true });
+        // Update last login and ensure patientId is set
+        await setDoc(
+          profileRef,
+          {
+            lastLogin: serverTimestamp(),
+            patientId: patient.id,
+            name: patient.name,
+          },
+          { merge: true }
+        );
       }
 
       // Clean up localStorage
@@ -205,10 +233,12 @@ export function PatientAuthProvider({ children }: { children: React.ReactNode })
 
       setState((prev) => ({ ...prev, loading: false }));
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erro ao completar login';
       setState((prev) => ({
         ...prev,
         loading: false,
-        error: 'Erro ao completar login',
+        error: errorMessage,
       }));
       throw error;
     }

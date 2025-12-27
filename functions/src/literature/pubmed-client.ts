@@ -7,6 +7,7 @@
  * @see https://www.ncbi.nlm.nih.gov/books/NBK25497/
  */
 
+import { logger } from 'firebase-functions';
 import type {
   ScientificArticle,
   PubMedSearchResponse,
@@ -40,7 +41,7 @@ export async function searchPubMed(
     const articles = await esummary(pmids);
     return articles;
   } catch (error) {
-    console.error('[PubMed] Search error:', error);
+    logger.error('[PubMed] Search error:', { error });
     return [];
   }
 }

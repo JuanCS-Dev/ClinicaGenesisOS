@@ -4,6 +4,10 @@
  * Provides real-time access to teleconsultation sessions.
  * Manages session lifecycle: create, join waiting room, start call, end call.
  *
+ * Supports both:
+ * - Google Meet (primary) - Opens Meet link in new tab
+ * - Jitsi Meet (legacy) - Embedded iframe experience
+ *
  * This hook enables doctors to reach patients who can't travel to the clinic:
  * - Elderly patients with mobility issues
  * - Rural patients far from specialists
@@ -12,6 +16,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { toast } from 'sonner';
 import { useClinicContext } from '../contexts/ClinicContext';
 import { telemedicineService } from '../services/firestore';
 import type {
@@ -248,18 +253,39 @@ export function useTelemedicine(sessionId?: string): UseTelemedicineReturn {
     [clinicId]
   );
 
+  // Determine if this is a Google Meet session
+  const meetLink = session?.meetLink || null;
+  const isMeetSession = Boolean(meetLink);
+
+  /**
+   * Open Google Meet in a new browser tab.
+   * For Meet sessions, this is the primary way to join the call.
+   */
+  const openMeet = useCallback((): void => {
+    if (!meetLink) {
+      toast.error('Link do Meet nao disponivel');
+      return;
+    }
+
+    window.open(meetLink, '_blank', 'noopener,noreferrer');
+    toast.success('Abrindo Google Meet...');
+  }, [meetLink]);
+
   return {
     session,
     loading,
     error,
     isInWaitingRoom,
     isInCall,
+    isMeetSession,
+    meetLink,
     startSession,
     joinWaitingRoom,
     startCall,
     endCall,
     cancelSession,
     getSessionByAppointment,
+    openMeet,
   };
 }
 

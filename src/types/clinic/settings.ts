@@ -22,4 +22,6 @@ export interface ClinicSettings {
   defaultAppointmentDuration: number; // in minutes
   specialties: SpecialtyType[];
   timezone: string;
+  /** Average ticket value in BRL for revenue calculations */
+  averageTicket?: number;
 }

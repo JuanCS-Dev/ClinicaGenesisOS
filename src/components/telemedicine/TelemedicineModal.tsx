@@ -61,6 +61,8 @@ export function TelemedicineModal({
     session,
     loading,
     error,
+    isMeetSession,
+    openMeet,
     startSession,
     joinWaitingRoom,
     startCall,
@@ -143,11 +145,16 @@ export function TelemedicineModal({
     try {
       await startCall();
       setModalState('in_call');
+
+      // For Google Meet sessions, also open Meet in new tab
+      if (isMeetSession) {
+        openMeet();
+      }
     } catch (err) {
       console.error('Failed to start call:', err);
       toast.error('Erro ao iniciar chamada');
     }
-  }, [startCall]);
+  }, [startCall, isMeetSession, openMeet]);
 
   /**
    * Handle call end.

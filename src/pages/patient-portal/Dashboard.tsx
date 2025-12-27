@@ -44,25 +44,25 @@ const QUICK_ACTIONS = [
     icon: Calendar,
     label: 'Agendar Consulta',
     href: '/portal/consultas',
-    color: 'bg-blue-500',
+    color: 'bg-genesis-primary',
   },
   {
     icon: FlaskConical,
     label: 'Ver Exames',
     href: '/portal/exames',
-    color: 'bg-purple-500',
+    color: 'bg-clinical-start',
   },
   {
     icon: Pill,
     label: 'Receitas',
     href: '/portal/receitas',
-    color: 'bg-green-500',
+    color: 'bg-success',
   },
   {
     icon: MessageCircle,
     label: 'Mensagens',
     href: '/portal/mensagens',
-    color: 'bg-amber-500',
+    color: 'bg-warning',
   },
 ]
 
@@ -188,14 +188,14 @@ function QuickActionsGrid() {
         <Link
           key={action.label}
           to={action.href}
-          className="bg-genesis-surface rounded-2xl p-4 border border-genesis-border hover:shadow-lg transition-all group"
+          className="group bg-genesis-surface rounded-2xl p-4 border border-genesis-border-subtle hover:border-genesis-primary/30 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
         >
           <div
-            className={`w-12 h-12 rounded-xl ${action.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}
+            className={`w-12 h-12 rounded-xl ${action.color} flex items-center justify-center mb-3 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300`}
           >
             <action.icon className="w-6 h-6 text-white" />
           </div>
-          <p className="font-medium text-genesis-dark text-sm">{action.label}</p>
+          <p className="font-medium text-genesis-dark text-sm group-hover:text-genesis-primary transition-colors">{action.label}</p>
         </Link>
       ))}
     </div>
@@ -343,7 +343,7 @@ function HealthSummaryCard() {
     return (
       <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-4">
         <div className="flex items-center gap-2 mb-4">
-          <Heart className="w-5 h-5 text-red-500" />
+          <Heart className="w-5 h-5 text-danger" />
           <Skeleton className="h-5 w-24" />
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -357,7 +357,7 @@ function HealthSummaryCard() {
   return (
     <div className="bg-genesis-surface rounded-2xl border border-genesis-border p-4">
       <div className="flex items-center gap-2 mb-4">
-        <Heart className="w-5 h-5 text-red-500" />
+        <Heart className="w-5 h-5 text-danger" />
         <h3 className="font-semibold text-genesis-dark">Minha Saúde</h3>
       </div>
 

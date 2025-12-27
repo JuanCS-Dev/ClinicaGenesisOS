@@ -11,6 +11,7 @@
  */
 
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
+import { logger } from 'firebase-functions';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { getVertexAIClient, isFeatureEnabled } from '../utils/config.js';
@@ -146,7 +147,7 @@ export const processAudioScribe = onDocumentCreated(
   async (event) => {
     const snapshot = event.data;
     if (!snapshot) {
-      console.error('No data in event');
+      logger.error('No data in event');
       return;
     }
 
@@ -182,15 +183,15 @@ export const processAudioScribe = onDocumentCreated(
         return;
       }
 
-      console.warn(`Processing audio for session ${sessionId}: ${audioUrl}`);
+      logger.info(`Processing audio for session ${sessionId}: ${audioUrl}`);
 
       // Download audio
       const audioBuffer = await downloadAudioFile(audioUrl);
-      console.warn(`Downloaded audio: ${audioBuffer.length} bytes`);
+      logger.info(`Downloaded audio: ${audioBuffer.length} bytes`);
 
       // Process with Gemini via Vertex AI
       const result = await processAudioWithGemini(audioBuffer);
-      console.warn(`Processed in ${result.processingTimeMs}ms`);
+      logger.info(`Processed in ${result.processingTimeMs}ms`);
 
       // Create AI metadata
       const aiMetadata: AIMetadata = {
@@ -209,9 +210,9 @@ export const processAudioScribe = onDocumentCreated(
         completedAt: new Date().toISOString(),
       });
 
-      console.warn(`Session ${sessionId} completed successfully`);
+      logger.info(`Session ${sessionId} completed successfully`);
     } catch (error) {
-      console.error(`Error processing session ${sessionId}:`, error);
+      logger.error(`Error processing session ${sessionId}:`, { error });
 
       await sessionRef.update({
         status: 'error',

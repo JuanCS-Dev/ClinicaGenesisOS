@@ -3,7 +3,7 @@
  *
  * Code-split chart components for better initial load performance.
  */
-/* eslint-disable react-refresh/only-export-components */
+ 
 
 import React, { lazy, Suspense } from 'react';
 import { Loader2 } from 'lucide-react';

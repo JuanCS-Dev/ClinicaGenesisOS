@@ -3,9 +3,11 @@
  *
  * Provides access to patient's upcoming teleconsultation sessions.
  * Uses PatientPortalContext for patient-scoped access.
+ * Supports Google Meet (primary) and Jitsi Meet (legacy).
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { toast } from 'sonner'
 import { usePatientPortal } from '@/contexts/PatientPortalContext'
 import { telemedicineService, appointmentService } from '@/services/firestore'
 import type { TelemedicineSession, Appointment } from '@/types'
@@ -27,8 +29,14 @@ export interface UsePatientTelehealthReturn {
   canJoin: boolean
   /** Time until can join (in minutes) */
   minutesUntilJoin: number | null
-  /** Join the waiting room */
+  /** Google Meet link if available */
+  meetLink: string | null
+  /** Whether this is a Google Meet session (vs legacy Jitsi) */
+  isMeetSession: boolean
+  /** Join the waiting room (legacy) or open Meet (primary) */
   joinWaitingRoom: () => Promise<void>
+  /** Open Google Meet in new tab */
+  openMeet: () => void
   /** Refresh data */
   refresh: () => Promise<void>
 }
@@ -188,6 +196,28 @@ export function usePatientTelehealth(): UsePatientTelehealthReturn {
     await fetchData()
   }, [fetchData])
 
+  // Determine if this is a Meet session
+  const meetLink = session?.meetLink || null
+  const isMeetSession = Boolean(meetLink)
+
+  /**
+   * Open Google Meet in a new tab.
+   */
+  const openMeet = useCallback((): void => {
+    if (!meetLink) {
+      toast.error('Link do Meet nao disponivel')
+      return
+    }
+
+    if (!canJoin) {
+      toast.error('A consulta ainda nao esta disponivel')
+      return
+    }
+
+    window.open(meetLink, '_blank', 'noopener,noreferrer')
+    toast.success('Abrindo Google Meet...')
+  }, [meetLink, canJoin])
+
   return {
     nextTeleconsulta: {
       appointment: nextAppointment,
@@ -197,7 +227,10 @@ export function usePatientTelehealth(): UsePatientTelehealthReturn {
     error,
     canJoin,
     minutesUntilJoin,
+    meetLink,
+    isMeetSession,
     joinWaitingRoom,
+    openMeet,
     refresh,
   }
 }

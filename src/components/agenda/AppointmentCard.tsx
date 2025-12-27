@@ -5,7 +5,7 @@
  * Used in both day and week views of the agenda.
  * Includes telemedicine button for starting video consultations.
  */
-/* eslint-disable react-refresh/only-export-components */
+ 
 
 import React from 'react';
 import { Repeat, Video } from 'lucide-react';

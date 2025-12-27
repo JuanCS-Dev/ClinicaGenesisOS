@@ -17,6 +17,8 @@ import {
   deleteDoc,
   query,
   orderBy,
+  where,
+  limit,
   onSnapshot,
   serverTimestamp,
   Timestamp,
@@ -269,5 +271,47 @@ export const patientService = {
 
     const tags = patient.tags.filter((t) => t !== tag);
     await this.update(clinicId, patientId, { tags });
+  },
+
+  /**
+   * Get a patient by email address.
+   *
+   * Used for patient portal authentication to verify the patient
+   * exists in the clinic before allowing access.
+   *
+   * @param clinicId - The clinic ID
+   * @param email - The patient's email address
+   * @returns The patient or null if not found
+   */
+  async getByEmail(clinicId: string, email: string): Promise<Patient | null> {
+    const patientsRef = getPatientsCollection(clinicId);
+    const q = query(
+      patientsRef,
+      where('email', '==', email.toLowerCase().trim()),
+      limit(1)
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      return null;
+    }
+
+    const docSnap = snapshot.docs[0];
+    return toPatient(docSnap.id, docSnap.data());
+  },
+
+  /**
+   * Check if a patient exists by email.
+   *
+   * Lightweight check for authentication validation.
+   *
+   * @param clinicId - The clinic ID
+   * @param email - The patient's email address
+   * @returns True if patient exists, false otherwise
+   */
+  async existsByEmail(clinicId: string, email: string): Promise<boolean> {
+    const patient = await this.getByEmail(clinicId, email);
+    return patient !== null;
   },
 };

@@ -158,6 +158,9 @@ export default defineConfig(({ mode }) => {
         }
       },
       build: {
+        // Chunks > 500KB are intentional: export-vendor (jspdf/xlsx) and charts-vendor (recharts)
+        // These are lazy-loaded and only fetched when needed
+        chunkSizeWarningLimit: 1200,
         rollupOptions: {
           output: {
             // Optimized chunk splitting for better caching and parallel loading

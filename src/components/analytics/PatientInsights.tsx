@@ -131,7 +131,7 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon, trend, subtitle
 // ============================================================================
 
 export const PatientInsights: React.FC = () => {
-  const { retention, nps, patientsAtRisk, engagement, demographics, loading } = usePatientInsights();
+  const { retention, nps, patientsAtRisk, engagement, loading } = usePatientInsights();
 
   if (loading) {
     return (
@@ -165,7 +165,14 @@ export const PatientInsights: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* NPS Card */}
         <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle p-6">
-          <h3 className="text-sm font-medium text-genesis-muted mb-4 text-center">Net Promoter Score</h3>
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <h3 className="text-sm font-medium text-genesis-muted">Net Promoter Score</h3>
+            {nps.isExample && (
+              <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full dark:bg-amber-900/30 dark:text-amber-400">
+                Exemplo
+              </span>
+            )}
+          </div>
           <NPSGauge score={nps.score} trend={nps.trend} />
 
           {/* NPS Breakdown */}
@@ -309,6 +316,11 @@ export const PatientInsights: React.FC = () => {
           <h3 className="text-lg font-semibold text-genesis-dark flex items-center gap-2 mb-4">
             <MessageSquare className="w-5 h-5 text-genesis-primary" />
             Engajamento
+            {engagement.isExample && (
+              <span className="text-xs font-normal bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full dark:bg-amber-900/30 dark:text-amber-400">
+                Parcialmente exemplo
+              </span>
+            )}
           </h3>
 
           {/* Key Metrics */}

@@ -30,6 +30,8 @@ import { CertificadoUpload, type CertificadoInfo } from '@/components/billing/Ce
 import type { OperadoraFirestore, CreateOperadoraInput } from '@/types'
 
 interface ConvenioSettingsProps {
+  /** Clinic ID for certificate storage */
+  clinicId: string
   cnes?: string
   cnpj?: string
   certificado?: CertificadoInfo
@@ -38,6 +40,7 @@ interface ConvenioSettingsProps {
 }
 
 export function ConvenioSettings({
+  clinicId,
   cnes,
   cnpj,
   certificado,
@@ -207,6 +210,7 @@ export function ConvenioSettings({
       {/* Certificate Upload Section */}
       {onCertificateConfigured && (
         <CertificadoUpload
+          clinicId={clinicId}
           certificado={certificado}
           onCertificateConfigured={onCertificateConfigured}
           onCertificateRemoved={onCertificateRemoved}

@@ -32,6 +32,10 @@ export interface Clinic {
   address?: string
   logo?: string
   cnpj?: string
+  /** CNES (Cadastro Nacional de Estabelecimentos de Saúde) for TISS billing */
+  cnes?: string
+  /** Subdomain for patient portal access (e.g., 'clinica-abc' for clinica-abc.clinicagenesis.com.br) */
+  subdomain?: string
   ownerId: string
   plan: ClinicPlan
   settings: ClinicSettings

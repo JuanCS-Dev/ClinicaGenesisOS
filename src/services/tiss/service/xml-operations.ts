@@ -32,9 +32,9 @@ export async function regenerateXml(
 
   let xmlContent: string;
   if (guia.tipo === 'consulta') {
-    xmlContent = generateXmlConsulta(guia.dadosGuia as GuiaConsulta);
+    xmlContent = await generateXmlConsulta(guia.dadosGuia as GuiaConsulta);
   } else if (guia.tipo === 'sadt') {
-    xmlContent = generateXmlSADT(guia.dadosGuia as GuiaSADT);
+    xmlContent = await generateXmlSADT(guia.dadosGuia as GuiaSADT);
   } else {
     throw new Error(`Tipo de guia não suportado: ${guia.tipo}`);
   }

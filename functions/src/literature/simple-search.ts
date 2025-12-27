@@ -7,6 +7,8 @@
  * @see https://europepmc.org/RestfulWebService
  */
 
+import { logger } from 'firebase-functions';
+
 /** ICD-10 to English condition name */
 const CONDITIONS: Record<string, string> = {
   'E11': 'type 2 diabetes',
@@ -42,7 +44,7 @@ export async function searchByICD10(icd10: string): Promise<Article[]> {
   const condition = CONDITIONS[icd10] || CONDITIONS[prefix];
 
   if (!condition) {
-    console.warn(`[Literature] No mapping for ${icd10}`);
+    logger.warn(`[Literature] No mapping for ${icd10}`);
     return [];
   }
 
@@ -84,7 +86,7 @@ async function searchEuropePMC(term: string): Promise<Article[]> {
       citations: r.citedByCount || 0,
     }));
   } catch (err) {
-    console.error('[Literature] Error:', err);
+    logger.error('[Literature] Error:', { error: err });
     return [];
   }
 }

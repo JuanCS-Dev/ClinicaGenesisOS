@@ -15,6 +15,8 @@
  */
 
 import { onCLS, onFCP, onLCP, onTTFB, onINP, type Metric } from 'web-vitals';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from './firebase';
 
 /**
  * Performance thresholds based on Google's recommendations.
@@ -58,23 +60,20 @@ function logMetric(metric: Metric): void {
 }
 
 /**
- * Send metric to analytics (Firebase Analytics, Google Analytics, etc.)
- * This is a placeholder - implement based on your analytics provider.
+ * Send metric to Firebase Analytics.
+ * Reports Core Web Vitals metrics for performance monitoring.
  */
 function sendToAnalytics(metric: Metric): void {
-  // In production, send to analytics
-  if (import.meta.env.PROD) {
-    // Example: Send to Firebase Analytics
-    // gtag('event', metric.name, {
-    //   value: Math.round(metric.name === 'CLS' ? metric.value * 1000 : metric.value),
-    //   event_category: 'Web Vitals',
-    //   event_label: metric.id,
-    //   non_interaction: true,
-    // });
-
-    // For now, just log to console in production for debugging
-    // eslint-disable-next-line no-console
-    console.debug(`[Web Vitals] ${metric.name}: ${metric.value}`);
+  // Only send in production
+  if (import.meta.env.PROD && analytics) {
+    logEvent(analytics, 'web_vitals', {
+      name: metric.name,
+      // CLS is measured in fraction, multiply by 1000 for better precision
+      value: Math.round(metric.name === 'CLS' ? metric.value * 1000 : metric.value),
+      delta: Math.round(metric.delta),
+      id: metric.id,
+      rating: getRating(metric.name, metric.value),
+    });
   }
 }
 

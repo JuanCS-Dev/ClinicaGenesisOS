@@ -427,7 +427,7 @@ describe('PatientLabResults', () => {
       createElementSpy.mockRestore();
     });
 
-    it('should not show download button when no fileUrl', () => {
+    it('should show "Baixar Resumo" button when no fileUrl', () => {
       mockUseLabResults.mockReturnValue({
         results: [
           {
@@ -435,7 +435,7 @@ describe('PatientLabResults', () => {
             fileUrl: undefined, // No file URL
           },
         ],
-        readyResults: [],
+        readyResults: [{ ...mockResults[0], fileUrl: undefined }],
         pendingResults: [],
         loading: false,
         error: null,
@@ -444,12 +444,10 @@ describe('PatientLabResults', () => {
       });
 
       renderLabResults();
-      // Should only have view button, no download
-      const buttons = document.querySelectorAll('button');
-      const downloadButtons = Array.from(buttons).filter(
-        (btn) => btn.querySelector('[class*="lucide-download"]')
-      );
-      expect(downloadButtons.length).toBe(0);
+      // Without fileUrl, shows "Baixar Resumo" instead of file download button
+      expect(screen.getByText('Baixar Resumo')).toBeInTheDocument();
+      // Should not show Visualizar since no file to view
+      expect(screen.queryByText('Visualizar')).not.toBeInTheDocument();
     });
   });
 
@@ -569,7 +567,7 @@ describe('PatientLabResults', () => {
       createElementSpy.mockRestore();
     });
 
-    it('should handle result without fileUrl in handleView', async () => {
+    it('should not show Visualizar button when no fileUrl', () => {
       mockUseLabResults.mockReturnValue({
         results: [
           {
@@ -585,15 +583,9 @@ describe('PatientLabResults', () => {
         markAsViewed: vi.fn(),
       });
 
-      const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
-
       renderLabResults();
-      fireEvent.click(screen.getByText('Visualizar'));
-
-      // Should not call window.open since no fileUrl
-      expect(windowOpenSpy).not.toHaveBeenCalled();
-
-      windowOpenSpy.mockRestore();
+      // Without fileUrl, no Visualizar button should be shown
+      expect(screen.queryByText('Visualizar')).not.toBeInTheDocument();
     });
   });
 });

@@ -8,11 +8,15 @@
  * @version 2.0.0
  */
 
-import React, { useState, useEffect, useRef } from 'react'
-import { MessageCircle, Send, User, Clock, CheckCheck, Paperclip, Search, Plus } from 'lucide-react'
+import React, { useState, useEffect, useRef, ChangeEvent, useCallback } from 'react'
+import { MessageCircle, Send, User, Clock, CheckCheck, Paperclip, Search, Plus, X, FileText, Image as ImageIcon } from 'lucide-react'
+import { toast } from 'sonner'
 import { usePatientMessages } from '../../hooks/usePatientMessages'
+import { usePatientPortal } from '../../contexts/PatientPortalContext'
+import { userService } from '../../services/firestore/user.service'
 import { Skeleton } from '../../components/ui/Skeleton'
-import type { Conversation, ConversationWithMessages } from '@/types'
+import { NewConversationModal } from '../../components/patient-portal/NewConversationModal'
+import type { Conversation, ConversationWithMessages, UserProfile } from '@/types'
 
 // ============================================================================
 // Helpers
@@ -46,7 +50,7 @@ function MessagesSkeleton() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <MessageCircle className="w-7 h-7 text-amber-600" />
+            <MessageCircle className="w-7 h-7 text-warning" />
             <Skeleton className="h-8 w-32" />
           </div>
           <Skeleton className="h-4 w-40 mt-2" />
@@ -131,28 +135,63 @@ function ConversationList({ conversations, selectedId, onSelect }: ConversationL
 
 interface ChatViewProps {
   conversation: ConversationWithMessages
-  onSendMessage: (content: string) => Promise<void>
+  onSendMessage: (content: string, attachment?: File) => Promise<void>
 }
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf']
 
 function ChatView({ conversation, onSendMessage }: ChatViewProps) {
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [conversation.messages])
 
+  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('Arquivo muito grande. Tamanho maximo: 10MB')
+      return
+    }
+
+    // Validate file type
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      toast.error('Tipo de arquivo nao permitido. Apenas imagens e PDFs.')
+      return
+    }
+
+    setSelectedFile(file)
+    // Reset input so same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null)
+  }
+
   const handleSend = async () => {
-    if (!message.trim() || sending) return
+    if ((!message.trim() && !selectedFile) || sending) return
 
     setSending(true)
     try {
-      await onSendMessage(message.trim())
+      await onSendMessage(message.trim(), selectedFile || undefined)
       setMessage('')
+      setSelectedFile(null)
+      toast.success('Mensagem enviada!')
     } catch (error) {
       console.error('Error sending message:', error)
+      toast.error('Erro ao enviar mensagem. Tente novamente.')
     } finally {
       setSending(false)
     }
@@ -164,6 +203,8 @@ function ChatView({ conversation, onSendMessage }: ChatViewProps) {
       handleSend()
     }
   }
+
+  const isImageFile = (file: File) => file.type.startsWith('image/')
 
   return (
     <div className="flex flex-col h-full bg-genesis-surface rounded-2xl border border-genesis-border overflow-hidden">
@@ -226,8 +267,44 @@ function ChatView({ conversation, onSendMessage }: ChatViewProps) {
 
       {/* Input */}
       <div className="p-4 border-t border-genesis-border">
+        {/* File Preview */}
+        {selectedFile && (
+          <div className="mb-3 p-3 bg-genesis-soft rounded-xl flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-genesis-primary/10 flex items-center justify-center flex-shrink-0">
+              {isImageFile(selectedFile) ? (
+                <ImageIcon className="w-5 h-5 text-genesis-primary" />
+              ) : (
+                <FileText className="w-5 h-5 text-genesis-primary" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-genesis-dark truncate">{selectedFile.name}</p>
+              <p className="text-xs text-genesis-muted">
+                {(selectedFile.size / 1024).toFixed(1)} KB
+              </p>
+            </div>
+            <button
+              onClick={handleRemoveFile}
+              className="p-1.5 rounded-lg text-genesis-muted hover:bg-genesis-hover hover:text-danger transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         <div className="flex items-center gap-2">
-          <button className="p-2 rounded-xl text-genesis-muted hover:bg-genesis-hover transition-colors">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,.pdf"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={sending}
+            className="p-2 rounded-xl text-genesis-muted hover:bg-genesis-hover hover:text-genesis-primary transition-colors disabled:opacity-50"
+          >
             <Paperclip className="w-5 h-5" />
           </button>
           <input
@@ -241,7 +318,7 @@ function ChatView({ conversation, onSendMessage }: ChatViewProps) {
           />
           <button
             onClick={handleSend}
-            disabled={!message.trim() || sending}
+            disabled={(!message.trim() && !selectedFile) || sending}
             className="p-2.5 rounded-xl bg-genesis-primary text-white hover:bg-genesis-primary-dark hover:scale-[1.05] active:scale-[0.95] transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100"
           >
             <Send className="w-5 h-5" />
@@ -276,9 +353,47 @@ export function PatientMessages(): React.ReactElement {
     loading,
     selectConversation,
     sendMessage,
+    startConversation,
   } = usePatientMessages()
+  const { clinicId } = usePatientPortal()
 
   const [search, setSearch] = useState('')
+  const [showNewModal, setShowNewModal] = useState(false)
+  const [professionals, setProfessionals] = useState<UserProfile[]>([])
+  const [loadingProfessionals, setLoadingProfessionals] = useState(false)
+
+  // Load professionals when modal opens
+  const loadProfessionals = useCallback(async () => {
+    if (!clinicId) return
+    setLoadingProfessionals(true)
+    try {
+      const users = await userService.getByClinic(clinicId)
+      // Filter to only show professionals (not admin)
+      setProfessionals(users.filter(u => u.role === 'professional' || u.role === 'admin'))
+    } catch (error) {
+      console.error('Error loading professionals:', error)
+      toast.error('Erro ao carregar profissionais')
+    } finally {
+      setLoadingProfessionals(false)
+    }
+  }, [clinicId])
+
+  const handleOpenNewModal = () => {
+    setShowNewModal(true)
+    loadProfessionals()
+  }
+
+  const handleStartConversation = async (provider: UserProfile, message: string) => {
+    const conversationId = await startConversation(
+      provider.id,
+      provider.displayName,
+      provider.specialty || 'Profissional',
+      message
+    )
+    // Select the new conversation
+    await selectConversation(conversationId)
+    toast.success('Conversa iniciada!')
+  }
 
   // Auto-select first conversation on load
   useEffect(() => {
@@ -300,8 +415,8 @@ export function PatientMessages(): React.ReactElement {
     }
   }
 
-  const handleSendMessage = async (content: string) => {
-    await sendMessage(content)
+  const handleSendMessage = async (content: string, attachment?: File) => {
+    await sendMessage(content, attachment)
   }
 
   if (loading) {
@@ -314,7 +429,7 @@ export function PatientMessages(): React.ReactElement {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-genesis-dark flex items-center gap-3">
-            <MessageCircle className="w-7 h-7 text-amber-600" />
+            <MessageCircle className="w-7 h-7 text-warning" />
             Mensagens
           </h1>
           <p className="text-genesis-muted text-sm mt-1">
@@ -324,7 +439,10 @@ export function PatientMessages(): React.ReactElement {
           </p>
         </div>
 
-        <button className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-genesis-primary text-white font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200">
+        <button
+          onClick={handleOpenNewModal}
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-genesis-primary text-white font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200"
+        >
           <Plus className="w-5 h-5" />
           Nova Mensagem
         </button>
@@ -361,6 +479,15 @@ export function PatientMessages(): React.ReactElement {
           )}
         </div>
       </div>
+
+      {/* New Conversation Modal */}
+      <NewConversationModal
+        isOpen={showNewModal}
+        onClose={() => setShowNewModal(false)}
+        professionals={professionals}
+        loading={loadingProfessionals}
+        onStartConversation={handleStartConversation}
+      />
     </div>
   )
 }

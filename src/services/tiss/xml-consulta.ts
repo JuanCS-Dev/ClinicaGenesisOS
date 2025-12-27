@@ -188,11 +188,14 @@ function generateAtendimentoXml(guia: GuiaConsulta, indent: string): string {
 /**
  * Generate TISS XML for Guia de Consulta.
  *
+ * Generates XML conforming to TISS 4.02.00 standard with proper SHA-1 hash.
+ * The hash is calculated over all XML content except the epilogo element.
+ *
  * @param guia - Complete GuiaConsulta data
  * @param options - XML generation options
- * @returns XML string
+ * @returns Promise resolving to XML string
  */
-export function generateXmlConsulta(guia: GuiaConsulta, options: TissXmlOptions = {}): string {
+export async function generateXmlConsulta(guia: GuiaConsulta, options: TissXmlOptions = {}): Promise<string> {
   const {
     includeDeclaration = true,
     prettyPrint = true,
@@ -282,9 +285,13 @@ export function generateXmlConsulta(guia: GuiaConsulta, options: TissXmlOptions 
   xml += `${i2}</ans:loteGuias>${newline}`;
   xml += `${indent}</ans:prestadorParaOperadora>${newline}`;
 
-  // Hash (simplified - in production should be a real SHA-1 hash)
+  // Generate SHA-1 hash of XML content (before epilogo)
+  // Per TISS spec, hash is calculated over everything except the epilogo itself
+  const contentToHash = xml;
+  const hash = await generateSHA1Hash(contentToHash);
+
   xml += `${indent}<ans:epilogo>${newline}`;
-  xml += xmlElement('hash', generateSimpleHash(xml), i2);
+  xml += xmlElement('hash', hash, i2);
   xml += `${indent}</ans:epilogo>${newline}`;
 
   xml += `</ans:mensagemTISS>${newline}`;
@@ -331,19 +338,20 @@ export function generateGuiaConsultaElement(guia: GuiaConsulta, indent = ''): st
 }
 
 /**
- * Generate a simple hash for the XML content.
- * In production, this should be a proper SHA-1 hash per TISS specification.
+ * Generate SHA-1 hash for TISS XML content.
+ *
+ * Uses Web Crypto API for proper SHA-1 hash generation
+ * as required by ANS TISS 4.02.00 specification.
+ *
+ * @param content - The XML content to hash (excluding epilogo)
+ * @returns SHA-1 hash as uppercase hex string (40 characters)
  */
-function generateSimpleHash(content: string): string {
-  let hash = 0;
-  for (let i = 0; i < content.length; i++) {
-    const char = content.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  // Convert to hex string and pad to 40 chars (SHA-1 length)
-  const hexHash = Math.abs(hash).toString(16).toUpperCase();
-  return hexHash.padStart(40, '0');
+async function generateSHA1Hash(content: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(content);
+  const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
 }
 
 /**

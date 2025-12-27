@@ -11,12 +11,16 @@ import {
   collection,
   doc,
   getDoc,
+  getDocs,
   setDoc,
   updateDoc,
   deleteDoc,
   onSnapshot,
   serverTimestamp,
   Timestamp,
+  query,
+  where,
+  limit,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import type { Clinic, ClinicSettings, ClinicPlan, CreateClinicInput } from '@/types';
@@ -45,6 +49,9 @@ function toClinic(id: string, data: Record<string, unknown>): Clinic {
     email: data.email as string | undefined,
     address: data.address as string | undefined,
     logo: data.logo as string | undefined,
+    cnpj: data.cnpj as string | undefined,
+    cnes: data.cnes as string | undefined,
+    subdomain: data.subdomain as string | undefined,
     ownerId: data.ownerId as string,
     plan: (data.plan as ClinicPlan) || 'solo',
     settings: (data.settings as ClinicSettings) || DEFAULT_SETTINGS,
@@ -200,5 +207,37 @@ export const clinicService = {
    */
   async changePlan(clinicId: string, plan: ClinicPlan): Promise<void> {
     await this.update(clinicId, { plan });
+  },
+
+  /**
+   * Get a clinic by its subdomain.
+   *
+   * @param subdomain - The clinic's subdomain (e.g., 'clinica-abc')
+   * @returns The clinic or null if not found
+   *
+   * @example
+   * // For URL: clinica-abc.clinicagenesis.com.br
+   * const clinic = await clinicService.getBySubdomain('clinica-abc');
+   */
+  async getBySubdomain(subdomain: string): Promise<Clinic | null> {
+    if (!subdomain || subdomain === 'www' || subdomain === 'app' || subdomain === 'localhost') {
+      return null;
+    }
+
+    const clinicsRef = collection(db, 'clinics');
+    const q = query(
+      clinicsRef,
+      where('subdomain', '==', subdomain.toLowerCase()),
+      limit(1)
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      return null;
+    }
+
+    const docSnap = snapshot.docs[0];
+    return toClinic(docSnap.id, docSnap.data());
   },
 };

@@ -7,12 +7,18 @@ import {
   FileText,
   ShieldCheck,
   CreditCard,
-  Code2,
   TestTube2,
   Lock,
   Smartphone,
   Mic,
-  ArrowRight
+  ArrowRight,
+  Clock,
+  TrendingUp,
+  X,
+  Sparkles,
+  Zap,
+  Users,
+  FlaskConical
 } from 'lucide-react';
 import { Navbar } from '../components/landing/Navbar';
 
@@ -51,53 +57,77 @@ export const Landing: React.FC = () => {
   // --- CONTENT DATA ---
 
   const metrics = [
-    { label: "Linhas de Código", value: "50k+", icon: Code2 },
-    { label: "Testes Automatizados", value: "1.028", icon: TestTube2 },
-    { label: "Cobertura de Código", value: "91%", icon: ShieldCheck },
+    { label: "Horas economizadas/mês", value: "40h", icon: Clock },
+    { label: "Menos tempo em burocracia", value: "-40%", icon: TrendingUp },
+    { label: "Testes Automatizados", value: "2.636", icon: TestTube2 },
     { label: "Uptime Garantido", value: "99.9%", icon: Activity },
   ];
 
   const features = [
     {
       title: "AI Scribe",
-      desc: "Transcrição automática de consultas. O sistema ouve, entende e preenche o prontuário para você.",
+      desc: "Fale com seu paciente normalmente. O sistema ouve, entende e preenche o prontuário SOAP automaticamente. Economize 15 minutos por consulta.",
       icon: Mic,
       colSpan: "col-span-1 md:col-span-2",
       bg: "bg-clinical-soft border-clinical-muted/20",
-      text: "text-clinical-start"
+      text: "text-clinical-start",
+      badge: "Exclusivo"
     },
     {
-      title: "Diagnóstico Assistido",
-      desc: "Consenso Multi-LLM (GPT-4 + Gemini + Claude) para segunda opinião clínica em segundos.",
+      title: "Diagnóstico Multi-LLM",
+      desc: "3 IAs (GPT-4 + Gemini + Claude) analisam o caso e chegam a um consenso. Segunda opinião clínica em segundos, com explicação do raciocínio.",
       icon: Brain,
       colSpan: "col-span-1",
       bg: "bg-genesis-primary-soft border-genesis-primary-light/20",
-      text: "text-genesis-primary"
+      text: "text-genesis-primary",
+      badge: "Exclusivo"
+    },
+    {
+      title: "Análise de Exames com IA",
+      desc: "Upload do PDF do laboratório → OCR automático → Interpretação inteligente com correlações e alertas.",
+      icon: FlaskConical,
+      colSpan: "col-span-1",
+      bg: "bg-info-soft border-info-dark/20",
+      text: "text-info",
+      badge: "Exclusivo"
     },
     {
       title: "TISS 4.02.00 Nativo",
-      desc: "Faturamento sem glosas. Guias de consulta e SADT validadas automaticamente contra regras da ANS.",
+      desc: "Faturamento sem glosas. Guias de consulta e SADT validadas automaticamente. Gestão de glosas e recursos integrada.",
       icon: FileText,
       colSpan: "col-span-1",
-      bg: "bg-info-soft border-info-dark/20",
-      text: "text-info"
+      bg: "bg-success-soft border-success-dark/20",
+      text: "text-success"
     },
     {
       title: "Telemedicina E2E",
-      desc: "Vídeo criptografado, sem links externos. Sala de espera virtual e gravação segura integrada.",
+      desc: "Vídeo criptografado ponta-a-ponta via Jitsi. Sala de espera, gravação e prontuário na mesma tela. Ilimitado.",
       icon: Smartphone,
-      colSpan: "col-span-1 md:col-span-2",
+      colSpan: "col-span-1",
       bg: "bg-clinical-soft border-clinical-muted/20",
       text: "text-clinical-end"
+    },
+    {
+      title: "Portal do Paciente",
+      desc: "Seus pacientes acessam consultas, exames, receitas e pagam online. Menos ligações, mais autonomia.",
+      icon: Users,
+      colSpan: "col-span-1",
+      bg: "bg-warning-soft border-warning/20",
+      text: "text-warning"
     }
   ];
 
   const comparison = [
-    { feature: "IA Diagnóstico (Multi-LLM)", genesis: true, iclinic: false, doctoralia: false },
-    { feature: "AI Scribe (Transcrição)", genesis: true, iclinic: false, doctoralia: false },
-    { feature: "TISS 4.02 Nativo", genesis: true, iclinic: "Parcial", doctoralia: false },
-    { feature: "Telemedicina Integrada", genesis: true, iclinic: "Parcial", doctoralia: true },
-    { feature: "Código Aberto / Auditável", genesis: true, iclinic: false, doctoralia: false },
+    { feature: "AI Scribe (Áudio → SOAP)", genesis: true, iclinic: false, amplimed: false, feegow: false },
+    { feature: "Diagnóstico Multi-LLM (3 IAs)", genesis: true, iclinic: false, amplimed: false, feegow: false },
+    { feature: "Análise de Exames com IA", genesis: true, iclinic: false, amplimed: false, feegow: false },
+    { feature: "Explainability (IA explica)", genesis: true, iclinic: false, amplimed: false, feegow: false },
+    { feature: "Telemedicina Ilimitada", genesis: true, iclinic: "Extra", amplimed: true, feegow: "Extra" },
+    { feature: "TISS 4.02.00 Completo", genesis: true, iclinic: true, amplimed: true, feegow: true },
+    { feature: "Portal do Paciente", genesis: true, iclinic: "Básico", amplimed: "Básico", feegow: true },
+    { feature: "PWA Offline", genesis: true, iclinic: false, amplimed: false, feegow: false },
+    { feature: "Dark Mode", genesis: true, iclinic: false, amplimed: false, feegow: false },
+    { feature: "Preço (plano completo)", genesis: "R$299", iclinic: "R$299", amplimed: "R$200+", feegow: "R$299" },
   ];
 
   return (
@@ -110,16 +140,20 @@ export const Landing: React.FC = () => {
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-genesis-primary-soft/50 via-genesis-soft to-genesis-surface"></div>
         <div className="max-w-7xl mx-auto px-6 text-center">
           <Badge className="bg-genesis-primary-soft text-genesis-primary-dark border border-genesis-primary-light/20 mb-8 animate-fade-in-up">
-            🚀 A plataforma de gestão clínica mais inteligente do Brasil
+            <Sparkles className="w-3 h-3 mr-1" /> O único software médico com IA de verdade
           </Badge>
-          
+
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 text-genesis-dark max-w-4xl mx-auto leading-[1.1]">
-            Médicos querem cuidar de pacientes, <span className="text-genesis-primary">não de papelada.</span>
+            Mesmo preço dos concorrentes. <span className="text-genesis-primary">10x mais tecnologia.</span>
           </h1>
-          
-          <p className="text-xl text-genesis-muted mb-10 max-w-2xl mx-auto leading-relaxed">
-            Elimine 40% da burocracia com a primeira plataforma que une 
-            <strong> Prontuário, Financeiro, TISS e IA Real</strong> em um único sistema operacional.
+
+          <p className="text-xl text-genesis-muted mb-6 max-w-2xl mx-auto leading-relaxed">
+            Enquanto outros vendem agenda e prontuário, nós devolvemos seu <strong>tempo</strong>.
+            AI Scribe transcreve consultas, 3 IAs fazem diagnóstico em consenso, e análise de exames automática.
+          </p>
+
+          <p className="text-lg text-genesis-primary font-semibold mb-10">
+            R$299/mês — Tudo incluso. Sem surpresas.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
@@ -219,7 +253,11 @@ export const Landing: React.FC = () => {
                   <div className={`p-3 rounded-xl bg-genesis-surface shadow-sm ${feature.text}`}>
                     <feature.icon className="w-8 h-8" />
                   </div>
-                  {idx === 0 && <Badge className="bg-clinical-start text-white">Novo</Badge>}
+                  {feature.badge && (
+                    <Badge className="bg-genesis-primary text-white">
+                      <Zap className="w-3 h-3 mr-1" /> {feature.badge}
+                    </Badge>
+                  )}
                 </div>
                 <h3 className={`text-2xl font-bold mb-3 text-genesis-dark`}>{feature.title}</h3>
                 <p className="text-genesis-text leading-relaxed">{feature.desc}</p>
@@ -247,43 +285,68 @@ export const Landing: React.FC = () => {
 
       {/* --- COMPARISON TABLE --- */}
       <section className="py-24 bg-genesis-dark text-genesis-surface">
-        <div className="max-w-5xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Por que migrar para o Genesis?</h2>
-            <p className="text-genesis-muted">Compare tecnologia, não apenas preço.</p>
+            <Badge className="bg-genesis-primary/20 text-genesis-primary-light border-none mb-6">
+              Comparativo Honesto
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Mesmo preço. Tecnologia incomparável.</h2>
+            <p className="text-genesis-muted max-w-2xl mx-auto">
+              Pelo preço de um sistema tradicional, você tem o único com IA clínica de verdade.
+            </p>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr>
-                  <th className="py-4 px-6 text-sm font-medium text-genesis-muted uppercase tracking-wider">Feature</th>
-                  <th className="py-4 px-6 text-xl font-bold text-genesis-primary bg-genesis-surface/5 rounded-t-xl">Genesis</th>
-                  <th className="py-4 px-6 text-lg font-semibold text-genesis-border">iClinic</th>
-                  <th className="py-4 px-6 text-lg font-semibold text-genesis-border">Doctoralia</th>
+                  <th className="py-4 px-4 text-sm font-medium text-genesis-muted uppercase tracking-wider">Feature</th>
+                  <th className="py-4 px-4 text-xl font-bold text-genesis-primary bg-genesis-surface/10 rounded-t-xl text-center">Genesis</th>
+                  <th className="py-4 px-4 text-base font-semibold text-genesis-border text-center">iClinic</th>
+                  <th className="py-4 px-4 text-base font-semibold text-genesis-border text-center">Amplimed</th>
+                  <th className="py-4 px-4 text-base font-semibold text-genesis-border text-center">Feegow</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
                 {comparison.map((row, idx) => (
                   <tr key={idx} className="hover:bg-genesis-surface/5 transition-colors">
-                    <td className="py-6 px-6 font-medium">{row.feature}</td>
-                    <td className="py-6 px-6 bg-genesis-surface/5">
-                      {row.genesis ? <Check className="w-6 h-6 text-genesis-primary" /> : <span className="text-genesis-muted">-</span>}
+                    <td className="py-5 px-4 font-medium text-sm">{row.feature}</td>
+                    <td className="py-5 px-4 bg-genesis-surface/10 text-center">
+                      {row.genesis === true ? <Check className="w-6 h-6 text-genesis-primary mx-auto" /> :
+                       row.genesis === false ? <X className="w-5 h-5 text-genesis-muted mx-auto" /> :
+                       <span className="text-genesis-primary font-bold">{row.genesis}</span>}
                     </td>
-                    <td className="py-6 px-6">
-                      {row.iclinic === true ? <Check className="w-5 h-5 text-success" /> : 
-                       row.iclinic === false ? <span className="text-genesis-muted">-</span> : 
-                       <span className="text-warning text-sm">{row.iclinic}</span>}
+                    <td className="py-5 px-4 text-center">
+                      {row.iclinic === true ? <Check className="w-5 h-5 text-success mx-auto" /> :
+                       row.iclinic === false ? <X className="w-5 h-5 text-danger/50 mx-auto" /> :
+                       <span className="text-warning text-xs">{row.iclinic}</span>}
                     </td>
-                    <td className="py-6 px-6">
-                      {row.doctoralia === true ? <Check className="w-5 h-5 text-success" /> : 
-                       row.doctoralia === false ? <span className="text-genesis-muted">-</span> : 
-                       <span className="text-warning text-sm">{row.doctoralia}</span>}
+                    <td className="py-5 px-4 text-center">
+                      {row.amplimed === true ? <Check className="w-5 h-5 text-success mx-auto" /> :
+                       row.amplimed === false ? <X className="w-5 h-5 text-danger/50 mx-auto" /> :
+                       <span className="text-warning text-xs">{row.amplimed}</span>}
+                    </td>
+                    <td className="py-5 px-4 text-center">
+                      {row.feegow === true ? <Check className="w-5 h-5 text-success mx-auto" /> :
+                       row.feegow === false ? <X className="w-5 h-5 text-danger/50 mx-auto" /> :
+                       <span className="text-warning text-xs">{row.feegow}</span>}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+
+          <div className="mt-12 text-center">
+            <p className="text-genesis-muted text-sm mb-6">
+              * Dados baseados em pesquisa de mercado Dez/2025. Preços podem variar.
+            </p>
+            <button
+              onClick={handleApply}
+              className="px-8 py-4 bg-genesis-primary text-white rounded-xl font-semibold text-lg hover:bg-genesis-primary-light transition-all shadow-lg shadow-genesis-primary/25"
+            >
+              Começar com Genesis <ArrowRight className="inline w-5 h-5 ml-2" />
+            </button>
           </div>
         </div>
       </section>
@@ -291,69 +354,104 @@ export const Landing: React.FC = () => {
       {/* --- PRICING --- */}
       <section id="pricing" className="py-24 bg-genesis-soft">
         <div className="max-w-7xl mx-auto px-6">
-          <SectionHeading 
-            title="Preço justo, sem surpresas" 
-            subtitle="Comece pequeno e cresça conosco."
+          <SectionHeading
+            title="Preço justo. IA inclusa."
+            subtitle="Sem taxa de adesão. Sem fidelidade. Cancele quando quiser."
           />
+
+          {/* Pricing Toggle */}
+          <div className="flex justify-center mb-12">
+            <div className="inline-flex items-center gap-3 bg-genesis-surface p-1 rounded-lg border border-genesis-border-subtle">
+              <span className="text-sm text-genesis-muted px-3">Mensal</span>
+              <div className="w-12 h-6 bg-genesis-primary rounded-full relative cursor-pointer">
+                <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow" />
+              </div>
+              <span className="text-sm font-semibold text-genesis-dark px-3">Anual <span className="text-genesis-primary">(-20%)</span></span>
+            </div>
+          </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Starter */}
             <div className="bg-genesis-surface p-8 rounded-2xl border border-genesis-border-subtle shadow-sm hover:shadow-md transition-all">
               <h3 className="text-lg font-semibold text-genesis-dark mb-2">Starter</h3>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-4xl font-bold text-genesis-dark">R$ 199</span>
+              <p className="text-sm text-genesis-muted mb-4">Para profissionais solo</p>
+              <div className="flex items-baseline gap-1 mb-2">
+                <span className="text-4xl font-bold text-genesis-dark">R$149</span>
                 <span className="text-genesis-muted">/mês</span>
               </div>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary"/> 1 Profissional</li>
-                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary"/> 100 Pacientes</li>
-                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary"/> Prontuário Básico</li>
-                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary"/> Agenda Simples</li>
+              <p className="text-xs text-genesis-subtle mb-6">ou R$189/mês no mensal</p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary flex-shrink-0"/> Até 300 pacientes</li>
+                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary flex-shrink-0"/> Prontuário SOAP completo</li>
+                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary flex-shrink-0"/> Prescrição digital</li>
+                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary flex-shrink-0"/> <strong>AI Scribe (30/mês)</strong></li>
+                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary flex-shrink-0"/> Telemedicina (10/mês)</li>
+                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary flex-shrink-0"/> WhatsApp lembretes (100/mês)</li>
               </ul>
-              <button onClick={handleApply} className="w-full py-3 bg-genesis-soft text-genesis-dark font-semibold rounded-lg hover:bg-genesis-hover transition-colors">
-                Começar Agora
+              <button onClick={handleApply} className="w-full py-3 bg-genesis-hover text-genesis-dark font-semibold rounded-lg hover:bg-genesis-border transition-colors">
+                Começar Trial Grátis
               </button>
             </div>
 
-            {/* Professional */}
-            <div className="bg-genesis-dark p-8 rounded-2xl shadow-xl transform scale-105 relative">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wide" style={{ backgroundImage: 'linear-gradient(to right, #0f766e, #7c3aed)' }}>
-                Mais Popular
+            {/* Pro */}
+            <div className="bg-genesis-dark p-8 rounded-2xl shadow-xl transform md:scale-105 relative z-10">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-genesis-primary text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1">
+                <Sparkles className="w-3 h-3" /> Mais Popular
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Professional</h3>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-4xl font-bold text-white">R$ 399</span>
+              <h3 className="text-lg font-semibold text-white mb-2">Pro</h3>
+              <p className="text-sm text-genesis-muted mb-4">Para clínicas que buscam excelência</p>
+              <div className="flex items-baseline gap-1 mb-2">
+                <span className="text-4xl font-bold text-white">R$299</span>
                 <span className="text-genesis-subtle">/mês</span>
               </div>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-center gap-3 text-sm text-genesis-border"><Check className="w-4 h-4 text-genesis-primary-light"/> 3 Profissionais</li>
-                <li className="flex items-center gap-3 text-sm text-genesis-border"><Check className="w-4 h-4 text-genesis-primary-light"/> Pacientes Ilimitados</li>
-                <li className="flex items-center gap-3 text-sm text-genesis-border"><Check className="w-4 h-4 text-genesis-primary-light"/> <strong>AI Scribe & Diagnóstico</strong></li>
-                <li className="flex items-center gap-3 text-sm text-genesis-border"><Check className="w-4 h-4 text-genesis-primary-light"/> Telemedicina Integrada</li>
-                <li className="flex items-center gap-3 text-sm text-genesis-border"><Check className="w-4 h-4 text-genesis-primary-light"/> Faturamento TISS</li>
+              <p className="text-xs text-genesis-muted mb-6">ou R$379/mês no mensal • Igual ao iClinic Pro</p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-3 text-sm text-genesis-border"><Check className="w-4 h-4 text-genesis-primary-light flex-shrink-0"/> <strong>Pacientes ilimitados</strong></li>
+                <li className="flex items-center gap-3 text-sm text-genesis-border"><Check className="w-4 h-4 text-genesis-primary-light flex-shrink-0"/> Tudo do Starter +</li>
+                <li className="flex items-center gap-3 text-sm text-genesis-border"><Check className="w-4 h-4 text-genesis-primary-light flex-shrink-0"/> <strong>AI Scribe ilimitado</strong></li>
+                <li className="flex items-center gap-3 text-sm text-genesis-border"><Check className="w-4 h-4 text-genesis-primary-light flex-shrink-0"/> <strong>Diagnóstico Multi-LLM</strong></li>
+                <li className="flex items-center gap-3 text-sm text-genesis-border"><Check className="w-4 h-4 text-genesis-primary-light flex-shrink-0"/> <strong>Análise de Exames IA</strong></li>
+                <li className="flex items-center gap-3 text-sm text-genesis-border"><Check className="w-4 h-4 text-genesis-primary-light flex-shrink-0"/> Telemedicina E2E ilimitada</li>
+                <li className="flex items-center gap-3 text-sm text-genesis-border"><Check className="w-4 h-4 text-genesis-primary-light flex-shrink-0"/> Faturamento TISS completo</li>
+                <li className="flex items-center gap-3 text-sm text-genesis-border"><Check className="w-4 h-4 text-genesis-primary-light flex-shrink-0"/> Portal do Paciente</li>
+                <li className="flex items-center gap-3 text-sm text-genesis-border"><Check className="w-4 h-4 text-genesis-primary-light flex-shrink-0"/> Suporte prioritário (24h)</li>
               </ul>
               <button onClick={handleApply} className="w-full py-3 bg-genesis-primary text-white font-semibold rounded-lg hover:bg-genesis-primary-light transition-colors shadow-lg shadow-genesis-primary/25">
-                Escolher Professional
+                Começar Trial Grátis
               </button>
             </div>
 
-            {/* Clinic */}
+            {/* Business */}
             <div className="bg-genesis-surface p-8 rounded-2xl border border-genesis-border-subtle shadow-sm hover:shadow-md transition-all">
-              <h3 className="text-lg font-semibold text-genesis-dark mb-2">Clinic</h3>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-4xl font-bold text-genesis-dark">R$ 799</span>
+              <h3 className="text-lg font-semibold text-genesis-dark mb-2">Business</h3>
+              <p className="text-sm text-genesis-muted mb-4">Para clínicas maiores</p>
+              <div className="flex items-baseline gap-1 mb-2">
+                <span className="text-4xl font-bold text-genesis-dark">R$449</span>
                 <span className="text-genesis-muted">/mês</span>
               </div>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary"/> 10 Profissionais</li>
-                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary"/> Multi-unidade</li>
-                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary"/> Gestão Financeira Avançada</li>
-                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary"/> Suporte Prioritário</li>
+              <p className="text-xs text-genesis-subtle mb-6">ou R$549/mês no mensal</p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary flex-shrink-0"/> Tudo do Pro +</li>
+                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary flex-shrink-0"/> Até 10 profissionais</li>
+                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary flex-shrink-0"/> Analytics avançado</li>
+                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary flex-shrink-0"/> Relatórios personalizados</li>
+                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary flex-shrink-0"/> Onboarding assistido</li>
+                <li className="flex items-center gap-3 text-sm text-genesis-text"><Check className="w-4 h-4 text-genesis-primary flex-shrink-0"/> SLA 99.9%</li>
               </ul>
-              <button onClick={handleApply} className="w-full py-3 bg-genesis-soft text-genesis-dark font-semibold rounded-lg hover:bg-genesis-hover transition-colors">
+              <button onClick={handleApply} className="w-full py-3 bg-genesis-hover text-genesis-dark font-semibold rounded-lg hover:bg-genesis-border transition-colors">
                 Falar com Vendas
               </button>
             </div>
+          </div>
+
+          {/* Enterprise CTA */}
+          <div className="mt-12 text-center">
+            <p className="text-genesis-muted mb-4">
+              Redes, hospitais ou mais de 10 profissionais?
+            </p>
+            <button onClick={handleApply} className="text-genesis-primary font-semibold hover:underline">
+              Conheça o plano Enterprise →
+            </button>
           </div>
         </div>
       </section>

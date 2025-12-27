@@ -1,10 +1,19 @@
 /**
  * VideoRoom Component Tests
  *
- * Comprehensive tests for Jitsi video conferencing component.
+ * Comprehensive tests for video conferencing component.
+ * Supports both Google Meet (primary) and Jitsi Meet (legacy).
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+
+// Mock sonner toast
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}));
 
 // Store API mock for triggering events
 let mockApiInstance: {
@@ -49,8 +58,9 @@ vi.mock('@jitsi/react-sdk', () => ({
 }));
 
 import { VideoRoom } from '../../../components/telemedicine/VideoRoom';
+import { toast } from 'sonner';
 
-// Mock session matching TelemedicineSession interface
+// Mock session matching TelemedicineSession interface (Jitsi - no meetLink)
 const mockSession = {
   id: 'session-123',
   appointmentId: 'apt-123',
@@ -619,6 +629,389 @@ describe('VideoRoom', () => {
 
       // Should not show negative count
       expect(screen.queryByText(/-\d+/)).not.toBeInTheDocument();
+    });
+  });
+});
+
+// ============================================================================
+// Google Meet Interface Tests
+// ============================================================================
+
+// Mock session WITH meetLink (Google Meet - primary)
+const mockMeetSession = {
+  id: 'session-456',
+  appointmentId: 'apt-456',
+  patientId: 'patient-456',
+  patientName: 'Joana Silva',
+  professionalId: 'prof-456',
+  professionalName: 'Dr. Carlos Mendes',
+  roomName: 'room-xyz789', // Legacy, not used for Meet
+  meetLink: 'https://meet.google.com/abc-defg-hij',
+  calendarEventId: 'calendar-event-456',
+  status: 'in_progress' as const,
+  participants: [],
+  recordingEnabled: false,
+  startedAt: new Date().toISOString(),
+  scheduledAt: new Date().toISOString(),
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+};
+
+describe('VideoRoom - Google Meet Interface', () => {
+  const mockOnCallEnd = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Mock window.open
+    vi.spyOn(window, 'open').mockImplementation(() => null);
+    // Mock clipboard
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: vi.fn().mockResolvedValue(undefined),
+      },
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  describe('interface selection', () => {
+    it('should render Google Meet interface when session has meetLink', () => {
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      // Should show Meet UI, not Jitsi
+      expect(screen.getByText('Google Meet')).toBeInTheDocument();
+      expect(screen.queryByTestId('jitsi-meeting')).not.toBeInTheDocument();
+    });
+
+    it('should render Jitsi interface when session has no meetLink', () => {
+      render(
+        <VideoRoom
+          session={mockSession}
+          displayName="Dr. Joao Silva"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      // Should show Jitsi UI
+      expect(screen.getByTestId('jitsi-meeting')).toBeInTheDocument();
+    });
+  });
+
+  describe('rendering', () => {
+    it('should render Teleconsulta header', () => {
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      expect(screen.getByText('Teleconsulta')).toBeInTheDocument();
+    });
+
+    it('should display session participants', () => {
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      expect(screen.getByText('Profissional')).toBeInTheDocument();
+      expect(screen.getByText('Dr. Carlos Mendes')).toBeInTheDocument();
+      expect(screen.getByText('Paciente')).toBeInTheDocument();
+      expect(screen.getByText('Joana Silva')).toBeInTheDocument();
+    });
+
+    it('should show join button before joining', () => {
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      expect(screen.getByText('Entrar na Teleconsulta')).toBeInTheDocument();
+    });
+
+    it('should show copy link button', () => {
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      expect(screen.getByText('Copiar link do Meet')).toBeInTheDocument();
+    });
+
+    it('should show scheduled time', () => {
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      // Check for time pattern
+      expect(screen.getByText(/Agendado para/)).toBeInTheDocument();
+    });
+  });
+
+  describe('join functionality', () => {
+    it('should open Meet link when join button is clicked', () => {
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Entrar na Teleconsulta'));
+
+      expect(window.open).toHaveBeenCalledWith(
+        'https://meet.google.com/abc-defg-hij',
+        '_blank',
+        'noopener,noreferrer'
+      );
+    });
+
+    it('should show success toast when joining', () => {
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Entrar na Teleconsulta'));
+
+      expect(toast.success).toHaveBeenCalledWith('Abrindo Google Meet...');
+    });
+
+    it('should change to in-call UI after joining', () => {
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Entrar na Teleconsulta'));
+
+      expect(screen.getByText('Teleconsulta em andamento')).toBeInTheDocument();
+      expect(screen.getByText('Abrir Meet novamente')).toBeInTheDocument();
+    });
+  });
+
+  describe('copy functionality', () => {
+    it('should copy link to clipboard when copy button is clicked', async () => {
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Copiar link do Meet'));
+
+      await waitFor(() => {
+        expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+          'https://meet.google.com/abc-defg-hij'
+        );
+      });
+    });
+
+    it('should show success toast when link is copied', async () => {
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Copiar link do Meet'));
+
+      await waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith('Link copiado!');
+      });
+    });
+
+    it('should show copied state after copying', async () => {
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Copiar link do Meet'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Link copiado!')).toBeInTheDocument();
+      });
+    });
+
+    it('should show error toast on clipboard failure', async () => {
+      vi.mocked(navigator.clipboard.writeText).mockRejectedValueOnce(new Error('Failed'));
+
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Copiar link do Meet'));
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith('Erro ao copiar link');
+      });
+    });
+  });
+
+  describe('end session', () => {
+    it('should show end session button for professional after joining', () => {
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      // First join
+      fireEvent.click(screen.getByText('Entrar na Teleconsulta'));
+
+      expect(screen.getByText('Encerrar Consulta')).toBeInTheDocument();
+    });
+
+    it('should NOT show end session button for patient', () => {
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Joana Silva"
+          isProfessional={false}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      // First join
+      fireEvent.click(screen.getByText('Entrar na Teleconsulta'));
+
+      expect(screen.queryByText('Encerrar Consulta')).not.toBeInTheDocument();
+    });
+
+    it('should call onCallEnd when end button is clicked', () => {
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      // First join
+      fireEvent.click(screen.getByText('Entrar na Teleconsulta'));
+
+      // Then end
+      fireEvent.click(screen.getByText('Encerrar Consulta'));
+
+      expect(mockOnCallEnd).toHaveBeenCalledWith(mockMeetSession);
+    });
+  });
+
+  describe('rejoin', () => {
+    it('should allow rejoining after already joined', () => {
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      // First join
+      fireEvent.click(screen.getByText('Entrar na Teleconsulta'));
+      vi.clearAllMocks();
+
+      // Rejoin
+      fireEvent.click(screen.getByText('Abrir Meet novamente'));
+
+      expect(window.open).toHaveBeenCalledWith(
+        'https://meet.google.com/abc-defg-hij',
+        '_blank',
+        'noopener,noreferrer'
+      );
+    });
+  });
+
+  describe('error handling', () => {
+    it('should show error toast when meetLink is missing on join', () => {
+      const sessionWithoutMeet = { ...mockMeetSession, meetLink: '' };
+      render(
+        <VideoRoom
+          session={sessionWithoutMeet}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      // Since there's no meetLink, it should fall back to Jitsi
+      expect(screen.getByTestId('jitsi-meeting')).toBeInTheDocument();
+    });
+  });
+
+  describe('instructions', () => {
+    it('should show Meet instructions', () => {
+      render(
+        <VideoRoom
+          session={mockMeetSession}
+          displayName="Dr. Carlos Mendes"
+          isProfessional={true}
+          onCallEnd={mockOnCallEnd}
+        />
+      );
+
+      expect(screen.getByText(/Meet abrira em nova aba/)).toBeInTheDocument();
     });
   });
 });

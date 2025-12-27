@@ -250,7 +250,8 @@ export function useClinicLabResults(initialFilters: LabResultFilters = {}) {
 
   const [results, setResults] = useState<LabResult[]>([])
   const [error, setError] = useState<Error | null>(null)
-  const [filters, setFilters] = useState<LabResultFilters>(initialFilters)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- setFilters is exposed in return API
+  const [_filters, setFilters] = useState<LabResultFilters>(initialFilters)
   const [hasReceived, setHasReceived] = useState(false)
 
   useEffect(() => {

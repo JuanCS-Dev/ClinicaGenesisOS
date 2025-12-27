@@ -40,7 +40,7 @@ export const stripeWebhook = onRequest(
 
     // Check if Stripe is configured
     if (!isStripeConfigured()) {
-      console.error('Stripe not configured');
+      logger.error('Stripe not configured');
       res.status(500).send('Stripe not configured');
       return;
     }
@@ -50,7 +50,7 @@ export const stripeWebhook = onRequest(
     const signature = req.headers['stripe-signature'];
 
     if (!signature) {
-      console.error('Missing stripe-signature header');
+      logger.error('Missing stripe-signature header');
       res.status(400).send('Missing signature');
       return;
     }
@@ -65,7 +65,7 @@ export const stripeWebhook = onRequest(
         webhookSecret
       );
     } catch (err) {
-      console.error('Webhook signature verification failed:', err);
+      logger.error('Webhook signature verification failed:', { error: err });
       res.status(400).send('Invalid signature');
       return;
     }
@@ -97,7 +97,7 @@ export const stripeWebhook = onRequest(
 
       res.status(200).json({ received: true });
     } catch (err) {
-      console.error('Error handling webhook event:', err);
+      logger.error('Error handling webhook event:', { error: err });
       res.status(500).send('Webhook handler error');
     }
   }
@@ -112,7 +112,7 @@ async function handlePaymentSucceeded(
 ): Promise<void> {
   const clinicId = paymentIntent.metadata?.clinicId;
   if (!clinicId) {
-    console.error('Missing clinicId in payment metadata');
+    logger.error('Missing clinicId in payment metadata');
     return;
   }
 
@@ -126,7 +126,7 @@ async function handlePaymentSucceeded(
     .get();
 
   if (snapshot.empty) {
-    console.error(`Payment not found for PaymentIntent: ${paymentIntent.id}`);
+    logger.error(`Payment not found for PaymentIntent: ${paymentIntent.id}`);
     return;
   }
 
@@ -142,7 +142,7 @@ async function handlePaymentSucceeded(
       );
       receiptUrl = charge.receipt_url || undefined;
     } catch (err) {
-      console.error('Error fetching charge:', err);
+      logger.error('Error fetching charge:', { error: err });
     }
   }
 

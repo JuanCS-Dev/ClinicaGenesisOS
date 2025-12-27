@@ -9,6 +9,8 @@
  * Referência: NEJM AI 2024 - "Good answers are common to many LLMs"
  */
 
+import { logger } from 'firebase-functions';
+
 /**
  * Azure OpenAI configuration
  */
@@ -114,7 +116,7 @@ export async function callAzureOpenAI(
   const config = getAzureOpenAIConfig();
 
   if (!config.apiKey) {
-    console.warn('[AzureOpenAI] API key not configured, skipping call');
+    logger.warn('[AzureOpenAI] API key not configured, skipping call');
     return null;
   }
 
@@ -168,7 +170,7 @@ export async function callAzureOpenAI(
         const content = data.choices?.[0]?.message?.content || '';
         const usage = data.usage || {};
 
-        console.warn(
+        logger.info(
           `[AzureOpenAI] Success in ${elapsed}ms, tokens: ${usage.total_tokens || 'N/A'}`
         );
 
@@ -190,7 +192,7 @@ export async function callAzureOpenAI(
           ? parseInt(retryAfter, 10) * 1000
           : Math.pow(2, attempt) * 1000; // Exponential backoff
 
-        console.warn(
+        logger.warn(
           `[AzureOpenAI] Retryable error ${response.status}, attempt ${attempt}/${maxRetries}, waiting ${waitMs}ms`
         );
 
@@ -202,17 +204,17 @@ export async function callAzureOpenAI(
 
       // Non-retryable error
       const errorBody = await response.text();
-      console.error(
+      logger.error(
         `[AzureOpenAI] Error ${response.status}: ${errorBody.slice(0, 200)}`
       );
       lastError = new Error(`Azure OpenAI error: ${response.status}`);
     } catch (error) {
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
-          console.error(`[AzureOpenAI] Timeout after ${timeoutMs}ms`);
+          logger.error(`[AzureOpenAI] Timeout after ${timeoutMs}ms`);
           lastError = new Error('Azure OpenAI timeout');
         } else {
-          console.error(`[AzureOpenAI] Network error: ${error.message}`);
+          logger.error(`[AzureOpenAI] Network error: ${error.message}`);
           lastError = error;
         }
       }
@@ -220,7 +222,7 @@ export async function callAzureOpenAI(
       // Retry on network errors
       if (attempt < maxRetries) {
         const waitMs = Math.pow(2, attempt) * 1000;
-        console.warn(
+        logger.warn(
           `[AzureOpenAI] Retrying in ${waitMs}ms, attempt ${attempt}/${maxRetries}`
         );
         await sleep(waitMs);
@@ -230,7 +232,7 @@ export async function callAzureOpenAI(
   }
 
   // All retries exhausted - return null for graceful fallback
-  console.error(
+  logger.error(
     `[AzureOpenAI] All ${maxRetries} attempts failed: ${lastError?.message}`
   );
   return null;
@@ -261,7 +263,7 @@ export function parseAzureResponse<T>(response: AzureOpenAIResponse | null): T |
   try {
     return JSON.parse(content.trim()) as T;
   } catch (error) {
-    console.error('[AzureOpenAI] Failed to parse JSON response:', error);
+    logger.error('[AzureOpenAI] Failed to parse JSON response:', { error });
     return null;
   }
 }

@@ -21,9 +21,13 @@ import {
   RefreshCw,
   FileText,
   QrCode,
+  Loader2,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { usePatientPortalPrescriptions } from '../../hooks/usePatientPortal'
+import { useClinicContext } from '../../contexts/ClinicContext'
 import { Skeleton } from '../../components/ui/Skeleton'
+import { downloadPrescriptionPDF } from '../../services/pdf-generation.service'
 import type { Prescription } from '@/types'
 
 // ============================================================================
@@ -94,13 +98,24 @@ function PrescriptionCardSkeleton() {
 
 interface PrescriptionCardProps {
   prescription: Prescription
+  onDownload: (prescription: Prescription) => Promise<void>
 }
 
-const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ prescription }) => {
+const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ prescription, onDownload }) => {
+  const [downloading, setDownloading] = useState(false)
   const daysLeft = getDaysUntilExpiry(prescription.expiresAt)
   const isExpiringSoon = daysLeft > 0 && daysLeft <= 7
   const isExpired = daysLeft <= 0
   const hasDigitalSignature = !!prescription.signature
+
+  const handleDownload = async () => {
+    setDownloading(true)
+    try {
+      await onDownload(prescription)
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   return (
     <div className="bg-genesis-surface rounded-2xl border border-genesis-border overflow-hidden hover:shadow-lg transition-all">
@@ -134,8 +149,8 @@ const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ prescription }) => 
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
-            <Pill className="w-5 h-5 text-green-600" />
+          <div className="w-10 h-10 rounded-xl bg-success-soft flex items-center justify-center">
+            <Pill className="w-5 h-5 text-success" />
           </div>
           <div>
             <p className="font-semibold text-genesis-dark flex items-center gap-2">
@@ -174,9 +189,17 @@ const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ prescription }) => 
 
       {/* Actions */}
       <div className="p-4 pt-0 flex gap-2">
-        <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
-          <Download className="w-4 h-4" />
-          Baixar PDF
+        <button
+          onClick={handleDownload}
+          disabled={downloading}
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100"
+        >
+          {downloading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Download className="w-4 h-4" />
+          )}
+          {downloading ? 'Gerando...' : 'Baixar PDF'}
         </button>
         {!isExpired && (
           <button className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-genesis-border text-genesis-medium text-sm font-medium hover:bg-genesis-hover hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
@@ -194,8 +217,24 @@ const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ prescription }) => 
 
 export function PatientPrescriptions(): React.ReactElement {
   const { prescriptions, activePrescriptions, loading } = usePatientPortalPrescriptions()
+  const { clinic } = useClinicContext()
   const [search, setSearch] = useState('')
   const [showExpired, setShowExpired] = useState(false)
+
+  const handleDownloadPDF = async (prescription: Prescription) => {
+    try {
+      await downloadPrescriptionPDF(
+        prescription,
+        clinic?.name || 'Clinica Genesis',
+        clinic?.address,
+        clinic?.phone
+      )
+      toast.success('PDF gerado com sucesso!')
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      toast.error('Erro ao gerar PDF. Tente novamente.')
+    }
+  }
 
   const filteredPrescriptions = useMemo(() => {
     return prescriptions.filter(rx => {
@@ -222,7 +261,7 @@ export function PatientPrescriptions(): React.ReactElement {
         {/* Header Skeleton */}
         <div>
           <div className="flex items-center gap-3">
-            <Pill className="w-7 h-7 text-green-600" />
+            <Pill className="w-7 h-7 text-success" />
             <Skeleton className="h-8 w-40" />
           </div>
           <Skeleton className="h-4 w-48 mt-2" />
@@ -248,7 +287,7 @@ export function PatientPrescriptions(): React.ReactElement {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-genesis-dark flex items-center gap-3">
-          <Pill className="w-7 h-7 text-green-600" />
+          <Pill className="w-7 h-7 text-success" />
           Minhas Receitas
         </h1>
         <p className="text-genesis-muted text-sm mt-1">
@@ -286,7 +325,11 @@ export function PatientPrescriptions(): React.ReactElement {
       {filteredPrescriptions.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filteredPrescriptions.map(prescription => (
-            <PrescriptionCard key={prescription.id} prescription={prescription} />
+            <PrescriptionCard
+              key={prescription.id}
+              prescription={prescription}
+              onDownload={handleDownloadPDF}
+            />
           ))}
         </div>
       ) : (
@@ -300,14 +343,14 @@ export function PatientPrescriptions(): React.ReactElement {
       )}
 
       {/* Info Card */}
-      <div className="bg-green-50 dark:bg-green-900/20 rounded-2xl p-4 border border-green-100 dark:border-green-800">
+      <div className="bg-success-soft rounded-2xl p-4 border border-success/20">
         <div className="flex gap-3">
-          <FileText className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+          <FileText className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-green-800 dark:text-green-200">
+            <p className="text-sm font-medium text-genesis-dark">
               Receitas Digitais
             </p>
-            <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+            <p className="text-sm text-genesis-medium mt-1">
               Receitas com assinatura digital podem ser apresentadas diretamente na farmácia pelo
               celular. Basta mostrar o QR Code.
             </p>
