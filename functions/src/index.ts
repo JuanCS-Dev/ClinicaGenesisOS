@@ -101,3 +101,8 @@ export { setUserClaims, revokeUserClaims, refreshClaims, onClinicCreated } from 
 // Rate Limiting Cleanup (2.3)
 // ============================================
 export { cleanupRateLimits } from './middleware/index.js'
+
+// ============================================
+// FHIR R4 REST API (5.1)
+// ============================================
+export { fhirPatient, fhirAppointment, fhirObservation, fhirMetadata } from './fhir/index.js'
