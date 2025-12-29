@@ -22,15 +22,20 @@ import {
   serverTimestamp,
   Timestamp,
   type Unsubscribe,
-} from 'firebase/firestore';
-import { db } from '../firebase';
-import type { OperadoraFirestore, CreateOperadoraInput } from '@/types';
+} from 'firebase/firestore'
+import { db } from '../firebase'
+import type { OperadoraFirestore, CreateOperadoraInput } from '@/types'
+import { auditHelper, type AuditUserContext } from './lgpd/audit-helper'
+
+function buildAuditContext(clinicId: string, userId: string): AuditUserContext {
+  return { clinicId, userId, userName: userId }
+}
 
 /**
  * Get the operadoras collection reference for a clinic.
  */
 function getOperadorasCollection(clinicId: string) {
-  return collection(db, 'clinics', clinicId, 'operadoras');
+  return collection(db, 'clinics', clinicId, 'operadoras')
 }
 
 /**
@@ -44,12 +49,12 @@ function toOperadora(
   const createdAt =
     data.createdAt instanceof Timestamp
       ? data.createdAt.toDate().toISOString()
-      : (data.createdAt as string) || new Date().toISOString();
+      : (data.createdAt as string) || new Date().toISOString()
 
   const updatedAt =
     data.updatedAt instanceof Timestamp
       ? data.updatedAt.toDate().toISOString()
-      : (data.updatedAt as string) || new Date().toISOString();
+      : (data.updatedAt as string) || new Date().toISOString()
 
   return {
     id,
@@ -69,7 +74,7 @@ function toOperadora(
     updatedAt,
     createdBy: data.createdBy as string,
     updatedBy: data.updatedBy as string,
-  };
+  }
 }
 
 /**
@@ -80,47 +85,36 @@ export const operadoraService = {
    * Get all operadoras for a clinic.
    */
   async getAll(clinicId: string): Promise<OperadoraFirestore[]> {
-    const operadorasRef = getOperadorasCollection(clinicId);
-    const q = query(operadorasRef, orderBy('nomeFantasia', 'asc'));
-    const querySnapshot = await getDocs(q);
+    const operadorasRef = getOperadorasCollection(clinicId)
+    const q = query(operadorasRef, orderBy('nomeFantasia', 'asc'))
+    const querySnapshot = await getDocs(q)
 
-    return querySnapshot.docs.map((docSnap) =>
-      toOperadora(docSnap.id, clinicId, docSnap.data())
-    );
+    return querySnapshot.docs.map(docSnap => toOperadora(docSnap.id, clinicId, docSnap.data()))
   },
 
   /**
    * Get only active operadoras for a clinic.
    */
   async getAtivas(clinicId: string): Promise<OperadoraFirestore[]> {
-    const operadorasRef = getOperadorasCollection(clinicId);
-    const q = query(
-      operadorasRef,
-      where('ativa', '==', true),
-      orderBy('nomeFantasia', 'asc')
-    );
-    const querySnapshot = await getDocs(q);
+    const operadorasRef = getOperadorasCollection(clinicId)
+    const q = query(operadorasRef, where('ativa', '==', true), orderBy('nomeFantasia', 'asc'))
+    const querySnapshot = await getDocs(q)
 
-    return querySnapshot.docs.map((docSnap) =>
-      toOperadora(docSnap.id, clinicId, docSnap.data())
-    );
+    return querySnapshot.docs.map(docSnap => toOperadora(docSnap.id, clinicId, docSnap.data()))
   },
 
   /**
    * Get an operadora by ID.
    */
-  async getById(
-    clinicId: string,
-    operadoraId: string
-  ): Promise<OperadoraFirestore | null> {
-    const docRef = doc(db, 'clinics', clinicId, 'operadoras', operadoraId);
-    const docSnap = await getDoc(docRef);
+  async getById(clinicId: string, operadoraId: string): Promise<OperadoraFirestore | null> {
+    const docRef = doc(db, 'clinics', clinicId, 'operadoras', operadoraId)
+    const docSnap = await getDoc(docRef)
 
     if (!docSnap.exists()) {
-      return null;
+      return null
     }
 
-    return toOperadora(docSnap.id, clinicId, docSnap.data());
+    return toOperadora(docSnap.id, clinicId, docSnap.data())
   },
 
   /**
@@ -130,27 +124,23 @@ export const operadoraService = {
     clinicId: string,
     registroANS: string
   ): Promise<OperadoraFirestore | null> {
-    const operadorasRef = getOperadorasCollection(clinicId);
-    const q = query(operadorasRef, where('registroANS', '==', registroANS));
-    const querySnapshot = await getDocs(q);
+    const operadorasRef = getOperadorasCollection(clinicId)
+    const q = query(operadorasRef, where('registroANS', '==', registroANS))
+    const querySnapshot = await getDocs(q)
 
     if (querySnapshot.empty) {
-      return null;
+      return null
     }
 
-    const docSnap = querySnapshot.docs[0];
-    return toOperadora(docSnap.id, clinicId, docSnap.data());
+    const docSnap = querySnapshot.docs[0]
+    return toOperadora(docSnap.id, clinicId, docSnap.data())
   },
 
   /**
    * Create a new operadora.
    */
-  async create(
-    clinicId: string,
-    userId: string,
-    data: CreateOperadoraInput
-  ): Promise<string> {
-    const operadorasRef = getOperadorasCollection(clinicId);
+  async create(clinicId: string, userId: string, data: CreateOperadoraInput): Promise<string> {
+    const operadorasRef = getOperadorasCollection(clinicId)
 
     const docData = {
       ...data,
@@ -158,10 +148,17 @@ export const operadoraService = {
       updatedAt: serverTimestamp(),
       createdBy: userId,
       updatedBy: userId,
-    };
+    }
 
-    const docRef = await addDoc(operadorasRef, docData);
-    return docRef.id;
+    const docRef = await addDoc(operadorasRef, docData)
+
+    // LGPD audit: Operadora creation (business partner data)
+    await auditHelper.logCreate(buildAuditContext(clinicId, userId), 'operadora', docRef.id, {
+      registroANS: data.registroANS,
+      nomeFantasia: data.nomeFantasia,
+    })
+
+    return docRef.id
   },
 
   /**
@@ -173,13 +170,25 @@ export const operadoraService = {
     userId: string,
     data: Partial<CreateOperadoraInput>
   ): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId, 'operadoras', operadoraId);
+    // Get previous values for audit
+    const operadora = await this.getById(clinicId, operadoraId)
+
+    const docRef = doc(db, 'clinics', clinicId, 'operadoras', operadoraId)
 
     await updateDoc(docRef, {
       ...data,
       updatedAt: serverTimestamp(),
       updatedBy: userId,
-    });
+    })
+
+    // LGPD audit: Operadora update
+    await auditHelper.logUpdate(
+      buildAuditContext(clinicId, userId),
+      'operadora',
+      operadoraId,
+      { nomeFantasia: operadora?.nomeFantasia, ativa: operadora?.ativa },
+      data
+    )
   },
 
   /**
@@ -191,21 +200,44 @@ export const operadoraService = {
     userId: string,
     ativa: boolean
   ): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId, 'operadoras', operadoraId);
+    // Get previous value for audit
+    const operadora = await this.getById(clinicId, operadoraId)
+
+    const docRef = doc(db, 'clinics', clinicId, 'operadoras', operadoraId)
 
     await updateDoc(docRef, {
       ativa,
       updatedAt: serverTimestamp(),
       updatedBy: userId,
-    });
+    })
+
+    // LGPD audit: Operadora activation status change
+    await auditHelper.logUpdate(
+      buildAuditContext(clinicId, userId),
+      'operadora',
+      operadoraId,
+      { ativa: operadora?.ativa },
+      { ativa }
+    )
   },
 
   /**
    * Delete an operadora.
    */
-  async delete(clinicId: string, operadoraId: string): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId, 'operadoras', operadoraId);
-    await deleteDoc(docRef);
+  async delete(clinicId: string, operadoraId: string, userId?: string): Promise<void> {
+    // Get operadora data before deletion for audit
+    const operadora = userId ? await this.getById(clinicId, operadoraId) : null
+
+    const docRef = doc(db, 'clinics', clinicId, 'operadoras', operadoraId)
+    await deleteDoc(docRef)
+
+    // LGPD audit: Operadora deletion
+    if (userId) {
+      await auditHelper.logDelete(buildAuditContext(clinicId, userId), 'operadora', operadoraId, {
+        registroANS: operadora?.registroANS,
+        nomeFantasia: operadora?.nomeFantasia,
+      })
+    }
   },
 
   /**
@@ -216,22 +248,22 @@ export const operadoraService = {
     onData: (operadoras: OperadoraFirestore[]) => void,
     onError?: (error: Error) => void
   ): Unsubscribe {
-    const operadorasRef = getOperadorasCollection(clinicId);
-    const q = query(operadorasRef, orderBy('nomeFantasia', 'asc'));
+    const operadorasRef = getOperadorasCollection(clinicId)
+    const q = query(operadorasRef, orderBy('nomeFantasia', 'asc'))
 
     return onSnapshot(
       q,
-      (snapshot) => {
-        const operadoras = snapshot.docs.map((docSnap) =>
+      snapshot => {
+        const operadoras = snapshot.docs.map(docSnap =>
           toOperadora(docSnap.id, clinicId, docSnap.data())
-        );
-        onData(operadoras);
+        )
+        onData(operadoras)
       },
-      (error) => {
-        console.error('Error subscribing to operadoras:', error);
-        onError?.(error);
+      error => {
+        console.error('Error subscribing to operadoras:', error)
+        onError?.(error)
       }
-    );
+    )
   },
 
   /**
@@ -242,25 +274,21 @@ export const operadoraService = {
     onData: (operadoras: OperadoraFirestore[]) => void,
     onError?: (error: Error) => void
   ): Unsubscribe {
-    const operadorasRef = getOperadorasCollection(clinicId);
-    const q = query(
-      operadorasRef,
-      where('ativa', '==', true),
-      orderBy('nomeFantasia', 'asc')
-    );
+    const operadorasRef = getOperadorasCollection(clinicId)
+    const q = query(operadorasRef, where('ativa', '==', true), orderBy('nomeFantasia', 'asc'))
 
     return onSnapshot(
       q,
-      (snapshot) => {
-        const operadoras = snapshot.docs.map((docSnap) =>
+      snapshot => {
+        const operadoras = snapshot.docs.map(docSnap =>
           toOperadora(docSnap.id, clinicId, docSnap.data())
-        );
-        onData(operadoras);
+        )
+        onData(operadoras)
       },
-      (error) => {
-        console.error('Error subscribing to active operadoras:', error);
-        onError?.(error);
+      error => {
+        console.error('Error subscribing to active operadoras:', error)
+        onError?.(error)
       }
-    );
+    )
   },
-};
+}

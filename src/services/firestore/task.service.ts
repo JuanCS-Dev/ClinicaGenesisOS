@@ -26,6 +26,11 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { Task, TaskStatus, TaskPriority, CreateTaskInput, UpdateTaskInput } from '@/types'
+import { auditHelper, type AuditUserContext } from './lgpd/audit-helper'
+
+function buildAuditContext(clinicId: string, userId: string): AuditUserContext {
+  return { clinicId, userId, userName: userId }
+}
 
 /**
  * Get the tasks collection reference for a clinic.
@@ -131,6 +136,12 @@ export const taskService = {
 
     const docRef = await addDoc(tasksRef, taskData)
 
+    // LGPD audit: Task creation
+    await auditHelper.logCreate(buildAuditContext(clinicId, data.createdBy), 'task', docRef.id, {
+      title: data.title,
+      patientId: data.patientId,
+    })
+
     return docRef.id
   },
 
@@ -141,8 +152,16 @@ export const taskService = {
    * @param taskId - The task ID
    * @param data - The fields to update
    */
-  async update(clinicId: string, taskId: string, data: UpdateTaskInput): Promise<void> {
+  async update(
+    clinicId: string,
+    taskId: string,
+    data: UpdateTaskInput,
+    userId?: string
+  ): Promise<void> {
     const docRef = doc(db, 'clinics', clinicId, 'tasks', taskId)
+
+    // Get previous values for audit
+    const task = userId ? await this.getById(clinicId, taskId) : null
 
     const updateData = { ...data } as UpdateData<DocumentData>
 
@@ -154,6 +173,17 @@ export const taskService = {
     })
 
     await updateDoc(docRef, updateData)
+
+    // LGPD audit: Task update
+    if (userId) {
+      await auditHelper.logUpdate(
+        buildAuditContext(clinicId, userId),
+        'task',
+        taskId,
+        { status: task?.status, title: task?.title },
+        data
+      )
+    }
   },
 
   /**
@@ -163,8 +193,15 @@ export const taskService = {
    * @param taskId - The task ID
    * @param currentStatus - The current status
    */
-  async toggleComplete(clinicId: string, taskId: string, currentStatus: TaskStatus): Promise<void> {
+  async toggleComplete(
+    clinicId: string,
+    taskId: string,
+    currentStatus: TaskStatus,
+    userId?: string
+  ): Promise<void> {
     const docRef = doc(db, 'clinics', clinicId, 'tasks', taskId)
+
+    const newStatus = currentStatus === 'pending' ? 'completed' : 'pending'
 
     if (currentStatus === 'pending') {
       await updateDoc(docRef, {
@@ -177,6 +214,17 @@ export const taskService = {
         completedAt: null,
       })
     }
+
+    // LGPD audit: Task status toggle
+    if (userId) {
+      await auditHelper.logUpdate(
+        buildAuditContext(clinicId, userId),
+        'task',
+        taskId,
+        { status: currentStatus },
+        { status: newStatus }
+      )
+    }
   },
 
   /**
@@ -185,9 +233,20 @@ export const taskService = {
    * @param clinicId - The clinic ID
    * @param taskId - The task ID
    */
-  async delete(clinicId: string, taskId: string): Promise<void> {
+  async delete(clinicId: string, taskId: string, userId?: string): Promise<void> {
+    // Get task data before deletion for audit
+    const task = userId ? await this.getById(clinicId, taskId) : null
+
     const docRef = doc(db, 'clinics', clinicId, 'tasks', taskId)
     await deleteDoc(docRef)
+
+    // LGPD audit: Task deletion
+    if (userId) {
+      await auditHelper.logDelete(buildAuditContext(clinicId, userId), 'task', taskId, {
+        title: task?.title,
+        patientId: task?.patientId,
+      })
+    }
   },
 
   /**

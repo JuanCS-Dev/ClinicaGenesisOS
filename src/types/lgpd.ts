@@ -132,6 +132,11 @@ export type AuditResourceType =
   | 'conversation'
   | 'message'
   | 'record_version'
+  | 'guia'
+  | 'glosa'
+  | 'task'
+  | 'clinic'
+  | 'operadora'
 
 /**
  * Audit log entry (LGPD Art. 37 compliance).

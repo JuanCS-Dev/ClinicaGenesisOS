@@ -26,6 +26,11 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { Clinic, ClinicSettings, ClinicPlan, CreateClinicInput } from '@/types'
+import { auditHelper, type AuditUserContext } from './lgpd/audit-helper'
+
+function buildAuditContext(clinicId: string, userId: string): AuditUserContext {
+  return { clinicId, userId, userName: userId }
+}
 
 /**
  * Default clinic settings for new clinics.
@@ -115,6 +120,12 @@ export const clinicService = {
 
     await setDoc(newDocRef, clinicData)
 
+    // LGPD audit: Clinic creation
+    await auditHelper.logCreate(buildAuditContext(newDocRef.id, ownerId), 'clinic', newDocRef.id, {
+      name: data.name,
+      plan: data.plan || 'solo',
+    })
+
     return newDocRef.id
   },
 
@@ -124,7 +135,14 @@ export const clinicService = {
    * @param clinicId - The clinic ID
    * @param data - The fields to update
    */
-  async update(clinicId: string, data: Partial<Omit<Clinic, 'id' | 'createdAt'>>): Promise<void> {
+  async update(
+    clinicId: string,
+    data: Partial<Omit<Clinic, 'id' | 'createdAt'>>,
+    userId?: string
+  ): Promise<void> {
+    // Get previous values for audit
+    const clinic = userId ? await this.getById(clinicId) : null
+
     const docRef = doc(db, 'clinics', clinicId)
 
     const updateData = {
@@ -140,6 +158,17 @@ export const clinicService = {
     })
 
     await updateDoc(docRef, updateData)
+
+    // LGPD audit: Clinic update
+    if (userId) {
+      await auditHelper.logUpdate(
+        buildAuditContext(clinicId, userId),
+        'clinic',
+        clinicId,
+        { name: clinic?.name, plan: clinic?.plan },
+        data
+      )
+    }
   },
 
   /**
@@ -150,9 +179,19 @@ export const clinicService = {
    *
    * @param clinicId - The clinic ID
    */
-  async delete(clinicId: string): Promise<void> {
+  async delete(clinicId: string, userId?: string): Promise<void> {
+    // Get clinic data before deletion for audit
+    const clinic = userId ? await this.getById(clinicId) : null
+
     const docRef = doc(db, 'clinics', clinicId)
     await deleteDoc(docRef)
+
+    // LGPD audit: Clinic deletion
+    if (userId) {
+      await auditHelper.logDelete(buildAuditContext(clinicId, userId), 'clinic', clinicId, {
+        name: clinic?.name,
+      })
+    }
   },
 
   /**
@@ -187,7 +226,11 @@ export const clinicService = {
    * @param clinicId - The clinic ID
    * @param settings - The settings to update (partial)
    */
-  async updateSettings(clinicId: string, settings: Partial<ClinicSettings>): Promise<void> {
+  async updateSettings(
+    clinicId: string,
+    settings: Partial<ClinicSettings>,
+    userId?: string
+  ): Promise<void> {
     const clinic = await this.getById(clinicId)
     if (!clinic) {
       throw new Error(`Clinic not found: ${clinicId}`)
@@ -198,7 +241,7 @@ export const clinicService = {
       ...settings,
     }
 
-    await this.update(clinicId, { settings: mergedSettings })
+    await this.update(clinicId, { settings: mergedSettings }, userId)
   },
 
   /**
@@ -207,8 +250,8 @@ export const clinicService = {
    * @param clinicId - The clinic ID
    * @param plan - The new plan
    */
-  async changePlan(clinicId: string, plan: ClinicPlan): Promise<void> {
-    await this.update(clinicId, { plan })
+  async changePlan(clinicId: string, plan: ClinicPlan, userId?: string): Promise<void> {
+    await this.update(clinicId, { plan }, userId)
   },
 
   /**

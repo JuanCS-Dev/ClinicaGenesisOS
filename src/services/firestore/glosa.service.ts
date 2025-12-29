@@ -19,37 +19,42 @@ import {
   onSnapshot,
   type QueryConstraint,
   type Unsubscribe,
-} from 'firebase/firestore';
-import { db } from '../firebase';
-import type { Glosa } from '@/types/tiss/glosas';
+} from 'firebase/firestore'
+import { db } from '../firebase'
+import type { Glosa } from '@/types/tiss/glosas'
+import { auditHelper, type AuditUserContext } from './lgpd/audit-helper'
+
+function buildAuditContext(clinicId: string, userId: string): AuditUserContext {
+  return { clinicId, userId, userName: userId }
+}
 
 // =============================================================================
 // TYPES
 // =============================================================================
 
 export interface GlosaFirestore extends Glosa {
-  clinicId: string;
-  guiaId: string;
-  loteId?: string;
-  operadoraId: string;
+  clinicId: string
+  guiaId: string
+  loteId?: string
+  operadoraId: string
 }
 
 export interface GlosaFilters {
-  status?: Glosa['status'];
-  operadoraId?: string;
-  prazoProximo?: boolean;
-  startDate?: string;
-  endDate?: string;
+  status?: Glosa['status']
+  operadoraId?: string
+  prazoProximo?: boolean
+  startDate?: string
+  endDate?: string
 }
 
 export interface GlosaStats {
-  totalGlosas: number;
-  valorTotalGlosado: number;
-  valorRecuperado: number;
-  taxaRecuperacao: number;
-  glosasPerStatus: Record<string, number>;
-  principaisMotivos: Array<{ motivo: string; quantidade: number; valor: number }>;
-  glosasProximoPrazo: number;
+  totalGlosas: number
+  valorTotalGlosado: number
+  valorRecuperado: number
+  taxaRecuperacao: number
+  glosasPerStatus: Record<string, number>
+  principaisMotivos: Array<{ motivo: string; quantidade: number; valor: number }>
+  glosasProximoPrazo: number
 }
 
 // =============================================================================
@@ -57,7 +62,7 @@ export interface GlosaStats {
 // =============================================================================
 
 function getGlosasCollection(clinicId: string) {
-  return collection(db, 'clinics', clinicId, 'glosas');
+  return collection(db, 'clinics', clinicId, 'glosas')
 }
 
 // =============================================================================
@@ -71,51 +76,50 @@ export async function getGlosas(
   clinicId: string,
   filters?: GlosaFilters
 ): Promise<GlosaFirestore[]> {
-  const glosasRef = getGlosasCollection(clinicId);
-  const constraints: QueryConstraint[] = [orderBy('createdAt', 'desc')];
+  const glosasRef = getGlosasCollection(clinicId)
+  const constraints: QueryConstraint[] = [orderBy('createdAt', 'desc')]
 
   if (filters?.status) {
-    constraints.unshift(where('status', '==', filters.status));
+    constraints.unshift(where('status', '==', filters.status))
   }
 
   if (filters?.operadoraId) {
-    constraints.unshift(where('operadoraId', '==', filters.operadoraId));
+    constraints.unshift(where('operadoraId', '==', filters.operadoraId))
   }
 
-  const q = query(glosasRef, ...constraints);
-  const snapshot = await getDocs(q);
+  const q = query(glosasRef, ...constraints)
+  const snapshot = await getDocs(q)
 
   let glosas = snapshot.docs.map(
-    (doc) =>
+    doc =>
       ({
         id: doc.id,
         clinicId,
         ...doc.data(),
       }) as GlosaFirestore
-  );
+  )
 
   // Apply date filters in memory
   if (filters?.startDate) {
-    glosas = glosas.filter((g) => g.createdAt >= filters.startDate!);
+    glosas = glosas.filter(g => g.createdAt >= filters.startDate!)
   }
   if (filters?.endDate) {
-    glosas = glosas.filter((g) => g.createdAt <= filters.endDate!);
+    glosas = glosas.filter(g => g.createdAt <= filters.endDate!)
   }
 
   // Filter by approaching deadline (7 days)
   if (filters?.prazoProximo) {
-    const sevenDaysFromNow = new Date();
-    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-    const today = new Date().toISOString().split('T')[0];
-    const limit = sevenDaysFromNow.toISOString().split('T')[0];
+    const sevenDaysFromNow = new Date()
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7)
+    const today = new Date().toISOString().split('T')[0]
+    const limit = sevenDaysFromNow.toISOString().split('T')[0]
 
     glosas = glosas.filter(
-      (g) =>
-        g.status === 'pendente' && g.prazoRecurso >= today && g.prazoRecurso <= limit
-    );
+      g => g.status === 'pendente' && g.prazoRecurso >= today && g.prazoRecurso <= limit
+    )
   }
 
-  return glosas;
+  return glosas
 }
 
 /**
@@ -125,16 +129,16 @@ export async function getGlosaById(
   clinicId: string,
   glosaId: string
 ): Promise<GlosaFirestore | null> {
-  const docRef = doc(db, 'clinics', clinicId, 'glosas', glosaId);
-  const snapshot = await getDoc(docRef);
+  const docRef = doc(db, 'clinics', clinicId, 'glosas', glosaId)
+  const snapshot = await getDoc(docRef)
 
-  if (!snapshot.exists()) return null;
+  if (!snapshot.exists()) return null
 
   return {
     id: snapshot.id,
     clinicId,
     ...snapshot.data(),
-  } as GlosaFirestore;
+  } as GlosaFirestore
 }
 
 /**
@@ -145,26 +149,26 @@ export function subscribeToGlosas(
   callback: (glosas: GlosaFirestore[]) => void,
   filters?: GlosaFilters
 ): Unsubscribe {
-  const glosasRef = getGlosasCollection(clinicId);
-  const constraints: QueryConstraint[] = [orderBy('createdAt', 'desc')];
+  const glosasRef = getGlosasCollection(clinicId)
+  const constraints: QueryConstraint[] = [orderBy('createdAt', 'desc')]
 
   if (filters?.status) {
-    constraints.unshift(where('status', '==', filters.status));
+    constraints.unshift(where('status', '==', filters.status))
   }
 
-  const q = query(glosasRef, ...constraints, limit(100));
+  const q = query(glosasRef, ...constraints, limit(100))
 
-  return onSnapshot(q, (snapshot) => {
+  return onSnapshot(q, snapshot => {
     const glosas = snapshot.docs.map(
-      (doc) =>
+      doc =>
         ({
           id: doc.id,
           clinicId,
           ...doc.data(),
         }) as GlosaFirestore
-    );
-    callback(glosas);
-  });
+    )
+    callback(glosas)
+  })
 }
 
 // =============================================================================
@@ -178,14 +182,29 @@ export async function updateGlosaStatus(
   clinicId: string,
   glosaId: string,
   status: Glosa['status'],
-  recursoId?: string
+  recursoId?: string,
+  userId?: string
 ): Promise<void> {
-  const docRef = doc(db, 'clinics', clinicId, 'glosas', glosaId);
+  // Get previous status for audit
+  const glosa = userId ? await getGlosaById(clinicId, glosaId) : null
+
+  const docRef = doc(db, 'clinics', clinicId, 'glosas', glosaId)
   await updateDoc(docRef, {
     status,
     recursoId,
     updatedAt: new Date().toISOString(),
-  });
+  })
+
+  // LGPD audit: Glosa status change (financial data)
+  if (userId) {
+    await auditHelper.logUpdate(
+      buildAuditContext(clinicId, userId),
+      'glosa',
+      glosaId,
+      { status: glosa?.status },
+      { status, recursoId }
+    )
+  }
 }
 
 // =============================================================================
@@ -200,25 +219,25 @@ export function calculateGlosaStats(glosas: GlosaFirestore[]): GlosaStats {
     pendente: 0,
     em_recurso: 0,
     resolvida: 0,
-  };
+  }
 
-  const motivoMap = new Map<string, { quantidade: number; valor: number }>();
-  let valorTotalGlosado = 0;
-  let valorRecuperado = 0;
-  let glosasProximoPrazo = 0;
+  const motivoMap = new Map<string, { quantidade: number; valor: number }>()
+  let valorTotalGlosado = 0
+  let valorRecuperado = 0
+  let glosasProximoPrazo = 0
 
-  const today = new Date();
-  const sevenDaysFromNow = new Date();
-  sevenDaysFromNow.setDate(today.getDate() + 7);
-  const todayStr = today.toISOString().split('T')[0];
-  const limitStr = sevenDaysFromNow.toISOString().split('T')[0];
+  const today = new Date()
+  const sevenDaysFromNow = new Date()
+  sevenDaysFromNow.setDate(today.getDate() + 7)
+  const todayStr = today.toISOString().split('T')[0]
+  const limitStr = sevenDaysFromNow.toISOString().split('T')[0]
 
-  glosas.forEach((glosa) => {
-    glosasPerStatus[glosa.status]++;
-    valorTotalGlosado += glosa.valorGlosado;
+  glosas.forEach(glosa => {
+    glosasPerStatus[glosa.status]++
+    valorTotalGlosado += glosa.valorGlosado
 
     if (glosa.status === 'resolvida') {
-      valorRecuperado += glosa.valorAprovado;
+      valorRecuperado += glosa.valorAprovado
     }
 
     // Check approaching deadline
@@ -227,22 +246,22 @@ export function calculateGlosaStats(glosas: GlosaFirestore[]): GlosaStats {
       glosa.prazoRecurso >= todayStr &&
       glosa.prazoRecurso <= limitStr
     ) {
-      glosasProximoPrazo++;
+      glosasProximoPrazo++
     }
 
     // Count motivos
-    glosa.itensGlosados?.forEach((item) => {
-      const existing = motivoMap.get(item.codigoGlosa) || { quantidade: 0, valor: 0 };
-      existing.quantidade++;
-      existing.valor += item.valorGlosado;
-      motivoMap.set(item.codigoGlosa, existing);
-    });
-  });
+    glosa.itensGlosados?.forEach(item => {
+      const existing = motivoMap.get(item.codigoGlosa) || { quantidade: 0, valor: 0 }
+      existing.quantidade++
+      existing.valor += item.valorGlosado
+      motivoMap.set(item.codigoGlosa, existing)
+    })
+  })
 
   const principaisMotivos = Array.from(motivoMap.entries())
     .map(([motivo, stats]) => ({ motivo, ...stats }))
     .sort((a, b) => b.valor - a.valor)
-    .slice(0, 10);
+    .slice(0, 10)
 
   return {
     totalGlosas: glosas.length,
@@ -252,5 +271,5 @@ export function calculateGlosaStats(glosas: GlosaFirestore[]): GlosaStats {
     glosasPerStatus,
     principaisMotivos,
     glosasProximoPrazo,
-  };
+  }
 }

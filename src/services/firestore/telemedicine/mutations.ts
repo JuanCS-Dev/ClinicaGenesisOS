@@ -31,6 +31,11 @@ import {
   generateRoomName,
 } from './helpers'
 import { getById } from './queries'
+import { auditHelper, type AuditUserContext } from '../lgpd/audit-helper'
+
+function buildAuditContext(clinicId: string, userId: string, userName?: string): AuditUserContext {
+  return { clinicId, userId, userName: userName || userId }
+}
 
 /**
  * Add a log entry for audit purposes.
@@ -91,6 +96,14 @@ export async function create(
     userId: data.professionalId,
     details: { appointmentId: data.appointmentId },
   })
+
+  // LGPD audit: Telemedicine session creation (PHI access)
+  await auditHelper.logCreate(
+    buildAuditContext(clinicId, data.professionalId, data.professionalName),
+    'telemedicine_session',
+    docRef.id,
+    { patientId: data.patientId, appointmentId: data.appointmentId }
+  )
 
   return docRef.id
 }
@@ -247,6 +260,15 @@ export async function endSession(
     userId,
     details: { durationSeconds },
   })
+
+  // LGPD audit: Session completion
+  await auditHelper.logUpdate(
+    buildAuditContext(clinicId, userId),
+    'telemedicine_session',
+    sessionId,
+    { status: session.status },
+    { status: 'completed', durationSeconds }
+  )
 }
 
 /**
@@ -256,12 +278,28 @@ export async function endSession(
  * @param sessionId - The session ID
  * @param notes - The notes to add
  */
-export async function addNotes(clinicId: string, sessionId: string, notes: string): Promise<void> {
+export async function addNotes(
+  clinicId: string,
+  sessionId: string,
+  notes: string,
+  userId?: string
+): Promise<void> {
   const docRef = getSessionDoc(clinicId, sessionId)
   await updateDoc(docRef, {
     notes,
     updatedAt: serverTimestamp(),
   })
+
+  // LGPD audit: Clinical notes added (PHI)
+  if (userId) {
+    await auditHelper.logUpdate(
+      buildAuditContext(clinicId, userId),
+      'telemedicine_session',
+      sessionId,
+      {},
+      { notes: '[REDACTED]' } // Don't log actual notes content
+    )
+  }
 }
 
 /**
