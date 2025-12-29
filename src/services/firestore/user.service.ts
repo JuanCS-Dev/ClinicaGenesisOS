@@ -24,6 +24,25 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { UserProfile, UserRole, SpecialtyType } from '@/types'
+import { auditHelper, type AuditUserContext } from './lgpd/audit-helper'
+
+/**
+ * Audit context for user operations.
+ * Optional because users may not be associated with a clinic.
+ */
+export interface UserAuditContext {
+  actorId: string
+  actorName: string
+  clinicId: string
+}
+
+/**
+ * Build audit context for user operations.
+ */
+function buildAuditContext(ctx?: UserAuditContext): AuditUserContext | null {
+  if (!ctx) return null
+  return { clinicId: ctx.clinicId, userId: ctx.actorId, userName: ctx.actorName }
+}
 
 /**
  * Input type for creating a new user profile.
@@ -132,9 +151,33 @@ export const userService = {
    *
    * @param userId - The Firebase Auth user ID
    * @param data - The fields to update
+   * @param auditCtx - Optional audit context (required for role/clinic changes)
    */
-  async update(userId: string, data: UpdateUserProfileInput): Promise<void> {
+  async update(
+    userId: string,
+    data: UpdateUserProfileInput,
+    auditCtx?: UserAuditContext
+  ): Promise<void> {
     const docRef = doc(db, 'users', userId)
+
+    // Get previous values for audit if changing sensitive fields
+    const ctx = buildAuditContext(auditCtx)
+    let previousValues: Record<string, unknown> | undefined
+    const sensitiveFields = ['role', 'clinicId']
+    const hasSensitiveChange = sensitiveFields.some(f => f in data)
+
+    if (ctx && hasSensitiveChange) {
+      const docSnap = await getDoc(docRef)
+      if (docSnap.exists()) {
+        previousValues = {}
+        sensitiveFields.forEach(key => {
+          const docData = docSnap.data()
+          if (key in data && key in docData) {
+            previousValues![key] = docData[key]
+          }
+        })
+      }
+    }
 
     const updateData = {
       ...data,
@@ -149,6 +192,17 @@ export const userService = {
     })
 
     await updateDoc(docRef, updateData)
+
+    // LGPD audit log for sensitive field changes (role, clinicId)
+    if (ctx && hasSensitiveChange && previousValues) {
+      await auditHelper.logUpdate(
+        ctx,
+        'user',
+        userId,
+        previousValues,
+        data as Record<string, unknown>
+      )
+    }
   },
 
   /**
@@ -195,22 +249,58 @@ export const userService = {
    * @param userId - The Firebase Auth user ID
    * @param clinicId - The clinic ID to associate
    * @param role - The user's role in the clinic
+   * @param auditCtx - Audit context (actor who is granting access)
    */
   async joinClinic(
     userId: string,
     clinicId: string,
-    role: UserRole = 'professional'
+    role: UserRole = 'professional',
+    auditCtx?: UserAuditContext
   ): Promise<void> {
+    // Get previous state for audit
+    const previousProfile = await this.getById(userId)
+
     await this.update(userId, { clinicId, role })
+
+    // LGPD audit log - user access granted
+    const ctx = buildAuditContext(auditCtx || { actorId: userId, actorName: 'Sistema', clinicId })
+    if (ctx) {
+      await auditHelper.logCreate(ctx, 'user', userId, {
+        action: 'join_clinic',
+        userId,
+        role,
+        previousClinicId: previousProfile?.clinicId || null,
+      })
+    }
   },
 
   /**
    * Remove a user from their clinic.
    *
    * @param userId - The Firebase Auth user ID
+   * @param auditCtx - Audit context (actor who is revoking access)
    */
-  async leaveClinic(userId: string): Promise<void> {
+  async leaveClinic(userId: string, auditCtx?: UserAuditContext): Promise<void> {
+    // Get previous state for audit
+    const previousProfile = await this.getById(userId)
+    const previousClinicId = previousProfile?.clinicId
+
     await this.update(userId, { clinicId: null, role: 'professional' })
+
+    // LGPD audit log - user access revoked
+    if (previousClinicId) {
+      const ctx = buildAuditContext(
+        auditCtx || { actorId: userId, actorName: 'Sistema', clinicId: previousClinicId }
+      )
+      if (ctx) {
+        await auditHelper.logDelete(ctx, 'user', userId, {
+          action: 'leave_clinic',
+          userId,
+          previousRole: previousProfile?.role,
+          previousClinicId,
+        })
+      }
+    }
   },
 
   /**

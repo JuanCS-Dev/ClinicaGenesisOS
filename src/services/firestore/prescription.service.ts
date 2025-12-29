@@ -20,8 +20,6 @@ import {
   onSnapshot,
   serverTimestamp,
   limit,
-  type UpdateData,
-  type DocumentData,
 } from 'firebase/firestore'
 import type {
   Prescription,
@@ -39,8 +37,16 @@ import {
   toPrescription,
   toLogEntry,
   determinePrescriptionType,
-  statusToEventType,
 } from './prescription.utils'
+import { auditHelper, type AuditUserContext } from './lgpd/audit-helper'
+import { prescriptionWorkflowService } from './prescription-workflow.service'
+
+/**
+ * Build audit context for LGPD logging.
+ */
+function buildAuditContext(clinicId: string, userId: string, userName: string): AuditUserContext {
+  return { clinicId, userId, userName }
+}
 
 /**
  * Digital Prescription service for Firestore operations.
@@ -151,6 +157,7 @@ export const prescriptionService = {
 
     const docRef = await addDoc(prescriptionsRef, prescriptionData)
 
+    // Internal log
     await this.addLog(clinicId, docRef.id, {
       prescriptionId: docRef.id,
       eventType: 'created',
@@ -158,6 +165,18 @@ export const prescriptionService = {
       userName: professional.name,
       details: { medicationCount: data.medications.length },
     })
+
+    // LGPD audit log
+    await auditHelper.logCreate(
+      buildAuditContext(clinicId, professional.id, professional.name),
+      'prescription',
+      docRef.id,
+      {
+        patientId: data.patientId,
+        medicationCount: data.medications.length,
+        type,
+      }
+    )
 
     return docRef.id
   },
@@ -181,6 +200,7 @@ export const prescriptionService = {
     const docRef = getPrescriptionDoc(clinicId, prescriptionId)
     await updateDoc(docRef, { ...data, updatedAt: serverTimestamp() })
 
+    // Internal log
     await this.addLog(clinicId, prescriptionId, {
       prescriptionId,
       eventType: 'updated',
@@ -188,50 +208,25 @@ export const prescriptionService = {
       userName,
       details: { fields: Object.keys(data) },
     })
-  },
 
-  /**
-   * Update prescription status with automatic timestamps.
-   */
-  async updateStatus(
-    clinicId: string,
-    prescriptionId: string,
-    status: PrescriptionStatus,
-    userId: string,
-    userName: string,
-    additionalData?: Partial<Prescription>
-  ): Promise<void> {
-    const docRef = getPrescriptionDoc(clinicId, prescriptionId)
-    const updateData = {
-      status,
-      updatedAt: serverTimestamp(),
-      ...additionalData,
-    } as UpdateData<DocumentData>
-
-    if (status === 'sent' && !additionalData?.sentAt) {
-      ;(updateData as Record<string, unknown>).sentAt = new Date().toISOString()
-    }
-    if (status === 'viewed' && !additionalData?.viewedAt) {
-      ;(updateData as Record<string, unknown>).viewedAt = new Date().toISOString()
-    }
-    if (status === 'filled' && !additionalData?.filledAt) {
-      ;(updateData as Record<string, unknown>).filledAt = new Date().toISOString()
-    }
-
-    await updateDoc(docRef, updateData)
-
-    await this.addLog(clinicId, prescriptionId, {
+    // LGPD audit log
+    await auditHelper.logUpdate(
+      buildAuditContext(clinicId, userId, userName),
+      'prescription',
       prescriptionId,
-      eventType: statusToEventType(status),
-      userId,
-      userName,
-      details: additionalData,
-    })
+      { status: prescription.status },
+      data as Record<string, unknown>
+    )
   },
 
-  /**
-   * Sign a prescription with digital certificate.
-   */
+  // =========================================================================
+  // Workflow Operations (delegated to prescription-workflow.service.ts)
+  // =========================================================================
+
+  /** Update prescription status with automatic timestamps and audit. */
+  updateStatus: prescriptionWorkflowService.updateStatus.bind(prescriptionWorkflowService),
+
+  /** Sign a prescription with digital certificate. */
   async sign(
     clinicId: string,
     prescriptionId: string,
@@ -239,17 +234,17 @@ export const prescriptionService = {
     userId: string,
     userName: string
   ): Promise<void> {
-    const prescription = await this.getById(clinicId, prescriptionId)
-    if (!prescription) throw new Error('Prescription not found')
-    if (prescription.status !== 'draft' && prescription.status !== 'pending_signature') {
-      throw new Error('Prescription cannot be signed in current status')
-    }
-    await this.updateStatus(clinicId, prescriptionId, 'signed', userId, userName, { signature })
+    return prescriptionWorkflowService.sign(
+      clinicId,
+      prescriptionId,
+      signature,
+      userId,
+      userName,
+      this.getById.bind(this)
+    )
   },
 
-  /**
-   * Send prescription to patient.
-   */
+  /** Send prescription to patient. */
   async sendToPatient(
     clinicId: string,
     prescriptionId: string,
@@ -257,54 +252,40 @@ export const prescriptionService = {
     userId: string,
     userName: string
   ): Promise<void> {
-    const prescription = await this.getById(clinicId, prescriptionId)
-    if (!prescription) throw new Error('Prescription not found')
-    if (prescription.status !== 'signed') {
-      throw new Error('Only signed prescriptions can be sent')
-    }
-
-    await this.updateStatus(clinicId, prescriptionId, 'sent', userId, userName)
-    await this.addLog(clinicId, prescriptionId, {
+    return prescriptionWorkflowService.sendToPatient(
+      clinicId,
       prescriptionId,
-      eventType: 'sent',
+      method,
       userId,
       userName,
-      details: { method },
-    })
+      this.getById.bind(this)
+    )
   },
 
-  /**
-   * Mark prescription as viewed by patient.
-   */
+  /** Mark prescription as viewed by patient. */
   async markAsViewed(clinicId: string, prescriptionId: string): Promise<void> {
-    const prescription = await this.getById(clinicId, prescriptionId)
-    if (!prescription) throw new Error('Prescription not found')
-    if (prescription.status === 'sent') {
-      await this.updateStatus(clinicId, prescriptionId, 'viewed', 'patient', 'Paciente')
-    }
+    return prescriptionWorkflowService.markAsViewed(
+      clinicId,
+      prescriptionId,
+      this.getById.bind(this)
+    )
   },
 
-  /**
-   * Mark prescription as filled by pharmacy.
-   */
+  /** Mark prescription as filled by pharmacy. */
   async markAsFilled(
     clinicId: string,
     prescriptionId: string,
     pharmacyName: string
   ): Promise<void> {
-    const prescription = await this.getById(clinicId, prescriptionId)
-    if (!prescription) throw new Error('Prescription not found')
-    if (!['sent', 'viewed'].includes(prescription.status)) {
-      throw new Error('Prescription cannot be marked as filled in current status')
-    }
-    await this.updateStatus(clinicId, prescriptionId, 'filled', 'pharmacy', pharmacyName, {
-      filledByPharmacy: pharmacyName,
-    })
+    return prescriptionWorkflowService.markAsFilled(
+      clinicId,
+      prescriptionId,
+      pharmacyName,
+      this.getById.bind(this)
+    )
   },
 
-  /**
-   * Cancel a prescription.
-   */
+  /** Cancel a prescription. */
   async cancel(
     clinicId: string,
     prescriptionId: string,
@@ -312,50 +293,20 @@ export const prescriptionService = {
     userId: string,
     userName: string
   ): Promise<void> {
-    const prescription = await this.getById(clinicId, prescriptionId)
-    if (!prescription) throw new Error('Prescription not found')
-    if (prescription.status === 'filled') {
-      throw new Error('Filled prescriptions cannot be canceled')
-    }
-
-    await this.updateStatus(clinicId, prescriptionId, 'canceled', userId, userName)
-    await this.addLog(clinicId, prescriptionId, {
+    return prescriptionWorkflowService.cancel(
+      clinicId,
       prescriptionId,
-      eventType: 'canceled',
+      reason,
       userId,
       userName,
-      details: { reason },
-    })
-  },
-
-  /**
-   * Check and update expired prescriptions.
-   */
-  async checkExpiredPrescriptions(clinicId: string): Promise<number> {
-    const prescriptionsRef = getPrescriptionCollection(clinicId)
-    const now = new Date().toISOString()
-    const q = query(
-      prescriptionsRef,
-      where('status', 'in', ['signed', 'sent', 'viewed']),
-      where('expiresAt', '<', now)
+      this.getById.bind(this)
     )
-
-    const querySnapshot = await getDocs(q)
-    let count = 0
-
-    for (const docSnap of querySnapshot.docs) {
-      const docRef = getPrescriptionDoc(clinicId, docSnap.id)
-      await updateDoc(docRef, { status: 'expired', updatedAt: serverTimestamp() })
-      await this.addLog(clinicId, docSnap.id, {
-        prescriptionId: docSnap.id,
-        eventType: 'expired',
-        userId: 'system',
-        userName: 'Sistema',
-      })
-      count++
-    }
-    return count
   },
+
+  /** Check and update expired prescriptions (batch job). */
+  checkExpiredPrescriptions: prescriptionWorkflowService.checkExpiredPrescriptions.bind(
+    prescriptionWorkflowService
+  ),
 
   /**
    * Add a log entry for audit purposes.

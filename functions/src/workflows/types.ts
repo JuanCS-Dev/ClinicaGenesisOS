@@ -12,31 +12,32 @@
 
 export interface WorkflowConfig {
   /** Whether workflow is enabled */
-  enabled: boolean;
+  enabled: boolean
   /** WhatsApp template name (if applicable) */
-  templateName?: string;
+  templateName?: string
   /** Delay in hours before execution (for follow-up) */
-  delayHours?: number;
+  delayHours?: number
   /** Custom message (for free-form messages) */
-  customMessage?: string;
+  customMessage?: string
 }
 
 export interface ClinicWorkflowSettings {
   followUp: WorkflowConfig & {
-    delayHours: number; // Default 24
-  };
+    delayHours: number // Default 24
+  }
   nps: WorkflowConfig & {
-    delayHours: number; // Default 2
-  };
+    delayHours: number // Default 2
+    webhookSecret?: string // For NPS response webhook authentication
+  }
   patientReturn: WorkflowConfig & {
-    inactiveDays: number; // Default 90
-    reminderFrequencyDays: number; // Default 30
-  };
+    inactiveDays: number // Default 90
+    reminderFrequencyDays: number // Default 30
+  }
   labsIntegration: WorkflowConfig & {
-    webhookSecret?: string;
-    notifyPatient: boolean;
-    notifyDoctor: boolean;
-  };
+    webhookSecret?: string
+    notifyPatient: boolean
+    notifyDoctor: boolean
+  }
 }
 
 export const DEFAULT_WORKFLOW_SETTINGS: ClinicWorkflowSettings = {
@@ -61,26 +62,26 @@ export const DEFAULT_WORKFLOW_SETTINGS: ClinicWorkflowSettings = {
     notifyPatient: true,
     notifyDoctor: true,
   },
-};
+}
 
 // =============================================================================
 // APPOINTMENT TYPES
 // =============================================================================
 
 export interface AppointmentForWorkflow {
-  id: string;
-  clinicId: string;
-  patientId: string;
-  patientName: string;
-  patientPhone?: string;
-  patientEmail?: string;
-  professionalId: string;
-  professionalName: string;
-  date: string;
-  status: string;
-  type?: string;
-  notes?: string;
-  completedAt?: string;
+  id: string
+  clinicId: string
+  patientId: string
+  patientName: string
+  patientPhone?: string
+  patientEmail?: string
+  professionalId: string
+  professionalName: string
+  date: string
+  status: string
+  type?: string
+  notes?: string
+  completedAt?: string
 }
 
 // =============================================================================
@@ -88,23 +89,23 @@ export interface AppointmentForWorkflow {
 // =============================================================================
 
 export interface NPSResponse {
-  id?: string;
-  clinicId: string;
-  appointmentId: string;
-  patientId: string;
-  patientName: string;
-  professionalId: string;
-  professionalName: string;
-  score: number; // 0-10
-  feedback?: string;
-  category: 'promoter' | 'passive' | 'detractor';
-  createdAt: string;
+  id?: string
+  clinicId: string
+  appointmentId: string
+  patientId: string
+  patientName: string
+  professionalId: string
+  professionalName: string
+  score: number // 0-10
+  feedback?: string
+  category: 'promoter' | 'passive' | 'detractor'
+  createdAt: string
 }
 
 export function getNPSCategory(score: number): NPSResponse['category'] {
-  if (score >= 9) return 'promoter';
-  if (score >= 7) return 'passive';
-  return 'detractor';
+  if (score >= 9) return 'promoter'
+  if (score >= 7) return 'passive'
+  return 'detractor'
 }
 
 // =============================================================================
@@ -113,38 +114,38 @@ export function getNPSCategory(score: number): NPSResponse['category'] {
 
 export interface LabResultWebhookPayload {
   /** External lab order ID */
-  orderId: string;
+  orderId: string
   /** Patient identifier (CPF or internal ID) */
-  patientIdentifier: string;
+  patientIdentifier: string
   /** Type of exam */
-  examType: string;
+  examType: string
   /** Lab name */
-  laboratoryName: string;
+  laboratoryName: string
   /** Result date */
-  resultDate: string;
+  resultDate: string
   /** Whether there are critical values */
-  hasCriticalValues: boolean;
+  hasCriticalValues: boolean
   /** URL to download PDF result */
-  resultUrl?: string;
+  resultUrl?: string
   /** Raw result data (if structured) */
-  resultData?: Record<string, unknown>;
+  resultData?: Record<string, unknown>
 }
 
 export interface LabResult {
-  id?: string;
-  clinicId: string;
-  patientId: string;
-  patientName: string;
-  orderId: string;
-  examType: string;
-  laboratoryName: string;
-  resultDate: string;
-  hasCriticalValues: boolean;
-  resultUrl?: string;
-  resultData?: Record<string, unknown>;
-  notifiedPatient: boolean;
-  notifiedDoctor: boolean;
-  createdAt: string;
+  id?: string
+  clinicId: string
+  patientId: string
+  patientName: string
+  orderId: string
+  examType: string
+  laboratoryName: string
+  resultDate: string
+  hasCriticalValues: boolean
+  resultUrl?: string
+  resultData?: Record<string, unknown>
+  notifiedPatient: boolean
+  notifiedDoctor: boolean
+  createdAt: string
 }
 
 // =============================================================================
@@ -152,15 +153,15 @@ export interface LabResult {
 // =============================================================================
 
 export interface PatientForReturn {
-  id: string;
-  clinicId: string;
-  name: string;
-  phone?: string;
-  email?: string;
-  lastVisit: string;
-  daysSinceLastVisit: number;
-  lastReminderSent?: string;
-  conditions?: string[]; // Chronic conditions that require follow-up
+  id: string
+  clinicId: string
+  name: string
+  phone?: string
+  email?: string
+  lastVisit: string
+  daysSinceLastVisit: number
+  lastReminderSent?: string
+  conditions?: string[] // Chronic conditions that require follow-up
 }
 
 // =============================================================================
@@ -168,14 +169,14 @@ export interface PatientForReturn {
 // =============================================================================
 
 export interface WorkflowExecutionLog {
-  id?: string;
-  clinicId: string;
-  workflowType: 'follow_up' | 'nps' | 'patient_return' | 'lab_result';
-  targetId: string; // appointmentId, patientId, or labResultId
-  status: 'pending' | 'sent' | 'delivered' | 'failed';
-  channel: 'whatsapp' | 'email' | 'in_app';
-  messageId?: string;
-  error?: string;
-  createdAt: string;
-  processedAt?: string;
+  id?: string
+  clinicId: string
+  workflowType: 'follow_up' | 'nps' | 'patient_return' | 'lab_result'
+  targetId: string // appointmentId, patientId, or labResultId
+  status: 'pending' | 'sent' | 'delivered' | 'failed'
+  channel: 'whatsapp' | 'email' | 'in_app'
+  messageId?: string
+  error?: string
+  createdAt: string
+  processedAt?: string
 }

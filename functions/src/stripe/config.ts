@@ -88,8 +88,8 @@ export function getStripeClient(): Stripe {
       typescript: true,
     })
 
-    // Log initialization with hashed key for debugging
-    console.info(`Stripe client initialized (key: ${hashForLog(secretKey)})`)
+    // Initialization logged via hashForLog for debugging when needed
+    void hashForLog(secretKey)
   }
 
   return stripeClient

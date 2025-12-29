@@ -12,21 +12,19 @@
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
-import {
-  getStripeClient,
-  DEFAULT_PIX_EXPIRATION_MINUTES,
-  MIN_PIX_AMOUNT,
-  MAX_PIX_AMOUNT,
-  isStripeConfigured,
-} from './config.js'
+import { getStripeClient, DEFAULT_PIX_EXPIRATION_MINUTES, isStripeConfigured } from './config.js'
 import { STRIPE_SECRET_KEY } from '../config/secrets.js'
 import { requireAuthRoleAndClinic, checkRateLimitForUser } from '../middleware/index.js'
-import type {
-  CreatePaymentInput,
-  PaymentIntentResponse,
-  PaymentRecord,
-  PixQRCode,
-} from './types.js'
+import type { PaymentIntentResponse, PaymentRecord, PixQRCode } from './types.js'
+import {
+  CreatePixPaymentRequestSchema,
+  CancelPaymentRequestSchema,
+  RefundPaymentRequestSchema,
+  formatZodError,
+  type CreatePixPaymentRequest,
+  type CancelPaymentRequest,
+  type RefundPaymentRequest,
+} from './payment-schemas.js'
 
 /**
  * Creates a PIX payment intent.
@@ -35,10 +33,7 @@ import type {
  * @param input - Payment input data
  * @returns PaymentIntentResponse with QR code
  */
-export const createPixPayment = onCall<{
-  clinicId: string
-  input: CreatePaymentInput
-}>(
+export const createPixPayment = onCall<CreatePixPaymentRequest>(
   {
     region: 'southamerica-east1',
     memory: '256MiB',
@@ -46,12 +41,13 @@ export const createPixPayment = onCall<{
     secrets: [STRIPE_SECRET_KEY],
   },
   async request => {
-    const { clinicId, input } = request.data
-
-    // Validate required fields first
-    if (!clinicId) {
-      throw new HttpsError('invalid-argument', 'clinicId is required')
+    // Validate input with Zod schema
+    const parseResult = CreatePixPaymentRequestSchema.safeParse(request.data)
+    if (!parseResult.success) {
+      throw new HttpsError('invalid-argument', formatZodError(parseResult.error))
     }
+
+    const { clinicId, input } = parseResult.data
 
     // Validate auth, role (professional+), and clinic access
     const authRequest = requireAuthRoleAndClinic(request, clinicId, [
@@ -66,29 +62,6 @@ export const createPixPayment = onCall<{
     // Validate Stripe configuration
     if (!isStripeConfigured()) {
       throw new HttpsError('failed-precondition', 'Stripe not configured. Contact support.')
-    }
-
-    if (!input?.amount) {
-      throw new HttpsError('invalid-argument', 'amount is required')
-    }
-
-    if (!input?.description) {
-      throw new HttpsError('invalid-argument', 'description is required')
-    }
-
-    // Validate amount range
-    if (input.amount < MIN_PIX_AMOUNT) {
-      throw new HttpsError(
-        'invalid-argument',
-        `Minimum amount is R$ ${(MIN_PIX_AMOUNT / 100).toFixed(2)}`
-      )
-    }
-
-    if (input.amount > MAX_PIX_AMOUNT) {
-      throw new HttpsError(
-        'invalid-argument',
-        `Maximum amount is R$ ${(MAX_PIX_AMOUNT / 100).toFixed(2)}`
-      )
     }
 
     const stripe = getStripeClient()
@@ -185,10 +158,7 @@ export const createPixPayment = onCall<{
 /**
  * Cancels a pending PIX payment.
  */
-export const cancelPixPayment = onCall<{
-  clinicId: string
-  paymentId: string
-}>(
+export const cancelPixPayment = onCall<CancelPaymentRequest>(
   {
     region: 'southamerica-east1',
     memory: '256MiB',
@@ -196,11 +166,13 @@ export const cancelPixPayment = onCall<{
     secrets: [STRIPE_SECRET_KEY],
   },
   async request => {
-    const { clinicId, paymentId } = request.data
-
-    if (!clinicId || !paymentId) {
-      throw new HttpsError('invalid-argument', 'clinicId and paymentId are required')
+    // Validate input with Zod schema
+    const parseResult = CancelPaymentRequestSchema.safeParse(request.data)
+    if (!parseResult.success) {
+      throw new HttpsError('invalid-argument', formatZodError(parseResult.error))
     }
+
+    const { clinicId, paymentId } = parseResult.data
 
     // Validate auth, role (professional+), and clinic access
     const authRequest = requireAuthRoleAndClinic(request, clinicId, [
@@ -251,11 +223,7 @@ export const cancelPixPayment = onCall<{
  * Refunds a completed PIX payment.
  * Requires admin+ role.
  */
-export const refundPixPayment = onCall<{
-  clinicId: string
-  paymentId: string
-  amount?: number
-}>(
+export const refundPixPayment = onCall<RefundPaymentRequest>(
   {
     region: 'southamerica-east1',
     memory: '256MiB',
@@ -263,11 +231,13 @@ export const refundPixPayment = onCall<{
     secrets: [STRIPE_SECRET_KEY],
   },
   async request => {
-    const { clinicId, paymentId, amount } = request.data
-
-    if (!clinicId || !paymentId) {
-      throw new HttpsError('invalid-argument', 'clinicId and paymentId are required')
+    // Validate input with Zod schema
+    const parseResult = RefundPaymentRequestSchema.safeParse(request.data)
+    if (!parseResult.success) {
+      throw new HttpsError('invalid-argument', formatZodError(parseResult.error))
     }
+
+    const { clinicId, paymentId, amount } = parseResult.data
 
     // Validate auth, role (admin+ for refunds), and clinic access
     const authRequest = requireAuthRoleAndClinic(request, clinicId, ['owner', 'admin'])

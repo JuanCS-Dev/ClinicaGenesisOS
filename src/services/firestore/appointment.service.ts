@@ -25,6 +25,26 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { Appointment, Status, CreateAppointmentInput } from '@/types'
+import { auditHelper, type AuditUserContext } from './lgpd/audit-helper'
+
+/**
+ * Optional audit context for LGPD-compliant logging.
+ */
+export interface AppointmentAuditContext {
+  userId: string
+  userName: string
+}
+
+/**
+ * Build audit context from service parameters.
+ */
+function buildAuditContext(
+  clinicId: string,
+  ctx?: AppointmentAuditContext
+): AuditUserContext | null {
+  if (!ctx) return null
+  return { clinicId, userId: ctx.userId, userName: ctx.userName }
+}
 
 /**
  * Get the appointments collection reference for a clinic.
@@ -127,9 +147,14 @@ export const appointmentService = {
    *
    * @param clinicId - The clinic ID
    * @param data - The appointment data
+   * @param auditCtx - Optional audit context for LGPD logging
    * @returns The created appointment ID
    */
-  async create(clinicId: string, data: CreateAppointmentInput): Promise<string> {
+  async create(
+    clinicId: string,
+    data: CreateAppointmentInput,
+    auditCtx?: AppointmentAuditContext
+  ): Promise<string> {
     const appointmentsRef = getAppointmentsCollection(clinicId)
 
     const appointmentData = {
@@ -147,6 +172,17 @@ export const appointmentService = {
 
     const docRef = await addDoc(appointmentsRef, appointmentData)
 
+    // LGPD audit log
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    if (ctx) {
+      await auditHelper.logCreate(ctx, 'appointment', docRef.id, {
+        patientId: data.patientId,
+        date: data.date,
+        procedure: data.procedure,
+        professional: data.professional,
+      })
+    }
+
     return docRef.id
   },
 
@@ -156,13 +192,31 @@ export const appointmentService = {
    * @param clinicId - The clinic ID
    * @param appointmentId - The appointment ID
    * @param data - The fields to update
+   * @param auditCtx - Optional audit context for LGPD logging
    */
   async update(
     clinicId: string,
     appointmentId: string,
-    data: Partial<Omit<Appointment, 'id'>>
+    data: Partial<Omit<Appointment, 'id'>>,
+    auditCtx?: AppointmentAuditContext
   ): Promise<void> {
     const docRef = doc(db, 'clinics', clinicId, 'appointments', appointmentId)
+
+    // Get previous values for audit
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    let previousValues: Record<string, unknown> | undefined
+    if (ctx) {
+      const docSnap = await getDoc(docRef)
+      if (docSnap.exists()) {
+        previousValues = {}
+        Object.keys(data).forEach(key => {
+          const docData = docSnap.data()
+          if (key in docData) {
+            previousValues![key] = docData[key]
+          }
+        })
+      }
+    }
 
     const updateData = { ...data } as UpdateData<DocumentData>
 
@@ -174,6 +228,17 @@ export const appointmentService = {
     })
 
     await updateDoc(docRef, updateData)
+
+    // LGPD audit log
+    if (ctx && previousValues) {
+      await auditHelper.logUpdate(
+        ctx,
+        'appointment',
+        appointmentId,
+        previousValues,
+        data as Record<string, unknown>
+      )
+    }
   },
 
   /**
@@ -182,9 +247,15 @@ export const appointmentService = {
    * @param clinicId - The clinic ID
    * @param appointmentId - The appointment ID
    * @param status - The new status
+   * @param auditCtx - Optional audit context for LGPD logging
    */
-  async updateStatus(clinicId: string, appointmentId: string, status: Status): Promise<void> {
-    await this.update(clinicId, appointmentId, { status })
+  async updateStatus(
+    clinicId: string,
+    appointmentId: string,
+    status: Status,
+    auditCtx?: AppointmentAuditContext
+  ): Promise<void> {
+    await this.update(clinicId, appointmentId, { status }, auditCtx)
   },
 
   /**
@@ -192,10 +263,31 @@ export const appointmentService = {
    *
    * @param clinicId - The clinic ID
    * @param appointmentId - The appointment ID
+   * @param auditCtx - Optional audit context for LGPD logging
    */
-  async delete(clinicId: string, appointmentId: string): Promise<void> {
+  async delete(
+    clinicId: string,
+    appointmentId: string,
+    auditCtx?: AppointmentAuditContext
+  ): Promise<void> {
     const docRef = doc(db, 'clinics', clinicId, 'appointments', appointmentId)
+
+    // Get data before deletion for audit
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    let previousValues: Record<string, unknown> | undefined
+    if (ctx) {
+      const docSnap = await getDoc(docRef)
+      if (docSnap.exists()) {
+        previousValues = docSnap.data()
+      }
+    }
+
     await deleteDoc(docRef)
+
+    // LGPD audit log
+    if (ctx) {
+      await auditHelper.logDelete(ctx, 'appointment', appointmentId, previousValues)
+    }
   },
 
   /**

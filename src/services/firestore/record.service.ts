@@ -6,11 +6,12 @@
  * subcollections under clinics for multi-tenancy.
  *
  * Collection: /clinics/{clinicId}/records/{recordId}
+ *
+ * @see record.utils.ts - Type conversion and helper functions
+ * @see record-version.service.ts - Version history operations
  */
 
 import {
-  collection,
-  doc,
   getDocs,
   getDoc,
   addDoc,
@@ -21,120 +22,28 @@ import {
   orderBy,
   onSnapshot,
   serverTimestamp,
-  Timestamp,
   type UpdateData,
   type DocumentData,
 } from 'firebase/firestore'
-import { db } from '../firebase'
 import { recordVersionService } from './record-version.service'
+import { auditHelper } from './lgpd/audit-helper'
+import {
+  getRecordsCollection,
+  getRecordDoc,
+  buildAuditContext,
+  toRecord,
+  type RecordServiceAuditContext,
+} from './record.utils'
 import type {
   MedicalRecord,
   RecordType,
-  SpecialtyType,
   CreateRecordInput,
-  SoapRecord,
-  TextRecord,
-  PrescriptionRecord,
-  ExamRequestRecord,
-  PsychoSessionRecord,
-  AnthropometryRecord,
   RecordVersion,
   RecordAttachment,
 } from '@/types'
 
-/**
- * Get the records collection reference for a clinic.
- */
-function getRecordsCollection(clinicId: string) {
-  return collection(db, 'clinics', clinicId, 'records')
-}
-
-/**
- * Converts Firestore document data to MedicalRecord type.
- * Handles polymorphic record types and versioning fields.
- */
-function toRecord(id: string, data: Record<string, unknown>): MedicalRecord {
-  const baseRecord = {
-    id,
-    patientId: data.patientId as string,
-    date: data.date instanceof Timestamp ? data.date.toDate().toISOString() : (data.date as string),
-    professional: data.professional as string,
-    type: data.type as RecordType,
-    specialty: data.specialty as SpecialtyType,
-    // Versioning fields
-    version: (data.version as number) || 1,
-    updatedAt:
-      data.updatedAt instanceof Timestamp
-        ? data.updatedAt.toDate().toISOString()
-        : (data.updatedAt as string | undefined),
-    updatedBy: data.updatedBy as string | undefined,
-    // Attachments
-    attachments: data.attachments as RecordAttachment[] | undefined,
-  }
-
-  switch (data.type as RecordType) {
-    case 'soap':
-      return {
-        ...baseRecord,
-        type: 'soap' as const,
-        subjective: data.subjective as string,
-        objective: data.objective as string,
-        assessment: data.assessment as string,
-        plan: data.plan as string,
-      } as SoapRecord
-
-    case 'note':
-      return {
-        ...baseRecord,
-        type: 'note' as const,
-        title: data.title as string,
-        content: data.content as string,
-      } as TextRecord
-
-    case 'prescription':
-      return {
-        ...baseRecord,
-        type: 'prescription' as const,
-        medications: data.medications as PrescriptionRecord['medications'],
-      } as PrescriptionRecord
-
-    case 'exam_request':
-      return {
-        ...baseRecord,
-        type: 'exam_request' as const,
-        exams: data.exams as string[],
-        justification: data.justification as string,
-      } as ExamRequestRecord
-
-    case 'psycho_session':
-      return {
-        ...baseRecord,
-        type: 'psycho_session' as const,
-        mood: data.mood as PsychoSessionRecord['mood'],
-        summary: data.summary as string,
-        privateNotes: data.privateNotes as string,
-      } as PsychoSessionRecord
-
-    case 'anthropometry':
-      return {
-        ...baseRecord,
-        type: 'anthropometry' as const,
-        weight: data.weight as number,
-        height: data.height as number,
-        imc: data.imc as number,
-        waist: data.waist as number,
-        hip: data.hip as number,
-      } as AnthropometryRecord
-
-    default:
-      return {
-        ...baseRecord,
-        type: 'note' as const,
-        title: 'Unknown Record',
-        content: JSON.stringify(data),
-      } as TextRecord
-  }
-}
+// Re-export for backward compatibility
+export type { RecordServiceAuditContext } from './record.utils'
 
 /**
  * Medical record service for Firestore operations.
@@ -142,9 +51,6 @@ function toRecord(id: string, data: Record<string, unknown>): MedicalRecord {
 export const recordService = {
   /**
    * Get all records for a clinic.
-   *
-   * @param clinicId - The clinic ID
-   * @returns Array of records sorted by date (descending)
    */
   async getAll(clinicId: string): Promise<MedicalRecord[]> {
     const recordsRef = getRecordsCollection(clinicId)
@@ -156,10 +62,6 @@ export const recordService = {
 
   /**
    * Get records for a specific patient.
-   *
-   * @param clinicId - The clinic ID
-   * @param patientId - The patient ID
-   * @returns Array of records sorted by date (descending)
    */
   async getByPatient(clinicId: string, patientId: string): Promise<MedicalRecord[]> {
     const recordsRef = getRecordsCollection(clinicId)
@@ -172,40 +74,66 @@ export const recordService = {
   /**
    * Get a record by ID.
    *
-   * @param clinicId - The clinic ID
-   * @param recordId - The record ID
-   * @returns The record or null if not found
+   * @param auditCtx - Optional audit context for LGPD logging
    */
-  async getById(clinicId: string, recordId: string): Promise<MedicalRecord | null> {
-    const docRef = doc(db, 'clinics', clinicId, 'records', recordId)
+  async getById(
+    clinicId: string,
+    recordId: string,
+    auditCtx?: RecordServiceAuditContext
+  ): Promise<MedicalRecord | null> {
+    const docRef = getRecordDoc(clinicId, recordId)
     const docSnap = await getDoc(docRef)
 
     if (!docSnap.exists()) {
       return null
     }
 
-    return toRecord(docSnap.id, docSnap.data())
+    const record = toRecord(docSnap.id, docSnap.data())
+
+    // Log PHI access for LGPD/HIPAA compliance
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    if (ctx) {
+      await auditHelper.logView(ctx, 'medical_record', recordId, {
+        patientId: record.patientId,
+        recordType: record.type,
+        accessedFields: ['all_phi_fields'],
+      })
+    }
+
+    return record
   },
 
   /**
    * Create a new medical record.
    *
-   * @param clinicId - The clinic ID
-   * @param data - The record data
-   * @param professional - The name of the professional creating the record
-   * @returns The created record ID
+   * @param auditCtx - Optional audit context for LGPD logging
    */
-  async create(clinicId: string, data: CreateRecordInput, professional: string): Promise<string> {
+  async create(
+    clinicId: string,
+    data: CreateRecordInput,
+    professional: string,
+    auditCtx?: RecordServiceAuditContext
+  ): Promise<string> {
     const recordsRef = getRecordsCollection(clinicId)
 
     const recordData = {
       ...data,
       professional,
       date: serverTimestamp(),
-      version: 1, // Initial version
+      version: 1,
     }
 
     const docRef = await addDoc(recordsRef, recordData)
+
+    // Log PHI creation for LGPD/HIPAA compliance
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    if (ctx) {
+      await auditHelper.logCreate(ctx, 'medical_record', docRef.id, {
+        patientId: data.patientId,
+        recordType: data.type,
+        professional,
+      })
+    }
 
     return docRef.id
   },
@@ -214,20 +142,19 @@ export const recordService = {
    * Update an existing record with versioning.
    * Saves current state to versions subcollection before applying changes.
    *
-   * @param clinicId - The clinic ID
-   * @param recordId - The record ID
-   * @param data - The fields to update
    * @param updatedBy - Name of the professional making the update
    * @param changeReason - Optional reason for the change (for audit trail)
+   * @param auditCtx - Optional audit context for LGPD logging
    */
   async update(
     clinicId: string,
     recordId: string,
     data: Partial<Omit<MedicalRecord, 'id' | 'date' | 'professional'>>,
     updatedBy?: string,
-    changeReason?: string
+    changeReason?: string,
+    auditCtx?: RecordServiceAuditContext
   ): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId, 'records', recordId)
+    const docRef = getRecordDoc(clinicId, recordId)
 
     // Get current record state before update
     const currentDoc = await getDoc(docRef)
@@ -266,25 +193,63 @@ export const recordService = {
     }
 
     await updateDoc(docRef, updateData)
+
+    // Log PHI modification for LGPD/HIPAA compliance
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    if (ctx) {
+      const previousValues: Record<string, unknown> = {}
+      Object.keys(data).forEach(key => {
+        if (key in currentData) {
+          previousValues[key] = currentData[key]
+        }
+      })
+
+      await auditHelper.logUpdate(
+        ctx,
+        'medical_record',
+        recordId,
+        previousValues,
+        data as Record<string, unknown>
+      )
+    }
   },
 
   /**
    * Delete a record.
    *
-   * @param clinicId - The clinic ID
-   * @param recordId - The record ID
+   * @param auditCtx - Optional audit context for LGPD logging
    */
-  async delete(clinicId: string, recordId: string): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId, 'records', recordId)
+  async delete(
+    clinicId: string,
+    recordId: string,
+    auditCtx?: RecordServiceAuditContext
+  ): Promise<void> {
+    const docRef = getRecordDoc(clinicId, recordId)
+
+    // Get record data before deletion for audit log
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    let previousValues: Record<string, unknown> | undefined
+    if (ctx) {
+      const docSnap = await getDoc(docRef)
+      if (docSnap.exists()) {
+        previousValues = docSnap.data()
+      }
+    }
+
     await deleteDoc(docRef)
+
+    // Log PHI deletion for LGPD/HIPAA compliance
+    if (ctx) {
+      await auditHelper.logDelete(ctx, 'medical_record', recordId, previousValues)
+    }
   },
+
+  // =========================================================================
+  // Subscription Methods
+  // =========================================================================
 
   /**
    * Subscribe to real-time updates for all records.
-   *
-   * @param clinicId - The clinic ID
-   * @param callback - Function called with updated records array
-   * @returns Unsubscribe function
    */
   subscribe(clinicId: string, callback: (records: MedicalRecord[]) => void): () => void {
     const recordsRef = getRecordsCollection(clinicId)
@@ -305,11 +270,6 @@ export const recordService = {
 
   /**
    * Subscribe to real-time updates for a patient's records.
-   *
-   * @param clinicId - The clinic ID
-   * @param patientId - The patient ID
-   * @param callback - Function called with updated records array
-   * @returns Unsubscribe function
    */
   subscribeByPatient(
     clinicId: string,
@@ -332,13 +292,12 @@ export const recordService = {
     )
   },
 
+  // =========================================================================
+  // Query Methods
+  // =========================================================================
+
   /**
    * Get records of a specific type for a patient.
-   *
-   * @param clinicId - The clinic ID
-   * @param patientId - The patient ID
-   * @param recordType - The type of records to fetch
-   * @returns Array of records of the specified type
    */
   async getByPatientAndType(
     clinicId: string,
@@ -357,21 +316,19 @@ export const recordService = {
     return querySnapshot.docs.map(docSnap => toRecord(docSnap.id, docSnap.data()))
   },
 
-  // --- ATTACHMENT METHODS ---
+  // =========================================================================
+  // Attachment Methods
+  // =========================================================================
 
   /**
    * Add an attachment to a record.
-   *
-   * @param clinicId - The clinic ID
-   * @param recordId - The record ID
-   * @param attachment - The attachment metadata
    */
   async addAttachment(
     clinicId: string,
     recordId: string,
     attachment: RecordAttachment
   ): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId, 'records', recordId)
+    const docRef = getRecordDoc(clinicId, recordId)
     const docSnap = await getDoc(docRef)
 
     if (!docSnap.exists()) {
@@ -388,13 +345,9 @@ export const recordService = {
 
   /**
    * Remove an attachment from a record.
-   *
-   * @param clinicId - The clinic ID
-   * @param recordId - The record ID
-   * @param attachmentId - The attachment ID to remove
    */
   async removeAttachment(clinicId: string, recordId: string, attachmentId: string): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId, 'records', recordId)
+    const docRef = getRecordDoc(clinicId, recordId)
     const docSnap = await getDoc(docRef)
 
     if (!docSnap.exists()) {
@@ -410,7 +363,9 @@ export const recordService = {
     })
   },
 
-  // --- VERSION HISTORY METHODS (delegated to recordVersionService) ---
+  // =========================================================================
+  // Version History Methods (delegated to recordVersionService)
+  // =========================================================================
 
   /**
    * Get version history for a record.

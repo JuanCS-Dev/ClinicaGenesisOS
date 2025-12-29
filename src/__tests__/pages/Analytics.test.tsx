@@ -160,6 +160,69 @@ describe('Analytics', () => {
       renderAnalytics()
       expect(screen.getByText('Exportar')).toBeInTheDocument()
     })
+
+    it('should refresh data when clicking refresh button', () => {
+      renderAnalytics()
+      const refreshButton = screen.getByText('Atualizar')
+      fireEvent.click(refreshButton)
+      // Refresh should show toast - component re-renders with new key
+      expect(screen.getByTestId('financial-wellness')).toBeInTheDocument()
+    })
+  })
+
+  describe('export functionality', () => {
+    it('should open export menu when clicking export button', () => {
+      renderAnalytics()
+      const exportButton = screen.getByText('Exportar')
+      fireEvent.click(exportButton)
+      expect(screen.getByText('Excel (.xlsx)')).toBeInTheDocument()
+      expect(screen.getByText('PDF (.pdf)')).toBeInTheDocument()
+    })
+
+    it('should close export menu when clicking again', () => {
+      renderAnalytics()
+      const exportButton = screen.getByText('Exportar')
+      fireEvent.click(exportButton) // open
+      expect(screen.getByText('Excel (.xlsx)')).toBeInTheDocument()
+      fireEvent.click(exportButton) // close
+      expect(screen.queryByText('Excel (.xlsx)')).not.toBeInTheDocument()
+    })
+
+    it('should export to Excel when clicking xlsx option', async () => {
+      const { exportAnalytics } = await import('../../services/analytics-export.service')
+      renderAnalytics()
+
+      const exportButton = screen.getByText('Exportar')
+      fireEvent.click(exportButton)
+
+      const xlsxOption = screen.getByText('Excel (.xlsx)')
+      fireEvent.click(xlsxOption)
+
+      expect(exportAnalytics).toHaveBeenCalledWith(
+        expect.objectContaining({
+          dateRange: 'Último Mês',
+        }),
+        'xlsx'
+      )
+    })
+
+    it('should export to PDF when clicking pdf option', async () => {
+      const { exportAnalytics } = await import('../../services/analytics-export.service')
+      renderAnalytics()
+
+      const exportButton = screen.getByText('Exportar')
+      fireEvent.click(exportButton)
+
+      const pdfOption = screen.getByText('PDF (.pdf)')
+      fireEvent.click(pdfOption)
+
+      expect(exportAnalytics).toHaveBeenCalledWith(
+        expect.objectContaining({
+          dateRange: 'Último Mês',
+        }),
+        'pdf'
+      )
+    })
   })
 })
 

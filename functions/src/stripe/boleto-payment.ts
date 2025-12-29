@@ -12,21 +12,19 @@
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
-import {
-  getStripeClient,
-  DEFAULT_BOLETO_EXPIRATION_DAYS,
-  MIN_BOLETO_AMOUNT,
-  MAX_BOLETO_AMOUNT,
-  isStripeConfigured,
-} from './config.js'
+import { getStripeClient, DEFAULT_BOLETO_EXPIRATION_DAYS, isStripeConfigured } from './config.js'
 import { STRIPE_SECRET_KEY } from '../config/secrets.js'
 import { requireAuthRoleAndClinic, checkRateLimitForUser } from '../middleware/index.js'
-import type {
-  CreatePaymentInput,
-  PaymentIntentResponse,
-  PaymentRecord,
-  BoletoData,
-} from './types.js'
+import type { PaymentIntentResponse, PaymentRecord, BoletoData } from './types.js'
+import {
+  CreateBoletoPaymentRequestSchema,
+  CancelPaymentRequestSchema,
+  RefundPaymentRequestSchema,
+  formatZodError,
+  type CreateBoletoPaymentRequest,
+  type CancelPaymentRequest,
+  type RefundPaymentRequest,
+} from './payment-schemas.js'
 
 /**
  * Creates a Boleto payment intent.
@@ -35,10 +33,7 @@ import type {
  * @param input - Payment input data
  * @returns PaymentIntentResponse with boleto URL
  */
-export const createBoletoPayment = onCall<{
-  clinicId: string
-  input: CreatePaymentInput
-}>(
+export const createBoletoPayment = onCall<CreateBoletoPaymentRequest>(
   {
     region: 'southamerica-east1',
     memory: '256MiB',
@@ -46,12 +41,13 @@ export const createBoletoPayment = onCall<{
     secrets: [STRIPE_SECRET_KEY],
   },
   async request => {
-    const { clinicId, input } = request.data
-
-    // Validate required fields first
-    if (!clinicId) {
-      throw new HttpsError('invalid-argument', 'clinicId is required')
+    // Validate input with Zod schema
+    const parseResult = CreateBoletoPaymentRequestSchema.safeParse(request.data)
+    if (!parseResult.success) {
+      throw new HttpsError('invalid-argument', formatZodError(parseResult.error))
     }
+
+    const { clinicId, input } = parseResult.data
 
     // Validate auth, role (professional+), and clinic access
     const authRequest = requireAuthRoleAndClinic(request, clinicId, [
@@ -66,46 +62,6 @@ export const createBoletoPayment = onCall<{
     // Validate Stripe configuration
     if (!isStripeConfigured()) {
       throw new HttpsError('failed-precondition', 'Stripe not configured. Contact support.')
-    }
-
-    if (!input?.amount) {
-      throw new HttpsError('invalid-argument', 'amount is required')
-    }
-
-    if (!input?.description) {
-      throw new HttpsError('invalid-argument', 'description is required')
-    }
-
-    // Boleto requires customer info
-    if (!input?.customerName) {
-      throw new HttpsError('invalid-argument', 'customerName is required for Boleto')
-    }
-
-    if (!input?.customerTaxId) {
-      throw new HttpsError('invalid-argument', 'customerTaxId (CPF/CNPJ) is required for Boleto')
-    }
-
-    if (!input?.customerEmail) {
-      throw new HttpsError('invalid-argument', 'customerEmail is required for Boleto')
-    }
-
-    if (!input?.customerAddress) {
-      throw new HttpsError('invalid-argument', 'customerAddress is required for Boleto')
-    }
-
-    // Validate amount range
-    if (input.amount < MIN_BOLETO_AMOUNT) {
-      throw new HttpsError(
-        'invalid-argument',
-        `Minimum amount is R$ ${(MIN_BOLETO_AMOUNT / 100).toFixed(2)}`
-      )
-    }
-
-    if (input.amount > MAX_BOLETO_AMOUNT) {
-      throw new HttpsError(
-        'invalid-argument',
-        `Maximum amount is R$ ${(MAX_BOLETO_AMOUNT / 100).toFixed(2)}`
-      )
     }
 
     const stripe = getStripeClient()
@@ -235,10 +191,7 @@ export const createBoletoPayment = onCall<{
 /**
  * Cancels a pending Boleto payment.
  */
-export const cancelBoletoPayment = onCall<{
-  clinicId: string
-  paymentId: string
-}>(
+export const cancelBoletoPayment = onCall<CancelPaymentRequest>(
   {
     region: 'southamerica-east1',
     memory: '256MiB',
@@ -246,11 +199,13 @@ export const cancelBoletoPayment = onCall<{
     secrets: [STRIPE_SECRET_KEY],
   },
   async request => {
-    const { clinicId, paymentId } = request.data
-
-    if (!clinicId || !paymentId) {
-      throw new HttpsError('invalid-argument', 'clinicId and paymentId are required')
+    // Validate input with Zod schema
+    const parseResult = CancelPaymentRequestSchema.safeParse(request.data)
+    if (!parseResult.success) {
+      throw new HttpsError('invalid-argument', formatZodError(parseResult.error))
     }
+
+    const { clinicId, paymentId } = parseResult.data
 
     // Validate auth, role (professional+), and clinic access
     const authRequest = requireAuthRoleAndClinic(request, clinicId, [
@@ -301,11 +256,7 @@ export const cancelBoletoPayment = onCall<{
  * Refunds a completed Boleto payment.
  * Requires admin+ role.
  */
-export const refundBoletoPayment = onCall<{
-  clinicId: string
-  paymentId: string
-  amount?: number
-}>(
+export const refundBoletoPayment = onCall<RefundPaymentRequest>(
   {
     region: 'southamerica-east1',
     memory: '256MiB',
@@ -313,11 +264,13 @@ export const refundBoletoPayment = onCall<{
     secrets: [STRIPE_SECRET_KEY],
   },
   async request => {
-    const { clinicId, paymentId, amount } = request.data
-
-    if (!clinicId || !paymentId) {
-      throw new HttpsError('invalid-argument', 'clinicId and paymentId are required')
+    // Validate input with Zod schema
+    const parseResult = RefundPaymentRequestSchema.safeParse(request.data)
+    if (!parseResult.success) {
+      throw new HttpsError('invalid-argument', formatZodError(parseResult.error))
     }
+
+    const { clinicId, paymentId, amount } = parseResult.data
 
     // Validate auth, role (admin+ for refunds), and clinic access
     const authRequest = requireAuthRoleAndClinic(request, clinicId, ['owner', 'admin'])

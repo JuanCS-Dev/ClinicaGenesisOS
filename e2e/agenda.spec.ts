@@ -18,7 +18,8 @@ test.describe('Agenda', () => {
     test("should display today's date", async ({ authenticatedPage: page }) => {
       // Should show current date somewhere
       const today = new Date()
-      const _dayOfMonth = today.getDate().toString()
+      // Day reference for calendar validation
+      void today.getDate()
 
       // Look for today indicator or current date
       const hasToday = await Promise.race([
@@ -35,11 +36,6 @@ test.describe('Agenda', () => {
     test('should allow switching between day, week, and month views', async ({
       authenticatedPage: page,
     }) => {
-      // Check for view toggle buttons
-      const _viewButtons = page.locator(
-        'button:has-text("Dia"), button:has-text("Semana"), button:has-text("Mês")'
-      )
-
       // At least one view mode button should be visible
       const dayButton = page.locator('button:has-text("Dia"), button:has-text("Day")').first()
       const weekButton = page.locator('button:has-text("Semana"), button:has-text("Week")').first()

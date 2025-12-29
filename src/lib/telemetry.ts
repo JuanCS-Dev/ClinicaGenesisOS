@@ -10,9 +10,12 @@
  * - Performance marks and measures
  * - Error tracking
  * - Integration with Firebase Performance Monitoring
+ * - Core Web Vitals (LCP, INP, CLS, FCP, TTFB)
  *
  * @module lib/telemetry
  */
+
+import { onCLS, onFCP, onINP, onLCP, onTTFB, type Metric } from 'web-vitals'
 
 // =============================================================================
 // TYPES
@@ -58,7 +61,8 @@ export interface TelemetryConfig {
 
 const config: TelemetryConfig = {
   enableDevLogs: import.meta.env.DEV,
-  enableRemoteTracing: false, // Enable when backend is ready
+  enableRemoteTracing: import.meta.env.PROD, // Enabled in production
+  traceEndpoint: '/api/metrics', // Endpoint for metrics collection
   sampleRate: 1.0,
 }
 
@@ -352,6 +356,90 @@ export function clearSpans(): void {
 }
 
 // =============================================================================
+// WEB VITALS
+// =============================================================================
+
+/**
+ * Web Vitals thresholds (Core Web Vitals 2025).
+ * - LCP (Largest Contentful Paint): < 2.5s good, > 4s poor
+ * - INP (Interaction to Next Paint): < 200ms good, > 500ms poor
+ * - CLS (Cumulative Layout Shift): < 0.1 good, > 0.25 poor
+ * - FCP (First Contentful Paint): < 1.8s good, > 3s poor
+ * - TTFB (Time to First Byte): < 800ms good, > 1800ms poor
+ */
+const WEB_VITALS_THRESHOLDS = {
+  LCP: { good: 2500, poor: 4000 },
+  INP: { good: 200, poor: 500 },
+  CLS: { good: 0.1, poor: 0.25 },
+  FCP: { good: 1800, poor: 3000 },
+  TTFB: { good: 800, poor: 1800 },
+}
+
+/**
+ * Get rating for a Web Vital metric.
+ */
+function getVitalRating(name: string, value: number): 'good' | 'needs-improvement' | 'poor' {
+  const thresholds = WEB_VITALS_THRESHOLDS[name as keyof typeof WEB_VITALS_THRESHOLDS]
+  if (!thresholds) return 'needs-improvement'
+
+  if (value <= thresholds.good) return 'good'
+  if (value >= thresholds.poor) return 'poor'
+  return 'needs-improvement'
+}
+
+/**
+ * Handle Web Vital metric report.
+ */
+function handleWebVital(metric: Metric): void {
+  const rating = getVitalRating(metric.name, metric.value)
+
+  // Record as metric
+  recordMetric(`webvital:${metric.name}`, metric.value, {
+    rating,
+    delta: metric.delta,
+    id: metric.id,
+    navigationType: metric.navigationType || 'unknown',
+  })
+
+  // Log warning if poor performance in dev mode
+  if (config.enableDevLogs && rating === 'poor') {
+    console.warn(
+      `[Telemetry] Poor ${metric.name}: ${metric.value.toFixed(2)} (threshold: ${WEB_VITALS_THRESHOLDS[metric.name as keyof typeof WEB_VITALS_THRESHOLDS]?.poor})`
+    )
+  }
+}
+
+/**
+ * Initialize Web Vitals tracking.
+ *
+ * Tracks Core Web Vitals:
+ * - LCP (Largest Contentful Paint)
+ * - INP (Interaction to Next Paint)
+ * - CLS (Cumulative Layout Shift)
+ * - FCP (First Contentful Paint)
+ * - TTFB (Time to First Byte)
+ *
+ * @example
+ * ```ts
+ * // Initialize in App.tsx or main.tsx
+ * import { initWebVitals } from '@/lib/telemetry';
+ * initWebVitals();
+ * ```
+ */
+export function initWebVitals(): void {
+  if (typeof window === 'undefined') return
+
+  // Core Web Vitals
+  onLCP(handleWebVital)
+  onINP(handleWebVital)
+  onCLS(handleWebVital)
+
+  // Additional metrics
+  onFCP(handleWebVital)
+  onTTFB(handleWebVital)
+}
+
+// =============================================================================
 // AUTO-INSTRUMENTATION
 // =============================================================================
 
@@ -384,7 +472,8 @@ export function trackNavigation(): void {
   }
 }
 
-// Auto-track navigation on load
+// Auto-track navigation and Web Vitals on load
 if (typeof window !== 'undefined') {
   trackNavigation()
+  initWebVitals()
 }

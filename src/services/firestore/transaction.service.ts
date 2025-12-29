@@ -22,21 +22,41 @@ import {
   serverTimestamp,
   Timestamp,
   type Unsubscribe,
-} from 'firebase/firestore';
-import { db } from '../firebase';
+} from 'firebase/firestore'
+import { db } from '../firebase'
 import type {
   Transaction,
   CreateTransactionInput,
   TransactionFilters,
   FinancialSummary,
   MonthlyFinancialData,
-} from '@/types';
+} from '@/types'
+import { auditHelper, type AuditUserContext } from './lgpd/audit-helper'
+
+/**
+ * Audit context for transaction operations.
+ */
+export interface TransactionAuditContext {
+  userId: string
+  userName: string
+}
+
+/**
+ * Build audit context for transaction operations.
+ */
+function buildAuditContext(
+  clinicId: string,
+  ctx?: TransactionAuditContext
+): AuditUserContext | null {
+  if (!ctx) return null
+  return { clinicId, userId: ctx.userId, userName: ctx.userName }
+}
 
 /**
  * Get the transactions collection reference for a clinic.
  */
 function getTransactionsCollection(clinicId: string) {
-  return collection(db, 'clinics', clinicId, 'transactions');
+  return collection(db, 'clinics', clinicId, 'transactions')
 }
 
 /**
@@ -51,10 +71,7 @@ function toTransaction(id: string, data: Record<string, unknown>): Transaction {
     categoryId: data.categoryId as string,
     paymentMethod: data.paymentMethod as Transaction['paymentMethod'],
     status: data.status as Transaction['status'],
-    date:
-      data.date instanceof Timestamp
-        ? data.date.toDate().toISOString()
-        : (data.date as string),
+    date: data.date instanceof Timestamp ? data.date.toDate().toISOString() : (data.date as string),
     dueDate: data.dueDate as string | undefined,
     paidAt: data.paidAt as string | undefined,
     patientId: data.patientId as string | undefined,
@@ -70,7 +87,7 @@ function toTransaction(id: string, data: Record<string, unknown>): Transaction {
         ? data.updatedAt.toDate().toISOString()
         : (data.updatedAt as string | undefined),
     createdBy: data.createdBy as string,
-  };
+  }
 }
 
 /**
@@ -81,106 +98,178 @@ export const transactionService = {
    * Get all transactions for a clinic.
    */
   async getAll(clinicId: string, filters?: TransactionFilters): Promise<Transaction[]> {
-    const transactionsRef = getTransactionsCollection(clinicId);
-    let q = query(transactionsRef, orderBy('date', 'desc'));
+    const transactionsRef = getTransactionsCollection(clinicId)
+    let q = query(transactionsRef, orderBy('date', 'desc'))
 
     // Apply filters if provided
     if (filters?.type) {
-      q = query(transactionsRef, where('type', '==', filters.type), orderBy('date', 'desc'));
+      q = query(transactionsRef, where('type', '==', filters.type), orderBy('date', 'desc'))
     }
 
-    const querySnapshot = await getDocs(q);
-    let transactions = querySnapshot.docs.map((docSnap) =>
-      toTransaction(docSnap.id, docSnap.data())
-    );
+    const querySnapshot = await getDocs(q)
+    let transactions = querySnapshot.docs.map(docSnap => toTransaction(docSnap.id, docSnap.data()))
 
     // Apply client-side filters that Firestore can't handle
     if (filters?.dateRange) {
-      transactions = transactions.filter((t) => {
-        const date = new Date(t.date);
-        const start = new Date(filters.dateRange!.startDate);
-        const end = new Date(filters.dateRange!.endDate);
-        return date >= start && date <= end;
-      });
+      transactions = transactions.filter(t => {
+        const date = new Date(t.date)
+        const start = new Date(filters.dateRange!.startDate)
+        const end = new Date(filters.dateRange!.endDate)
+        return date >= start && date <= end
+      })
     }
 
     if (filters?.categoryId) {
-      transactions = transactions.filter((t) => t.categoryId === filters.categoryId);
+      transactions = transactions.filter(t => t.categoryId === filters.categoryId)
     }
 
     if (filters?.status) {
-      transactions = transactions.filter((t) => t.status === filters.status);
+      transactions = transactions.filter(t => t.status === filters.status)
     }
 
     if (filters?.searchTerm) {
-      const term = filters.searchTerm.toLowerCase();
+      const term = filters.searchTerm.toLowerCase()
       transactions = transactions.filter(
-        (t) =>
-          t.description.toLowerCase().includes(term) ||
-          t.patientName?.toLowerCase().includes(term)
-      );
+        t =>
+          t.description.toLowerCase().includes(term) || t.patientName?.toLowerCase().includes(term)
+      )
     }
 
-    return transactions;
+    return transactions
   },
 
   /**
    * Get a transaction by ID.
    */
   async getById(clinicId: string, transactionId: string): Promise<Transaction | null> {
-    const docRef = doc(db, 'clinics', clinicId, 'transactions', transactionId);
-    const docSnap = await getDoc(docRef);
+    const docRef = doc(db, 'clinics', clinicId, 'transactions', transactionId)
+    const docSnap = await getDoc(docRef)
 
     if (!docSnap.exists()) {
-      return null;
+      return null
     }
 
-    return toTransaction(docSnap.id, docSnap.data());
+    return toTransaction(docSnap.id, docSnap.data())
   },
 
   /**
    * Create a new transaction.
+   *
+   * @param clinicId - The clinic ID
+   * @param data - Transaction data
+   * @param userId - User creating the transaction
+   * @param auditCtx - Optional audit context
    */
   async create(
     clinicId: string,
     data: CreateTransactionInput,
-    userId: string
+    userId: string,
+    auditCtx?: TransactionAuditContext
   ): Promise<string> {
-    const transactionsRef = getTransactionsCollection(clinicId);
+    const transactionsRef = getTransactionsCollection(clinicId)
 
     const docData = {
       ...data,
       status: data.status || 'pending',
       createdAt: serverTimestamp(),
       createdBy: userId,
-    };
+    }
 
-    const docRef = await addDoc(transactionsRef, docData);
-    return docRef.id;
+    const docRef = await addDoc(transactionsRef, docData)
+
+    // LGPD audit log
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    if (ctx) {
+      await auditHelper.logCreate(ctx, 'transaction', docRef.id, {
+        type: data.type,
+        amount: data.amount,
+        description: data.description,
+        patientId: data.patientId,
+      })
+    }
+
+    return docRef.id
   },
 
   /**
    * Update a transaction.
+   *
+   * @param clinicId - The clinic ID
+   * @param transactionId - Transaction ID
+   * @param data - Fields to update
+   * @param auditCtx - Optional audit context
    */
   async update(
     clinicId: string,
     transactionId: string,
-    data: Partial<Transaction>
+    data: Partial<Transaction>,
+    auditCtx?: TransactionAuditContext
   ): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId, 'transactions', transactionId);
+    const docRef = doc(db, 'clinics', clinicId, 'transactions', transactionId)
+
+    // Get previous values for audit
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    let previousValues: Record<string, unknown> | undefined
+    if (ctx) {
+      const docSnap = await getDoc(docRef)
+      if (docSnap.exists()) {
+        previousValues = {}
+        Object.keys(data).forEach(key => {
+          const docData = docSnap.data()
+          if (key in docData) {
+            previousValues![key] = docData[key]
+          }
+        })
+      }
+    }
 
     await updateDoc(docRef, {
       ...data,
       updatedAt: serverTimestamp(),
-    });
+    })
+
+    // LGPD audit log
+    if (ctx && previousValues) {
+      await auditHelper.logUpdate(
+        ctx,
+        'transaction',
+        transactionId,
+        previousValues,
+        data as Record<string, unknown>
+      )
+    }
   },
 
   /**
    * Delete a transaction.
+   *
+   * @param clinicId - The clinic ID
+   * @param transactionId - Transaction ID
+   * @param auditCtx - Optional audit context
    */
-  async delete(clinicId: string, transactionId: string): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId, 'transactions', transactionId);
-    await deleteDoc(docRef);
+  async delete(
+    clinicId: string,
+    transactionId: string,
+    auditCtx?: TransactionAuditContext
+  ): Promise<void> {
+    const docRef = doc(db, 'clinics', clinicId, 'transactions', transactionId)
+
+    // Get data before deletion for audit
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    let previousValues: Record<string, unknown> | undefined
+    if (ctx) {
+      const docSnap = await getDoc(docRef)
+      if (docSnap.exists()) {
+        previousValues = docSnap.data()
+      }
+    }
+
+    await deleteDoc(docRef)
+
+    // LGPD audit log
+    if (ctx) {
+      await auditHelper.logDelete(ctx, 'transaction', transactionId, previousValues)
+    }
   },
 
   /**
@@ -191,22 +280,20 @@ export const transactionService = {
     onData: (transactions: Transaction[]) => void,
     onError?: (error: Error) => void
   ): Unsubscribe {
-    const transactionsRef = getTransactionsCollection(clinicId);
-    const q = query(transactionsRef, orderBy('date', 'desc'));
+    const transactionsRef = getTransactionsCollection(clinicId)
+    const q = query(transactionsRef, orderBy('date', 'desc'))
 
     return onSnapshot(
       q,
-      (snapshot) => {
-        const transactions = snapshot.docs.map((docSnap) =>
-          toTransaction(docSnap.id, docSnap.data())
-        );
-        onData(transactions);
+      snapshot => {
+        const transactions = snapshot.docs.map(docSnap => toTransaction(docSnap.id, docSnap.data()))
+        onData(transactions)
       },
-      (error) => {
-        console.error('Transaction subscription error:', error);
-        onError?.(error);
+      error => {
+        console.error('Transaction subscription error:', error)
+        onError?.(error)
       }
-    );
+    )
   },
 
   /**
@@ -219,23 +306,22 @@ export const transactionService = {
   ): Promise<FinancialSummary> {
     const transactions = await this.getAll(clinicId, {
       dateRange: { startDate, endDate },
-    });
+    })
 
-    let totalIncome = 0;
-    let totalExpenses = 0;
-    const incomeByCategory: Record<string, number> = {};
-    const expensesByCategory: Record<string, number> = {};
+    let totalIncome = 0
+    let totalExpenses = 0
+    const incomeByCategory: Record<string, number> = {}
+    const expensesByCategory: Record<string, number> = {}
 
     for (const t of transactions) {
-      if (t.status === 'cancelled' || t.status === 'refunded') continue;
+      if (t.status === 'cancelled' || t.status === 'refunded') continue
 
       if (t.type === 'income') {
-        totalIncome += t.amount;
-        incomeByCategory[t.categoryId] = (incomeByCategory[t.categoryId] || 0) + t.amount;
+        totalIncome += t.amount
+        incomeByCategory[t.categoryId] = (incomeByCategory[t.categoryId] || 0) + t.amount
       } else {
-        totalExpenses += t.amount;
-        expensesByCategory[t.categoryId] =
-          (expensesByCategory[t.categoryId] || 0) + t.amount;
+        totalExpenses += t.amount
+        expensesByCategory[t.categoryId] = (expensesByCategory[t.categoryId] || 0) + t.amount
       }
     }
 
@@ -246,73 +332,83 @@ export const transactionService = {
       transactionCount: transactions.length,
       incomeByCategory,
       expensesByCategory,
-    };
+    }
   },
 
   /**
    * Get monthly financial data for charts.
    */
-  async getMonthlyData(
-    clinicId: string,
-    months: number = 6
-  ): Promise<MonthlyFinancialData[]> {
-    const now = new Date();
-    const startDate = new Date(now.getFullYear(), now.getMonth() - months + 1, 1);
-    const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  async getMonthlyData(clinicId: string, months: number = 6): Promise<MonthlyFinancialData[]> {
+    const now = new Date()
+    const startDate = new Date(now.getFullYear(), now.getMonth() - months + 1, 1)
+    const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
 
     const transactions = await this.getAll(clinicId, {
       dateRange: {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
       },
-    });
+    })
 
     // Group by month
-    const monthlyMap = new Map<string, MonthlyFinancialData>();
+    const monthlyMap = new Map<string, MonthlyFinancialData>()
 
     // Initialize all months
     for (let i = 0; i < months; i++) {
-      const date = new Date(now.getFullYear(), now.getMonth() - months + 1 + i, 1);
-      const key = `${date.getFullYear()}-${date.getMonth()}`;
-      const monthName = date.toLocaleDateString('pt-BR', { month: 'short' });
+      const date = new Date(now.getFullYear(), now.getMonth() - months + 1 + i, 1)
+      const key = `${date.getFullYear()}-${date.getMonth()}`
+      const monthName = date.toLocaleDateString('pt-BR', { month: 'short' })
 
       monthlyMap.set(key, {
         month: monthName.charAt(0).toUpperCase() + monthName.slice(1, 3),
         year: date.getFullYear(),
         income: 0,
         expenses: 0,
-      });
+      })
     }
 
     // Aggregate transactions
     for (const t of transactions) {
-      if (t.status === 'cancelled' || t.status === 'refunded') continue;
+      if (t.status === 'cancelled' || t.status === 'refunded') continue
 
-      const date = new Date(t.date);
-      const key = `${date.getFullYear()}-${date.getMonth()}`;
-      const monthData = monthlyMap.get(key);
+      const date = new Date(t.date)
+      const key = `${date.getFullYear()}-${date.getMonth()}`
+      const monthData = monthlyMap.get(key)
 
       if (monthData) {
         if (t.type === 'income') {
-          monthData.income += t.amount;
+          monthData.income += t.amount
         } else {
-          monthData.expenses += t.amount;
+          monthData.expenses += t.amount
         }
       }
     }
 
-    return Array.from(monthlyMap.values());
+    return Array.from(monthlyMap.values())
   },
 
   /**
    * Mark a transaction as paid.
+   *
+   * @param clinicId - The clinic ID
+   * @param transactionId - Transaction ID
+   * @param auditCtx - Optional audit context
    */
-  async markAsPaid(clinicId: string, transactionId: string): Promise<void> {
-    await this.update(clinicId, transactionId, {
-      status: 'paid',
-      paidAt: new Date().toISOString(),
-    });
+  async markAsPaid(
+    clinicId: string,
+    transactionId: string,
+    auditCtx?: TransactionAuditContext
+  ): Promise<void> {
+    await this.update(
+      clinicId,
+      transactionId,
+      {
+        status: 'paid',
+        paidAt: new Date().toISOString(),
+      },
+      auditCtx
+    )
   },
-};
+}
 
-export default transactionService;
+export default transactionService

@@ -7,18 +7,18 @@
  * @module functions/workflows/labs-webhook
  */
 
-import { onRequest } from 'firebase-functions/v2/https';
-import { getFirestore } from 'firebase-admin/firestore';
-import { logger } from 'firebase-functions';
-import { createHmac } from 'crypto';
-import { sendTextMessage } from '../whatsapp/client.js';
+import { onRequest } from 'firebase-functions/v2/https'
+import { getFirestore } from 'firebase-admin/firestore'
+import { logger } from 'firebase-functions'
+import { sendTextMessage } from '../whatsapp/client.js'
+import { validateWebhookRequest } from '../middleware/webhook-auth.js'
 import type {
   ClinicWorkflowSettings,
   LabResultWebhookPayload,
   LabResult,
   WorkflowExecutionLog,
-} from './types.js';
-import { DEFAULT_WORKFLOW_SETTINGS } from './types.js';
+} from './types.js'
+import { DEFAULT_WORKFLOW_SETTINGS } from './types.js'
 
 // =============================================================================
 // HELPERS
@@ -28,35 +28,27 @@ import { DEFAULT_WORKFLOW_SETTINGS } from './types.js';
  * Get workflow settings for a clinic.
  */
 async function getWorkflowSettings(clinicId: string): Promise<ClinicWorkflowSettings> {
-  const db = getFirestore();
+  const db = getFirestore()
   const settingsDoc = await db
     .collection('clinics')
     .doc(clinicId)
     .collection('settings')
     .doc('workflows')
-    .get();
+    .get()
 
   if (!settingsDoc.exists) {
-    return DEFAULT_WORKFLOW_SETTINGS;
+    return DEFAULT_WORKFLOW_SETTINGS
   }
 
-  return { ...DEFAULT_WORKFLOW_SETTINGS, ...settingsDoc.data() } as ClinicWorkflowSettings;
+  return { ...DEFAULT_WORKFLOW_SETTINGS, ...settingsDoc.data() } as ClinicWorkflowSettings
 }
 
 /**
  * Log workflow execution.
  */
 async function logWorkflowExecution(log: WorkflowExecutionLog): Promise<void> {
-  const db = getFirestore();
-  await db.collection('clinics').doc(log.clinicId).collection('workflowLogs').add(log);
-}
-
-/**
- * Verify webhook signature using HMAC.
- */
-function verifySignature(payload: string, signature: string, secret: string): boolean {
-  const expectedSignature = createHmac('sha256', secret).update(payload).digest('hex');
-  return signature === `sha256=${expectedSignature}`;
+  const db = getFirestore()
+  await db.collection('clinics').doc(log.clinicId).collection('workflowLogs').add(log)
 }
 
 /**
@@ -66,7 +58,7 @@ async function findPatient(
   clinicId: string,
   identifier: string
 ): Promise<{ id: string; name: string; phone?: string; email?: string } | null> {
-  const db = getFirestore();
+  const db = getFirestore()
 
   // Try to find by CPF
   const patientSnapshot = await db
@@ -75,7 +67,7 @@ async function findPatient(
     .collection('patients')
     .where('cpf', '==', identifier.replace(/\D/g, ''))
     .limit(1)
-    .get();
+    .get()
 
   // If not found, try by internal ID
   if (patientSnapshot.empty) {
@@ -84,28 +76,28 @@ async function findPatient(
       .doc(clinicId)
       .collection('patients')
       .doc(identifier)
-      .get();
+      .get()
 
     if (patientDoc.exists) {
-      const data = patientDoc.data()!;
+      const data = patientDoc.data()!
       return {
         id: patientDoc.id,
         name: data.name,
         phone: data.phone,
         email: data.email,
-      };
+      }
     }
-    return null;
+    return null
   }
 
-  const patientDoc = patientSnapshot.docs[0];
-  const data = patientDoc.data();
+  const patientDoc = patientSnapshot.docs[0]
+  const data = patientDoc.data()
   return {
     id: patientDoc.id,
     name: data.name,
     phone: data.phone,
     email: data.email,
-  };
+  }
 }
 
 /**
@@ -116,7 +108,7 @@ async function findOrderingDoctor(
   patientId: string,
   examType: string
 ): Promise<{ id: string; name: string; phone?: string } | null> {
-  const db = getFirestore();
+  const db = getFirestore()
 
   // Find recent appointment with this exam ordered
   const appointmentsSnapshot = await db
@@ -127,37 +119,37 @@ async function findOrderingDoctor(
     .where('status', '==', 'Finalizado')
     .orderBy('date', 'desc')
     .limit(5)
-    .get();
+    .get()
 
   for (const appointmentDoc of appointmentsSnapshot.docs) {
-    const appointment = appointmentDoc.data();
+    const appointment = appointmentDoc.data()
 
     // Check if this appointment ordered the exam
-    const examsOrdered = appointment.examsOrdered || [];
+    const examsOrdered = appointment.examsOrdered || []
     if (examsOrdered.some((exam: string) => exam.toLowerCase().includes(examType.toLowerCase()))) {
       // Get professional info
-      const professionalId = appointment.professionalId;
+      const professionalId = appointment.professionalId
       if (professionalId) {
         const professionalDoc = await db
           .collection('clinics')
           .doc(clinicId)
           .collection('professionals')
           .doc(professionalId)
-          .get();
+          .get()
 
         if (professionalDoc.exists) {
-          const data = professionalDoc.data()!;
+          const data = professionalDoc.data()!
           return {
             id: professionalDoc.id,
             name: data.name,
             phone: data.phone,
-          };
+          }
         }
       }
     }
   }
 
-  return null;
+  return null
 }
 
 // =============================================================================
@@ -172,15 +164,11 @@ const PATIENT_MESSAGES = {
   critical: (patientName: string, examType: string, clinicName: string) =>
     `Ola ${patientName}! O resultado do seu exame de ${examType} esta disponivel ` +
     `e requer atencao. Por favor, entre em contato com ${clinicName} o mais breve possivel.`,
-};
+}
 
-const DOCTOR_MESSAGE = (
-  patientName: string,
-  examType: string,
-  hasCriticalValues: boolean
-) =>
+const DOCTOR_MESSAGE = (patientName: string, examType: string, hasCriticalValues: boolean) =>
   `Resultado disponivel: ${examType} de ${patientName}` +
-  (hasCriticalValues ? ' [VALORES CRITICOS]' : '');
+  (hasCriticalValues ? ' [VALORES CRITICOS]' : '')
 
 // =============================================================================
 // MAIN WEBHOOK
@@ -197,67 +185,66 @@ export const labsResultWebhook = onRequest(
   { cors: true, region: 'southamerica-east1' },
   async (req, res) => {
     if (req.method !== 'POST') {
-      res.status(405).send('Method not allowed');
-      return;
+      res.status(405).send('Method not allowed')
+      return
     }
 
-    const clinicId = req.headers['x-clinic-id'] as string;
-    const signature = req.headers['x-signature'] as string;
+    const clinicId = req.headers['x-clinic-id'] as string
+    const signature = req.headers['x-signature'] as string
 
     if (!clinicId) {
-      res.status(400).send('Missing X-Clinic-Id header');
-      return;
+      res.status(400).send('Missing X-Clinic-Id header')
+      return
     }
 
     try {
-      const db = getFirestore();
-      const now = new Date().toISOString();
+      const db = getFirestore()
+      const now = new Date().toISOString()
 
       // Get clinic settings
-      const settings = await getWorkflowSettings(clinicId);
+      const settings = await getWorkflowSettings(clinicId)
 
       if (!settings.labsIntegration.enabled) {
-        res.status(403).send('Labs integration not enabled for this clinic');
-        return;
+        res.status(403).send('Labs integration not enabled for this clinic')
+        return
       }
 
-      // Verify signature if webhook secret is configured
-      if (settings.labsIntegration.webhookSecret && signature) {
-        const isValid = verifySignature(
-          JSON.stringify(req.body),
-          signature,
-          settings.labsIntegration.webhookSecret
-        );
+      // Verify webhook signature (required for security)
+      const validationResult = validateWebhookRequest(
+        JSON.stringify(req.body),
+        signature,
+        settings.labsIntegration.webhookSecret,
+        true // requireSignature - mandatory
+      )
 
-        if (!isValid) {
-          logger.warn('Invalid webhook signature', { clinicId });
-          res.status(401).send('Invalid signature');
-          return;
-        }
+      if (!validationResult.isValid) {
+        logger.warn('Webhook validation failed', { clinicId, error: validationResult.error })
+        res.status(401).send(validationResult.error || 'Unauthorized')
+        return
       }
 
-      const payload = req.body as LabResultWebhookPayload;
+      const payload = req.body as LabResultWebhookPayload
 
       // Validate required fields
       if (!payload.patientIdentifier || !payload.examType || !payload.orderId) {
-        res.status(400).send('Missing required fields');
-        return;
+        res.status(400).send('Missing required fields')
+        return
       }
 
       // Find patient
-      const patient = await findPatient(clinicId, payload.patientIdentifier);
+      const patient = await findPatient(clinicId, payload.patientIdentifier)
       if (!patient) {
         logger.warn('Patient not found', {
           clinicId,
           patientIdentifier: payload.patientIdentifier,
-        });
-        res.status(404).send('Patient not found');
-        return;
+        })
+        res.status(404).send('Patient not found')
+        return
       }
 
       // Get clinic info
-      const clinicDoc = await db.collection('clinics').doc(clinicId).get();
-      const clinic = clinicDoc.data();
+      const clinicDoc = await db.collection('clinics').doc(clinicId).get()
+      const clinic = clinicDoc.data()
 
       // Save lab result
       const labResult: LabResult = {
@@ -274,31 +261,31 @@ export const labsResultWebhook = onRequest(
         notifiedPatient: false,
         notifiedDoctor: false,
         createdAt: now,
-      };
+      }
 
       const labResultRef = await db
         .collection('clinics')
         .doc(clinicId)
         .collection('labResults')
-        .add(labResult);
+        .add(labResult)
 
       logger.info('Lab result saved', {
         clinicId,
         labResultId: labResultRef.id,
         examType: payload.examType,
         hasCriticalValues: payload.hasCriticalValues,
-      });
+      })
 
       // Notify patient if enabled and has phone
       if (settings.labsIntegration.notifyPatient && patient.phone) {
         try {
           const message = payload.hasCriticalValues
             ? PATIENT_MESSAGES.critical(patient.name, payload.examType, clinic?.name || 'Clinica')
-            : PATIENT_MESSAGES.normal(patient.name, payload.examType, clinic?.name || 'Clinica');
+            : PATIENT_MESSAGES.normal(patient.name, payload.examType, clinic?.name || 'Clinica')
 
-          const messageId = await sendTextMessage(patient.phone, message, clinicId);
+          const messageId = await sendTextMessage(patient.phone, message, clinicId)
 
-          await labResultRef.update({ notifiedPatient: true });
+          await labResultRef.update({ notifiedPatient: true })
 
           await logWorkflowExecution({
             clinicId,
@@ -308,25 +295,25 @@ export const labsResultWebhook = onRequest(
             channel: 'whatsapp',
             messageId,
             createdAt: now,
-          });
+          })
 
           logger.info('Patient notified of lab result', {
             clinicId,
             patientId: patient.id,
             messageId,
-          });
+          })
         } catch (error) {
           logger.error('Failed to notify patient', {
             clinicId,
             patientId: patient.id,
             error: error instanceof Error ? error.message : 'Unknown error',
-          });
+          })
         }
       }
 
       // Notify doctor if enabled and critical values
       if (settings.labsIntegration.notifyDoctor && payload.hasCriticalValues) {
-        const doctor = await findOrderingDoctor(clinicId, patient.id, payload.examType);
+        const doctor = await findOrderingDoctor(clinicId, patient.id, payload.examType)
 
         if (doctor?.phone) {
           try {
@@ -334,35 +321,39 @@ export const labsResultWebhook = onRequest(
               patient.name,
               payload.examType,
               payload.hasCriticalValues
-            );
+            )
 
-            await sendTextMessage(doctor.phone, message, clinicId);
-            await labResultRef.update({ notifiedDoctor: true });
+            await sendTextMessage(doctor.phone, message, clinicId)
+            await labResultRef.update({ notifiedDoctor: true })
 
             logger.info('Doctor notified of critical lab result', {
               clinicId,
               doctorId: doctor.id,
-            });
+            })
           } catch (error) {
             logger.error('Failed to notify doctor', {
               clinicId,
               doctorId: doctor.id,
               error: error instanceof Error ? error.message : 'Unknown error',
-            });
+            })
           }
         }
 
         // Also create in-app notification for critical values
-        await db.collection('clinics').doc(clinicId).collection('notifications').add({
-          type: 'lab_result_critical',
-          title: 'Resultado com Valores Criticos',
-          message: `Exame ${payload.examType} de ${patient.name} apresenta valores criticos`,
-          patientId: patient.id,
-          labResultId: labResultRef.id,
-          priority: 'high',
-          read: false,
-          createdAt: now,
-        });
+        await db
+          .collection('clinics')
+          .doc(clinicId)
+          .collection('notifications')
+          .add({
+            type: 'lab_result_critical',
+            title: 'Resultado com Valores Criticos',
+            message: `Exame ${payload.examType} de ${patient.name} apresenta valores criticos`,
+            patientId: patient.id,
+            labResultId: labResultRef.id,
+            priority: 'high',
+            read: false,
+            createdAt: now,
+          })
       }
 
       res.status(200).json({
@@ -370,13 +361,13 @@ export const labsResultWebhook = onRequest(
         labResultId: labResultRef.id,
         notifiedPatient: labResult.notifiedPatient,
         notifiedDoctor: labResult.notifiedDoctor,
-      });
+      })
     } catch (error) {
-      logger.error('Labs webhook error', error);
-      res.status(500).send('Error processing lab result');
+      logger.error('Labs webhook error', error)
+      res.status(500).send('Error processing lab result')
     }
   }
-);
+)
 
 // =============================================================================
 // STATISTICS
@@ -389,39 +380,39 @@ export async function getLabResultsStats(
   clinicId: string,
   periodDays: number = 30
 ): Promise<{
-  totalResults: number;
-  criticalResults: number;
-  notificationsSent: number;
-  resultsByLab: Record<string, number>;
-  resultsByExamType: Record<string, number>;
+  totalResults: number
+  criticalResults: number
+  notificationsSent: number
+  resultsByLab: Record<string, number>
+  resultsByExamType: Record<string, number>
 }> {
-  const db = getFirestore();
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - periodDays);
+  const db = getFirestore()
+  const startDate = new Date()
+  startDate.setDate(startDate.getDate() - periodDays)
 
   const resultsSnapshot = await db
     .collection('clinics')
     .doc(clinicId)
     .collection('labResults')
     .where('createdAt', '>=', startDate.toISOString())
-    .get();
+    .get()
 
-  let totalResults = 0;
-  let criticalResults = 0;
-  let notificationsSent = 0;
-  const resultsByLab: Record<string, number> = {};
-  const resultsByExamType: Record<string, number> = {};
+  let totalResults = 0
+  let criticalResults = 0
+  let notificationsSent = 0
+  const resultsByLab: Record<string, number> = {}
+  const resultsByExamType: Record<string, number> = {}
 
-  resultsSnapshot.docs.forEach((doc) => {
-    const result = doc.data() as LabResult;
-    totalResults++;
+  resultsSnapshot.docs.forEach(doc => {
+    const result = doc.data() as LabResult
+    totalResults++
 
-    if (result.hasCriticalValues) criticalResults++;
-    if (result.notifiedPatient) notificationsSent++;
+    if (result.hasCriticalValues) criticalResults++
+    if (result.notifiedPatient) notificationsSent++
 
-    resultsByLab[result.laboratoryName] = (resultsByLab[result.laboratoryName] || 0) + 1;
-    resultsByExamType[result.examType] = (resultsByExamType[result.examType] || 0) + 1;
-  });
+    resultsByLab[result.laboratoryName] = (resultsByLab[result.laboratoryName] || 0) + 1
+    resultsByExamType[result.examType] = (resultsByExamType[result.examType] || 0) + 1
+  })
 
   return {
     totalResults,
@@ -429,5 +420,5 @@ export async function getLabResultsStats(
     notificationsSent,
     resultsByLab,
     resultsByExamType,
-  };
+  }
 }

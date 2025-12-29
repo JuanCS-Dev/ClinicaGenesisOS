@@ -27,6 +27,17 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { Patient, CreatePatientInput } from '@/types'
+import { validateCreatePatient, validateUpdatePatient } from '@/schemas'
+import { auditHelper, type AuditUserContext } from './lgpd/audit-helper'
+
+/**
+ * Optional audit context for logging LGPD-compliant access.
+ * When provided, all operations will be logged for compliance.
+ */
+export interface PatientServiceAuditContext {
+  userId: string
+  userName: string
+}
 
 /**
  * Calculate age from birth date.
@@ -49,6 +60,21 @@ function calculateAge(birthDate: string): number {
  */
 function getPatientsCollection(clinicId: string) {
   return collection(db, 'clinics', clinicId, 'patients')
+}
+
+/**
+ * Build audit context from service parameters.
+ */
+function buildAuditContext(
+  clinicId: string,
+  auditCtx?: PatientServiceAuditContext
+): AuditUserContext | null {
+  if (!auditCtx) return null
+  return {
+    clinicId,
+    userId: auditCtx.userId,
+    userName: auditCtx.userName,
+  }
 }
 
 /**
@@ -101,9 +127,14 @@ export const patientService = {
    *
    * @param clinicId - The clinic ID
    * @param patientId - The patient ID
+   * @param auditCtx - Optional audit context for LGPD logging
    * @returns The patient or null if not found
    */
-  async getById(clinicId: string, patientId: string): Promise<Patient | null> {
+  async getById(
+    clinicId: string,
+    patientId: string,
+    auditCtx?: PatientServiceAuditContext
+  ): Promise<Patient | null> {
     const docRef = doc(db, 'clinics', clinicId, 'patients', patientId)
     const docSnap = await getDoc(docRef)
 
@@ -111,35 +142,71 @@ export const patientService = {
       return null
     }
 
-    return toPatient(docSnap.id, docSnap.data())
+    const patient = toPatient(docSnap.id, docSnap.data())
+
+    // Log view access for LGPD compliance
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    if (ctx) {
+      await auditHelper.logView(ctx, 'patient', patientId, {
+        accessedFields: ['name', 'birthDate', 'phone', 'email', 'cpf', 'gender', 'insurance'],
+      })
+    }
+
+    return patient
   },
 
   /**
    * Create a new patient.
    *
+   * Validates input using Zod schema before creating.
+   *
    * @param clinicId - The clinic ID
    * @param data - The patient data
+   * @param auditCtx - Optional audit context for LGPD logging
    * @returns The created patient ID
+   * @throws Error if validation fails
    */
-  async create(clinicId: string, data: CreatePatientInput): Promise<string> {
+  async create(
+    clinicId: string,
+    data: CreatePatientInput,
+    auditCtx?: PatientServiceAuditContext
+  ): Promise<string> {
+    // Validate input with Zod
+    const validation = validateCreatePatient(data)
+    if (!validation.success) {
+      const errors = validation.error.issues.map((e: { message: string }) => e.message).join(', ')
+      throw new Error(`Validation failed: ${errors}`)
+    }
+
+    const validatedData = validation.data
     const patientsRef = getPatientsCollection(clinicId)
 
     const patientData = {
-      name: data.name,
-      birthDate: data.birthDate,
-      phone: data.phone,
-      email: data.email,
-      avatar: data.avatar || null,
-      gender: data.gender,
-      address: data.address || null,
-      insurance: data.insurance || null,
-      insuranceNumber: data.insuranceNumber || null,
-      tags: data.tags || [],
+      name: validatedData.name,
+      birthDate: validatedData.birthDate,
+      phone: validatedData.phone,
+      email: validatedData.email,
+      avatar: validatedData.avatar || null,
+      gender: validatedData.gender,
+      address: validatedData.address || null,
+      insurance: validatedData.insurance || null,
+      insuranceNumber: validatedData.insuranceNumber || null,
+      tags: validatedData.tags || [],
       createdAt: serverTimestamp(),
-      nextAppointment: data.nextAppointment || null,
+      nextAppointment: validatedData.nextAppointment || null,
     }
 
     const docRef = await addDoc(patientsRef, patientData)
+
+    // Log create event for LGPD compliance
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    if (ctx) {
+      await auditHelper.logCreate(ctx, 'patient', docRef.id, {
+        name: validatedData.name,
+        email: validatedData.email,
+        phone: validatedData.phone,
+      })
+    }
 
     return docRef.id
   },
@@ -147,18 +214,48 @@ export const patientService = {
   /**
    * Update an existing patient.
    *
+   * Validates input using Zod schema before updating.
+   *
    * @param clinicId - The clinic ID
    * @param patientId - The patient ID
    * @param data - The fields to update
+   * @param auditCtx - Optional audit context for LGPD logging
+   * @throws Error if validation fails
    */
   async update(
     clinicId: string,
     patientId: string,
-    data: Partial<Omit<Patient, 'id' | 'createdAt' | 'age'>>
+    data: Partial<Omit<Patient, 'id' | 'createdAt' | 'age'>>,
+    auditCtx?: PatientServiceAuditContext
   ): Promise<void> {
+    // Validate input with Zod (partial schema)
+    const validation = validateUpdatePatient(data)
+    if (!validation.success) {
+      const errors = validation.error.issues.map((e: { message: string }) => e.message).join(', ')
+      throw new Error(`Validation failed: ${errors}`)
+    }
+
+    const validatedData = validation.data
     const docRef = doc(db, 'clinics', clinicId, 'patients', patientId)
 
-    const updateData = { ...data } as UpdateData<DocumentData>
+    // Get previous values for audit log (only if audit context provided)
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    let previousValues: Record<string, unknown> | undefined
+    if (ctx) {
+      const docSnap = await getDoc(docRef)
+      if (docSnap.exists()) {
+        const currentData = docSnap.data()
+        previousValues = {}
+        // Only capture fields that are being updated
+        Object.keys(validatedData).forEach(key => {
+          if (key in currentData) {
+            previousValues![key] = currentData[key]
+          }
+        })
+      }
+    }
+
+    const updateData = { ...validatedData } as UpdateData<DocumentData>
 
     // Remove undefined values
     Object.keys(updateData).forEach(key => {
@@ -168,6 +265,17 @@ export const patientService = {
     })
 
     await updateDoc(docRef, updateData)
+
+    // Log update event for LGPD compliance
+    if (ctx && previousValues) {
+      await auditHelper.logUpdate(
+        ctx,
+        'patient',
+        patientId,
+        previousValues,
+        validatedData as Record<string, unknown>
+      )
+    }
   },
 
   /**
@@ -178,10 +286,31 @@ export const patientService = {
    *
    * @param clinicId - The clinic ID
    * @param patientId - The patient ID
+   * @param auditCtx - Optional audit context for LGPD logging
    */
-  async delete(clinicId: string, patientId: string): Promise<void> {
+  async delete(
+    clinicId: string,
+    patientId: string,
+    auditCtx?: PatientServiceAuditContext
+  ): Promise<void> {
     const docRef = doc(db, 'clinics', clinicId, 'patients', patientId)
+
+    // Get previous values for audit log (only if audit context provided)
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    let previousValues: Record<string, unknown> | undefined
+    if (ctx) {
+      const docSnap = await getDoc(docRef)
+      if (docSnap.exists()) {
+        previousValues = docSnap.data()
+      }
+    }
+
     await deleteDoc(docRef)
+
+    // Log delete event for LGPD compliance
+    if (ctx) {
+      await auditHelper.logDelete(ctx, 'patient', patientId, previousValues)
+    }
   },
 
   /**
@@ -245,15 +374,21 @@ export const patientService = {
    * @param clinicId - The clinic ID
    * @param patientId - The patient ID
    * @param tag - The tag to add
+   * @param auditCtx - Optional audit context for LGPD logging
    */
-  async addTag(clinicId: string, patientId: string, tag: string): Promise<void> {
+  async addTag(
+    clinicId: string,
+    patientId: string,
+    tag: string,
+    auditCtx?: PatientServiceAuditContext
+  ): Promise<void> {
     const patient = await this.getById(clinicId, patientId)
     if (!patient) {
       throw new Error(`Patient not found: ${patientId}`)
     }
 
     const tags = [...new Set([...patient.tags, tag])]
-    await this.update(clinicId, patientId, { tags })
+    await this.update(clinicId, patientId, { tags }, auditCtx)
   },
 
   /**
@@ -262,15 +397,21 @@ export const patientService = {
    * @param clinicId - The clinic ID
    * @param patientId - The patient ID
    * @param tag - The tag to remove
+   * @param auditCtx - Optional audit context for LGPD logging
    */
-  async removeTag(clinicId: string, patientId: string, tag: string): Promise<void> {
+  async removeTag(
+    clinicId: string,
+    patientId: string,
+    tag: string,
+    auditCtx?: PatientServiceAuditContext
+  ): Promise<void> {
     const patient = await this.getById(clinicId, patientId)
     if (!patient) {
       throw new Error(`Patient not found: ${patientId}`)
     }
 
     const tags = patient.tags.filter(t => t !== tag)
-    await this.update(clinicId, patientId, { tags })
+    await this.update(clinicId, patientId, { tags }, auditCtx)
   },
 
   /**

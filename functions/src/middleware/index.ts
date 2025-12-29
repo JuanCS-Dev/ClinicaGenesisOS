@@ -30,3 +30,10 @@ export {
   RATE_LIMITS,
   type RateLimitConfig,
 } from './rate-limit.js'
+
+export {
+  verifyWebhookSignature,
+  validateWebhookRequest,
+  generateWebhookSignature,
+  type WebhookValidationResult,
+} from './webhook-auth.js'

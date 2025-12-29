@@ -391,8 +391,10 @@ describe('VideoRoom - Jitsi Interface', () => {
           onCallEnd={mockOnCallEnd}
         />
       )
-      // Wait for API to be ready (setTimeout in mock completes)
-      await waitFor(() => expect(mockApiInstance?.dispose).toBeDefined(), { timeout: 2000 })
+      // Wait for onApiReady to be called (indicated by addListener being called)
+      await waitFor(() => expect(mockApiInstance?.addListener).toHaveBeenCalled(), {
+        timeout: 2000,
+      })
       unmount()
       expect(mockApiInstance.dispose).toHaveBeenCalled()
     })

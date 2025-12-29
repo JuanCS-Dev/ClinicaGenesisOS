@@ -11,9 +11,6 @@
 import type { Patient as FHIRPatient } from 'fhir/r4'
 import type { Patient } from '@/types/appointment/patient'
 
-// CPF OID (Brazilian Individual Taxpayer Registry)
-const CPF_SYSTEM = 'urn:oid:2.16.840.1.113883.13.237'
-
 // Genesis Clinic namespace
 const GENESIS_SYSTEM = 'https://clinicagenesis.com/patient-id'
 
@@ -70,7 +67,7 @@ export function toFHIRPatient(patient: Patient, clinicId: string): FHIRPatient {
 /**
  * Convert FHIR R4 Patient to internal Patient type.
  */
-export function fromFHIRPatient(fhirPatient: FHIRPatient, clinicId: string): Partial<Patient> {
+export function fromFHIRPatient(fhirPatient: FHIRPatient, _clinicId: string): Partial<Patient> {
   const officialName = fhirPatient.name?.find(n => n.use === 'official') || fhirPatient.name?.[0]
   const phone = fhirPatient.telecom?.find(t => t.system === 'phone')?.value
   const email = fhirPatient.telecom?.find(t => t.system === 'email')?.value

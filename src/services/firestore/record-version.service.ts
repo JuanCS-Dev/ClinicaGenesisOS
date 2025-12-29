@@ -19,15 +19,35 @@ import {
   orderBy,
   serverTimestamp,
   Timestamp,
-} from 'firebase/firestore';
-import { db } from '../firebase';
-import type { MedicalRecord, RecordVersion } from '@/types';
+} from 'firebase/firestore'
+import { db } from '../firebase'
+import type { MedicalRecord, RecordVersion } from '@/types'
+import { auditHelper, type AuditUserContext } from './lgpd/audit-helper'
+
+/**
+ * Audit context for record version operations.
+ */
+export interface RecordVersionAuditContext {
+  userId: string
+  userName: string
+}
+
+/**
+ * Build audit context for record version operations.
+ */
+function buildAuditContext(
+  clinicId: string,
+  ctx?: RecordVersionAuditContext
+): AuditUserContext | null {
+  if (!ctx) return null
+  return { clinicId, userId: ctx.userId, userName: ctx.userName }
+}
 
 /**
  * Get the versions subcollection reference for a record.
  */
 function getVersionsCollection(clinicId: string, recordId: string) {
-  return collection(db, 'clinics', clinicId, 'records', recordId, 'versions');
+  return collection(db, 'clinics', clinicId, 'records', recordId, 'versions')
 }
 
 /**
@@ -43,6 +63,7 @@ export const recordVersionService = {
    * @param currentVersion - Current version number
    * @param savedBy - Name of the professional
    * @param changeReason - Optional reason for the change
+   * @param auditCtx - Optional audit context
    */
   async saveVersion(
     clinicId: string,
@@ -50,17 +71,29 @@ export const recordVersionService = {
     currentData: Record<string, unknown>,
     currentVersion: number,
     savedBy: string,
-    changeReason?: string
+    changeReason?: string,
+    auditCtx?: RecordVersionAuditContext
   ): Promise<void> {
-    const versionsRef = getVersionsCollection(clinicId, recordId);
+    const versionsRef = getVersionsCollection(clinicId, recordId)
     const versionData = {
       version: currentVersion,
       data: currentData,
       savedAt: serverTimestamp(),
       savedBy,
       changeReason,
-    };
-    await addDoc(versionsRef, versionData);
+    }
+    const docRef = await addDoc(versionsRef, versionData)
+
+    // LGPD audit log - version snapshot created (PHI history)
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    if (ctx) {
+      await auditHelper.logCreate(ctx, 'record_version', docRef.id, {
+        recordId,
+        version: currentVersion,
+        changeReason,
+        patientId: currentData.patientId,
+      })
+    }
   },
 
   /**
@@ -71,12 +104,12 @@ export const recordVersionService = {
    * @returns Array of versions sorted by version number (descending)
    */
   async getHistory(clinicId: string, recordId: string): Promise<RecordVersion[]> {
-    const versionsRef = getVersionsCollection(clinicId, recordId);
-    const q = query(versionsRef, orderBy('version', 'desc'));
-    const querySnapshot = await getDocs(q);
+    const versionsRef = getVersionsCollection(clinicId, recordId)
+    const q = query(versionsRef, orderBy('version', 'desc'))
+    const querySnapshot = await getDocs(q)
 
-    return querySnapshot.docs.map((docSnap) => {
-      const data = docSnap.data();
+    return querySnapshot.docs.map(docSnap => {
+      const data = docSnap.data()
       return {
         id: docSnap.id,
         version: data.version as number,
@@ -87,8 +120,8 @@ export const recordVersionService = {
             : (data.savedAt as string),
         savedBy: data.savedBy as string,
         changeReason: data.changeReason as string | undefined,
-      };
-    });
+      }
+    })
   },
 
   /**
@@ -104,16 +137,16 @@ export const recordVersionService = {
     recordId: string,
     versionNumber: number
   ): Promise<RecordVersion | null> {
-    const versionsRef = getVersionsCollection(clinicId, recordId);
-    const q = query(versionsRef, where('version', '==', versionNumber));
-    const querySnapshot = await getDocs(q);
+    const versionsRef = getVersionsCollection(clinicId, recordId)
+    const q = query(versionsRef, where('version', '==', versionNumber))
+    const querySnapshot = await getDocs(q)
 
     if (querySnapshot.empty) {
-      return null;
+      return null
     }
 
-    const docSnap = querySnapshot.docs[0];
-    const data = docSnap.data();
+    const docSnap = querySnapshot.docs[0]
+    const data = docSnap.data()
 
     return {
       id: docSnap.id,
@@ -125,7 +158,7 @@ export const recordVersionService = {
           : (data.savedAt as string),
       savedBy: data.savedBy as string,
       changeReason: data.changeReason as string | undefined,
-    };
+    }
   },
 
   /**
@@ -135,43 +168,46 @@ export const recordVersionService = {
    * @param recordId - The record ID
    * @param versionNumber - The version number to restore
    * @param restoredBy - Name of the professional restoring the version
+   * @param auditCtx - Optional audit context
    * @returns The new version number
    */
   async restore(
     clinicId: string,
     recordId: string,
     versionNumber: number,
-    restoredBy: string
+    restoredBy: string,
+    auditCtx?: RecordVersionAuditContext
   ): Promise<number> {
     // Get the version to restore
-    const versionToRestore = await this.getVersion(clinicId, recordId, versionNumber);
+    const versionToRestore = await this.getVersion(clinicId, recordId, versionNumber)
     if (!versionToRestore) {
-      throw new Error(`Version ${versionNumber} not found`);
+      throw new Error(`Version ${versionNumber} not found`)
     }
 
     // Get current record state
-    const docRef = doc(db, 'clinics', clinicId, 'records', recordId);
-    const currentDoc = await getDoc(docRef);
+    const docRef = doc(db, 'clinics', clinicId, 'records', recordId)
+    const currentDoc = await getDoc(docRef)
     if (!currentDoc.exists()) {
-      throw new Error('Record not found');
+      throw new Error('Record not found')
     }
 
-    const currentData = currentDoc.data();
-    const currentVersion = (currentData.version as number) || 1;
+    const currentData = currentDoc.data()
+    const currentVersion = (currentData.version as number) || 1
 
-    // Save current state as a version
+    // Save current state as a version (pass audit context)
     await this.saveVersion(
       clinicId,
       recordId,
       currentData,
       currentVersion,
       restoredBy,
-      `Restaurado da versão ${versionNumber}`
-    );
+      `Restaurado da versão ${versionNumber}`,
+      auditCtx
+    )
 
     // Prepare restored data
-    const { ...restoreData } = versionToRestore.data as Record<string, unknown>;
-    const newVersion = currentVersion + 1;
+    const { ...restoreData } = versionToRestore.data as Record<string, unknown>
+    const newVersion = currentVersion + 1
 
     // Update record with restored data
     await updateDoc(docRef, {
@@ -179,8 +215,27 @@ export const recordVersionService = {
       version: newVersion,
       updatedAt: serverTimestamp(),
       updatedBy: restoredBy,
-    });
+    })
 
-    return newVersion;
+    // LGPD audit log - record restored (critical PHI operation)
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    if (ctx) {
+      await auditHelper.logUpdate(
+        ctx,
+        'medical_record',
+        recordId,
+        {
+          version: currentVersion,
+          restoredFromVersion: versionNumber,
+        },
+        {
+          version: newVersion,
+          action: 'restore',
+          restoredBy,
+        }
+      )
+    }
+
+    return newVersion
   },
-};
+}

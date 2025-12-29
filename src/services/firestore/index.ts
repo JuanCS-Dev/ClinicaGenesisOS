@@ -24,6 +24,7 @@ export { transactionService } from './transaction.service'
 export { telemedicineService } from './telemedicine.service'
 
 export { prescriptionService } from './prescription.service'
+export { prescriptionWorkflowService } from './prescription-workflow.service'
 
 export { seedClinicData, removeDemoData } from './seed.service'
 

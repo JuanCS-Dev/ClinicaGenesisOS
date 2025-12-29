@@ -31,6 +31,23 @@ import {
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebase'
 import type { Conversation, Message, ConversationWithMessages, SendMessageInput } from '@/types'
+import { auditHelper, type AuditUserContext } from './lgpd/audit-helper'
+
+/**
+ * Audit context for message operations.
+ */
+export interface MessageAuditContext {
+  userId: string
+  userName: string
+}
+
+/**
+ * Build audit context for message operations.
+ */
+function buildAuditContext(clinicId: string, ctx?: MessageAuditContext): AuditUserContext | null {
+  if (!ctx) return null
+  return { clinicId, userId: ctx.userId, userName: ctx.userName }
+}
 
 /**
  * Get conversations collection reference.
@@ -189,6 +206,10 @@ export const messageService = {
 
   /**
    * Create a new conversation with initial message.
+   *
+   * @param clinicId - Clinic ID
+   * @param data - Conversation data
+   * @param auditCtx - Optional audit context
    */
   async createConversation(
     clinicId: string,
@@ -200,7 +221,8 @@ export const messageService = {
       providerSpecialty?: string
       initialMessage: string
       appointmentId?: string
-    }
+    },
+    auditCtx?: MessageAuditContext
   ): Promise<string> {
     const conversationsRef = getConversationsCollection(clinicId)
 
@@ -236,13 +258,31 @@ export const messageService = {
       createdAt: serverTimestamp(),
     })
 
+    // LGPD audit log - new conversation with patient
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    if (ctx) {
+      await auditHelper.logCreate(ctx, 'conversation', conversationRef.id, {
+        patientId: data.patientId,
+        providerId: data.providerId,
+        appointmentId: data.appointmentId,
+      })
+    }
+
     return conversationRef.id
   },
 
   /**
    * Send a message in a conversation.
+   *
+   * @param clinicId - Clinic ID
+   * @param input - Message input
+   * @param auditCtx - Optional audit context
    */
-  async sendMessage(clinicId: string, input: SendMessageInput): Promise<string> {
+  async sendMessage(
+    clinicId: string,
+    input: SendMessageInput,
+    auditCtx?: MessageAuditContext
+  ): Promise<string> {
     const messagesRef = getMessagesCollection(clinicId, input.conversationId)
 
     let attachmentUrl: string | undefined
@@ -293,6 +333,16 @@ export const messageService = {
 
     await updateDoc(conversationRef, updateData)
 
+    // LGPD audit log - message sent (PHI communication)
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    if (ctx) {
+      await auditHelper.logCreate(ctx, 'message', messageRef.id, {
+        conversationId: input.conversationId,
+        sender: input.sender,
+        hasAttachment: !!input.attachment,
+      })
+    }
+
     return messageRef.id
   },
 
@@ -338,13 +388,43 @@ export const messageService = {
 
   /**
    * Archive a conversation.
+   *
+   * @param clinicId - Clinic ID
+   * @param conversationId - Conversation ID
+   * @param auditCtx - Optional audit context
    */
-  async archiveConversation(clinicId: string, conversationId: string): Promise<void> {
+  async archiveConversation(
+    clinicId: string,
+    conversationId: string,
+    auditCtx?: MessageAuditContext
+  ): Promise<void> {
     const conversationRef = getConversationDoc(clinicId, conversationId)
+
+    // Get conversation data for audit before archiving
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    let previousData: Record<string, unknown> | undefined
+    if (ctx) {
+      const docSnap = await getDoc(conversationRef)
+      if (docSnap.exists()) {
+        previousData = {
+          patientId: docSnap.data().patientId,
+          providerId: docSnap.data().providerId,
+          status: docSnap.data().status,
+        }
+      }
+    }
+
     await updateDoc(conversationRef, {
       status: 'archived',
       updatedAt: serverTimestamp(),
     })
+
+    // LGPD audit log - conversation archived
+    if (ctx && previousData) {
+      await auditHelper.logUpdate(ctx, 'conversation', conversationId, previousData, {
+        status: 'archived',
+      })
+    }
   },
 
   /**

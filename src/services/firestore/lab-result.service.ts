@@ -34,6 +34,23 @@ import type {
   LabResultFilters,
   LabResultStatus,
 } from '@/types'
+import { auditHelper, type AuditUserContext } from './lgpd/audit-helper'
+
+/**
+ * Audit context for lab result operations.
+ */
+export interface LabResultAuditContext {
+  userId: string
+  userName: string
+}
+
+/**
+ * Build audit context for lab result operations.
+ */
+function buildAuditContext(clinicId: string, ctx?: LabResultAuditContext): AuditUserContext | null {
+  if (!ctx) return null
+  return { clinicId, userId: ctx.userId, userName: ctx.userName }
+}
 
 /**
  * Get lab results collection reference.
@@ -132,8 +149,16 @@ export const labResultService = {
 
   /**
    * Create a new lab result.
+   *
+   * @param clinicId - Clinic ID
+   * @param data - Lab result data
+   * @param auditCtx - Optional audit context
    */
-  async create(clinicId: string, data: CreateLabResultInput): Promise<string> {
+  async create(
+    clinicId: string,
+    data: CreateLabResultInput,
+    auditCtx?: LabResultAuditContext
+  ): Promise<string> {
     const resultsRef = getLabResultsCollection(clinicId)
 
     const resultData = {
@@ -145,24 +170,96 @@ export const labResultService = {
     }
 
     const docRef = await addDoc(resultsRef, resultData)
+
+    // LGPD audit log - new lab result (PHI)
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    if (ctx) {
+      await auditHelper.logCreate(ctx, 'lab_result', docRef.id, {
+        patientId: data.patientId,
+        examName: data.examName,
+        examType: data.examType,
+        requestedBy: data.requestedBy,
+      })
+    }
+
     return docRef.id
   },
 
   /**
    * Update a lab result.
+   *
+   * @param clinicId - Clinic ID
+   * @param resultId - Result ID
+   * @param data - Fields to update
+   * @param auditCtx - Optional audit context
    */
-  async update(clinicId: string, resultId: string, data: UpdateLabResultInput): Promise<void> {
+  async update(
+    clinicId: string,
+    resultId: string,
+    data: UpdateLabResultInput,
+    auditCtx?: LabResultAuditContext
+  ): Promise<void> {
     const docRef = getLabResultDoc(clinicId, resultId)
+
+    // Get previous values for audit
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    let previousValues: Record<string, unknown> | undefined
+    if (ctx) {
+      const docSnap = await getDoc(docRef)
+      if (docSnap.exists()) {
+        previousValues = {}
+        Object.keys(data).forEach(key => {
+          const docData = docSnap.data()
+          if (key in docData) {
+            previousValues![key] = docData[key]
+          }
+        })
+      }
+    }
+
     await updateDoc(docRef, {
       ...data,
       updatedAt: serverTimestamp(),
     })
+
+    // LGPD audit log
+    if (ctx && previousValues) {
+      await auditHelper.logUpdate(
+        ctx,
+        'lab_result',
+        resultId,
+        previousValues,
+        data as Record<string, unknown>
+      )
+    }
   },
 
   /**
    * Update lab result status.
+   *
+   * @param clinicId - Clinic ID
+   * @param resultId - Result ID
+   * @param status - New status
+   * @param auditCtx - Optional audit context
    */
-  async updateStatus(clinicId: string, resultId: string, status: LabResultStatus): Promise<void> {
+  async updateStatus(
+    clinicId: string,
+    resultId: string,
+    status: LabResultStatus,
+    auditCtx?: LabResultAuditContext
+  ): Promise<void> {
+    const docRef = getLabResultDoc(clinicId, resultId)
+
+    // Get previous status for audit
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    let previousStatus: string | undefined
+    if (ctx) {
+      const docSnap = await getDoc(docRef)
+      if (docSnap.exists()) {
+        previousStatus = docSnap.data().status
+      }
+    }
+
     const updateData = {
       status,
       updatedAt: serverTimestamp(),
@@ -175,17 +272,33 @@ export const labResultService = {
       ;(updateData as Record<string, unknown>).viewedAt = new Date().toISOString()
     }
 
-    const docRef = getLabResultDoc(clinicId, resultId)
     await updateDoc(docRef, updateData)
+
+    // LGPD audit log
+    if (ctx) {
+      await auditHelper.logUpdate(
+        ctx,
+        'lab_result',
+        resultId,
+        { status: previousStatus },
+        { status }
+      )
+    }
   },
 
   /**
    * Upload result file (PDF or image).
+   *
+   * @param clinicId - Clinic ID
+   * @param resultId - Result ID
+   * @param file - File to upload
+   * @param auditCtx - Optional audit context
    */
   async uploadFile(
     clinicId: string,
     resultId: string,
-    file: File
+    file: File,
+    auditCtx?: LabResultAuditContext
   ): Promise<{ fileUrl: string; fileName: string; fileSize: number }> {
     const fileType = file.type.includes('pdf') ? 'pdf' : 'image'
     const fileName = `${resultId}_${Date.now()}_${file.name}`
@@ -196,14 +309,31 @@ export const labResultService = {
     const fileUrl = await getDownloadURL(storageRef)
 
     // Update the lab result with file info
-    await this.update(clinicId, resultId, {
-      fileUrl,
-      fileType,
-      fileName: file.name,
-      fileSize: file.size,
-      status: 'ready',
-      completedAt: new Date().toISOString(),
-    })
+    await this.update(
+      clinicId,
+      resultId,
+      {
+        fileUrl,
+        fileType,
+        fileName: file.name,
+        fileSize: file.size,
+        status: 'ready',
+        completedAt: new Date().toISOString(),
+      },
+      auditCtx
+    )
+
+    // LGPD audit log - file upload (sensitive PHI document)
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    if (ctx) {
+      await auditHelper.logCreate(ctx, 'document', resultId, {
+        action: 'upload',
+        documentType: 'lab_result',
+        fileName: file.name,
+        fileSize: file.size,
+        fileType,
+      })
+    }
 
     return { fileUrl, fileName: file.name, fileSize: file.size }
   },
@@ -232,13 +362,42 @@ export const labResultService = {
 
   /**
    * Delete a lab result.
+   *
+   * @param clinicId - Clinic ID
+   * @param resultId - Result ID
+   * @param auditCtx - Optional audit context
    */
-  async delete(clinicId: string, resultId: string): Promise<void> {
+  async delete(
+    clinicId: string,
+    resultId: string,
+    auditCtx?: LabResultAuditContext
+  ): Promise<void> {
+    // Get data for audit before deletion
+    const ctx = buildAuditContext(clinicId, auditCtx)
+    let deletedData: Record<string, unknown> | undefined
+    if (ctx) {
+      const result = await this.getById(clinicId, resultId)
+      if (result) {
+        deletedData = {
+          patientId: result.patientId,
+          examName: result.examName,
+          examType: result.examType,
+          status: result.status,
+          hasFile: !!result.fileUrl,
+        }
+      }
+    }
+
     // Delete file first if exists
     await this.deleteFile(clinicId, resultId)
 
     const docRef = getLabResultDoc(clinicId, resultId)
     await deleteDoc(docRef)
+
+    // LGPD audit log - lab result deletion (PHI)
+    if (ctx && deletedData) {
+      await auditHelper.logDelete(ctx, 'lab_result', resultId, deletedData)
+    }
   },
 
   /**

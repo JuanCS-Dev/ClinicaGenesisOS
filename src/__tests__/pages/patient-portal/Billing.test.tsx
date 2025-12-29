@@ -3,11 +3,11 @@
  *
  * Tests for patient billing/payments page including PIX functionality.
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 // Import setup to activate mocks (hoisted automatically)
-import { resetPatientPortalMocks } from './setup';
+import { resetPatientPortalMocks } from './setup'
 
 // Mock sonner
 vi.mock('sonner', () => ({
@@ -15,7 +15,7 @@ vi.mock('sonner', () => ({
     success: vi.fn(),
     error: vi.fn(),
   },
-}));
+}))
 
 // Mock PIX service
 vi.mock('../../../services/pix.service', () => ({
@@ -23,7 +23,7 @@ vi.mock('../../../services/pix.service', () => ({
     qrCodeDataUrl: 'data:image/png;base64,test',
     pixCopiaECola: '00020126580014br.gov.bcb.pix',
   }),
-}));
+}))
 
 // Mock PIX config
 vi.mock('../../../config/pix', () => ({
@@ -35,114 +35,161 @@ vi.mock('../../../config/pix', () => ({
     enabled: true,
   },
   isPixConfigured: vi.fn(() => true),
-}));
+}))
 
-import { PatientBilling } from '../../../pages/patient-portal/Billing';
+import { PatientBilling } from '../../../pages/patient-portal/Billing'
 
 const renderBilling = () => {
   return render(
     <MemoryRouter>
       <PatientBilling />
     </MemoryRouter>
-  );
-};
+  )
+}
 
 describe('PatientBilling', () => {
   beforeEach(() => {
-    resetPatientPortalMocks();
-    vi.clearAllMocks();
-  });
+    resetPatientPortalMocks()
+    vi.clearAllMocks()
+  })
 
   describe('smoke tests', () => {
     it('should render without crashing', () => {
-      const { container } = renderBilling();
-      expect(container).toBeDefined();
-    });
-  });
+      const { container } = renderBilling()
+      expect(container).toBeDefined()
+    })
+  })
 
   describe('header', () => {
     it('should render page title', () => {
-      renderBilling();
-      const titles = screen.getAllByText(/Financeiro/i);
-      expect(titles.length).toBeGreaterThan(0);
-    });
+      renderBilling()
+      const titles = screen.getAllByText(/Financeiro/i)
+      expect(titles.length).toBeGreaterThan(0)
+    })
 
     it('should render subtitle', () => {
-      renderBilling();
-      expect(screen.getByText(/Faturas, pagamentos e histórico/i)).toBeInTheDocument();
-    });
-  });
+      renderBilling()
+      expect(screen.getByText(/Faturas, pagamentos e histórico/i)).toBeInTheDocument()
+    })
+  })
 
   describe('summary cards', () => {
     it('should show Total Pago section', () => {
-      renderBilling();
-      expect(screen.getByText('Total Pago')).toBeInTheDocument();
-    });
+      renderBilling()
+      expect(screen.getByText('Total Pago')).toBeInTheDocument()
+    })
 
     it('should show Pendente section', () => {
-      renderBilling();
-      const pendenteElements = screen.getAllByText('Pendente');
-      expect(pendenteElements.length).toBeGreaterThan(0);
-    });
-  });
+      renderBilling()
+      const pendenteElements = screen.getAllByText('Pendente')
+      expect(pendenteElements.length).toBeGreaterThan(0)
+    })
+  })
 
   describe('invoices list', () => {
     it('should render invoices list header', () => {
-      renderBilling();
-      expect(screen.getByText('Histórico de Faturas')).toBeInTheDocument();
-    });
+      renderBilling()
+      expect(screen.getByText('Histórico de Faturas')).toBeInTheDocument()
+    })
 
     it('should display transaction description', () => {
-      renderBilling();
-      expect(screen.getByText('Consulta Cardiologia')).toBeInTheDocument();
-    });
-  });
+      renderBilling()
+      expect(screen.getByText('Consulta Cardiologia')).toBeInTheDocument()
+    })
+  })
 
   describe('payment functionality', () => {
     it('should render pay button for pending transactions', () => {
-      renderBilling();
-      const payButtons = screen.getAllByText('Pagar');
-      expect(payButtons.length).toBeGreaterThan(0);
-    });
+      renderBilling()
+      const payButtons = screen.getAllByText('Pagar')
+      expect(payButtons.length).toBeGreaterThan(0)
+    })
 
     it('should open PIX modal when pay button is clicked', async () => {
-      renderBilling();
+      renderBilling()
 
-      const payButton = screen.getByText('Pagar');
-      fireEvent.click(payButton);
+      const payButton = screen.getByText('Pagar')
+      fireEvent.click(payButton)
 
       await waitFor(() => {
-        expect(screen.getByText('Pagar com PIX')).toBeInTheDocument();
-      });
-    });
+        expect(screen.getByText('Pagar com PIX')).toBeInTheDocument()
+      })
+    })
 
     it('should display transaction amount in modal', async () => {
-      renderBilling();
+      renderBilling()
 
-      const payButton = screen.getByText('Pagar');
-      fireEvent.click(payButton);
+      const payButton = screen.getByText('Pagar')
+      fireEvent.click(payButton)
 
       await waitFor(() => {
-        expect(screen.getByText('Valor a pagar')).toBeInTheDocument();
-      });
-    });
+        expect(screen.getByText('Valor a pagar')).toBeInTheDocument()
+      })
+    })
 
     it('should close modal when fechar button is clicked', async () => {
-      renderBilling();
+      renderBilling()
 
-      const payButton = screen.getByText('Pagar');
-      fireEvent.click(payButton);
-
-      await waitFor(() => {
-        expect(screen.getByText('Pagar com PIX')).toBeInTheDocument();
-      });
-
-      const closeButton = screen.getByRole('button', { name: /fechar/i });
-      fireEvent.click(closeButton);
+      const payButton = screen.getByText('Pagar')
+      fireEvent.click(payButton)
 
       await waitFor(() => {
-        expect(screen.queryByText('Pagar com PIX')).not.toBeInTheDocument();
-      });
-    });
-  });
-});
+        expect(screen.getByText('Pagar com PIX')).toBeInTheDocument()
+      })
+
+      const closeButton = screen.getByRole('button', { name: /fechar/i })
+      fireEvent.click(closeButton)
+
+      await waitFor(() => {
+        expect(screen.queryByText('Pagar com PIX')).not.toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('transaction statuses', () => {
+    it('should show Pago status with correct styling', () => {
+      renderBilling()
+      const paidLabels = screen.getAllByText('Pago')
+      expect(paidLabels.length).toBeGreaterThan(0)
+    })
+
+    it('should show download button for paid transactions', () => {
+      renderBilling()
+      const downloadButtons = document.querySelectorAll('.lucide-download')
+      expect(downloadButtons.length).toBeGreaterThan(0)
+    })
+
+    it('should show Pendente status label', () => {
+      renderBilling()
+      const pendenteLabels = screen.getAllByText('Pendente')
+      expect(pendenteLabels.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('payment methods', () => {
+    it('should display payment method for paid transactions', () => {
+      renderBilling()
+      // PIX is one of the payment methods shown
+      expect(screen.getByText('PIX')).toBeInTheDocument()
+    })
+  })
+
+  describe('currency formatting', () => {
+    it('should format currency values correctly', () => {
+      renderBilling()
+      // Check for R$ currency format
+      const currencyElements = screen.getAllByText(/R\$\s/)
+      expect(currencyElements.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('dates', () => {
+    it('should display transaction dates', () => {
+      renderBilling()
+      // Check for date format (dd/mm/yyyy)
+      const datePattern = /\d{2}\/\d{2}\/\d{4}/
+      const dates = screen.getAllByText(datePattern)
+      expect(dates.length).toBeGreaterThan(0)
+    })
+  })
+})

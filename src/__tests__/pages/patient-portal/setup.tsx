@@ -7,8 +7,8 @@
  * Import this file at the top of your test to set up mocks.
  */
 
-import { vi } from 'vitest';
-import React from 'react';
+import { vi } from 'vitest'
+import React from 'react'
 
 // Mock data
 export const mockPatientProfile = {
@@ -16,7 +16,7 @@ export const mockPatientProfile = {
   name: 'Maria Santos',
   email: 'maria@email.com',
   phone: '11999999999',
-};
+}
 
 export const mockAppointments = [
   {
@@ -41,7 +41,7 @@ export const mockAppointments = [
     status: 'completed',
     notes: '',
   },
-];
+]
 
 export const mockPrescriptions = [
   {
@@ -50,13 +50,11 @@ export const mockPrescriptions = [
     patientName: 'Maria Santos',
     professional: 'Dr. João Silva',
     status: 'active',
-    medications: [
-      { name: 'Losartana 50mg', dosage: '1 comprimido', frequency: '1x ao dia' },
-    ],
+    medications: [{ name: 'Losartana 50mg', dosage: '1 comprimido', frequency: '1x ao dia' }],
     issuedAt: new Date().toISOString(),
     expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
   },
-];
+]
 
 export const mockTransactions = [
   {
@@ -68,7 +66,7 @@ export const mockTransactions = [
     description: 'Consulta Cardiologia',
     date: new Date().toISOString(),
   },
-];
+]
 
 // Module-level mocks (these are hoisted automatically by vitest)
 
@@ -86,7 +84,7 @@ vi.mock('../../../contexts/ClinicContext', () => ({
     error: null,
   })),
   ClinicProvider: ({ children }: { children: React.ReactNode }) => children,
-}));
+}))
 
 // Mock PatientAuthContext
 vi.mock('../../../contexts/PatientAuthContext', () => ({
@@ -100,7 +98,7 @@ vi.mock('../../../contexts/PatientAuthContext', () => ({
     loading: false,
     error: null,
   })),
-}));
+}))
 
 // Mock PatientPortalContext
 vi.mock('../../../contexts/PatientPortalContext', () => ({
@@ -116,7 +114,7 @@ vi.mock('../../../contexts/PatientPortalContext', () => ({
     error: null,
   })),
   PatientPortalProvider: ({ children }: { children: React.ReactNode }) => children,
-}));
+}))
 
 // Mock usePatientPortal hooks
 vi.mock('../../../hooks/usePatientPortal', () => ({
@@ -183,9 +181,7 @@ vi.mock('../../../hooks/usePatientPortal', () => ({
         patientName: 'Maria Santos',
         professional: 'Dr. João Silva',
         status: 'active',
-        medications: [
-          { name: 'Losartana 50mg', dosage: '1 comprimido', frequency: '1x ao dia' },
-        ],
+        medications: [{ name: 'Losartana 50mg', dosage: '1 comprimido', frequency: '1x ao dia' }],
         issuedAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       },
@@ -197,9 +193,7 @@ vi.mock('../../../hooks/usePatientPortal', () => ({
         patientName: 'Maria Santos',
         professional: 'Dr. João Silva',
         status: 'active',
-        medications: [
-          { name: 'Losartana 50mg', dosage: '1 comprimido', frequency: '1x ao dia' },
-        ],
+        medications: [{ name: 'Losartana 50mg', dosage: '1 comprimido', frequency: '1x ao dia' }],
         issuedAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       },
@@ -218,6 +212,16 @@ vi.mock('../../../hooks/usePatientPortal', () => ({
         description: 'Consulta Cardiologia',
         date: new Date().toISOString(),
       },
+      {
+        id: 'tx-2',
+        patientId: 'patient-123',
+        type: 'income',
+        amount: 180,
+        status: 'paid',
+        description: 'Consulta Dermatologia',
+        paymentMethod: 'pix',
+        date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      },
     ],
     pendingPayments: [
       {
@@ -234,7 +238,7 @@ vi.mock('../../../hooks/usePatientPortal', () => ({
     loading: false,
     error: null,
   })),
-}));
+}))
 
 // Mock usePatientMessages
 vi.mock('../../../hooks/usePatientMessages', () => ({
@@ -259,7 +263,7 @@ vi.mock('../../../hooks/usePatientMessages', () => ({
     createConversation: vi.fn(),
     refresh: vi.fn(),
   })),
-}));
+}))
 
 // Mock usePatientTelehealth
 vi.mock('../../../hooks/usePatientTelehealth', () => ({
@@ -286,7 +290,7 @@ vi.mock('../../../hooks/usePatientTelehealth', () => ({
     leaveWaitingRoom: vi.fn(),
     refresh: vi.fn(),
   })),
-}));
+}))
 
 // Mock usePatientInsights
 vi.mock('../../../hooks/usePatientInsights', () => ({
@@ -295,7 +299,7 @@ vi.mock('../../../hooks/usePatientInsights', () => ({
     loading: false,
     error: null,
   })),
-}));
+}))
 
 // Mock useLabResults
 vi.mock('../../../hooks/useLabResults', () => ({
@@ -332,9 +336,9 @@ vi.mock('../../../hooks/useLabResults', () => ({
     refresh: vi.fn(),
     markAsViewed: vi.fn(),
   })),
-}));
+}))
 
 // Helper function to reset mocks between tests
 export function resetPatientPortalMocks() {
-  vi.clearAllMocks();
+  vi.clearAllMocks()
 }
