@@ -8,7 +8,7 @@
  * Fase 15: Air Gap Resolution
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react'
 import {
   Settings as SettingsIcon,
   QrCode,
@@ -21,17 +21,19 @@ import {
   HeartPulse,
   Zap,
   User,
-} from 'lucide-react';
-import { PixSettings } from '@/components/settings/PixSettings';
-import { DataExportRequest } from '@/components/consent/DataExportRequest';
-import { CertificateSetup } from '@/components/prescription/CertificateSetup';
-import { MetricsDashboard } from '@/components/ai/scribe/MetricsDashboard';
-import { NotificationPreferences } from '@/components/notifications';
-import { WhatsAppSettings } from '@/components/settings/WhatsAppSettings';
-import { ConvenioSettings } from '@/components/settings/ConvenioSettings';
-import { WorkflowSettings } from '@/components/settings/WorkflowSettings';
-import { ProfileSettings } from '@/components/settings/ProfileSettings';
-import { useClinicContext } from '@/contexts/ClinicContext';
+  Users,
+} from 'lucide-react'
+import { PixSettings } from '@/components/settings/PixSettings'
+import { DataExportRequest } from '@/components/consent/DataExportRequest'
+import { CertificateSetup } from '@/components/prescription/CertificateSetup'
+import { MetricsDashboard } from '@/components/ai/scribe/MetricsDashboard'
+import { NotificationPreferences } from '@/components/notifications'
+import { WhatsAppSettings } from '@/components/settings/WhatsAppSettings'
+import { ConvenioSettings } from '@/components/settings/ConvenioSettings'
+import { WorkflowSettings } from '@/components/settings/WorkflowSettings'
+import { ProfileSettings } from '@/components/settings/ProfileSettings'
+import { TeamSettings } from '@/components/settings/team'
+import { useClinicContext } from '@/contexts/ClinicContext'
 
 /**
  * Tab configuration.
@@ -48,6 +50,12 @@ const TABS = [
     label: 'Clínica',
     icon: Building,
     description: 'Informações básicas da clínica',
+  },
+  {
+    id: 'team',
+    label: 'Equipe',
+    icon: Users,
+    description: 'Gerenciar membros e permissões',
   },
   {
     id: 'convenios',
@@ -97,22 +105,22 @@ const TABS = [
     icon: Brain,
     description: 'Métricas e configurações de IA',
   },
-] as const;
+] as const
 
-type TabId = (typeof TABS)[number]['id'];
+type TabId = (typeof TABS)[number]['id']
 
 /**
  * Settings page component.
  */
 export function Settings(): React.ReactElement {
-  const [activeTab, setActiveTab] = useState<TabId>('profile');
-  const { clinic } = useClinicContext();
-  const [showCertificateModal, setShowCertificateModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>('profile')
+  const { clinic } = useClinicContext()
+  const [showCertificateModal, setShowCertificateModal] = useState(false)
 
   // Handle certificate configuration
   const handleCertificateConfigured = useCallback(() => {
-    setShowCertificateModal(false);
-  }, []);
+    setShowCertificateModal(false)
+  }, [])
 
   return (
     <div className="space-y-6 animate-enter pb-10">
@@ -122,20 +130,16 @@ export function Settings(): React.ReactElement {
           <SettingsIcon className="w-6 h-6 text-genesis-medium" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-genesis-dark tracking-tight">
-            Configurações
-          </h1>
-          <p className="text-genesis-medium text-sm">
-            Gerencie as configurações da sua clínica
-          </p>
+          <h1 className="text-2xl font-bold text-genesis-dark tracking-tight">Configurações</h1>
+          <p className="text-genesis-medium text-sm">Gerencie as configurações da sua clínica</p>
         </div>
       </div>
 
       {/* Tabs Navigation */}
       <div className="flex gap-2 bg-genesis-surface p-1.5 rounded-2xl border border-genesis-border-subtle shadow-sm overflow-x-auto">
-        {TABS.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
+        {TABS.map(tab => {
+          const Icon = tab.icon
+          const isActive = activeTab === tab.id
 
           return (
             <button
@@ -154,7 +158,7 @@ export function Settings(): React.ReactElement {
               <Icon className="w-4 h-4" />
               {tab.label}
             </button>
-          );
+          )
         })}
       </div>
 
@@ -175,12 +179,8 @@ export function Settings(): React.ReactElement {
                 <Building className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-genesis-dark">
-                  Informações da Clínica
-                </h3>
-                <p className="text-sm text-genesis-muted">
-                  Dados básicos e configurações gerais
-                </p>
+                <h3 className="font-semibold text-genesis-dark">Informações da Clínica</h3>
+                <p className="text-sm text-genesis-muted">Dados básicos e configurações gerais</p>
               </div>
             </div>
 
@@ -198,9 +198,7 @@ export function Settings(): React.ReactElement {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-genesis-text mb-1">
-                  Tipo
-                </label>
+                <label className="block text-sm font-medium text-genesis-text mb-1">Tipo</label>
                 <input
                   type="text"
                   value="Clínica Médica"
@@ -216,14 +214,17 @@ export function Settings(): React.ReactElement {
           </div>
         )}
 
+        {/* Team Tab */}
+        {activeTab === 'team' && (
+          <div className="bg-genesis-surface rounded-2xl border border-genesis-border-subtle p-6 animate-in fade-in zoom-in-95">
+            <TeamSettings />
+          </div>
+        )}
+
         {/* Convenios Tab */}
         {activeTab === 'convenios' && (
           <div className="animate-in fade-in zoom-in-95">
-            <ConvenioSettings
-              clinicId={clinic?.id || ''}
-              cnes={clinic?.cnes}
-              cnpj={clinic?.cnpj}
-            />
+            <ConvenioSettings clinicId={clinic?.id || ''} cnes={clinic?.cnes} cnpj={clinic?.cnpj} />
           </div>
         )}
 
@@ -235,9 +236,7 @@ export function Settings(): React.ReactElement {
                 <Bell className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-genesis-dark">
-                  Preferências de Notificação
-                </h3>
+                <h3 className="font-semibold text-genesis-dark">Preferências de Notificação</h3>
                 <p className="text-sm text-genesis-muted">
                   Configure como você deseja receber lembretes e alertas
                 </p>
@@ -277,9 +276,7 @@ export function Settings(): React.ReactElement {
                   <FileText className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-genesis-dark">
-                    Certificado Digital
-                  </h3>
+                  <h3 className="font-semibold text-genesis-dark">Certificado Digital</h3>
                   <p className="text-sm text-genesis-muted">
                     Configure seu certificado e-CPF para assinatura digital
                   </p>
@@ -322,8 +319,7 @@ export function Settings(): React.ReactElement {
         )}
       </div>
     </div>
-  );
+  )
 }
 
-export default Settings;
-
+export default Settings

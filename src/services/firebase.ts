@@ -15,6 +15,7 @@ import {
   CACHE_SIZE_UNLIMITED,
 } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
+import { getFunctions } from 'firebase/functions'
 import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics'
 
 const firebaseConfig = {
@@ -52,6 +53,12 @@ export const db = initializeFirestore(app, {
 })
 
 export const storage = getStorage(app)
+
+/**
+ * Firebase Cloud Functions.
+ * Configured for South America region.
+ */
+export const functions = getFunctions(app, 'southamerica-east1')
 
 /**
  * Firebase Analytics (initialized only in production if supported).
