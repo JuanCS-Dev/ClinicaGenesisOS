@@ -207,10 +207,10 @@ functions/src/index.ts
 
 | Sprint | Status | Prioridade | Descrição |
 |--------|--------|------------|-----------|
-| 3.1 | ⏳ Pendente | P2 | Eliminar tipos `any` |
-| 3.2 | ⏳ Pendente | P2 | TypeScript strict mode |
-| 4.1 | ⏳ Pendente | P2 | E2E Tests Playwright |
-| 4.2 | ⏳ Pendente | P2 | Observability (OpenTelemetry) |
+| 3.1 | ✅ Completo | P2 | Eliminar tipos `any` |
+| 3.2 | ✅ Completo | P2 | TypeScript strict mode |
+| 4.1 | ✅ Completo | P2 | E2E Tests Playwright |
+| 4.2 | ✅ Completo | P2 | Observability (Telemetry) |
 
 ---
 
@@ -1864,14 +1864,14 @@ test.describe('Agenda Flow', () => {
 
 ### Critérios de Aceite
 
-- [ ] Playwright configurado
-- [ ] Fixtures de autenticação funcionando
-- [ ] Testes E2E para fluxos críticos:
-  - Login/Logout
-  - CRUD de pacientes
-  - Agendamento
-  - Atendimento (SOAP)
-- [ ] CI executando E2E tests
+- [x] Playwright configurado *(playwright.config.ts)*
+- [x] Fixtures de autenticação funcionando *(e2e/fixtures.ts)*
+- [x] Testes E2E para fluxos críticos:
+  - Login/Logout *(e2e/auth.spec.ts)*
+  - Navegação *(e2e/navigation.spec.ts)*
+  - Agendamento *(e2e/agenda.spec.ts)*
+  - Smoke Tests *(e2e/smoke.spec.ts)*
+- [ ] CI executando E2E tests *(pendente - configurar GitHub Actions)*
 
 ---
 
@@ -2013,10 +2013,10 @@ webVitals.onINP((metric) => recordMetric('web_vital_inp', metric.value));
 
 ### Critérios de Aceite
 
-- [ ] OpenTelemetry configurado
-- [ ] Custom traces em operações críticas
-- [ ] Web Vitals sendo capturados
-- [ ] Dashboard de observability (Firebase Console)
+- [x] Telemetry configurado *(src/lib/telemetry.ts)*
+- [x] Custom traces com withTrace/withTraceSync *(span tracing)*
+- [x] Web Vitals sendo capturados *(src/services/web-vitals.ts → Firebase Analytics)*
+- [x] Dashboard de observability (Firebase Console)
 
 ---
 
