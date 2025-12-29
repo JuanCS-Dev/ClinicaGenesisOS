@@ -10,98 +10,101 @@
  * - payment_intent.payment_failed: Payment failed
  * - payment_intent.canceled: Payment cancelled/expired
  * - charge.refunded: Payment refunded
+ *
+ * SECURITY: API keys stored in Firebase Secret Manager
+ *
+ * @module functions/stripe/webhook
  */
 
-import { onRequest } from 'firebase-functions/v2/https';
-import { logger } from 'firebase-functions';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { getStripeClient, getWebhookSecret, isStripeConfigured } from './config.js';
-import type { PaymentDisplayStatus } from './types.js';
-import type Stripe from 'stripe';
+import { onRequest } from 'firebase-functions/v2/https'
+import { logger } from 'firebase-functions'
+import { getFirestore, FieldValue } from 'firebase-admin/firestore'
+import { getStripeClient, getWebhookSecret, isStripeConfigured } from './config.js'
+import { STRIPE_SECRETS } from '../config/secrets.js'
+import type { PaymentDisplayStatus } from './types.js'
+import type Stripe from 'stripe'
 
 /**
  * Stripe webhook endpoint.
  * Receives events from Stripe and updates Firestore accordingly.
+ *
+ * SECURITY: Secrets loaded from Firebase Secret Manager.
  */
 export const stripeWebhook = onRequest(
   {
     region: 'southamerica-east1',
     memory: '256MiB',
     timeoutSeconds: 60,
-    // Raw body is needed for signature verification
     invoker: 'public',
+    secrets: [...STRIPE_SECRETS],
   },
   async (req, res) => {
     // Only accept POST requests
     if (req.method !== 'POST') {
-      res.status(405).send('Method not allowed');
-      return;
+      res.status(405).send('Method not allowed')
+      return
     }
 
     // Check if Stripe is configured
     if (!isStripeConfigured()) {
-      logger.error('Stripe not configured');
-      res.status(500).send('Stripe not configured');
-      return;
+      logger.error('Stripe not configured')
+      res.status(500).send('Stripe not configured')
+      return
     }
 
-    const stripe = getStripeClient();
-    const webhookSecret = getWebhookSecret();
-    const signature = req.headers['stripe-signature'];
+    const stripe = getStripeClient()
+    const webhookSecret = getWebhookSecret()
+    const signature = req.headers['stripe-signature']
 
     if (!signature) {
-      logger.error('Missing stripe-signature header');
-      res.status(400).send('Missing signature');
-      return;
+      logger.error('Missing stripe-signature header')
+      res.status(400).send('Missing signature')
+      return
     }
 
-    let event: Stripe.Event;
+    let event: Stripe.Event
 
     try {
       // Verify webhook signature
-      event = stripe.webhooks.constructEvent(
-        req.rawBody,
-        signature,
-        webhookSecret
-      );
+      event = stripe.webhooks.constructEvent(req.rawBody, signature, webhookSecret)
     } catch (err) {
-      logger.error('Webhook signature verification failed:', { error: err });
-      res.status(400).send('Invalid signature');
-      return;
+      logger.error('Webhook signature verification failed:', { error: err })
+      res.status(400).send('Invalid signature')
+      return
     }
 
-    const db = getFirestore();
+    const db = getFirestore()
 
     try {
       // Handle event based on type
       switch (event.type) {
         case 'payment_intent.succeeded':
-          await handlePaymentSucceeded(db, event.data.object as Stripe.PaymentIntent);
-          break;
+          await handlePaymentSucceeded(db, event.data.object as Stripe.PaymentIntent)
+          break
 
         case 'payment_intent.payment_failed':
-          await handlePaymentFailed(db, event.data.object as Stripe.PaymentIntent);
-          break;
+          await handlePaymentFailed(db, event.data.object as Stripe.PaymentIntent)
+          break
 
         case 'payment_intent.canceled':
-          await handlePaymentCanceled(db, event.data.object as Stripe.PaymentIntent);
-          break;
+          await handlePaymentCanceled(db, event.data.object as Stripe.PaymentIntent)
+          break
 
         case 'charge.refunded':
-          await handleChargeRefunded(db, event.data.object as Stripe.Charge);
-          break;
+          await handleChargeRefunded(db, event.data.object as Stripe.Charge)
+          break
 
         default:
-          logger.info(`Unhandled event type: ${event.type}`);
+          logger.info(`Unhandled event type: ${event.type}`)
       }
 
-      res.status(200).json({ received: true });
+      res.status(200).json({ received: true })
     } catch (err) {
-      logger.error('Error handling webhook event:', { error: err });
-      res.status(500).send('Webhook handler error');
+      logger.error('Error handling webhook event:', { error: err })
+      res.status(500).send('Webhook handler error')
     }
   }
-);
+)
 
 /**
  * Handles successful payment.
@@ -110,10 +113,10 @@ async function handlePaymentSucceeded(
   db: FirebaseFirestore.Firestore,
   paymentIntent: Stripe.PaymentIntent
 ): Promise<void> {
-  const clinicId = paymentIntent.metadata?.clinicId;
+  const clinicId = paymentIntent.metadata?.clinicId
   if (!clinicId) {
-    logger.error('Missing clinicId in payment metadata');
-    return;
+    logger.error('Missing clinicId in payment metadata')
+    return
   }
 
   // Find payment by Stripe ID
@@ -123,26 +126,24 @@ async function handlePaymentSucceeded(
     .collection('payments')
     .where('stripePaymentIntentId', '==', paymentIntent.id)
     .limit(1)
-    .get();
+    .get()
 
   if (snapshot.empty) {
-    logger.error(`Payment not found for PaymentIntent: ${paymentIntent.id}`);
-    return;
+    logger.error(`Payment not found for PaymentIntent: ${paymentIntent.id}`)
+    return
   }
 
-  const paymentDoc = snapshot.docs[0];
+  const paymentDoc = snapshot.docs[0]
 
   // Get receipt URL from latest charge
-  let receiptUrl: string | undefined;
+  let receiptUrl: string | undefined
   if (paymentIntent.latest_charge) {
     try {
-      const stripe = getStripeClient();
-      const charge = await stripe.charges.retrieve(
-        paymentIntent.latest_charge as string
-      );
-      receiptUrl = charge.receipt_url || undefined;
+      const stripe = getStripeClient()
+      const charge = await stripe.charges.retrieve(paymentIntent.latest_charge as string)
+      receiptUrl = charge.receipt_url || undefined
     } catch (err) {
-      logger.error('Error fetching charge:', { error: err });
+      logger.error('Error fetching charge:', { error: err })
     }
   }
 
@@ -154,12 +155,12 @@ async function handlePaymentSucceeded(
     updatedAt: FieldValue.serverTimestamp(),
     // Clear PIX data as it's no longer needed
     pixData: FieldValue.delete(),
-  });
+  })
 
-  logger.info(`Payment ${paymentDoc.id} marked as paid`);
+  logger.info(`Payment ${paymentDoc.id} marked as paid`)
 
   // Update related transaction if exists
-  const transactionId = paymentIntent.metadata?.transactionId;
+  const transactionId = paymentIntent.metadata?.transactionId
   if (transactionId) {
     await db
       .collection('clinics')
@@ -171,9 +172,9 @@ async function handlePaymentSucceeded(
         paidAt: new Date().toISOString(),
         paymentMethod: 'pix',
         updatedAt: FieldValue.serverTimestamp(),
-      });
+      })
 
-    logger.info(`Transaction ${transactionId} marked as paid`);
+    logger.info(`Transaction ${transactionId} marked as paid`)
   }
 }
 
@@ -184,8 +185,8 @@ async function handlePaymentFailed(
   db: FirebaseFirestore.Firestore,
   paymentIntent: Stripe.PaymentIntent
 ): Promise<void> {
-  const clinicId = paymentIntent.metadata?.clinicId;
-  if (!clinicId) return;
+  const clinicId = paymentIntent.metadata?.clinicId
+  if (!clinicId) return
 
   const snapshot = await db
     .collection('clinics')
@@ -193,21 +194,20 @@ async function handlePaymentFailed(
     .collection('payments')
     .where('stripePaymentIntentId', '==', paymentIntent.id)
     .limit(1)
-    .get();
+    .get()
 
-  if (snapshot.empty) return;
+  if (snapshot.empty) return
 
-  const paymentDoc = snapshot.docs[0];
-  const failureMessage =
-    paymentIntent.last_payment_error?.message || 'Payment failed';
+  const paymentDoc = snapshot.docs[0]
+  const failureMessage = paymentIntent.last_payment_error?.message || 'Payment failed'
 
   await paymentDoc.ref.update({
     status: 'failed' as PaymentDisplayStatus,
     failureReason: failureMessage,
     updatedAt: FieldValue.serverTimestamp(),
-  });
+  })
 
-  logger.info(`Payment ${paymentDoc.id} marked as failed: ${failureMessage}`);
+  logger.info(`Payment ${paymentDoc.id} marked as failed: ${failureMessage}`)
 }
 
 /**
@@ -217,8 +217,8 @@ async function handlePaymentCanceled(
   db: FirebaseFirestore.Firestore,
   paymentIntent: Stripe.PaymentIntent
 ): Promise<void> {
-  const clinicId = paymentIntent.metadata?.clinicId;
-  if (!clinicId) return;
+  const clinicId = paymentIntent.metadata?.clinicId
+  if (!clinicId) return
 
   const snapshot = await db
     .collection('clinics')
@@ -226,19 +226,19 @@ async function handlePaymentCanceled(
     .collection('payments')
     .where('stripePaymentIntentId', '==', paymentIntent.id)
     .limit(1)
-    .get();
+    .get()
 
-  if (snapshot.empty) return;
+  if (snapshot.empty) return
 
-  const paymentDoc = snapshot.docs[0];
+  const paymentDoc = snapshot.docs[0]
 
   await paymentDoc.ref.update({
     status: 'expired' as PaymentDisplayStatus,
     updatedAt: FieldValue.serverTimestamp(),
     pixData: FieldValue.delete(),
-  });
+  })
 
-  logger.info(`Payment ${paymentDoc.id} marked as expired`);
+  logger.info(`Payment ${paymentDoc.id} marked as expired`)
 }
 
 /**
@@ -248,15 +248,15 @@ async function handleChargeRefunded(
   db: FirebaseFirestore.Firestore,
   charge: Stripe.Charge
 ): Promise<void> {
-  const paymentIntentId = charge.payment_intent as string;
-  if (!paymentIntentId) return;
+  const paymentIntentId = charge.payment_intent as string
+  if (!paymentIntentId) return
 
   // Get the PaymentIntent to find clinicId
-  const stripe = getStripeClient();
-  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+  const stripe = getStripeClient()
+  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
 
-  const clinicId = paymentIntent.metadata?.clinicId;
-  if (!clinicId) return;
+  const clinicId = paymentIntent.metadata?.clinicId
+  if (!clinicId) return
 
   const snapshot = await db
     .collection('clinics')
@@ -264,23 +264,23 @@ async function handleChargeRefunded(
     .collection('payments')
     .where('stripePaymentIntentId', '==', paymentIntentId)
     .limit(1)
-    .get();
+    .get()
 
-  if (snapshot.empty) return;
+  if (snapshot.empty) return
 
-  const paymentDoc = snapshot.docs[0];
-  const refundAmount = charge.amount_refunded;
+  const paymentDoc = snapshot.docs[0]
+  const refundAmount = charge.amount_refunded
 
   await paymentDoc.ref.update({
     status: 'refunded' as PaymentDisplayStatus,
     refundAmount,
     updatedAt: FieldValue.serverTimestamp(),
-  });
+  })
 
-  logger.info(`Payment ${paymentDoc.id} refunded: ${refundAmount} cents`);
+  logger.info(`Payment ${paymentDoc.id} refunded: ${refundAmount} cents`)
 
   // Update related transaction if exists
-  const transactionId = paymentIntent.metadata?.transactionId;
+  const transactionId = paymentIntent.metadata?.transactionId
   if (transactionId) {
     await db
       .collection('clinics')
@@ -290,7 +290,6 @@ async function handleChargeRefunded(
       .update({
         status: 'refunded',
         updatedAt: FieldValue.serverTimestamp(),
-      });
+      })
   }
 }
-

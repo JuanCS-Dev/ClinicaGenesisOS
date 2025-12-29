@@ -4,23 +4,28 @@
  *
  * Callable functions for Boleto payment management via Stripe.
  * Fase 10: Payment Integration
+ *
+ * SECURITY: API keys stored in Firebase Secret Manager
+ *
+ * @module functions/stripe/boleto-payment
  */
 
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { onCall, HttpsError } from 'firebase-functions/v2/https'
+import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import {
   getStripeClient,
   DEFAULT_BOLETO_EXPIRATION_DAYS,
   MIN_BOLETO_AMOUNT,
   MAX_BOLETO_AMOUNT,
   isStripeConfigured,
-} from './config.js';
+} from './config.js'
+import { STRIPE_SECRET_KEY } from '../config/secrets.js'
 import type {
   CreatePaymentInput,
   PaymentIntentResponse,
   PaymentRecord,
   BoletoData,
-} from './types.js';
+} from './types.js'
 
 /**
  * Creates a Boleto payment intent.
@@ -30,58 +35,56 @@ import type {
  * @returns PaymentIntentResponse with boleto URL
  */
 export const createBoletoPayment = onCall<{
-  clinicId: string;
-  input: CreatePaymentInput;
+  clinicId: string
+  input: CreatePaymentInput
 }>(
   {
     region: 'southamerica-east1',
     memory: '256MiB',
     timeoutSeconds: 30,
+    secrets: [STRIPE_SECRET_KEY],
   },
-  async (request) => {
+  async request => {
     // Validate authentication
     if (!request.auth) {
-      throw new HttpsError('unauthenticated', 'User must be authenticated');
+      throw new HttpsError('unauthenticated', 'User must be authenticated')
     }
 
     // Validate Stripe configuration
     if (!isStripeConfigured()) {
-      throw new HttpsError(
-        'failed-precondition',
-        'Stripe not configured. Contact support.'
-      );
+      throw new HttpsError('failed-precondition', 'Stripe not configured. Contact support.')
     }
 
-    const { clinicId, input } = request.data;
+    const { clinicId, input } = request.data
 
     // Validate required fields
     if (!clinicId) {
-      throw new HttpsError('invalid-argument', 'clinicId is required');
+      throw new HttpsError('invalid-argument', 'clinicId is required')
     }
 
     if (!input?.amount) {
-      throw new HttpsError('invalid-argument', 'amount is required');
+      throw new HttpsError('invalid-argument', 'amount is required')
     }
 
     if (!input?.description) {
-      throw new HttpsError('invalid-argument', 'description is required');
+      throw new HttpsError('invalid-argument', 'description is required')
     }
 
     // Boleto requires customer info
     if (!input?.customerName) {
-      throw new HttpsError('invalid-argument', 'customerName is required for Boleto');
+      throw new HttpsError('invalid-argument', 'customerName is required for Boleto')
     }
 
     if (!input?.customerTaxId) {
-      throw new HttpsError('invalid-argument', 'customerTaxId (CPF/CNPJ) is required for Boleto');
+      throw new HttpsError('invalid-argument', 'customerTaxId (CPF/CNPJ) is required for Boleto')
     }
 
     if (!input?.customerEmail) {
-      throw new HttpsError('invalid-argument', 'customerEmail is required for Boleto');
+      throw new HttpsError('invalid-argument', 'customerEmail is required for Boleto')
     }
 
     if (!input?.customerAddress) {
-      throw new HttpsError('invalid-argument', 'customerAddress is required for Boleto');
+      throw new HttpsError('invalid-argument', 'customerAddress is required for Boleto')
     }
 
     // Validate amount range
@@ -89,34 +92,34 @@ export const createBoletoPayment = onCall<{
       throw new HttpsError(
         'invalid-argument',
         `Minimum amount is R$ ${(MIN_BOLETO_AMOUNT / 100).toFixed(2)}`
-      );
+      )
     }
 
     if (input.amount > MAX_BOLETO_AMOUNT) {
       throw new HttpsError(
         'invalid-argument',
         `Maximum amount is R$ ${(MAX_BOLETO_AMOUNT / 100).toFixed(2)}`
-      );
+      )
     }
 
-    const stripe = getStripeClient();
-    const db = getFirestore();
+    const stripe = getStripeClient()
+    const db = getFirestore()
 
     // Calculate expiration (default 3 days for Boleto)
     const expirationDays = input.expirationMinutes
       ? Math.ceil(input.expirationMinutes / 1440)
-      : DEFAULT_BOLETO_EXPIRATION_DAYS;
-    const expiresAt = new Date(Date.now() + expirationDays * 24 * 60 * 60 * 1000);
+      : DEFAULT_BOLETO_EXPIRATION_DAYS
+    const expiresAt = new Date(Date.now() + expirationDays * 24 * 60 * 60 * 1000)
 
     // Create or get Stripe customer
     const customers = await stripe.customers.list({
       email: input.customerEmail,
       limit: 1,
-    });
+    })
 
-    let customerId: string;
+    let customerId: string
     if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
+      customerId = customers.data[0].id
     } else {
       const customer = await stripe.customers.create({
         email: input.customerEmail,
@@ -134,8 +137,8 @@ export const createBoletoPayment = onCall<{
           postal_code: input.customerAddress.postalCode,
           country: input.customerAddress.country || 'BR',
         },
-      });
-      customerId = customer.id;
+      })
+      customerId = customer.id
     }
 
     // Create Stripe PaymentIntent with Boleto
@@ -159,24 +162,24 @@ export const createBoletoPayment = onCall<{
           expires_after_days: expirationDays,
         },
       },
-    });
+    })
 
     // Extract Boleto data from next_action if available
-    let boletoData: BoletoData | undefined;
-    const boletoAction = paymentIntent.next_action?.boleto_display_details;
+    let boletoData: BoletoData | undefined
+    const boletoAction = paymentIntent.next_action?.boleto_display_details
 
     if (boletoAction) {
       boletoData = {
         barcodeNumber: boletoAction.number || '',
         hostedVoucherUrl: boletoAction.hosted_voucher_url || '',
         expiresAt: expiresAt.toISOString(),
-      };
+      }
     }
 
     // Store payment record in Firestore
     const paymentRecord: Omit<PaymentRecord, 'createdAt' | 'updatedAt'> & {
-      createdAt: FieldValue;
-      updatedAt: FieldValue;
+      createdAt: FieldValue
+      updatedAt: FieldValue
     } = {
       stripePaymentIntentId: paymentIntent.id,
       clinicId,
@@ -194,13 +197,13 @@ export const createBoletoPayment = onCall<{
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
       createdBy: request.auth.uid,
-    };
+    }
 
     const docRef = await db
       .collection('clinics')
       .doc(clinicId)
       .collection('payments')
-      .add(paymentRecord);
+      .add(paymentRecord)
 
     // Return response
     const response: PaymentIntentResponse = {
@@ -217,37 +220,38 @@ export const createBoletoPayment = onCall<{
         appointmentId: input.appointmentId || '',
       },
       createdAt: new Date().toISOString(),
-    };
+    }
 
-    return response;
+    return response
   }
-);
+)
 
 /**
  * Cancels a pending Boleto payment.
  */
 export const cancelBoletoPayment = onCall<{
-  clinicId: string;
-  paymentId: string;
+  clinicId: string
+  paymentId: string
 }>(
   {
     region: 'southamerica-east1',
     memory: '256MiB',
     timeoutSeconds: 30,
+    secrets: [STRIPE_SECRET_KEY],
   },
-  async (request) => {
+  async request => {
     if (!request.auth) {
-      throw new HttpsError('unauthenticated', 'User must be authenticated');
+      throw new HttpsError('unauthenticated', 'User must be authenticated')
     }
 
-    const { clinicId, paymentId } = request.data;
+    const { clinicId, paymentId } = request.data
 
     if (!clinicId || !paymentId) {
-      throw new HttpsError('invalid-argument', 'clinicId and paymentId are required');
+      throw new HttpsError('invalid-argument', 'clinicId and paymentId are required')
     }
 
-    const stripe = getStripeClient();
-    const db = getFirestore();
+    const stripe = getStripeClient()
+    const db = getFirestore()
 
     // Get payment record
     const paymentDoc = await db
@@ -255,61 +259,59 @@ export const cancelBoletoPayment = onCall<{
       .doc(clinicId)
       .collection('payments')
       .doc(paymentId)
-      .get();
+      .get()
 
     if (!paymentDoc.exists) {
-      throw new HttpsError('not-found', 'Payment not found');
+      throw new HttpsError('not-found', 'Payment not found')
     }
 
-    const payment = paymentDoc.data() as PaymentRecord;
+    const payment = paymentDoc.data() as PaymentRecord
 
     // Only allow cancelling pending payments
     if (payment.status !== 'awaiting_payment') {
-      throw new HttpsError(
-        'failed-precondition',
-        'Only pending payments can be cancelled'
-      );
+      throw new HttpsError('failed-precondition', 'Only pending payments can be cancelled')
     }
 
     // Cancel on Stripe
-    await stripe.paymentIntents.cancel(payment.stripePaymentIntentId);
+    await stripe.paymentIntents.cancel(payment.stripePaymentIntentId)
 
     // Update Firestore
     await paymentDoc.ref.update({
       status: 'expired',
       updatedAt: FieldValue.serverTimestamp(),
-    });
+    })
 
-    return { success: true };
+    return { success: true }
   }
-);
+)
 
 /**
  * Refunds a completed Boleto payment.
  */
 export const refundBoletoPayment = onCall<{
-  clinicId: string;
-  paymentId: string;
-  amount?: number;
+  clinicId: string
+  paymentId: string
+  amount?: number
 }>(
   {
     region: 'southamerica-east1',
     memory: '256MiB',
     timeoutSeconds: 30,
+    secrets: [STRIPE_SECRET_KEY],
   },
-  async (request) => {
+  async request => {
     if (!request.auth) {
-      throw new HttpsError('unauthenticated', 'User must be authenticated');
+      throw new HttpsError('unauthenticated', 'User must be authenticated')
     }
 
-    const { clinicId, paymentId, amount } = request.data;
+    const { clinicId, paymentId, amount } = request.data
 
     if (!clinicId || !paymentId) {
-      throw new HttpsError('invalid-argument', 'clinicId and paymentId are required');
+      throw new HttpsError('invalid-argument', 'clinicId and paymentId are required')
     }
 
-    const stripe = getStripeClient();
-    const db = getFirestore();
+    const stripe = getStripeClient()
+    const db = getFirestore()
 
     // Get payment record
     const paymentDoc = await db
@@ -317,45 +319,38 @@ export const refundBoletoPayment = onCall<{
       .doc(clinicId)
       .collection('payments')
       .doc(paymentId)
-      .get();
+      .get()
 
     if (!paymentDoc.exists) {
-      throw new HttpsError('not-found', 'Payment not found');
+      throw new HttpsError('not-found', 'Payment not found')
     }
 
-    const payment = paymentDoc.data() as PaymentRecord;
+    const payment = paymentDoc.data() as PaymentRecord
 
     // Only allow refunding paid payments
     if (payment.status !== 'paid') {
-      throw new HttpsError(
-        'failed-precondition',
-        'Only completed payments can be refunded'
-      );
+      throw new HttpsError('failed-precondition', 'Only completed payments can be refunded')
     }
 
     // Validate refund amount
-    const refundAmount = amount || payment.amount;
+    const refundAmount = amount || payment.amount
     if (refundAmount > payment.amount) {
-      throw new HttpsError(
-        'invalid-argument',
-        'Refund amount cannot exceed payment amount'
-      );
+      throw new HttpsError('invalid-argument', 'Refund amount cannot exceed payment amount')
     }
 
     // Create refund on Stripe
     await stripe.refunds.create({
       payment_intent: payment.stripePaymentIntentId,
       amount: refundAmount,
-    });
+    })
 
     // Update Firestore
     await paymentDoc.ref.update({
       status: 'refunded',
       refundAmount,
       updatedAt: FieldValue.serverTimestamp(),
-    });
+    })
 
-    return { success: true };
+    return { success: true }
   }
-);
-
+)

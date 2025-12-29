@@ -10,11 +10,18 @@
  * - 1,000,000 queries/day
  * - spaces.create: 100/min project, 10/min user
  *
+ * SECURITY: Service account credentials stored in Firebase Secret Manager
+ *
  * @module functions/calendar/google-meet
  */
 
 import * as functions from 'firebase-functions'
 import { google, calendar_v3 } from 'googleapis'
+import {
+  GOOGLE_SERVICE_ACCOUNT_JSON,
+  GOOGLE_CALENDAR_SECRETS,
+  validateSecret,
+} from '../config/secrets.js'
 
 // OAuth scope for Calendar API (events only)
 const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.events'
@@ -55,23 +62,37 @@ export interface CreateMeetSessionOutput {
 
 /**
  * Creates Google Auth client from service account credentials.
- * Requires GOOGLE_SERVICE_ACCOUNT_JSON secret.
+ *
+ * SECURITY: Credentials loaded from Firebase Secret Manager.
+ *
+ * @throws {HttpsError} If credentials are not configured or invalid
  */
 function getAuthClient(): ReturnType<typeof google.auth.GoogleAuth.prototype.getClient> {
-  const credentials = process.env.GOOGLE_SERVICE_ACCOUNT_JSON
-  if (!credentials) {
+  let credentials: string
+
+  try {
+    credentials = validateSecret(GOOGLE_SERVICE_ACCOUNT_JSON, 'GOOGLE_SERVICE_ACCOUNT_JSON')
+  } catch {
     throw new functions.https.HttpsError(
       'failed-precondition',
-      'GOOGLE_SERVICE_ACCOUNT_JSON secret not configured'
+      'GOOGLE_SERVICE_ACCOUNT_JSON secret not configured. ' +
+        'Run: firebase functions:secrets:set GOOGLE_SERVICE_ACCOUNT_JSON'
     )
   }
 
-  const auth = new google.auth.GoogleAuth({
-    credentials: JSON.parse(credentials),
-    scopes: [CALENDAR_SCOPE],
-  })
+  try {
+    const auth = new google.auth.GoogleAuth({
+      credentials: JSON.parse(credentials),
+      scopes: [CALENDAR_SCOPE],
+    })
 
-  return auth.getClient()
+    return auth.getClient()
+  } catch (error) {
+    throw new functions.https.HttpsError(
+      'failed-precondition',
+      'Invalid GOOGLE_SERVICE_ACCOUNT_JSON format. Ensure it contains valid JSON.'
+    )
+  }
 }
 
 /**
@@ -89,26 +110,17 @@ function validateInput(data: CreateMeetSessionInput): void {
 
   for (const field of required) {
     if (!data[field]) {
-      throw new functions.https.HttpsError(
-        'invalid-argument',
-        `Campo obrigatorio: ${field}`
-      )
+      throw new functions.https.HttpsError('invalid-argument', `Campo obrigatorio: ${field}`)
     }
   }
 
   // Validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(data.patientEmail)) {
-    throw new functions.https.HttpsError(
-      'invalid-argument',
-      'Email do paciente invalido'
-    )
+    throw new functions.https.HttpsError('invalid-argument', 'Email do paciente invalido')
   }
   if (!emailRegex.test(data.professionalEmail)) {
-    throw new functions.https.HttpsError(
-      'invalid-argument',
-      'Email do profissional invalido'
-    )
+    throw new functions.https.HttpsError('invalid-argument', 'Email do profissional invalido')
   }
 
   // Validate date format (ISO 8601)
@@ -126,6 +138,8 @@ function validateInput(data: CreateMeetSessionInput): void {
  *
  * Uses Google Calendar API to create an event with conferenceData,
  * which automatically generates a Meet link.
+ *
+ * SECURITY: Service account credentials loaded from Secret Manager.
  *
  * @param data - Session creation input
  * @param context - Firebase callable context
@@ -147,17 +161,12 @@ function validateInput(data: CreateMeetSessionInput): void {
  * // https://meet.google.com/abc-defg-hij
  * ```
  */
-export const createMeetSession = functions.https.onCall(
-  async (
-    data: CreateMeetSessionInput,
-    context
-  ): Promise<CreateMeetSessionOutput> => {
+export const createMeetSession = functions
+  .runWith({ secrets: [...GOOGLE_CALENDAR_SECRETS] })
+  .https.onCall(async (data: CreateMeetSessionInput, context): Promise<CreateMeetSessionOutput> => {
     // Require authentication
     if (!context.auth) {
-      throw new functions.https.HttpsError(
-        'unauthenticated',
-        'Usuario nao autenticado'
-      )
+      throw new functions.https.HttpsError('unauthenticated', 'Usuario nao autenticado')
     }
 
     // Validate input
@@ -286,13 +295,9 @@ export const createMeetSession = functions.https.onCall(
         )
       }
 
-      throw new functions.https.HttpsError(
-        'internal',
-        'Erro desconhecido ao criar teleconsulta'
-      )
+      throw new functions.https.HttpsError('internal', 'Erro desconhecido ao criar teleconsulta')
     }
-  }
-)
+  })
 
 /**
  * Input for canceling a Meet session.
@@ -307,30 +312,24 @@ export interface CancelMeetSessionInput {
 /**
  * Cancels/deletes a teleconsultation calendar event.
  *
+ * SECURITY: Service account credentials loaded from Secret Manager.
+ *
  * @param data - Calendar event ID and optional reason
  * @param context - Firebase callable context
  * @returns Success indicator
  */
-export const cancelMeetSession = functions.https.onCall(
-  async (
-    data: CancelMeetSessionInput,
-    context
-  ): Promise<{ success: boolean }> => {
+export const cancelMeetSession = functions
+  .runWith({ secrets: [...GOOGLE_CALENDAR_SECRETS] })
+  .https.onCall(async (data: CancelMeetSessionInput, context): Promise<{ success: boolean }> => {
     // Require authentication
     if (!context.auth) {
-      throw new functions.https.HttpsError(
-        'unauthenticated',
-        'Usuario nao autenticado'
-      )
+      throw new functions.https.HttpsError('unauthenticated', 'Usuario nao autenticado')
     }
 
     const { calendarEventId, reason } = data
 
     if (!calendarEventId) {
-      throw new functions.https.HttpsError(
-        'invalid-argument',
-        'calendarEventId e obrigatorio'
-      )
+      throw new functions.https.HttpsError('invalid-argument', 'calendarEventId e obrigatorio')
     }
 
     try {
@@ -355,13 +354,9 @@ export const cancelMeetSession = functions.https.onCall(
         return { success: true }
       }
 
-      throw new functions.https.HttpsError(
-        'internal',
-        'Falha ao cancelar teleconsulta'
-      )
+      throw new functions.https.HttpsError('internal', 'Falha ao cancelar teleconsulta')
     }
-  }
-)
+  })
 
 /**
  * Input for updating/rescheduling a Meet session.
@@ -379,74 +374,72 @@ export interface UpdateMeetSessionInput {
  * Updates/reschedules a teleconsultation calendar event.
  * The Meet link remains the same.
  *
+ * SECURITY: Service account credentials loaded from Secret Manager.
+ *
  * @param data - Calendar event ID and new time
  * @param context - Firebase callable context
  * @returns Updated event details
  */
-export const updateMeetSession = functions.https.onCall(
-  async (
-    data: UpdateMeetSessionInput,
-    context
-  ): Promise<{ success: boolean; newStartTime: string; newEndTime: string }> => {
-    // Require authentication
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
-        'unauthenticated',
-        'Usuario nao autenticado'
-      )
-    }
-
-    const { calendarEventId, newScheduledAt, newDurationMinutes = 30 } = data
-
-    if (!calendarEventId || !newScheduledAt) {
-      throw new functions.https.HttpsError(
-        'invalid-argument',
-        'calendarEventId e newScheduledAt sao obrigatorios'
-      )
-    }
-
-    try {
-      const authClient = await getAuthClient()
-      const calendar = google.calendar({ version: 'v3', auth: authClient as never })
-
-      // Calculate new times
-      const startTime = new Date(newScheduledAt)
-      const endTime = new Date(startTime.getTime() + newDurationMinutes * 60 * 1000)
-
-      // Update the event
-      await calendar.events.patch({
-        calendarId: 'primary',
-        eventId: calendarEventId,
-        requestBody: {
-          start: {
-            dateTime: startTime.toISOString(),
-            timeZone: 'America/Sao_Paulo',
-          },
-          end: {
-            dateTime: endTime.toISOString(),
-            timeZone: 'America/Sao_Paulo',
-          },
-        },
-        sendUpdates: 'all', // Notify attendees of change
-      })
-
-      functions.logger.info('Meet session updated', {
-        calendarEventId,
-        newStartTime: startTime.toISOString(),
-      })
-
-      return {
-        success: true,
-        newStartTime: startTime.toISOString(),
-        newEndTime: endTime.toISOString(),
+export const updateMeetSession = functions
+  .runWith({ secrets: [...GOOGLE_CALENDAR_SECRETS] })
+  .https.onCall(
+    async (
+      data: UpdateMeetSessionInput,
+      context
+    ): Promise<{ success: boolean; newStartTime: string; newEndTime: string }> => {
+      // Require authentication
+      if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'Usuario nao autenticado')
       }
-    } catch (error) {
-      functions.logger.error('Error updating Meet session', { error, calendarEventId })
 
-      throw new functions.https.HttpsError(
-        'internal',
-        'Falha ao reagendar teleconsulta'
-      )
+      const { calendarEventId, newScheduledAt, newDurationMinutes = 30 } = data
+
+      if (!calendarEventId || !newScheduledAt) {
+        throw new functions.https.HttpsError(
+          'invalid-argument',
+          'calendarEventId e newScheduledAt sao obrigatorios'
+        )
+      }
+
+      try {
+        const authClient = await getAuthClient()
+        const calendar = google.calendar({ version: 'v3', auth: authClient as never })
+
+        // Calculate new times
+        const startTime = new Date(newScheduledAt)
+        const endTime = new Date(startTime.getTime() + newDurationMinutes * 60 * 1000)
+
+        // Update the event
+        await calendar.events.patch({
+          calendarId: 'primary',
+          eventId: calendarEventId,
+          requestBody: {
+            start: {
+              dateTime: startTime.toISOString(),
+              timeZone: 'America/Sao_Paulo',
+            },
+            end: {
+              dateTime: endTime.toISOString(),
+              timeZone: 'America/Sao_Paulo',
+            },
+          },
+          sendUpdates: 'all', // Notify attendees of change
+        })
+
+        functions.logger.info('Meet session updated', {
+          calendarEventId,
+          newStartTime: startTime.toISOString(),
+        })
+
+        return {
+          success: true,
+          newStartTime: startTime.toISOString(),
+          newEndTime: endTime.toISOString(),
+        }
+      } catch (error) {
+        functions.logger.error('Error updating Meet session', { error, calendarEventId })
+
+        throw new functions.https.HttpsError('internal', 'Falha ao reagendar teleconsulta')
+      }
     }
-  }
-)
+  )

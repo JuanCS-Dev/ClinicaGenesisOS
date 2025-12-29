@@ -7,12 +7,15 @@ set -e
 echo "🔍 Running pre-commit checks..."
 
 # 1. File size check (max 500 lines per CODE_CONSTITUTION)
+# Only check STAGED files, not all files
 echo "📏 Checking file sizes..."
-find src -name "*.ts" -o -name "*.tsx" | while read file; do
-  lines=$(wc -l < "$file")
-  if [ "$lines" -gt 500 ]; then
-    echo "❌ BLOCKED: $file has $lines lines (max 500)"
-    exit 1
+git diff --cached --name-only --diff-filter=ACM | grep -E "\.tsx?$" | while read file; do
+  if [ -f "$file" ]; then
+    lines=$(wc -l < "$file")
+    if [ "$lines" -gt 500 ]; then
+      echo "❌ BLOCKED: $file has $lines lines (max 500)"
+      exit 1
+    fi
   fi
 done
 

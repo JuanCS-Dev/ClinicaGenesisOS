@@ -3,6 +3,8 @@
  *
  * Receives incoming messages and status updates from WhatsApp Cloud API.
  * Updates appointment status based on patient responses.
+ *
+ * @module functions/whatsapp/webhook
  */
 
 import { onRequest } from 'firebase-functions/v2/https'
@@ -10,8 +12,20 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import { logger } from 'firebase-functions'
 import { markAsRead } from './client.js'
 import { handleCompanionMessage, findPatientByPhone } from '../companion/index.js'
+import { WHATSAPP_VERIFY_TOKEN, WHATSAPP_SECRETS, getSecretOrUndefined } from '../config/secrets.js'
 
-const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || 'genesis_verify_token'
+/**
+ * Get verify token from Secret Manager with fallback.
+ * The fallback is used only in development/testing.
+ */
+function getVerifyToken(): string {
+  const token = getSecretOrUndefined(WHATSAPP_VERIFY_TOKEN)
+  if (!token) {
+    logger.warn('WHATSAPP_VERIFY_TOKEN not configured. Using default for development.')
+    return 'genesis_verify_token'
+  }
+  return token
+}
 
 /** WhatsApp webhook payload structure. */
 interface WhatsAppWebhookPayload {
@@ -59,9 +73,15 @@ interface WhatsAppWebhookPayload {
  *
  * GET: Webhook verification (required by Meta)
  * POST: Incoming messages and status updates
+ *
+ * SECURITY: Uses Firebase Secret Manager for verify token.
  */
 export const whatsappWebhook = onRequest(
-  { cors: true, region: 'southamerica-east1' },
+  {
+    cors: true,
+    region: 'southamerica-east1',
+    secrets: [...WHATSAPP_SECRETS],
+  },
   async (req, res) => {
     // GET: Webhook verification
     if (req.method === 'GET') {
@@ -69,13 +89,15 @@ export const whatsappWebhook = onRequest(
       const token = req.query['hub.verify_token']
       const challenge = req.query['hub.challenge']
 
-      if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+      const expectedToken = getVerifyToken()
+
+      if (mode === 'subscribe' && token === expectedToken) {
         logger.info('Webhook verified successfully')
         res.status(200).send(challenge)
         return
       }
 
-      logger.warn('Webhook verification failed', { mode, token })
+      logger.warn('Webhook verification failed', { mode, tokenProvided: !!token })
       res.status(403).send('Verification failed')
       return
     }
