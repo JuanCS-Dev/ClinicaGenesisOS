@@ -4,7 +4,7 @@
  * Tests RBAC implementation for multi-tenant clinic isolation.
  * Uses @firebase/rules-unit-testing for emulator-based testing.
  *
- * Run with: npm run test:rules (requires Firebase emulator)
+ * Run with: npm run test:rules (requires Firebase emulator on port 8080)
  *
  * @module tests/security/firestore.rules
  */
@@ -40,6 +40,11 @@ let testEnv: RulesTestEnvironment
 function getFirestore(user: (typeof users)['ownerA'] | null): Firestore {
   if (!user) return testEnv.unauthenticatedContext().firestore() as unknown as Firestore
   return testEnv.authenticatedContext(user.uid, user.token).firestore() as unknown as Firestore
+}
+
+// Wrapper to ensure operations always return a Promise (fixes assertFails compatibility)
+function wrapPromise<T>(operation: Promise<T> | T): Promise<T> {
+  return Promise.resolve().then(() => operation)
 }
 
 describe('Firestore Security Rules - RBAC', () => {
@@ -91,7 +96,7 @@ describe('Firestore Security Rules - RBAC', () => {
           clinicId: CLINIC_A,
         })
       })
-      await assertFails(getDoc(doc(db, 'users', users.ownerA.uid)))
+      await assertFails(wrapPromise(getDoc(doc(db, 'users', users.ownerA.uid))))
     })
 
     it('allows user to create own profile', async () => {
@@ -106,7 +111,9 @@ describe('Firestore Security Rules - RBAC', () => {
 
     it('denies creating profile for another user', async () => {
       const db = getFirestore(users.ownerA)
-      await assertFails(setDoc(doc(db, 'users', 'another-user'), { email: 'fake@clinica.com' }))
+      await assertFails(
+        wrapPromise(setDoc(doc(db, 'users', 'another-user'), { email: 'fake@clinica.com' }))
+      )
     })
   })
 
@@ -131,7 +138,7 @@ describe('Firestore Security Rules - RBAC', () => {
       await testEnv.withSecurityRulesDisabled(async ctx => {
         await setDoc(doc(ctx.firestore(), 'clinics', CLINIC_A), { name: 'Clinica A' })
       })
-      await assertFails(getDoc(doc(db, 'clinics', CLINIC_A)))
+      await assertFails(wrapPromise(getDoc(doc(db, 'clinics', CLINIC_A))))
     })
 
     it('allows only owner to update clinic', async () => {
@@ -142,7 +149,7 @@ describe('Firestore Security Rules - RBAC', () => {
         updateDoc(doc(getFirestore(users.ownerA), 'clinics', CLINIC_A), { name: 'U' })
       )
       await assertFails(
-        updateDoc(doc(getFirestore(users.adminA), 'clinics', CLINIC_A), { name: 'H' })
+        wrapPromise(updateDoc(doc(getFirestore(users.adminA), 'clinics', CLINIC_A), { name: 'H' }))
       )
     })
   })
@@ -173,13 +180,15 @@ describe('Firestore Security Rules - RBAC', () => {
 
     it('denies patient access from different clinic', async () => {
       await assertFails(
-        getDoc(doc(getFirestore(users.ownerB), 'clinics', CLINIC_A, 'patients', 'p1'))
+        wrapPromise(getDoc(doc(getFirestore(users.ownerB), 'clinics', CLINIC_A, 'patients', 'p1')))
       )
     })
 
     it('allows only owner to delete patients', async () => {
       await assertFails(
-        deleteDoc(doc(getFirestore(users.adminA), 'clinics', CLINIC_A, 'patients', 'p1'))
+        wrapPromise(
+          deleteDoc(doc(getFirestore(users.adminA), 'clinics', CLINIC_A, 'patients', 'p1'))
+        )
       )
       await assertSucceeds(
         deleteDoc(doc(getFirestore(users.ownerA), 'clinics', CLINIC_A, 'patients', 'p1'))
@@ -203,7 +212,9 @@ describe('Firestore Security Rules - RBAC', () => {
 
     it('denies receptionists from reading medical records', async () => {
       await assertFails(
-        getDoc(doc(getFirestore(users.receptionistA), 'clinics', CLINIC_A, 'records', 'r1'))
+        wrapPromise(
+          getDoc(doc(getFirestore(users.receptionistA), 'clinics', CLINIC_A, 'records', 'r1'))
+        )
       )
     })
 
@@ -214,15 +225,19 @@ describe('Firestore Security Rules - RBAC', () => {
         })
       )
       await assertFails(
-        setDoc(doc(getFirestore(users.receptionistA), 'clinics', CLINIC_A, 'records', 'new2'), {
-          type: 'SOAP',
-        })
+        wrapPromise(
+          setDoc(doc(getFirestore(users.receptionistA), 'clinics', CLINIC_A, 'records', 'new2'), {
+            type: 'SOAP',
+          })
+        )
       )
     })
 
     it('never allows deleting medical records', async () => {
       await assertFails(
-        deleteDoc(doc(getFirestore(users.ownerA), 'clinics', CLINIC_A, 'records', 'r1'))
+        wrapPromise(
+          deleteDoc(doc(getFirestore(users.ownerA), 'clinics', CLINIC_A, 'records', 'r1'))
+        )
       )
     })
   })
@@ -248,7 +263,7 @@ describe('Firestore Security Rules - RBAC', () => {
     it('denies professionals and receptionists from reading transactions', async () => {
       for (const user of [users.professionalA, users.receptionistA]) {
         await assertFails(
-          getDoc(doc(getFirestore(user), 'clinics', CLINIC_A, 'transactions', 't1'))
+          wrapPromise(getDoc(doc(getFirestore(user), 'clinics', CLINIC_A, 'transactions', 't1')))
         )
       }
     })
@@ -270,22 +285,22 @@ describe('Firestore Security Rules - RBAC', () => {
 
     it('clinic A owner cannot access clinic B data', async () => {
       const db = getFirestore(users.ownerA)
-      await assertFails(getDoc(doc(db, 'clinics', CLINIC_B)))
-      await assertFails(getDoc(doc(db, 'clinics', CLINIC_B, 'patients', 'pb')))
+      await assertFails(wrapPromise(getDoc(doc(db, 'clinics', CLINIC_B))))
+      await assertFails(wrapPromise(getDoc(doc(db, 'clinics', CLINIC_B, 'patients', 'pb'))))
       await assertFails(
-        setDoc(doc(db, 'clinics', CLINIC_B, 'patients', 'inject'), { name: 'Hacked' })
+        wrapPromise(setDoc(doc(db, 'clinics', CLINIC_B, 'patients', 'inject'), { name: 'Hacked' }))
       )
     })
 
     it('user without claims cannot access any clinic', async () => {
       const db = getFirestore(users.noClaims)
-      await assertFails(getDoc(doc(db, 'clinics', CLINIC_A)))
-      await assertFails(getDoc(doc(db, 'clinics', CLINIC_A, 'patients', 'pa')))
+      await assertFails(wrapPromise(getDoc(doc(db, 'clinics', CLINIC_A))))
+      await assertFails(wrapPromise(getDoc(doc(db, 'clinics', CLINIC_A, 'patients', 'pa'))))
     })
 
     it('unauthenticated user cannot access anything', async () => {
       const db = getFirestore(null)
-      await assertFails(getDoc(doc(db, 'clinics', CLINIC_A)))
+      await assertFails(wrapPromise(getDoc(doc(db, 'clinics', CLINIC_A))))
     })
   })
 })

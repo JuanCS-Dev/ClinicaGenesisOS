@@ -5,9 +5,12 @@
  * Displays a single medical record item in the patient history sidebar.
  * Shows record type, date, title, content preview, and attachments.
  *
+ * OPTIMIZED: Wrapped with React.memo to prevent unnecessary re-renders.
+ *
  * @module components/patient/HistoryItem
  */
 
+import React, { memo } from 'react'
 import { FileText, Stethoscope, Pill, Activity, Brain, FlaskConical, Paperclip } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -107,7 +110,7 @@ function getRecordDisplayInfo(record: MedicalRecord): RecordDisplayInfo {
  * @param record - The medical record to display
  * @param active - Whether this item is currently selected
  */
-export const HistoryItem = ({ record, active }: HistoryItemProps) => {
+export const HistoryItem = memo(function HistoryItem({ record, active }: HistoryItemProps) {
   const { title, content, Icon } = getRecordDisplayInfo(record)
   const hasAttachments = record.attachments && record.attachments.length > 0
 
@@ -149,4 +152,4 @@ export const HistoryItem = ({ record, active }: HistoryItemProps) => {
       )}
     </div>
   )
-}
+})

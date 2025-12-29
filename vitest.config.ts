@@ -9,7 +9,14 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    exclude: ['node_modules', 'dist', 'functions'],
+    exclude: [
+      'node_modules',
+      'dist',
+      'functions',
+      'e2e',
+      // Integration tests that require Firebase Emulator - run separately with `npm run test:rules`
+      'src/__tests__/security/**',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

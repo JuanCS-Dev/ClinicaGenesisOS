@@ -6,7 +6,7 @@
  * Includes telemedicine button for starting video consultations.
  */
 
-import React from 'react'
+import React, { memo } from 'react'
 import { Repeat, Video } from 'lucide-react'
 import { Status, type Appointment, type SpecialtyType } from '@/types'
 import { isRecurringInstance, isRecurringParent } from '@/lib/recurrence'
@@ -64,8 +64,10 @@ interface AppointmentCardProps {
 
 /**
  * Appointment card component with status and specialty colors.
+ *
+ * OPTIMIZED: Wrapped with React.memo to prevent unnecessary re-renders in day/week views.
  */
-export function AppointmentCard({
+export const AppointmentCard = memo(function AppointmentCard({
   appointment: app,
   compact = false,
   onStartTelemedicine,
@@ -186,4 +188,4 @@ export function AppointmentCard({
       </div>
     </div>
   )
-}
+})

@@ -5,16 +5,27 @@
  * Comprehensive analytics dashboard combining Financial Wellness
  * and Patient Insights in one unified view.
  *
- * Inspired by athenahealth Executive Summary and Epic MyChart Central.
+ * OPTIMIZED: Real export functionality with lazy-loaded Excel/PDF.
  *
  * @module pages/Analytics
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 import React, { useState, useCallback } from 'react'
-import { BarChart3, TrendingUp, Heart, Download, RefreshCw } from 'lucide-react'
+import {
+  BarChart3,
+  TrendingUp,
+  Heart,
+  Download,
+  RefreshCw,
+  FileSpreadsheet,
+  FileText,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { FinancialWellness, PatientInsights } from '../components/analytics'
+import { useFinancialWellness } from '../hooks/useFinancialWellness'
+import { usePatientInsights } from '../hooks/usePatientInsights'
+import { exportAnalytics, type ExportFormat } from '../services/analytics-export.service'
 
 type AnalyticsTab = 'financial' | 'patients'
 
@@ -25,6 +36,21 @@ export const Analytics: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AnalyticsTab>('financial')
   const [dateRange, setDateRange] = useState('month')
   const [refreshKey, setRefreshKey] = useState(0)
+  const [exporting, setExporting] = useState(false)
+  const [showExportMenu, setShowExportMenu] = useState(false)
+
+  // Get data for export
+  const financialData = useFinancialWellness()
+  const patientData = usePatientInsights()
+
+  // Date range label for export
+  const dateRangeLabels: Record<string, string> = {
+    week: 'Última Semana',
+    month: 'Último Mês',
+    quarter: 'Último Trimestre',
+    year: 'Último Ano',
+  }
+  const dateRangeLabel = dateRangeLabels[dateRange] || 'Período Personalizado'
 
   // Refresh handler - forces re-render of child components
   const handleRefresh = useCallback(() => {
@@ -32,10 +58,33 @@ export const Analytics: React.FC = () => {
     toast.success('Dados atualizados')
   }, [])
 
-  // Export handler - analytics export coming soon
-  const handleExport = useCallback(() => {
-    toast.info('Exportação de analytics em desenvolvimento')
-  }, [])
+  // Export handler - real analytics export
+  const handleExport = useCallback(
+    async (format: ExportFormat) => {
+      setExporting(true)
+      setShowExportMenu(false)
+
+      try {
+        await exportAnalytics(
+          {
+            financial: financialData,
+            patients: patientData,
+            dateRange: dateRangeLabel,
+            generatedAt: new Date(),
+          },
+          format
+        )
+
+        toast.success(`Relatório exportado em ${format.toUpperCase()}`)
+      } catch (error) {
+        console.error('Export error:', error)
+        toast.error('Erro ao exportar relatório')
+      } finally {
+        setExporting(false)
+      }
+    },
+    [financialData, patientData, dateRangeLabel]
+  )
 
   const tabs = [
     {
@@ -95,13 +144,40 @@ export const Analytics: React.FC = () => {
             <RefreshCw className="w-4 h-4" />
             Atualizar
           </button>
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2.5 bg-genesis-surface border border-genesis-border rounded-xl text-sm font-medium text-genesis-dark hover:bg-genesis-soft hover:scale-[1.02] active:scale-[0.98] transition-all"
-          >
-            <Download className="w-4 h-4" />
-            Exportar
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              disabled={exporting || financialData.loading || patientData.loading}
+              className="flex items-center gap-2 px-4 py-2.5 bg-genesis-surface border border-genesis-border rounded-xl text-sm font-medium text-genesis-dark hover:bg-genesis-soft hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {exporting ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              {exporting ? 'Exportando...' : 'Exportar'}
+            </button>
+
+            {/* Export Menu Dropdown */}
+            {showExportMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-genesis-surface border border-genesis-border rounded-xl shadow-lg z-50 py-1 animate-in fade-in zoom-in-95">
+                <button
+                  onClick={() => handleExport('xlsx')}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-genesis-dark hover:bg-genesis-soft transition-colors"
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                  Excel (.xlsx)
+                </button>
+                <button
+                  onClick={() => handleExport('pdf')}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-genesis-dark hover:bg-genesis-soft transition-colors"
+                >
+                  <FileText className="w-4 h-4 text-red-600" />
+                  PDF (.pdf)
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

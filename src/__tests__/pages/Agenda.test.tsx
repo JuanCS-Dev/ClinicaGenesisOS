@@ -151,21 +151,23 @@ describe('Agenda', () => {
       expect(screen.getByTestId('day-view')).toBeInTheDocument()
     })
 
-    it('should switch to week view', () => {
+    // Note: Tests use findByTestId (async) because views are lazy-loaded
+    it('should switch to week view', async () => {
       renderAgenda()
       fireEvent.click(screen.getByText('Semana'))
-      expect(screen.getByTestId('week-view')).toBeInTheDocument()
+      expect(await screen.findByTestId('week-view')).toBeInTheDocument()
     })
 
-    it('should switch to month view', () => {
+    it('should switch to month view', async () => {
       renderAgenda()
       fireEvent.click(screen.getByText('Mês'))
-      expect(screen.getByTestId('month-view')).toBeInTheDocument()
+      expect(await screen.findByTestId('month-view')).toBeInTheDocument()
     })
 
-    it('should switch back to day view', () => {
+    it('should switch back to day view', async () => {
       renderAgenda()
       fireEvent.click(screen.getByText('Semana'))
+      await screen.findByTestId('week-view')
       fireEvent.click(screen.getByText('Dia'))
       expect(screen.getByTestId('day-view')).toBeInTheDocument()
     })
@@ -238,15 +240,17 @@ describe('Agenda', () => {
       expect(screen.getByText('Nova Consulta')).toBeInTheDocument()
     })
 
-    it('should open appointment modal on click', () => {
+    // Note: Uses findByTestId (async) because AppointmentModal is lazy-loaded
+    it('should open appointment modal on click', async () => {
       renderAgenda()
       fireEvent.click(screen.getByText('Nova Consulta'))
-      expect(screen.getByTestId('appointment-modal')).toBeInTheDocument()
+      expect(await screen.findByTestId('appointment-modal')).toBeInTheDocument()
     })
 
-    it('should close appointment modal', () => {
+    it('should close appointment modal', async () => {
       renderAgenda()
       fireEvent.click(screen.getByText('Nova Consulta'))
+      await screen.findByTestId('appointment-modal')
       fireEvent.click(screen.getByText('Close Modal'))
       expect(screen.queryByTestId('appointment-modal')).not.toBeInTheDocument()
     })
@@ -267,16 +271,19 @@ describe('Agenda', () => {
   })
 
   describe('day click in week/month view', () => {
-    it('should switch to day view when clicking a day in week view', () => {
+    // Note: Uses findByTestId (async) because views are lazy-loaded
+    it('should switch to day view when clicking a day in week view', async () => {
       renderAgenda()
       fireEvent.click(screen.getByText('Semana'))
+      await screen.findByTestId('week-view')
       fireEvent.click(screen.getByTestId('day-click-trigger'))
       expect(screen.getByTestId('day-view')).toBeInTheDocument()
     })
 
-    it('should switch to day view when clicking a day in month view', () => {
+    it('should switch to day view when clicking a day in month view', async () => {
       renderAgenda()
       fireEvent.click(screen.getByText('Mês'))
+      await screen.findByTestId('month-view')
       fireEvent.click(screen.getByTestId('month-day-click'))
       expect(screen.getByTestId('day-view')).toBeInTheDocument()
     })
@@ -295,22 +302,24 @@ describe('Agenda', () => {
   })
 
   describe('telemedicine modal', () => {
-    it('should open telemedicine modal when starting telemedicine', () => {
+    // Note: Uses findByTestId (async) because TelemedicineModal is lazy-loaded
+    it('should open telemedicine modal when starting telemedicine', async () => {
       renderAgenda()
       if (mockOnStartTelemedicine) {
         act(() => {
           mockOnStartTelemedicine!(mockDefaultAppointments[0])
         })
-        expect(screen.getByTestId('telemedicine-modal')).toBeInTheDocument()
+        expect(await screen.findByTestId('telemedicine-modal')).toBeInTheDocument()
       }
     })
 
-    it('should close telemedicine modal', () => {
+    it('should close telemedicine modal', async () => {
       renderAgenda()
       if (mockOnStartTelemedicine) {
         act(() => {
           mockOnStartTelemedicine!(mockDefaultAppointments[0])
         })
+        await screen.findByTestId('telemedicine-modal')
         fireEvent.click(screen.getByTestId('close-telemedicine'))
         expect(screen.queryByTestId('telemedicine-modal')).not.toBeInTheDocument()
       }

@@ -5,7 +5,7 @@
  * Supports click to open modal and quick complete toggle.
  */
 
-import React from 'react'
+import React, { memo } from 'react'
 import { Check, Calendar, User } from 'lucide-react'
 import { format, isToday, isTomorrow, isPast } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -42,12 +42,15 @@ function formatDueDate(dateStr: string): { text: string; isOverdue: boolean } {
   }
 }
 
-export const TaskItem: React.FC<TaskItemProps> = ({
+/**
+ * OPTIMIZED: Wrapped with React.memo to prevent unnecessary re-renders in task lists.
+ */
+export const TaskItem = memo(function TaskItem({
   task,
   onClick,
   onToggleComplete,
   compact = false,
-}) => {
+}: TaskItemProps) {
   const isCompleted = task.status === 'completed'
   const config = TASK_PRIORITY_CONFIG[task.priority as TaskPriority]
   const dueInfo = task.dueDate ? formatDueDate(task.dueDate) : null
@@ -183,8 +186,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({
       </div>
     </div>
   )
-}
-
-TaskItem.displayName = 'TaskItem'
+})
 
 export default TaskItem

@@ -197,15 +197,17 @@ describe('PatientDetails', () => {
       expect(screen.getByText('Prescrever')).toBeInTheDocument()
     })
 
-    it('should open prescription modal on click', () => {
+    // Note: Tests use findByTestId (async) because PatientDetails uses lazy loading
+    it('should open prescription modal on click', async () => {
       renderPatientDetails()
       fireEvent.click(screen.getByText('Prescrever'))
-      expect(screen.getByTestId('prescription-modal')).toBeInTheDocument()
+      expect(await screen.findByTestId('prescription-modal')).toBeInTheDocument()
     })
 
-    it('should close prescription modal', () => {
+    it('should close prescription modal', async () => {
       renderPatientDetails()
       fireEvent.click(screen.getByText('Prescrever'))
+      await screen.findByTestId('prescription-modal')
       fireEvent.click(screen.getByText('Fechar Prescrição'))
       expect(screen.queryByTestId('prescription-modal')).not.toBeInTheDocument()
     })
@@ -217,21 +219,23 @@ describe('PatientDetails', () => {
       expect(screen.getByTestId('medicine-editor')).toBeInTheDocument()
     })
 
-    it('should switch to timeline tab', () => {
+    // Note: Tests use findByTestId (async) because lazy-loaded components
+    it('should switch to timeline tab', async () => {
       renderPatientDetails()
       fireEvent.click(screen.getByText('Histórico'))
-      expect(screen.getByTestId('timeline')).toBeInTheDocument()
+      expect(await screen.findByTestId('timeline')).toBeInTheDocument()
     })
 
-    it('should switch to clinical AI tab', () => {
+    it('should switch to clinical AI tab', async () => {
       renderPatientDetails()
       fireEvent.click(screen.getByText('Diagnóstico Assistido'))
-      expect(screen.getByTestId('clinical-reasoning')).toBeInTheDocument()
+      expect(await screen.findByTestId('clinical-reasoning')).toBeInTheDocument()
     })
 
-    it('should switch back to prontuario', () => {
+    it('should switch back to prontuario', async () => {
       renderPatientDetails()
       fireEvent.click(screen.getByText('Histórico'))
+      await screen.findByTestId('timeline')
       fireEvent.click(screen.getByText('Prontuário'))
       expect(screen.getByTestId('medicine-editor')).toBeInTheDocument()
     })
@@ -277,18 +281,19 @@ describe('PatientDetails', () => {
   })
 
   describe('timeline', () => {
-    it('should generate timeline events from records and appointments', () => {
+    // Note: Uses findByTestId (async) because Timeline is lazy-loaded
+    it('should generate timeline events from records and appointments', async () => {
       renderPatientDetails()
       fireEvent.click(screen.getByText('Histórico'))
-      expect(screen.getByTestId('timeline-count')).toHaveTextContent('3 eventos')
+      expect(await screen.findByTestId('timeline-count')).toHaveTextContent('3 eventos')
     })
 
-    it('should show empty state when no events', () => {
+    it('should show empty state when no events', async () => {
       mockUseRecords.mockReturnValue(emptyRecordsHook)
       mockUsePatientAppointments.mockReturnValue(emptyAppointmentsHook)
       renderPatientDetails()
       fireEvent.click(screen.getByText('Histórico'))
-      expect(screen.getByText('Nenhum evento registrado no histórico.')).toBeInTheDocument()
+      expect(await screen.findByText('Nenhum evento registrado no histórico.')).toBeInTheDocument()
     })
   })
 
@@ -309,10 +314,11 @@ describe('PatientDetails', () => {
   })
 
   describe('clinical AI', () => {
-    it('should pass patient id to clinical reasoning', () => {
+    // Note: Uses findByText (async) because ClinicalReasoningPanel is lazy-loaded
+    it('should pass patient id to clinical reasoning', async () => {
       renderPatientDetails()
       fireEvent.click(screen.getByText('Diagnóstico Assistido'))
-      expect(screen.getByText('Clinical AI for patient-123')).toBeInTheDocument()
+      expect(await screen.findByText('Clinical AI for patient-123')).toBeInTheDocument()
     })
   })
 
