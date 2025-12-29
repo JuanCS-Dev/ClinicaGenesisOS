@@ -1,211 +1,226 @@
-import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
-import react from '@vitejs/plugin-react';
-import { VitePWA } from 'vite-plugin-pwa';
+import path from 'path'
+import { defineConfig, loadEnv } from 'vite'
+import react from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, '.', '');
-    return {
-      server: {
-        port: 3000,
-        host: '0.0.0.0',
+  const env = loadEnv(mode, '.', '')
+  return {
+    server: {
+      port: 3000,
+      host: '0.0.0.0',
+      headers: {
+        // Development CSP - permissive for HMR and Vite
+        'Content-Security-Policy': [
+          "default-src 'self'",
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.firebaseio.com https://*.gstatic.com",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          "img-src 'self' data: blob: https: http:",
+          "font-src 'self' https://fonts.gstatic.com data:",
+          "connect-src 'self' ws://localhost:* https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com",
+          "frame-src 'self' https://*.firebaseapp.com https://meet.jit.si",
+          "media-src 'self' blob:",
+          "worker-src 'self' blob:",
+        ].join('; '),
       },
-      plugins: [
-        react(),
-        VitePWA({
-          registerType: 'autoUpdate',
-          includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
-          manifest: {
-            name: 'ClinicaGenesisOS',
-            short_name: 'Genesis',
-            description: 'Sistema de Gestão para Clínicas Médicas - A melhor aplicação médica do Brasil',
-            theme_color: '#1a1a2e',
-            background_color: '#F5F5F7',
-            display: 'standalone',
-            orientation: 'portrait',
-            scope: '/',
-            start_url: '/',
-            categories: ['medical', 'health', 'productivity'],
-            icons: [
-              {
-                src: '/icons/icon-72x72.png',
-                sizes: '72x72',
-                type: 'image/png',
-                purpose: 'maskable any'
+    },
+    plugins: [
+      react(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+        manifest: {
+          name: 'ClinicaGenesisOS',
+          short_name: 'Genesis',
+          description:
+            'Sistema de Gestão para Clínicas Médicas - A melhor aplicação médica do Brasil',
+          theme_color: '#1a1a2e',
+          background_color: '#F5F5F7',
+          display: 'standalone',
+          orientation: 'portrait',
+          scope: '/',
+          start_url: '/',
+          categories: ['medical', 'health', 'productivity'],
+          icons: [
+            {
+              src: '/icons/icon-72x72.png',
+              sizes: '72x72',
+              type: 'image/png',
+              purpose: 'maskable any',
+            },
+            {
+              src: '/icons/icon-96x96.png',
+              sizes: '96x96',
+              type: 'image/png',
+              purpose: 'maskable any',
+            },
+            {
+              src: '/icons/icon-128x128.png',
+              sizes: '128x128',
+              type: 'image/png',
+              purpose: 'maskable any',
+            },
+            {
+              src: '/icons/icon-144x144.png',
+              sizes: '144x144',
+              type: 'image/png',
+              purpose: 'maskable any',
+            },
+            {
+              src: '/icons/icon-152x152.png',
+              sizes: '152x152',
+              type: 'image/png',
+              purpose: 'maskable any',
+            },
+            {
+              src: '/icons/icon-192x192.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'maskable any',
+            },
+            {
+              src: '/icons/icon-384x384.png',
+              sizes: '384x384',
+              type: 'image/png',
+              purpose: 'maskable any',
+            },
+            {
+              src: '/icons/icon-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'maskable any',
+            },
+          ],
+          shortcuts: [
+            {
+              name: 'Agenda',
+              short_name: 'Agenda',
+              description: 'Ver agenda de consultas',
+              url: '/agenda',
+              icons: [{ src: '/icons/icon-96x96.png', sizes: '96x96' }],
+            },
+            {
+              name: 'Pacientes',
+              short_name: 'Pacientes',
+              description: 'Lista de pacientes',
+              url: '/pacientes',
+              icons: [{ src: '/icons/icon-96x96.png', sizes: '96x96' }],
+            },
+          ],
+        },
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'firestore-cache',
+                expiration: {
+                  maxEntries: 50,
+                  maxAgeSeconds: 60 * 60 * 24, // 24 hours
+                },
+                cacheableResponse: {
+                  statuses: [0, 200],
+                },
               },
-              {
-                src: '/icons/icon-96x96.png',
-                sizes: '96x96',
-                type: 'image/png',
-                purpose: 'maskable any'
+            },
+            {
+              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'google-fonts-cache',
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+                },
+                cacheableResponse: {
+                  statuses: [0, 200],
+                },
               },
-              {
-                src: '/icons/icon-128x128.png',
-                sizes: '128x128',
-                type: 'image/png',
-                purpose: 'maskable any'
+            },
+            {
+              urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'gstatic-fonts-cache',
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+                },
+                cacheableResponse: {
+                  statuses: [0, 200],
+                },
               },
-              {
-                src: '/icons/icon-144x144.png',
-                sizes: '144x144',
-                type: 'image/png',
-                purpose: 'maskable any'
-              },
-              {
-                src: '/icons/icon-152x152.png',
-                sizes: '152x152',
-                type: 'image/png',
-                purpose: 'maskable any'
-              },
-              {
-                src: '/icons/icon-192x192.png',
-                sizes: '192x192',
-                type: 'image/png',
-                purpose: 'maskable any'
-              },
-              {
-                src: '/icons/icon-384x384.png',
-                sizes: '384x384',
-                type: 'image/png',
-                purpose: 'maskable any'
-              },
-              {
-                src: '/icons/icon-512x512.png',
-                sizes: '512x512',
-                type: 'image/png',
-                purpose: 'maskable any'
-              }
-            ],
-            shortcuts: [
-              {
-                name: 'Agenda',
-                short_name: 'Agenda',
-                description: 'Ver agenda de consultas',
-                url: '/agenda',
-                icons: [{ src: '/icons/icon-96x96.png', sizes: '96x96' }]
-              },
-              {
-                name: 'Pacientes',
-                short_name: 'Pacientes',
-                description: 'Lista de pacientes',
-                url: '/pacientes',
-                icons: [{ src: '/icons/icon-96x96.png', sizes: '96x96' }]
-              }
-            ]
-          },
-          workbox: {
-            globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-            runtimeCaching: [
-              {
-                urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
-                handler: 'NetworkFirst',
-                options: {
-                  cacheName: 'firestore-cache',
-                  expiration: {
-                    maxEntries: 50,
-                    maxAgeSeconds: 60 * 60 * 24 // 24 hours
-                  },
-                  cacheableResponse: {
-                    statuses: [0, 200]
-                  }
-                }
-              },
-              {
-                urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-                handler: 'CacheFirst',
-                options: {
-                  cacheName: 'google-fonts-cache',
-                  expiration: {
-                    maxEntries: 10,
-                    maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-                  },
-                  cacheableResponse: {
-                    statuses: [0, 200]
-                  }
-                }
-              },
-              {
-                urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-                handler: 'CacheFirst',
-                options: {
-                  cacheName: 'gstatic-fonts-cache',
-                  expiration: {
-                    maxEntries: 10,
-                    maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-                  },
-                  cacheableResponse: {
-                    statuses: [0, 200]
-                  }
-                }
-              }
-            ],
-            navigateFallback: '/offline.html',
-            navigateFallbackDenylist: [/^\/api/]
-          },
-          devOptions: {
-            enabled: true,
-            type: 'module'
-          }
-        })
-      ],
-      define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+            },
+          ],
+          navigateFallback: '/offline.html',
+          navigateFallbackDenylist: [/^\/api/],
+        },
+        devOptions: {
+          enabled: true,
+          type: 'module',
+        },
+      }),
+    ],
+    define: {
+      'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+    },
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
       },
-      resolve: {
-        alias: {
-          '@': path.resolve(__dirname, './src'),
-        }
-      },
-      build: {
-        // Chunks > 500KB are intentional: export-vendor (jspdf/xlsx) and charts-vendor (recharts)
-        // These are lazy-loaded and only fetched when needed
-        chunkSizeWarningLimit: 1200,
-        rollupOptions: {
-          output: {
-            // Optimized chunk splitting for better caching and parallel loading
-            // Based on Vite 2025 best practices
-            manualChunks(id) {
-              if (id.includes('node_modules')) {
-                // PDF/Excel exports - Heavy libs loaded on demand via dynamic import
-                // These are only loaded when user triggers export
-                if (id.includes('jspdf') || id.includes('xlsx') || id.includes('html2canvas')) {
-                  return 'export-vendor';
-                }
+    },
+    build: {
+      // Chunks > 500KB are intentional: export-vendor (jspdf/xlsx) and charts-vendor (recharts)
+      // These are lazy-loaded and only fetched when needed
+      chunkSizeWarningLimit: 1200,
+      rollupOptions: {
+        output: {
+          // Optimized chunk splitting for better caching and parallel loading
+          // Based on Vite 2025 best practices
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              // PDF/Excel exports - Heavy libs loaded on demand via dynamic import
+              // These are only loaded when user triggers export
+              if (id.includes('jspdf') || id.includes('xlsx') || id.includes('html2canvas')) {
+                return 'export-vendor'
+              }
 
-                // React core - cached separately for long-term caching
-                if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-                  return 'react-vendor';
-                }
+              // React core - cached separately for long-term caching
+              if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+                return 'react-vendor'
+              }
 
-                // Firebase - loaded with auth, cached separately
-                if (id.includes('firebase')) {
-                  return 'firebase-vendor';
-                }
+              // Firebase - loaded with auth, cached separately
+              if (id.includes('firebase')) {
+                return 'firebase-vendor'
+              }
 
-                // Charts - only loaded on Dashboard/Reports pages
-                if (id.includes('recharts') || id.includes('d3')) {
-                  return 'charts-vendor';
-                }
+              // Charts - only loaded on Dashboard/Reports pages
+              if (id.includes('recharts') || id.includes('d3')) {
+                return 'charts-vendor'
+              }
 
-                // TanStack - virtualization loaded where needed
-                if (id.includes('@tanstack')) {
-                  return 'tanstack-vendor';
-                }
+              // TanStack - virtualization loaded where needed
+              if (id.includes('@tanstack')) {
+                return 'tanstack-vendor'
+              }
 
-                // Utils (Lightweight, shared across app)
-                if (id.includes('date-fns') || id.includes('uuid') || id.includes('lucide')) {
-                  return 'utils-vendor';
-                }
+              // Utils (Lightweight, shared across app)
+              if (id.includes('date-fns') || id.includes('uuid') || id.includes('lucide')) {
+                return 'utils-vendor'
+              }
 
-                // UI Components - Radix, etc
-                if (id.includes('@radix-ui')) {
-                  return 'ui-vendor';
-                }
+              // UI Components - Radix, etc
+              if (id.includes('@radix-ui')) {
+                return 'ui-vendor'
               }
             }
-          }
-        }
-      }
-    };
-});
+          },
+        },
+      },
+    },
+  }
+})
