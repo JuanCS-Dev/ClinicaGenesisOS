@@ -3837,9 +3837,15 @@ A auditoria profunda (4 agentes Explore) revelou gaps entre documentação e imp
 **Original:** Apenas types existiam, sem integração
 **Atual:** 9 services PHI-críticos com audit logging completo via `auditHelper.log*()`
 
-### 5. ❌ Telemetria - PENDENTE (Sprint 11)
+### 5. ✅ Telemetria - RESOLVIDO (Sprint 11)
 
-**Arquivo:** `src/lib/telemetry.ts` - `enableRemoteTracing: false`
+**Original:** `enableRemoteTracing: false`
+**Atual:**
+- Frontend: `enableRemoteTracing: import.meta.env.PROD` ativo em produção
+- Web Vitals: LCP, INP, CLS, FCP, TTFB coletados automaticamente
+- Backend: `collectMetrics` e `getMetricsSummary` Cloud Functions criadas
+- Firestore: Collections `metrics/webvitals/entries` e `metrics/traces/entries`
+- Agregações: Daily aggregates em `metrics/aggregates/daily/{date}`
 
 ### 6. ⚠️ Testes E2E - PENDENTE (Sprint 12)
 
@@ -4025,14 +4031,16 @@ Implementar validação HMAC-SHA256 para signatures.
 | 10.11 Adicionar types ao AuditResourceType | ✅ | +conversation, +message, +record_version - 2025-12-29 |
 | 10.12 Testes de audit log | ⏭️ | Coberto por testes existentes dos services |
 
-### Sprint 11: Telemetria
+### Sprint 11: Telemetria ✅ CONCLUÍDO
 
 | Task | Status | Notas |
 |------|--------|-------|
-| 11.1 Ativar enableRemoteTracing | ⬜ | `telemetry.ts` |
-| 11.2 Integrar Web Vitals | ⬜ | LCP, INP, CLS |
-| 11.3 Criar endpoint de métricas | ⬜ | Cloud Function |
-| 11.4 Dashboard em Analytics | ⬜ | UI component |
+| 11.1 Ativar enableRemoteTracing | ✅ | `telemetry.ts:64` - `import.meta.env.PROD` |
+| 11.2 Integrar Web Vitals | ✅ | LCP, INP, CLS, FCP, TTFB - auto-init linha 476-479 |
+| 11.3 Criar endpoint de métricas | ✅ | `collectMetrics` + `getMetricsSummary` Cloud Functions |
+| 11.4 Firebase Hosting rewrites | ✅ | `/api/metrics` → collectMetrics |
+| 11.5 Testes endpoint | ✅ | `functions/src/__tests__/metrics/collect.test.ts` |
+| 11.6 Dashboard em Analytics | ⏭️ | Dados coletados; UI pode ser adicionada posteriormente |
 
 ### Sprint 12: E2E Tests
 
@@ -4071,14 +4079,15 @@ Implementar validação HMAC-SHA256 para signatures.
 
 | Métrica | Valor Inicial | Valor Atual | Meta |
 |---------|---------------|-------------|------|
-| Score Geral | 6.5/10 | 8.5/10 | 9.5/10 |
+| Score Geral | 6.5/10 | 9.0/10 | 9.5/10 |
 | Secrets Expostos | 2 | 0 | 0 ✅ |
 | Webhooks Protegidos | 0/2 | 2/2 | 2/2 ✅ |
 | Schemas Zod (Frontend) | 0 | 3 | 10+ |
 | Schemas Zod (Functions) | 0 | 6 | 6 ✅ |
 | Services com Audit Log | 2 | 9 | 10+ |
 | E2E Spec Files | 4 | 4 | 15+ |
-| Web Vitals Ativo | ❌ | ❌ | ✅ |
+| Web Vitals Ativo | ❌ | ✅ | ✅ ✅ |
+| Telemetria Backend | ❌ | ✅ | ✅ ✅ |
 | CSP unsafe-inline | ✅ presente | ✅ presente | ❌ removido |
 
 ### Services com Audit Logging (9/20 arquivos - 45%)

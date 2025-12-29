@@ -58,6 +58,14 @@
     ],
     "rewrites": [
       {
+        "source": "/api/metrics",
+        "function": "collectMetrics"
+      },
+      {
+        "source": "/api/metrics/summary",
+        "function": "getMetricsSummary"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
