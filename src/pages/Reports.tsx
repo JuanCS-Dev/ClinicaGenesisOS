@@ -286,7 +286,9 @@ export const Reports: React.FC = () => {
                     backgroundColor: 'var(--color-genesis-surface)',
                     color: 'var(--color-genesis-dark)',
                   }}
-                  formatter={(value: number) => [`${value} agendamentos`, 'Total']}
+                  formatter={value =>
+                    value !== undefined ? [`${value} agendamentos`, 'Total'] : ['', 'Total']
+                  }
                 />
                 <Bar
                   dataKey="value"

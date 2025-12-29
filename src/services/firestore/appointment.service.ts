@@ -20,15 +20,17 @@ import {
   orderBy,
   onSnapshot,
   serverTimestamp,
-} from 'firebase/firestore';
-import { db } from '../firebase';
-import type { Appointment, Status, CreateAppointmentInput } from '@/types';
+  type UpdateData,
+  type DocumentData,
+} from 'firebase/firestore'
+import { db } from '../firebase'
+import type { Appointment, Status, CreateAppointmentInput } from '@/types'
 
 /**
  * Get the appointments collection reference for a clinic.
  */
 function getAppointmentsCollection(clinicId: string) {
-  return collection(db, 'clinics', clinicId, 'appointments');
+  return collection(db, 'clinics', clinicId, 'appointments')
 }
 
 /**
@@ -46,7 +48,7 @@ function toAppointment(id: string, data: Record<string, unknown>): Appointment {
     professional: data.professional as string,
     specialty: data.specialty as Appointment['specialty'],
     notes: data.notes as string | undefined,
-  };
+  }
 }
 
 /**
@@ -60,11 +62,11 @@ export const appointmentService = {
    * @returns Array of appointments sorted by date (ascending)
    */
   async getAll(clinicId: string): Promise<Appointment[]> {
-    const appointmentsRef = getAppointmentsCollection(clinicId);
-    const q = query(appointmentsRef, orderBy('date', 'asc'));
-    const querySnapshot = await getDocs(q);
+    const appointmentsRef = getAppointmentsCollection(clinicId)
+    const q = query(appointmentsRef, orderBy('date', 'asc'))
+    const querySnapshot = await getDocs(q)
 
-    return querySnapshot.docs.map((docSnap) => toAppointment(docSnap.id, docSnap.data()));
+    return querySnapshot.docs.map(docSnap => toAppointment(docSnap.id, docSnap.data()))
   },
 
   /**
@@ -75,16 +77,16 @@ export const appointmentService = {
    * @returns Array of appointments for that date
    */
   async getByDate(clinicId: string, date: string): Promise<Appointment[]> {
-    const appointmentsRef = getAppointmentsCollection(clinicId);
+    const appointmentsRef = getAppointmentsCollection(clinicId)
     const q = query(
       appointmentsRef,
       where('date', '>=', `${date}T00:00:00`),
       where('date', '<', `${date}T23:59:59`),
       orderBy('date', 'asc')
-    );
-    const querySnapshot = await getDocs(q);
+    )
+    const querySnapshot = await getDocs(q)
 
-    return querySnapshot.docs.map((docSnap) => toAppointment(docSnap.id, docSnap.data()));
+    return querySnapshot.docs.map(docSnap => toAppointment(docSnap.id, docSnap.data()))
   },
 
   /**
@@ -95,15 +97,11 @@ export const appointmentService = {
    * @returns Array of appointments sorted by date (descending)
    */
   async getByPatient(clinicId: string, patientId: string): Promise<Appointment[]> {
-    const appointmentsRef = getAppointmentsCollection(clinicId);
-    const q = query(
-      appointmentsRef,
-      where('patientId', '==', patientId),
-      orderBy('date', 'desc')
-    );
-    const querySnapshot = await getDocs(q);
+    const appointmentsRef = getAppointmentsCollection(clinicId)
+    const q = query(appointmentsRef, where('patientId', '==', patientId), orderBy('date', 'desc'))
+    const querySnapshot = await getDocs(q)
 
-    return querySnapshot.docs.map((docSnap) => toAppointment(docSnap.id, docSnap.data()));
+    return querySnapshot.docs.map(docSnap => toAppointment(docSnap.id, docSnap.data()))
   },
 
   /**
@@ -114,14 +112,14 @@ export const appointmentService = {
    * @returns The appointment or null if not found
    */
   async getById(clinicId: string, appointmentId: string): Promise<Appointment | null> {
-    const docRef = doc(db, 'clinics', clinicId, 'appointments', appointmentId);
-    const docSnap = await getDoc(docRef);
+    const docRef = doc(db, 'clinics', clinicId, 'appointments', appointmentId)
+    const docSnap = await getDoc(docRef)
 
     if (!docSnap.exists()) {
-      return null;
+      return null
     }
 
-    return toAppointment(docSnap.id, docSnap.data());
+    return toAppointment(docSnap.id, docSnap.data())
   },
 
   /**
@@ -132,7 +130,7 @@ export const appointmentService = {
    * @returns The created appointment ID
    */
   async create(clinicId: string, data: CreateAppointmentInput): Promise<string> {
-    const appointmentsRef = getAppointmentsCollection(clinicId);
+    const appointmentsRef = getAppointmentsCollection(clinicId)
 
     const appointmentData = {
       patientId: data.patientId,
@@ -145,11 +143,11 @@ export const appointmentService = {
       specialty: data.specialty,
       notes: data.notes || null,
       createdAt: serverTimestamp(),
-    };
+    }
 
-    const docRef = await addDoc(appointmentsRef, appointmentData);
+    const docRef = await addDoc(appointmentsRef, appointmentData)
 
-    return docRef.id;
+    return docRef.id
   },
 
   /**
@@ -164,18 +162,18 @@ export const appointmentService = {
     appointmentId: string,
     data: Partial<Omit<Appointment, 'id'>>
   ): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId, 'appointments', appointmentId);
+    const docRef = doc(db, 'clinics', clinicId, 'appointments', appointmentId)
 
-    const updateData: Record<string, unknown> = { ...data };
+    const updateData = { ...data } as UpdateData<DocumentData>
 
     // Remove undefined values
-    Object.keys(updateData).forEach((key) => {
-      if (updateData[key] === undefined) {
-        delete updateData[key];
+    Object.keys(updateData).forEach(key => {
+      if ((updateData as Record<string, unknown>)[key] === undefined) {
+        delete (updateData as Record<string, unknown>)[key]
       }
-    });
+    })
 
-    await updateDoc(docRef, updateData);
+    await updateDoc(docRef, updateData)
   },
 
   /**
@@ -186,7 +184,7 @@ export const appointmentService = {
    * @param status - The new status
    */
   async updateStatus(clinicId: string, appointmentId: string, status: Status): Promise<void> {
-    await this.update(clinicId, appointmentId, { status });
+    await this.update(clinicId, appointmentId, { status })
   },
 
   /**
@@ -196,8 +194,8 @@ export const appointmentService = {
    * @param appointmentId - The appointment ID
    */
   async delete(clinicId: string, appointmentId: string): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId, 'appointments', appointmentId);
-    await deleteDoc(docRef);
+    const docRef = doc(db, 'clinics', clinicId, 'appointments', appointmentId)
+    await deleteDoc(docRef)
   },
 
   /**
@@ -208,22 +206,22 @@ export const appointmentService = {
    * @returns Unsubscribe function
    */
   subscribe(clinicId: string, callback: (appointments: Appointment[]) => void): () => void {
-    const appointmentsRef = getAppointmentsCollection(clinicId);
-    const q = query(appointmentsRef, orderBy('date', 'asc'));
+    const appointmentsRef = getAppointmentsCollection(clinicId)
+    const q = query(appointmentsRef, orderBy('date', 'asc'))
 
     return onSnapshot(
       q,
-      (querySnapshot) => {
-        const appointments = querySnapshot.docs.map((docSnap) =>
+      querySnapshot => {
+        const appointments = querySnapshot.docs.map(docSnap =>
           toAppointment(docSnap.id, docSnap.data())
-        );
-        callback(appointments);
+        )
+        callback(appointments)
       },
-      (error) => {
-        console.error('Error subscribing to appointments:', error);
-        callback([]);
+      error => {
+        console.error('Error subscribing to appointments:', error)
+        callback([])
       }
-    );
+    )
   },
 
   /**
@@ -239,27 +237,27 @@ export const appointmentService = {
     date: string,
     callback: (appointments: Appointment[]) => void
   ): () => void {
-    const appointmentsRef = getAppointmentsCollection(clinicId);
+    const appointmentsRef = getAppointmentsCollection(clinicId)
     const q = query(
       appointmentsRef,
       where('date', '>=', `${date}T00:00:00`),
       where('date', '<', `${date}T23:59:59`),
       orderBy('date', 'asc')
-    );
+    )
 
     return onSnapshot(
       q,
-      (querySnapshot) => {
-        const appointments = querySnapshot.docs.map((docSnap) =>
+      querySnapshot => {
+        const appointments = querySnapshot.docs.map(docSnap =>
           toAppointment(docSnap.id, docSnap.data())
-        );
-        callback(appointments);
+        )
+        callback(appointments)
       },
-      (error) => {
-        console.error('Error subscribing to appointments by date:', error);
-        callback([]);
+      error => {
+        console.error('Error subscribing to appointments by date:', error)
+        callback([])
       }
-    );
+    )
   },
 
   /**
@@ -275,25 +273,21 @@ export const appointmentService = {
     patientId: string,
     callback: (appointments: Appointment[]) => void
   ): () => void {
-    const appointmentsRef = getAppointmentsCollection(clinicId);
-    const q = query(
-      appointmentsRef,
-      where('patientId', '==', patientId),
-      orderBy('date', 'desc')
-    );
+    const appointmentsRef = getAppointmentsCollection(clinicId)
+    const q = query(appointmentsRef, where('patientId', '==', patientId), orderBy('date', 'desc'))
 
     return onSnapshot(
       q,
-      (querySnapshot) => {
-        const appointments = querySnapshot.docs.map((docSnap) =>
+      querySnapshot => {
+        const appointments = querySnapshot.docs.map(docSnap =>
           toAppointment(docSnap.id, docSnap.data())
-        );
-        callback(appointments);
+        )
+        callback(appointments)
       },
-      (error) => {
-        console.error('Error subscribing to patient appointments:', error);
-        callback([]);
+      error => {
+        console.error('Error subscribing to patient appointments:', error)
+        callback([])
       }
-    );
+    )
   },
-};
+}

@@ -21,9 +21,11 @@ import {
   query,
   where,
   limit,
-} from 'firebase/firestore';
-import { db } from '../firebase';
-import type { Clinic, ClinicSettings, ClinicPlan, CreateClinicInput } from '@/types';
+  type UpdateData,
+  type DocumentData,
+} from 'firebase/firestore'
+import { db } from '../firebase'
+import type { Clinic, ClinicSettings, ClinicPlan, CreateClinicInput } from '@/types'
 
 /**
  * Default clinic settings for new clinics.
@@ -36,7 +38,7 @@ const DEFAULT_SETTINGS: ClinicSettings = {
   defaultAppointmentDuration: 30,
   specialties: ['medicina'],
   timezone: 'America/Sao_Paulo',
-};
+}
 
 /**
  * Converts Firestore document data to Clinic type.
@@ -63,7 +65,7 @@ function toClinic(id: string, data: Record<string, unknown>): Clinic {
       data.updatedAt instanceof Timestamp
         ? data.updatedAt.toDate().toISOString()
         : (data.updatedAt as string),
-  };
+  }
 }
 
 /**
@@ -77,14 +79,14 @@ export const clinicService = {
    * @returns The clinic or null if not found
    */
   async getById(clinicId: string): Promise<Clinic | null> {
-    const docRef = doc(db, 'clinics', clinicId);
-    const docSnap = await getDoc(docRef);
+    const docRef = doc(db, 'clinics', clinicId)
+    const docSnap = await getDoc(docRef)
 
     if (!docSnap.exists()) {
-      return null;
+      return null
     }
 
-    return toClinic(docSnap.id, docSnap.data());
+    return toClinic(docSnap.id, docSnap.data())
   },
 
   /**
@@ -95,8 +97,8 @@ export const clinicService = {
    * @returns The created clinic ID
    */
   async create(ownerId: string, data: CreateClinicInput): Promise<string> {
-    const clinicsRef = collection(db, 'clinics');
-    const newDocRef = doc(clinicsRef);
+    const clinicsRef = collection(db, 'clinics')
+    const newDocRef = doc(clinicsRef)
 
     const clinicData = {
       name: data.name,
@@ -109,11 +111,11 @@ export const clinicService = {
       settings: data.settings || DEFAULT_SETTINGS,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-    };
+    }
 
-    await setDoc(newDocRef, clinicData);
+    await setDoc(newDocRef, clinicData)
 
-    return newDocRef.id;
+    return newDocRef.id
   },
 
   /**
@@ -123,21 +125,21 @@ export const clinicService = {
    * @param data - The fields to update
    */
   async update(clinicId: string, data: Partial<Omit<Clinic, 'id' | 'createdAt'>>): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId);
+    const docRef = doc(db, 'clinics', clinicId)
 
-    const updateData: Record<string, unknown> = {
+    const updateData = {
       ...data,
       updatedAt: serverTimestamp(),
-    };
+    } as UpdateData<DocumentData>
 
     // Remove undefined values
-    Object.keys(updateData).forEach((key) => {
-      if (updateData[key] === undefined) {
-        delete updateData[key];
+    Object.keys(updateData).forEach(key => {
+      if ((updateData as Record<string, unknown>)[key] === undefined) {
+        delete (updateData as Record<string, unknown>)[key]
       }
-    });
+    })
 
-    await updateDoc(docRef, updateData);
+    await updateDoc(docRef, updateData)
   },
 
   /**
@@ -149,8 +151,8 @@ export const clinicService = {
    * @param clinicId - The clinic ID
    */
   async delete(clinicId: string): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId);
-    await deleteDoc(docRef);
+    const docRef = doc(db, 'clinics', clinicId)
+    await deleteDoc(docRef)
   },
 
   /**
@@ -161,22 +163,22 @@ export const clinicService = {
    * @returns Unsubscribe function
    */
   subscribe(clinicId: string, callback: (clinic: Clinic | null) => void): () => void {
-    const docRef = doc(db, 'clinics', clinicId);
+    const docRef = doc(db, 'clinics', clinicId)
 
     return onSnapshot(
       docRef,
-      (docSnap) => {
+      docSnap => {
         if (!docSnap.exists()) {
-          callback(null);
-          return;
+          callback(null)
+          return
         }
-        callback(toClinic(docSnap.id, docSnap.data()));
+        callback(toClinic(docSnap.id, docSnap.data()))
       },
-      (error) => {
-        console.error('Error subscribing to clinic:', error);
-        callback(null);
+      error => {
+        console.error('Error subscribing to clinic:', error)
+        callback(null)
       }
-    );
+    )
   },
 
   /**
@@ -186,17 +188,17 @@ export const clinicService = {
    * @param settings - The settings to update (partial)
    */
   async updateSettings(clinicId: string, settings: Partial<ClinicSettings>): Promise<void> {
-    const clinic = await this.getById(clinicId);
+    const clinic = await this.getById(clinicId)
     if (!clinic) {
-      throw new Error(`Clinic not found: ${clinicId}`);
+      throw new Error(`Clinic not found: ${clinicId}`)
     }
 
     const mergedSettings: ClinicSettings = {
       ...clinic.settings,
       ...settings,
-    };
+    }
 
-    await this.update(clinicId, { settings: mergedSettings });
+    await this.update(clinicId, { settings: mergedSettings })
   },
 
   /**
@@ -206,7 +208,7 @@ export const clinicService = {
    * @param plan - The new plan
    */
   async changePlan(clinicId: string, plan: ClinicPlan): Promise<void> {
-    await this.update(clinicId, { plan });
+    await this.update(clinicId, { plan })
   },
 
   /**
@@ -221,23 +223,19 @@ export const clinicService = {
    */
   async getBySubdomain(subdomain: string): Promise<Clinic | null> {
     if (!subdomain || subdomain === 'www' || subdomain === 'app' || subdomain === 'localhost') {
-      return null;
+      return null
     }
 
-    const clinicsRef = collection(db, 'clinics');
-    const q = query(
-      clinicsRef,
-      where('subdomain', '==', subdomain.toLowerCase()),
-      limit(1)
-    );
+    const clinicsRef = collection(db, 'clinics')
+    const q = query(clinicsRef, where('subdomain', '==', subdomain.toLowerCase()), limit(1))
 
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(q)
 
     if (snapshot.empty) {
-      return null;
+      return null
     }
 
-    const docSnap = snapshot.docs[0];
-    return toClinic(docSnap.id, docSnap.data());
+    const docSnap = snapshot.docs[0]
+    return toClinic(docSnap.id, docSnap.data())
   },
-};
+}

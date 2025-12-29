@@ -19,6 +19,8 @@ import {
   onSnapshot,
   serverTimestamp,
   Timestamp,
+  type UpdateData,
+  type DocumentData,
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { UserProfile, UserRole, SpecialtyType } from '@/types'
@@ -134,15 +136,15 @@ export const userService = {
   async update(userId: string, data: UpdateUserProfileInput): Promise<void> {
     const docRef = doc(db, 'users', userId)
 
-    const updateData: Record<string, unknown> = {
+    const updateData = {
       ...data,
       updatedAt: serverTimestamp(),
-    }
+    } as UpdateData<DocumentData>
 
     // Remove undefined values
     Object.keys(updateData).forEach(key => {
-      if (updateData[key] === undefined) {
-        delete updateData[key]
+      if ((updateData as Record<string, unknown>)[key] === undefined) {
+        delete (updateData as Record<string, unknown>)[key]
       }
     })
 

@@ -5,20 +5,13 @@
  * Allows grouping pending guides into batches and tracking submission status.
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
-import {
-  Package,
-  Plus,
-  Send,
-  Clock,
-  DollarSign,
-  Loader2,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { LoteCard } from './LoteCard';
-import { CreateLoteModal } from './CreateLoteModal';
-import type { LoteGuias, GuiaFirestore } from '@/types';
+import React, { useState, useMemo, useCallback } from 'react'
+import { Package, Plus, Send, Clock, DollarSign, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { LoteCard } from './LoteCard'
+import { CreateLoteModal } from './CreateLoteModal'
+import type { LoteGuias, GuiaFirestore } from '@/types'
 
 // =============================================================================
 // TYPES
@@ -26,21 +19,21 @@ import type { LoteGuias, GuiaFirestore } from '@/types';
 
 interface LotesTabProps {
   /** List of lotes */
-  lotes: LoteGuias[];
+  lotes: LoteGuias[]
   /** List of guias (for selecting into lotes) */
-  guias: GuiaFirestore[];
+  guias: GuiaFirestore[]
   /** Loading state */
-  loading?: boolean;
+  loading?: boolean
   /** Callback to create a new lote */
-  onCreateLote: (operadoraRegistroANS: string, guiaIds: string[]) => Promise<void>;
+  onCreateLote: (operadoraRegistroANS: string, guiaIds: string[]) => Promise<void>
   /** Callback to send a lote */
-  onSendLote: (loteId: string) => Promise<void>;
+  onSendLote: (loteId: string) => Promise<void>
   /** Callback to delete a lote */
-  onDeleteLote: (loteId: string) => Promise<void>;
+  onDeleteLote: (loteId: string) => Promise<void>
   /** Callback to download lote XML */
-  onDownloadXml?: (loteId: string) => void;
+  onDownloadXml?: (loteId: string) => void
   /** Callback to view a guia */
-  onViewGuia?: (guiaId: string) => void;
+  onViewGuia?: (guiaId: string) => void
 }
 
 // =============================================================================
@@ -51,7 +44,7 @@ function formatCurrency(value: number): string {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-  }).format(value);
+  }).format(value)
 }
 
 // =============================================================================
@@ -68,48 +61,48 @@ export function LotesTab({
   onDownloadXml,
   onViewGuia,
 }: LotesTabProps) {
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   const pendingGuiasCount = useMemo(() => {
-    return guias.filter((g) => g.status === 'rascunho').length;
-  }, [guias]);
+    return guias.filter(g => g.status === 'rascunho').length
+  }, [guias])
 
   const sortedLotes = useMemo((): LoteGuias[] => {
     return [...lotes].sort(
       (a, b) => new Date(b.dataGeracao).getTime() - new Date(a.dataGeracao).getTime()
-    );
-  }, [lotes]);
+    )
+  }, [lotes])
 
   const handleSendLote = useCallback(
     async (loteId: string) => {
-      setActionLoading(loteId);
+      setActionLoading(loteId)
       try {
-        await onSendLote(loteId);
-        toast.success('Lote enviado com sucesso');
+        await onSendLote(loteId)
+        toast.success('Lote enviado com sucesso')
       } catch {
-        toast.error('Erro ao enviar lote');
+        toast.error('Erro ao enviar lote')
       } finally {
-        setActionLoading(null);
+        setActionLoading(null)
       }
     },
     [onSendLote]
-  );
+  )
 
   const handleDeleteLote = useCallback(
     async (loteId: string) => {
-      setActionLoading(loteId);
+      setActionLoading(loteId)
       try {
-        await onDeleteLote(loteId);
-        toast.success('Lote excluído');
+        await onDeleteLote(loteId)
+        toast.success('Lote excluído')
       } catch {
-        toast.error('Erro ao excluir lote');
+        toast.error('Erro ao excluir lote')
       } finally {
-        setActionLoading(null);
+        setActionLoading(null)
       }
     },
     [onDeleteLote]
-  );
+  )
 
   return (
     <div className="space-y-6">
@@ -153,7 +146,7 @@ export function LotesTab({
             <span className="text-sm">Pendentes</span>
           </div>
           <p className="text-2xl font-bold text-warning">
-            {lotes.filter((l) => l.status === 'rascunho' || l.status === 'pronto').length}
+            {lotes.filter(l => l.status === 'rascunho' || l.status === 'pronto').length}
           </p>
         </div>
 
@@ -163,7 +156,7 @@ export function LotesTab({
             <span className="text-sm">Enviados</span>
           </div>
           <p className="text-2xl font-bold text-success">
-            {lotes.filter((l) => l.status === 'enviado' || l.status === 'processado').length}
+            {lotes.filter(l => l.status === 'enviado' || l.status === 'processado').length}
           </p>
         </div>
 
@@ -188,15 +181,18 @@ export function LotesTab({
           illustration="documents"
           title="Nenhum lote criado"
           description="Crie um lote para agrupar guias e enviá-las às operadoras de uma só vez"
-          action={{
-            label: 'Criar Primeiro Lote',
-            onClick: () => setShowCreateModal(true),
-            disabled: pendingGuiasCount === 0,
-          }}
+          action={
+            pendingGuiasCount > 0
+              ? {
+                  label: 'Criar Primeiro Lote',
+                  onClick: () => setShowCreateModal(true),
+                }
+              : undefined
+          }
         />
       ) : (
         <div className="space-y-3">
-          {sortedLotes.map((lote) => (
+          {sortedLotes.map(lote => (
             <LoteCard
               key={lote.id}
               lote={lote}
@@ -220,5 +216,5 @@ export function LotesTab({
         />
       )}
     </div>
-  );
+  )
 }

@@ -22,6 +22,8 @@ import {
   serverTimestamp,
   limit,
   Timestamp,
+  type UpdateData,
+  type DocumentData,
 } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { db, storage } from '../firebase'
@@ -161,16 +163,16 @@ export const labResultService = {
    * Update lab result status.
    */
   async updateStatus(clinicId: string, resultId: string, status: LabResultStatus): Promise<void> {
-    const updateData: Record<string, unknown> = {
+    const updateData = {
       status,
       updatedAt: serverTimestamp(),
-    }
+    } as UpdateData<DocumentData>
 
     if (status === 'ready') {
-      updateData.completedAt = new Date().toISOString()
+      ;(updateData as Record<string, unknown>).completedAt = new Date().toISOString()
     }
     if (status === 'viewed') {
-      updateData.viewedAt = new Date().toISOString()
+      ;(updateData as Record<string, unknown>).viewedAt = new Date().toISOString()
     }
 
     const docRef = getLabResultDoc(clinicId, resultId)

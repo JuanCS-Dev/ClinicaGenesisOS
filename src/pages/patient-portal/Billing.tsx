@@ -199,13 +199,9 @@ export function PatientBilling(): React.ReactElement {
         <div className="bg-success-soft rounded-2xl p-6 border border-success/20">
           <div className="flex items-center gap-3 mb-2">
             <CheckCircle2 className="w-5 h-5 text-success" />
-            <span className="text-sm font-medium text-genesis-dark">
-              Total Pago
-            </span>
+            <span className="text-sm font-medium text-genesis-dark">Total Pago</span>
           </div>
-          <p className="text-2xl font-bold text-success">
-            {formatCurrency(totalPaid)}
-          </p>
+          <p className="text-2xl font-bold text-success">{formatCurrency(totalPaid)}</p>
         </div>
 
         <div className="bg-warning-soft rounded-2xl p-6 border border-warning/20">
@@ -213,9 +209,7 @@ export function PatientBilling(): React.ReactElement {
             <Clock className="w-5 h-5 text-warning" />
             <span className="text-sm font-medium text-genesis-dark">Pendente</span>
           </div>
-          <p className="text-2xl font-bold text-warning">
-            {formatCurrency(totalPending)}
-          </p>
+          <p className="text-2xl font-bold text-warning">{formatCurrency(totalPending)}</p>
         </div>
       </div>
 
@@ -275,7 +269,7 @@ export function PatientBilling(): React.ReactElement {
                         {statusConfig.label}
                       </div>
 
-                      {(transaction.status === 'pending' || transaction.status === 'overdue') && (
+                      {transaction.status === 'pending' && (
                         <button
                           onClick={() => handlePayClick(transaction)}
                           className="px-3 py-1.5 rounded-lg bg-genesis-primary text-white text-sm font-medium hover:bg-genesis-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"

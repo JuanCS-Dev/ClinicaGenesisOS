@@ -5,12 +5,11 @@
  * Used in both day and week views of the agenda.
  * Includes telemedicine button for starting video consultations.
  */
- 
 
-import React from 'react';
-import { Repeat, Video } from 'lucide-react';
-import { Status, type Appointment, type SpecialtyType } from '@/types';
-import { isRecurringInstance, isRecurringParent } from '@/lib/recurrence';
+import React from 'react'
+import { Repeat, Video } from 'lucide-react'
+import { Status, type Appointment, type SpecialtyType } from '@/types'
+import { isRecurringInstance, isRecurringParent } from '@/lib/recurrence'
 
 /**
  * Status colors configuration.
@@ -20,15 +19,22 @@ export const STATUS_COLORS: Record<Status, { bg: string; text: string; dot: stri
   [Status.PENDING]: { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' },
   [Status.ARRIVED]: { bg: 'bg-sky-50', text: 'text-sky-700', dot: 'bg-sky-500' },
   [Status.IN_PROGRESS]: { bg: 'bg-violet-50', text: 'text-violet-700', dot: 'bg-violet-500' },
-  [Status.FINISHED]: { bg: 'bg-genesis-hover', text: 'text-genesis-muted', dot: 'bg-genesis-subtle' },
+  [Status.FINISHED]: {
+    bg: 'bg-genesis-hover',
+    text: 'text-genesis-muted',
+    dot: 'bg-genesis-subtle',
+  },
   [Status.CANCELED]: { bg: 'bg-red-50', text: 'text-red-600', dot: 'bg-red-400' },
   [Status.NO_SHOW]: { bg: 'bg-orange-50', text: 'text-orange-600', dot: 'bg-orange-500' },
-};
+}
 
 /**
  * Specialty colors for the left border.
  */
-export const SPECIALTY_COLORS: Record<SpecialtyType, { border: string; bg: string; ring: string; shadow: string }> = {
+export const SPECIALTY_COLORS: Record<
+  SpecialtyType,
+  { border: string; bg: string; ring: string; shadow: string }
+> = {
   medicina: {
     border: 'border-blue-500',
     bg: 'from-blue-50/90 to-white',
@@ -47,13 +53,13 @@ export const SPECIALTY_COLORS: Record<SpecialtyType, { border: string; bg: strin
     ring: 'ring-purple-100',
     shadow: 'hover:shadow-purple-100',
   },
-};
+}
 
 interface AppointmentCardProps {
-  appointment: Appointment;
-  compact?: boolean;
+  appointment: Appointment
+  compact?: boolean
   /** Callback to start telemedicine session */
-  onStartTelemedicine?: (appointment: Appointment) => void;
+  onStartTelemedicine?: (appointment: Appointment) => void
 }
 
 /**
@@ -64,29 +70,29 @@ export function AppointmentCard({
   compact = false,
   onStartTelemedicine,
 }: AppointmentCardProps) {
-  const specialtyColors = SPECIALTY_COLORS[app.specialty] || SPECIALTY_COLORS.medicina;
-  const statusColors = STATUS_COLORS[app.status] || STATUS_COLORS[Status.PENDING];
-  const isCanceled = app.status === Status.CANCELED;
-  const isFinished = app.status === Status.FINISHED;
-  const isDimmed = isCanceled || isFinished;
-  const isRecurring = isRecurringInstance(app) || isRecurringParent(app);
+  const specialtyColors = SPECIALTY_COLORS[app.specialty] || SPECIALTY_COLORS.medicina
+  const statusColors = STATUS_COLORS[app.status] || STATUS_COLORS[Status.PENDING]
+  const isCanceled = app.status === Status.CANCELED
+  const isFinished = app.status === Status.FINISHED
+  const isDimmed = isCanceled || isFinished
+  const isRecurring = isRecurringInstance(app) || isRecurringParent(app)
 
   // Show telemedicine button for confirmed or in-progress appointments
   const canStartTelemedicine =
     onStartTelemedicine &&
     !isCanceled &&
     !isFinished &&
-    (app.status === Status.CONFIRMED || app.status === Status.IN_PROGRESS);
+    (app.status === Status.CONFIRMED || app.status === Status.IN_PROGRESS)
 
   /**
    * Handle telemedicine button click.
    */
   const handleTelemedicineClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+    e.stopPropagation()
     if (onStartTelemedicine) {
-      onStartTelemedicine(app);
+      onStartTelemedicine(app)
     }
-  };
+  }
 
   if (compact) {
     return (
@@ -100,10 +106,10 @@ export function AppointmentCard({
       >
         <div className="flex items-center justify-between gap-1">
           <div className="flex items-center gap-1 min-w-0">
-            {isRecurring && (
-              <Repeat className="w-3 h-3 text-genesis-primary shrink-0" />
-            )}
-            <span className={`text-xs font-bold truncate ${isDimmed ? 'text-genesis-muted' : 'text-genesis-dark'} ${isCanceled ? 'line-through' : ''}`}>
+            {isRecurring && <Repeat className="w-3 h-3 text-genesis-primary shrink-0" />}
+            <span
+              className={`text-xs font-bold truncate ${isDimmed ? 'text-genesis-muted' : 'text-genesis-dark'} ${isCanceled ? 'line-through' : ''}`}
+            >
               {app.patientName}
             </span>
           </div>
@@ -111,7 +117,7 @@ export function AppointmentCard({
         </div>
         <p className="text-[10px] text-genesis-medium truncate mt-0.5">{app.procedure}</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -127,15 +133,22 @@ export function AppointmentCard({
       <div className="flex justify-between items-start mb-2">
         <div className="flex items-center gap-2">
           {isRecurring && (
-            <Repeat className="w-4 h-4 text-genesis-primary shrink-0" title="Consulta recorrente" />
+            <Repeat
+              className="w-4 h-4 text-genesis-primary shrink-0"
+              aria-label="Consulta recorrente"
+            />
           )}
-          <span className={`font-bold text-sm tracking-tight ${isDimmed ? 'text-genesis-muted' : 'text-genesis-dark'} ${isCanceled ? 'line-through' : ''}`}>
+          <span
+            className={`font-bold text-sm tracking-tight ${isDimmed ? 'text-genesis-muted' : 'text-genesis-dark'} ${isCanceled ? 'line-through' : ''}`}
+          >
             {app.patientName}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           {/* Status Badge */}
-          <span className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${statusColors.bg} ${statusColors.text}`}>
+          <span
+            className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${statusColors.bg} ${statusColors.text}`}
+          >
             <span className={`w-1.5 h-1.5 rounded-full ${statusColors.dot}`} />
             {app.status}
           </span>
@@ -145,8 +158,12 @@ export function AppointmentCard({
       {/* Procedure + Duration + Telemedicine */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className={`w-1.5 h-1.5 rounded-full ${specialtyColors.border.replace('border-', 'bg-')}`} />
-          <p className={`text-xs font-medium transition-colors ${isDimmed ? 'text-genesis-subtle' : 'text-genesis-medium group-hover/card:text-genesis-dark'}`}>
+          <div
+            className={`w-1.5 h-1.5 rounded-full ${specialtyColors.border.replace('border-', 'bg-')}`}
+          />
+          <p
+            className={`text-xs font-medium transition-colors ${isDimmed ? 'text-genesis-subtle' : 'text-genesis-medium group-hover/card:text-genesis-dark'}`}
+          >
             {app.procedure}
           </p>
         </div>
@@ -168,5 +185,5 @@ export function AppointmentCard({
         </div>
       </div>
     </div>
-  );
+  )
 }

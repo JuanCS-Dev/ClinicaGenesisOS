@@ -22,9 +22,11 @@ import {
   onSnapshot,
   serverTimestamp,
   Timestamp,
-} from 'firebase/firestore';
-import { db } from '../firebase';
-import { recordVersionService } from './record-version.service';
+  type UpdateData,
+  type DocumentData,
+} from 'firebase/firestore'
+import { db } from '../firebase'
+import { recordVersionService } from './record-version.service'
 import type {
   MedicalRecord,
   RecordType,
@@ -38,13 +40,13 @@ import type {
   AnthropometryRecord,
   RecordVersion,
   RecordAttachment,
-} from '@/types';
+} from '@/types'
 
 /**
  * Get the records collection reference for a clinic.
  */
 function getRecordsCollection(clinicId: string) {
-  return collection(db, 'clinics', clinicId, 'records');
+  return collection(db, 'clinics', clinicId, 'records')
 }
 
 /**
@@ -55,22 +57,20 @@ function toRecord(id: string, data: Record<string, unknown>): MedicalRecord {
   const baseRecord = {
     id,
     patientId: data.patientId as string,
-    date:
-      data.date instanceof Timestamp
-        ? data.date.toDate().toISOString()
-        : (data.date as string),
+    date: data.date instanceof Timestamp ? data.date.toDate().toISOString() : (data.date as string),
     professional: data.professional as string,
     type: data.type as RecordType,
     specialty: data.specialty as SpecialtyType,
     // Versioning fields
     version: (data.version as number) || 1,
-    updatedAt: data.updatedAt instanceof Timestamp
-      ? data.updatedAt.toDate().toISOString()
-      : (data.updatedAt as string | undefined),
+    updatedAt:
+      data.updatedAt instanceof Timestamp
+        ? data.updatedAt.toDate().toISOString()
+        : (data.updatedAt as string | undefined),
     updatedBy: data.updatedBy as string | undefined,
     // Attachments
     attachments: data.attachments as RecordAttachment[] | undefined,
-  };
+  }
 
   switch (data.type as RecordType) {
     case 'soap':
@@ -81,7 +81,7 @@ function toRecord(id: string, data: Record<string, unknown>): MedicalRecord {
         objective: data.objective as string,
         assessment: data.assessment as string,
         plan: data.plan as string,
-      } as SoapRecord;
+      } as SoapRecord
 
     case 'note':
       return {
@@ -89,14 +89,14 @@ function toRecord(id: string, data: Record<string, unknown>): MedicalRecord {
         type: 'note' as const,
         title: data.title as string,
         content: data.content as string,
-      } as TextRecord;
+      } as TextRecord
 
     case 'prescription':
       return {
         ...baseRecord,
         type: 'prescription' as const,
         medications: data.medications as PrescriptionRecord['medications'],
-      } as PrescriptionRecord;
+      } as PrescriptionRecord
 
     case 'exam_request':
       return {
@@ -104,7 +104,7 @@ function toRecord(id: string, data: Record<string, unknown>): MedicalRecord {
         type: 'exam_request' as const,
         exams: data.exams as string[],
         justification: data.justification as string,
-      } as ExamRequestRecord;
+      } as ExamRequestRecord
 
     case 'psycho_session':
       return {
@@ -113,7 +113,7 @@ function toRecord(id: string, data: Record<string, unknown>): MedicalRecord {
         mood: data.mood as PsychoSessionRecord['mood'],
         summary: data.summary as string,
         privateNotes: data.privateNotes as string,
-      } as PsychoSessionRecord;
+      } as PsychoSessionRecord
 
     case 'anthropometry':
       return {
@@ -124,7 +124,7 @@ function toRecord(id: string, data: Record<string, unknown>): MedicalRecord {
         imc: data.imc as number,
         waist: data.waist as number,
         hip: data.hip as number,
-      } as AnthropometryRecord;
+      } as AnthropometryRecord
 
     default:
       return {
@@ -132,7 +132,7 @@ function toRecord(id: string, data: Record<string, unknown>): MedicalRecord {
         type: 'note' as const,
         title: 'Unknown Record',
         content: JSON.stringify(data),
-      } as TextRecord;
+      } as TextRecord
   }
 }
 
@@ -147,11 +147,11 @@ export const recordService = {
    * @returns Array of records sorted by date (descending)
    */
   async getAll(clinicId: string): Promise<MedicalRecord[]> {
-    const recordsRef = getRecordsCollection(clinicId);
-    const q = query(recordsRef, orderBy('date', 'desc'));
-    const querySnapshot = await getDocs(q);
+    const recordsRef = getRecordsCollection(clinicId)
+    const q = query(recordsRef, orderBy('date', 'desc'))
+    const querySnapshot = await getDocs(q)
 
-    return querySnapshot.docs.map((docSnap) => toRecord(docSnap.id, docSnap.data()));
+    return querySnapshot.docs.map(docSnap => toRecord(docSnap.id, docSnap.data()))
   },
 
   /**
@@ -162,15 +162,11 @@ export const recordService = {
    * @returns Array of records sorted by date (descending)
    */
   async getByPatient(clinicId: string, patientId: string): Promise<MedicalRecord[]> {
-    const recordsRef = getRecordsCollection(clinicId);
-    const q = query(
-      recordsRef,
-      where('patientId', '==', patientId),
-      orderBy('date', 'desc')
-    );
-    const querySnapshot = await getDocs(q);
+    const recordsRef = getRecordsCollection(clinicId)
+    const q = query(recordsRef, where('patientId', '==', patientId), orderBy('date', 'desc'))
+    const querySnapshot = await getDocs(q)
 
-    return querySnapshot.docs.map((docSnap) => toRecord(docSnap.id, docSnap.data()));
+    return querySnapshot.docs.map(docSnap => toRecord(docSnap.id, docSnap.data()))
   },
 
   /**
@@ -181,14 +177,14 @@ export const recordService = {
    * @returns The record or null if not found
    */
   async getById(clinicId: string, recordId: string): Promise<MedicalRecord | null> {
-    const docRef = doc(db, 'clinics', clinicId, 'records', recordId);
-    const docSnap = await getDoc(docRef);
+    const docRef = doc(db, 'clinics', clinicId, 'records', recordId)
+    const docSnap = await getDoc(docRef)
 
     if (!docSnap.exists()) {
-      return null;
+      return null
     }
 
-    return toRecord(docSnap.id, docSnap.data());
+    return toRecord(docSnap.id, docSnap.data())
   },
 
   /**
@@ -199,23 +195,19 @@ export const recordService = {
    * @param professional - The name of the professional creating the record
    * @returns The created record ID
    */
-  async create(
-    clinicId: string,
-    data: CreateRecordInput,
-    professional: string
-  ): Promise<string> {
-    const recordsRef = getRecordsCollection(clinicId);
+  async create(clinicId: string, data: CreateRecordInput, professional: string): Promise<string> {
+    const recordsRef = getRecordsCollection(clinicId)
 
     const recordData = {
       ...data,
       professional,
       date: serverTimestamp(),
       version: 1, // Initial version
-    };
+    }
 
-    const docRef = await addDoc(recordsRef, recordData);
+    const docRef = await addDoc(recordsRef, recordData)
 
-    return docRef.id;
+    return docRef.id
   },
 
   /**
@@ -235,16 +227,16 @@ export const recordService = {
     updatedBy?: string,
     changeReason?: string
   ): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId, 'records', recordId);
+    const docRef = doc(db, 'clinics', clinicId, 'records', recordId)
 
     // Get current record state before update
-    const currentDoc = await getDoc(docRef);
+    const currentDoc = await getDoc(docRef)
     if (!currentDoc.exists()) {
-      throw new Error('Record not found');
+      throw new Error('Record not found')
     }
 
-    const currentData = currentDoc.data();
-    const currentVersion = (currentData.version as number) || 1;
+    const currentData = currentDoc.data()
+    const currentVersion = (currentData.version as number) || 1
 
     // Save current state to versions subcollection
     await recordVersionService.saveVersion(
@@ -254,26 +246,26 @@ export const recordService = {
       currentVersion,
       updatedBy || (currentData.professional as string),
       changeReason
-    );
+    )
 
     // Prepare update data
-    const updateData: Record<string, unknown> = { ...data };
+    const updateData = { ...data } as UpdateData<DocumentData>
 
     // Remove undefined values
-    Object.keys(updateData).forEach((key) => {
-      if (updateData[key] === undefined) {
-        delete updateData[key];
+    Object.keys(updateData).forEach(key => {
+      if ((updateData as Record<string, unknown>)[key] === undefined) {
+        delete (updateData as Record<string, unknown>)[key]
       }
-    });
+    })
 
     // Add versioning metadata
-    updateData.version = currentVersion + 1;
-    updateData.updatedAt = serverTimestamp();
+    ;(updateData as Record<string, unknown>).version = currentVersion + 1
+    ;(updateData as Record<string, unknown>).updatedAt = serverTimestamp()
     if (updatedBy) {
-      updateData.updatedBy = updatedBy;
+      ;(updateData as Record<string, unknown>).updatedBy = updatedBy
     }
 
-    await updateDoc(docRef, updateData);
+    await updateDoc(docRef, updateData)
   },
 
   /**
@@ -283,8 +275,8 @@ export const recordService = {
    * @param recordId - The record ID
    */
   async delete(clinicId: string, recordId: string): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId, 'records', recordId);
-    await deleteDoc(docRef);
+    const docRef = doc(db, 'clinics', clinicId, 'records', recordId)
+    await deleteDoc(docRef)
   },
 
   /**
@@ -295,22 +287,20 @@ export const recordService = {
    * @returns Unsubscribe function
    */
   subscribe(clinicId: string, callback: (records: MedicalRecord[]) => void): () => void {
-    const recordsRef = getRecordsCollection(clinicId);
-    const q = query(recordsRef, orderBy('date', 'desc'));
+    const recordsRef = getRecordsCollection(clinicId)
+    const q = query(recordsRef, orderBy('date', 'desc'))
 
     return onSnapshot(
       q,
-      (querySnapshot) => {
-        const records = querySnapshot.docs.map((docSnap) =>
-          toRecord(docSnap.id, docSnap.data())
-        );
-        callback(records);
+      querySnapshot => {
+        const records = querySnapshot.docs.map(docSnap => toRecord(docSnap.id, docSnap.data()))
+        callback(records)
       },
-      (error) => {
-        console.error('Error subscribing to records:', error);
-        callback([]);
+      error => {
+        console.error('Error subscribing to records:', error)
+        callback([])
       }
-    );
+    )
   },
 
   /**
@@ -326,26 +316,20 @@ export const recordService = {
     patientId: string,
     callback: (records: MedicalRecord[]) => void
   ): () => void {
-    const recordsRef = getRecordsCollection(clinicId);
-    const q = query(
-      recordsRef,
-      where('patientId', '==', patientId),
-      orderBy('date', 'desc')
-    );
+    const recordsRef = getRecordsCollection(clinicId)
+    const q = query(recordsRef, where('patientId', '==', patientId), orderBy('date', 'desc'))
 
     return onSnapshot(
       q,
-      (querySnapshot) => {
-        const records = querySnapshot.docs.map((docSnap) =>
-          toRecord(docSnap.id, docSnap.data())
-        );
-        callback(records);
+      querySnapshot => {
+        const records = querySnapshot.docs.map(docSnap => toRecord(docSnap.id, docSnap.data()))
+        callback(records)
       },
-      (error) => {
-        console.error('Error subscribing to patient records:', error);
-        callback([]);
+      error => {
+        console.error('Error subscribing to patient records:', error)
+        callback([])
       }
-    );
+    )
   },
 
   /**
@@ -361,16 +345,16 @@ export const recordService = {
     patientId: string,
     recordType: RecordType
   ): Promise<MedicalRecord[]> {
-    const recordsRef = getRecordsCollection(clinicId);
+    const recordsRef = getRecordsCollection(clinicId)
     const q = query(
       recordsRef,
       where('patientId', '==', patientId),
       where('type', '==', recordType),
       orderBy('date', 'desc')
-    );
-    const querySnapshot = await getDocs(q);
+    )
+    const querySnapshot = await getDocs(q)
 
-    return querySnapshot.docs.map((docSnap) => toRecord(docSnap.id, docSnap.data()));
+    return querySnapshot.docs.map(docSnap => toRecord(docSnap.id, docSnap.data()))
   },
 
   // --- ATTACHMENT METHODS ---
@@ -387,19 +371,19 @@ export const recordService = {
     recordId: string,
     attachment: RecordAttachment
   ): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId, 'records', recordId);
-    const docSnap = await getDoc(docRef);
+    const docRef = doc(db, 'clinics', clinicId, 'records', recordId)
+    const docSnap = await getDoc(docRef)
 
     if (!docSnap.exists()) {
-      throw new Error('Record not found');
+      throw new Error('Record not found')
     }
 
-    const currentData = docSnap.data();
-    const currentAttachments = (currentData.attachments as RecordAttachment[]) || [];
+    const currentData = docSnap.data()
+    const currentAttachments = (currentData.attachments as RecordAttachment[]) || []
 
     await updateDoc(docRef, {
       attachments: [...currentAttachments, attachment],
-    });
+    })
   },
 
   /**
@@ -409,25 +393,21 @@ export const recordService = {
    * @param recordId - The record ID
    * @param attachmentId - The attachment ID to remove
    */
-  async removeAttachment(
-    clinicId: string,
-    recordId: string,
-    attachmentId: string
-  ): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId, 'records', recordId);
-    const docSnap = await getDoc(docRef);
+  async removeAttachment(clinicId: string, recordId: string, attachmentId: string): Promise<void> {
+    const docRef = doc(db, 'clinics', clinicId, 'records', recordId)
+    const docSnap = await getDoc(docRef)
 
     if (!docSnap.exists()) {
-      throw new Error('Record not found');
+      throw new Error('Record not found')
     }
 
-    const currentData = docSnap.data();
-    const currentAttachments = (currentData.attachments as RecordAttachment[]) || [];
-    const updatedAttachments = currentAttachments.filter((a) => a.id !== attachmentId);
+    const currentData = docSnap.data()
+    const currentAttachments = (currentData.attachments as RecordAttachment[]) || []
+    const updatedAttachments = currentAttachments.filter(a => a.id !== attachmentId)
 
     await updateDoc(docRef, {
       attachments: updatedAttachments,
-    });
+    })
   },
 
   // --- VERSION HISTORY METHODS (delegated to recordVersionService) ---
@@ -436,11 +416,8 @@ export const recordService = {
    * Get version history for a record.
    * @see recordVersionService.getHistory
    */
-  async getVersionHistory(
-    clinicId: string,
-    recordId: string
-  ): Promise<RecordVersion[]> {
-    return recordVersionService.getHistory(clinicId, recordId);
+  async getVersionHistory(clinicId: string, recordId: string): Promise<RecordVersion[]> {
+    return recordVersionService.getHistory(clinicId, recordId)
   },
 
   /**
@@ -452,7 +429,7 @@ export const recordService = {
     recordId: string,
     versionNumber: number
   ): Promise<RecordVersion | null> {
-    return recordVersionService.getVersion(clinicId, recordId, versionNumber);
+    return recordVersionService.getVersion(clinicId, recordId, versionNumber)
   },
 
   /**
@@ -465,6 +442,6 @@ export const recordService = {
     versionNumber: number,
     restoredBy: string
   ): Promise<number> {
-    return recordVersionService.restore(clinicId, recordId, versionNumber, restoredBy);
+    return recordVersionService.restore(clinicId, recordId, versionNumber, restoredBy)
   },
-};
+}

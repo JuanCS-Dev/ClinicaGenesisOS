@@ -11,31 +11,31 @@
  * and patient feel confident and cared for.
  */
 
-import { useState, useCallback, useEffect } from 'react';
-import { X, Video, AlertCircle } from 'lucide-react';
-import { VideoRoom } from './VideoRoom';
-import { WaitingRoom } from './WaitingRoom';
-import { useTelemedicine } from '@/hooks/useTelemedicine';
-import { useClinicContext } from '@/contexts/ClinicContext';
-import type { TelemedicineSession, CreateTelemedicineSessionInput } from '@/types';
-import { toast } from 'sonner';
+import { useState, useCallback, useEffect } from 'react'
+import { X, Video, AlertCircle } from 'lucide-react'
+import { VideoRoom } from './VideoRoom'
+import { WaitingRoom } from './WaitingRoom'
+import { useTelemedicine } from '@/hooks/useTelemedicine'
+import { useClinicContext } from '@/contexts/ClinicContext'
+import type { TelemedicineSession, CreateTelemedicineSessionInput } from '@/types'
+import { toast } from 'sonner'
 
-type ModalState = 'waiting' | 'in_call' | 'ended';
+type ModalState = 'waiting' | 'in_call' | 'ended'
 
 interface TelemedicineModalProps {
   /** Whether the modal is open */
-  isOpen: boolean;
+  isOpen: boolean
   /** Callback to close the modal */
-  onClose: () => void;
+  onClose: () => void
   /** Existing session ID to join */
-  sessionId?: string;
+  sessionId?: string
   /** Appointment data for creating new session */
   appointmentData?: {
-    appointmentId: string;
-    patientId: string;
-    patientName: string;
-    scheduledAt: string;
-  };
+    appointmentId: string
+    patientId: string
+    patientName: string
+    scheduledAt: string
+  }
 }
 
 /**
@@ -52,10 +52,10 @@ export function TelemedicineModal({
   sessionId,
   appointmentData,
 }: TelemedicineModalProps) {
-  const { userProfile } = useClinicContext();
-  const [currentSessionId, setCurrentSessionId] = useState<string | undefined>(sessionId);
-  const [modalState, setModalState] = useState<ModalState>('waiting');
-  const [notes, setNotes] = useState('');
+  const { userProfile } = useClinicContext()
+  const [currentSessionId, setCurrentSessionId] = useState<string | undefined>(sessionId)
+  const [modalState, setModalState] = useState<ModalState>('waiting')
+  const [notes, setNotes] = useState('')
 
   const {
     session,
@@ -67,94 +67,100 @@ export function TelemedicineModal({
     joinWaitingRoom,
     startCall,
     endCall,
-  } = useTelemedicine(currentSessionId);
+  } = useTelemedicine(currentSessionId)
 
   const isProfessional =
-    userProfile?.role === 'professional' || userProfile?.role === 'owner' || userProfile?.role === 'admin';
+    userProfile?.role === 'professional' ||
+    userProfile?.role === 'owner' ||
+    userProfile?.role === 'admin'
 
   // Create session if we have appointment data but no session
   useEffect(() => {
     if (!isOpen || sessionId || currentSessionId || !appointmentData || !userProfile) {
-      return;
+      return
     }
+
+    // Capture values after null check for closure
+    const apptData = appointmentData
+    const profile = userProfile
 
     async function createSession() {
       try {
         const input: CreateTelemedicineSessionInput = {
-          appointmentId: appointmentData.appointmentId,
-          patientId: appointmentData.patientId,
-          patientName: appointmentData.patientName,
-          professionalId: userProfile.id,
-          professionalName: userProfile.displayName,
-          scheduledAt: appointmentData.scheduledAt,
+          appointmentId: apptData.appointmentId,
+          patientId: apptData.patientId,
+          patientName: apptData.patientName,
+          professionalId: profile.id,
+          professionalName: profile.displayName,
+          scheduledAt: apptData.scheduledAt,
           recordingEnabled: false,
-        };
+        }
 
-        const newSessionId = await startSession(input);
-        setCurrentSessionId(newSessionId);
-        toast.success('Sessão de teleconsulta criada');
+        const newSessionId = await startSession(input)
+        setCurrentSessionId(newSessionId)
+        toast.success('Sessão de teleconsulta criada')
       } catch (err) {
-        console.error('Failed to create session:', err);
-        toast.error('Erro ao criar sessão de teleconsulta');
+        console.error('Failed to create session:', err)
+        toast.error('Erro ao criar sessão de teleconsulta')
       }
     }
 
-    createSession();
-  }, [isOpen, sessionId, currentSessionId, appointmentData, userProfile, startSession]);
+    createSession()
+  }, [isOpen, sessionId, currentSessionId, appointmentData, userProfile, startSession])
 
   // Join waiting room when session is ready
   useEffect(() => {
     if (!session || !currentSessionId || modalState !== 'waiting') {
-      return;
+      return
     }
 
     // Auto-join waiting room if not already joined
     if (session.status === 'scheduled') {
-      joinWaitingRoom(currentSessionId).catch((err) => {
-        console.error('Failed to join waiting room:', err);
-      });
+      joinWaitingRoom(currentSessionId).catch(err => {
+        console.error('Failed to join waiting room:', err)
+      })
     }
-  }, [session, currentSessionId, modalState, joinWaitingRoom]);
+  }, [session, currentSessionId, modalState, joinWaitingRoom])
 
   // Update state based on session status
   useEffect(() => {
-    if (!session) return;
+    if (!session) return
 
     if (session.status === 'in_progress') {
-      setModalState('in_call');
+      setModalState('in_call')
     } else if (session.status === 'completed') {
-      setModalState('ended');
+      setModalState('ended')
     }
-  }, [session]);
+  }, [session])
 
   /**
    * Format duration in seconds to human readable.
    */
   const formatDuration = useCallback((seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    if (mins < 60) return `${mins} min`;
-    const hours = Math.floor(mins / 60);
-    const remainingMins = mins % 60;
-    return `${hours}h ${remainingMins}min`;
-  }, []);
+    const mins = Math.floor(seconds / 60)
+    if (mins < 60) return `${mins} min`
+    const hours = Math.floor(mins / 60)
+    const remainingMins = mins % 60
+    return `${hours}h ${remainingMins}min`
+  }, [])
 
   /**
    * Handle user ready to join call.
    */
   const handleReady = useCallback(async () => {
     try {
-      await startCall();
-      setModalState('in_call');
+      await startCall()
+      setModalState('in_call')
 
       // For Google Meet sessions, also open Meet in new tab
       if (isMeetSession) {
-        openMeet();
+        openMeet()
       }
     } catch (err) {
-      console.error('Failed to start call:', err);
-      toast.error('Erro ao iniciar chamada');
+      console.error('Failed to start call:', err)
+      toast.error('Erro ao iniciar chamada')
     }
-  }, [startCall, isMeetSession, openMeet]);
+  }, [startCall, isMeetSession, openMeet])
 
   /**
    * Handle call end.
@@ -162,17 +168,17 @@ export function TelemedicineModal({
   const handleCallEnd = useCallback(
     async (endedSession: TelemedicineSession) => {
       try {
-        await endCall();
-        setModalState('ended');
-        toast.success(`Consulta finalizada (${formatDuration(endedSession.durationSeconds || 0)})`);
+        await endCall()
+        setModalState('ended')
+        toast.success(`Consulta finalizada (${formatDuration(endedSession.durationSeconds || 0)})`)
       } catch (err) {
-        console.error('Failed to end call:', err);
+        console.error('Failed to end call:', err)
         // Still show ended state even if update fails
-        setModalState('ended');
+        setModalState('ended')
       }
     },
     [endCall, formatDuration]
-  );
+  )
 
   /**
    * Handle cancel/close.
@@ -181,22 +187,22 @@ export function TelemedicineModal({
     if (modalState === 'in_call') {
       // Confirm before closing during call
       if (window.confirm('Tem certeza que deseja encerrar a teleconsulta?')) {
-        endCall().finally(() => onClose());
+        endCall().finally(() => onClose())
       }
     } else {
-      onClose();
+      onClose()
     }
-  }, [modalState, endCall, onClose]);
+  }, [modalState, endCall, onClose])
 
   /**
    * Handle saving notes and closing.
    */
   const handleSaveAndClose = useCallback(() => {
     // Notes could be saved to the session here
-    onClose();
-  }, [onClose]);
+    onClose()
+  }, [onClose])
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   // Show loading state
   if (loading && !session) {
@@ -207,7 +213,7 @@ export function TelemedicineModal({
           <p className="text-lg">Preparando teleconsulta...</p>
         </div>
       </div>
-    );
+    )
   }
 
   // Show error state
@@ -226,7 +232,7 @@ export function TelemedicineModal({
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -238,11 +244,7 @@ export function TelemedicineModal({
             <Video className="w-4 h-4 text-white" />
             <span className="text-white font-medium text-sm">Teleconsulta</span>
           </div>
-          {session && (
-            <span className="text-genesis-subtle text-sm">
-              {session.patientName}
-            </span>
-          )}
+          {session && <span className="text-genesis-subtle text-sm">{session.patientName}</span>}
         </div>
 
         <button
@@ -281,9 +283,7 @@ export function TelemedicineModal({
               <Video className="w-10 h-10 text-white" />
             </div>
 
-            <h2 className="text-2xl font-bold text-white mb-2">
-              Consulta Finalizada
-            </h2>
+            <h2 className="text-2xl font-bold text-white mb-2">Consulta Finalizada</h2>
 
             {session?.durationSeconds && (
               <p className="text-genesis-subtle mb-8">
@@ -298,7 +298,7 @@ export function TelemedicineModal({
                 </label>
                 <textarea
                   value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  onChange={e => setNotes(e.target.value)}
                   placeholder="Adicione observações sobre a teleconsulta..."
                   className="w-full h-32 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-genesis-primary resize-none"
                 />
@@ -315,5 +315,5 @@ export function TelemedicineModal({
         )}
       </div>
     </div>
-  );
+  )
 }

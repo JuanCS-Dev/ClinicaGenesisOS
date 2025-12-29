@@ -248,10 +248,16 @@ export function BookAppointment(): React.ReactElement {
   }
 
   // Build clinic info for BookingSummary
+  const formatAddress = (addr: typeof clinic.address): string => {
+    if (!addr) return ''
+    if (typeof addr === 'string') return addr
+    return `${addr.street}, ${addr.number}${addr.complement ? ` - ${addr.complement}` : ''}, ${addr.neighborhood}, ${addr.city} - ${addr.state}`
+  }
+
   const clinicInfo = {
     id: clinic.id,
     name: clinic.name,
-    address: clinic.address || '',
+    address: formatAddress(clinic.address),
     phone: clinic.phone || '',
     logo: clinic.logo,
   }
@@ -286,7 +292,7 @@ export function BookAppointment(): React.ReactElement {
                 {clinic.address && (
                   <p className="text-xs text-genesis-muted flex items-center gap-1">
                     <MapPin className="w-3 h-3" />
-                    {clinic.address}
+                    {formatAddress(clinic.address)}
                   </p>
                 )}
               </div>

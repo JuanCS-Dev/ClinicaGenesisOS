@@ -190,7 +190,9 @@ export const NutritionPlugin: React.FC<NutritionPluginProps> = ({
                       Evolução de Peso
                     </h3>
                     <p className="text-xs text-genesis-medium font-medium">
-                      {data.length > 1 ? `Últimos ${data.length} registros` : 'Primeiro registro'}
+                      {data && data.length > 1
+                        ? `Últimos ${data.length} registros`
+                        : 'Primeiro registro'}
                     </p>
                   </div>
                   <button className="text-xs font-bold text-genesis-primary bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors">
@@ -200,7 +202,7 @@ export const NutritionPlugin: React.FC<NutritionPluginProps> = ({
 
                 <div className="flex-1 min-h-[300px] w-[105%] -ml-4">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+                    <AreaChart data={data ?? []} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#34C759" stopOpacity={0.15} />

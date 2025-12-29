@@ -173,7 +173,7 @@ const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ prescription, onDow
         {prescription.medications?.map((med, index) => (
           <div key={index} className="bg-genesis-soft rounded-xl p-3">
             <p className="font-medium text-genesis-dark text-sm">
-              {med.name} {med.concentration}
+              {med.name} {med.presentation}
             </p>
             <p className="text-xs text-genesis-muted mt-1">
               {med.dosage} • {med.frequency} • {med.duration}
@@ -347,9 +347,7 @@ export function PatientPrescriptions(): React.ReactElement {
         <div className="flex gap-3">
           <FileText className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-genesis-dark">
-              Receitas Digitais
-            </p>
+            <p className="text-sm font-medium text-genesis-dark">Receitas Digitais</p>
             <p className="text-sm text-genesis-medium mt-1">
               Receitas com assinatura digital podem ser apresentadas diretamente na farmácia pelo
               celular. Basta mostrar o QR Code.

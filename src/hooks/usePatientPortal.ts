@@ -132,7 +132,7 @@ export function usePatientPortalAppointments(): UsePatientPortalAppointmentsRetu
   const upcomingAppointments = useMemo(
     () =>
       appointments
-        .filter(apt => isUpcoming(apt.date) && apt.status !== 'cancelled')
+        .filter(apt => isUpcoming(apt.date) && apt.status !== Status.CANCELED)
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
     [appointments]
   )
@@ -298,10 +298,7 @@ export function usePatientPortalBilling(): UsePatientPortalBillingReturn {
   }, [clinicId, patientId, contextLoading])
 
   const pendingPayments = useMemo(
-    () =>
-      transactions.filter(
-        t => t.type === 'income' && (t.status === 'pending' || t.status === 'overdue')
-      ),
+    () => transactions.filter(t => t.type === 'income' && t.status === 'pending'),
     [transactions]
   )
 

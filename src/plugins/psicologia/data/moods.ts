@@ -6,18 +6,19 @@
  * Baseada em escalas clínicas validadas, adaptada para UX.
  */
 
+/** Mood identifier matching the EditorRecordData type */
+export type MoodId = 'happy' | 'neutral' | 'sad' | 'anxious' | 'angry'
+
 export interface MoodOption {
-  id: string;
-  label: string;
-  icon: string;
+  id: MoodId
+  label: string
+  icon: string
 }
 
-export const MOODS: MoodOption[] = [
+export const MOODS: readonly MoodOption[] = [
   { id: 'happy', label: 'Feliz', icon: '😊' },
   { id: 'neutral', label: 'Neutro', icon: '😐' },
   { id: 'anxious', label: 'Ansioso', icon: '😰' },
   { id: 'sad', label: 'Triste', icon: '😢' },
   { id: 'angry', label: 'Irritado', icon: '😠' },
-] as const;
-
-export type MoodId = (typeof MOODS)[number]['id'];
+]

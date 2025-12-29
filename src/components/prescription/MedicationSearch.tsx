@@ -58,7 +58,7 @@ export function MedicationSearch({
 
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
-  const debounceRef = useRef<NodeJS.Timeout>()
+  const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   /**
    * Handle search query change.

@@ -23,6 +23,8 @@ import {
   serverTimestamp,
   limit,
   Timestamp,
+  type UpdateData,
+  type DocumentData,
   increment,
   writeBatch,
 } from 'firebase/firestore'
@@ -275,18 +277,18 @@ export const messageService = {
 
     // Update conversation with last message info
     const conversationRef = getConversationDoc(clinicId, input.conversationId)
-    const updateData: Record<string, unknown> = {
+    const updateData = {
       lastMessage: input.content,
       lastMessageAt: serverTimestamp(),
       lastMessageSender: input.sender,
       updatedAt: serverTimestamp(),
-    }
+    } as UpdateData<DocumentData>
 
     // Increment unread count for the other party
     if (input.sender === 'patient') {
-      updateData.unreadCountProvider = increment(1)
+      ;(updateData as Record<string, unknown>).unreadCountProvider = increment(1)
     } else {
-      updateData.unreadCountPatient = increment(1)
+      ;(updateData as Record<string, unknown>).unreadCountPatient = increment(1)
     }
 
     await updateDoc(conversationRef, updateData)
@@ -304,14 +306,14 @@ export const messageService = {
   ): Promise<void> {
     const conversationRef = getConversationDoc(clinicId, conversationId)
 
-    const updateData: Record<string, unknown> = {
+    const updateData = {
       updatedAt: serverTimestamp(),
-    }
+    } as UpdateData<DocumentData>
 
     if (reader === 'patient') {
-      updateData.unreadCountPatient = 0
+      ;(updateData as Record<string, unknown>).unreadCountPatient = 0
     } else {
-      updateData.unreadCountProvider = 0
+      ;(updateData as Record<string, unknown>).unreadCountProvider = 0
     }
 
     await updateDoc(conversationRef, updateData)

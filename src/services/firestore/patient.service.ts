@@ -22,38 +22,40 @@ import {
   onSnapshot,
   serverTimestamp,
   Timestamp,
-} from 'firebase/firestore';
-import { db } from '../firebase';
-import type { Patient, CreatePatientInput } from '@/types';
+  type UpdateData,
+  type DocumentData,
+} from 'firebase/firestore'
+import { db } from '../firebase'
+import type { Patient, CreatePatientInput } from '@/types'
 
 /**
  * Calculate age from birth date.
  */
 function calculateAge(birthDate: string): number {
-  const today = new Date();
-  const birth = new Date(birthDate);
-  let age = today.getFullYear() - birth.getFullYear();
-  const monthDiff = today.getMonth() - birth.getMonth();
+  const today = new Date()
+  const birth = new Date(birthDate)
+  let age = today.getFullYear() - birth.getFullYear()
+  const monthDiff = today.getMonth() - birth.getMonth()
 
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--;
+    age--
   }
 
-  return age;
+  return age
 }
 
 /**
  * Get the patients collection reference for a clinic.
  */
 function getPatientsCollection(clinicId: string) {
-  return collection(db, 'clinics', clinicId, 'patients');
+  return collection(db, 'clinics', clinicId, 'patients')
 }
 
 /**
  * Converts Firestore document data to Patient type.
  */
 function toPatient(id: string, data: Record<string, unknown>): Patient {
-  const birthDate = data.birthDate as string;
+  const birthDate = data.birthDate as string
 
   return {
     id,
@@ -73,7 +75,7 @@ function toPatient(id: string, data: Record<string, unknown>): Patient {
         ? data.createdAt.toDate().toISOString()
         : (data.createdAt as string),
     nextAppointment: data.nextAppointment as string | undefined,
-  };
+  }
 }
 
 /**
@@ -87,11 +89,11 @@ export const patientService = {
    * @returns Array of patients sorted by name
    */
   async getAll(clinicId: string): Promise<Patient[]> {
-    const patientsRef = getPatientsCollection(clinicId);
-    const q = query(patientsRef, orderBy('name', 'asc'));
-    const querySnapshot = await getDocs(q);
+    const patientsRef = getPatientsCollection(clinicId)
+    const q = query(patientsRef, orderBy('name', 'asc'))
+    const querySnapshot = await getDocs(q)
 
-    return querySnapshot.docs.map((docSnap) => toPatient(docSnap.id, docSnap.data()));
+    return querySnapshot.docs.map(docSnap => toPatient(docSnap.id, docSnap.data()))
   },
 
   /**
@@ -102,14 +104,14 @@ export const patientService = {
    * @returns The patient or null if not found
    */
   async getById(clinicId: string, patientId: string): Promise<Patient | null> {
-    const docRef = doc(db, 'clinics', clinicId, 'patients', patientId);
-    const docSnap = await getDoc(docRef);
+    const docRef = doc(db, 'clinics', clinicId, 'patients', patientId)
+    const docSnap = await getDoc(docRef)
 
     if (!docSnap.exists()) {
-      return null;
+      return null
     }
 
-    return toPatient(docSnap.id, docSnap.data());
+    return toPatient(docSnap.id, docSnap.data())
   },
 
   /**
@@ -120,7 +122,7 @@ export const patientService = {
    * @returns The created patient ID
    */
   async create(clinicId: string, data: CreatePatientInput): Promise<string> {
-    const patientsRef = getPatientsCollection(clinicId);
+    const patientsRef = getPatientsCollection(clinicId)
 
     const patientData = {
       name: data.name,
@@ -135,11 +137,11 @@ export const patientService = {
       tags: data.tags || [],
       createdAt: serverTimestamp(),
       nextAppointment: data.nextAppointment || null,
-    };
+    }
 
-    const docRef = await addDoc(patientsRef, patientData);
+    const docRef = await addDoc(patientsRef, patientData)
 
-    return docRef.id;
+    return docRef.id
   },
 
   /**
@@ -154,18 +156,18 @@ export const patientService = {
     patientId: string,
     data: Partial<Omit<Patient, 'id' | 'createdAt' | 'age'>>
   ): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId, 'patients', patientId);
+    const docRef = doc(db, 'clinics', clinicId, 'patients', patientId)
 
-    const updateData: Record<string, unknown> = { ...data };
+    const updateData = { ...data } as UpdateData<DocumentData>
 
     // Remove undefined values
-    Object.keys(updateData).forEach((key) => {
-      if (updateData[key] === undefined) {
-        delete updateData[key];
+    Object.keys(updateData).forEach(key => {
+      if ((updateData as Record<string, unknown>)[key] === undefined) {
+        delete (updateData as Record<string, unknown>)[key]
       }
-    });
+    })
 
-    await updateDoc(docRef, updateData);
+    await updateDoc(docRef, updateData)
   },
 
   /**
@@ -178,8 +180,8 @@ export const patientService = {
    * @param patientId - The patient ID
    */
   async delete(clinicId: string, patientId: string): Promise<void> {
-    const docRef = doc(db, 'clinics', clinicId, 'patients', patientId);
-    await deleteDoc(docRef);
+    const docRef = doc(db, 'clinics', clinicId, 'patients', patientId)
+    await deleteDoc(docRef)
   },
 
   /**
@@ -190,22 +192,20 @@ export const patientService = {
    * @returns Unsubscribe function
    */
   subscribe(clinicId: string, callback: (patients: Patient[]) => void): () => void {
-    const patientsRef = getPatientsCollection(clinicId);
-    const q = query(patientsRef, orderBy('name', 'asc'));
+    const patientsRef = getPatientsCollection(clinicId)
+    const q = query(patientsRef, orderBy('name', 'asc'))
 
     return onSnapshot(
       q,
-      (querySnapshot) => {
-        const patients = querySnapshot.docs.map((docSnap) =>
-          toPatient(docSnap.id, docSnap.data())
-        );
-        callback(patients);
+      querySnapshot => {
+        const patients = querySnapshot.docs.map(docSnap => toPatient(docSnap.id, docSnap.data()))
+        callback(patients)
       },
-      (error) => {
-        console.error('Error subscribing to patients:', error);
-        callback([]);
+      error => {
+        console.error('Error subscribing to patients:', error)
+        callback([])
       }
-    );
+    )
   },
 
   /**
@@ -221,22 +221,22 @@ export const patientService = {
     patientId: string,
     callback: (patient: Patient | null) => void
   ): () => void {
-    const docRef = doc(db, 'clinics', clinicId, 'patients', patientId);
+    const docRef = doc(db, 'clinics', clinicId, 'patients', patientId)
 
     return onSnapshot(
       docRef,
-      (docSnap) => {
+      docSnap => {
         if (!docSnap.exists()) {
-          callback(null);
-          return;
+          callback(null)
+          return
         }
-        callback(toPatient(docSnap.id, docSnap.data()));
+        callback(toPatient(docSnap.id, docSnap.data()))
       },
-      (error) => {
-        console.error('Error subscribing to patient:', error);
-        callback(null);
+      error => {
+        console.error('Error subscribing to patient:', error)
+        callback(null)
       }
-    );
+    )
   },
 
   /**
@@ -247,13 +247,13 @@ export const patientService = {
    * @param tag - The tag to add
    */
   async addTag(clinicId: string, patientId: string, tag: string): Promise<void> {
-    const patient = await this.getById(clinicId, patientId);
+    const patient = await this.getById(clinicId, patientId)
     if (!patient) {
-      throw new Error(`Patient not found: ${patientId}`);
+      throw new Error(`Patient not found: ${patientId}`)
     }
 
-    const tags = [...new Set([...patient.tags, tag])];
-    await this.update(clinicId, patientId, { tags });
+    const tags = [...new Set([...patient.tags, tag])]
+    await this.update(clinicId, patientId, { tags })
   },
 
   /**
@@ -264,13 +264,13 @@ export const patientService = {
    * @param tag - The tag to remove
    */
   async removeTag(clinicId: string, patientId: string, tag: string): Promise<void> {
-    const patient = await this.getById(clinicId, patientId);
+    const patient = await this.getById(clinicId, patientId)
     if (!patient) {
-      throw new Error(`Patient not found: ${patientId}`);
+      throw new Error(`Patient not found: ${patientId}`)
     }
 
-    const tags = patient.tags.filter((t) => t !== tag);
-    await this.update(clinicId, patientId, { tags });
+    const tags = patient.tags.filter(t => t !== tag)
+    await this.update(clinicId, patientId, { tags })
   },
 
   /**
@@ -284,21 +284,17 @@ export const patientService = {
    * @returns The patient or null if not found
    */
   async getByEmail(clinicId: string, email: string): Promise<Patient | null> {
-    const patientsRef = getPatientsCollection(clinicId);
-    const q = query(
-      patientsRef,
-      where('email', '==', email.toLowerCase().trim()),
-      limit(1)
-    );
+    const patientsRef = getPatientsCollection(clinicId)
+    const q = query(patientsRef, where('email', '==', email.toLowerCase().trim()), limit(1))
 
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(q)
 
     if (snapshot.empty) {
-      return null;
+      return null
     }
 
-    const docSnap = snapshot.docs[0];
-    return toPatient(docSnap.id, docSnap.data());
+    const docSnap = snapshot.docs[0]
+    return toPatient(docSnap.id, docSnap.data())
   },
 
   /**
@@ -311,7 +307,7 @@ export const patientService = {
    * @returns True if patient exists, false otherwise
    */
   async existsByEmail(clinicId: string, email: string): Promise<boolean> {
-    const patient = await this.getByEmail(clinicId, email);
-    return patient !== null;
+    const patient = await this.getByEmail(clinicId, email)
+    return patient !== null
   },
-};
+}

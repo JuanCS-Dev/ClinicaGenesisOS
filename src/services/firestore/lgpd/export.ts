@@ -18,14 +18,12 @@ import {
   Timestamp,
   type DocumentData,
   type QueryDocumentSnapshot,
-} from 'firebase/firestore';
-import type {
-  DataExportRequest,
-  CreateDataExportInput,
-} from '@/types/lgpd';
-import { getExportRequestsRef, getExportRequestDoc } from './collection-refs';
-import { exportRequestConverter } from './converters';
-import { logAuditEvent } from './audit';
+  type UpdateData,
+} from 'firebase/firestore'
+import type { DataExportRequest, CreateDataExportInput } from '@/types/lgpd'
+import { getExportRequestsRef, getExportRequestDoc } from './collection-refs'
+import { exportRequestConverter } from './converters'
+import { logAuditEvent } from './audit'
 
 /**
  * Create a data export request (LGPD Art. 18).
@@ -40,7 +38,7 @@ export async function createDataExportRequest(
   userId: string,
   input: CreateDataExportInput
 ): Promise<string> {
-  const ref = getExportRequestsRef(clinicId);
+  const ref = getExportRequestsRef(clinicId)
 
   const request = {
     clinicId,
@@ -56,9 +54,9 @@ export async function createDataExportRequest(
     errorMessage: null,
     createdAt: serverTimestamp(),
     completedAt: null,
-  };
+  }
 
-  const docRef = await addDoc(ref, request);
+  const docRef = await addDoc(ref, request)
 
   // Log the request
   await logAuditEvent(clinicId, userId, '', {
@@ -70,9 +68,9 @@ export async function createDataExportRequest(
       type: input.type,
       dataCategories: input.dataCategories,
     },
-  });
+  })
 
-  return docRef.id;
+  return docRef.id
 }
 
 /**
@@ -86,14 +84,14 @@ export async function getDataExportRequest(
   clinicId: string,
   requestId: string
 ): Promise<DataExportRequest | null> {
-  const ref = getExportRequestDoc(clinicId, requestId);
-  const docSnap = await getDoc(ref);
+  const ref = getExportRequestDoc(clinicId, requestId)
+  const docSnap = await getDoc(ref)
 
   if (!docSnap.exists()) {
-    return null;
+    return null
   }
 
-  return exportRequestConverter(docSnap as QueryDocumentSnapshot<DocumentData>);
+  return exportRequestConverter(docSnap as QueryDocumentSnapshot<DocumentData>)
 }
 
 /**
@@ -107,15 +105,11 @@ export async function getUserExportRequests(
   clinicId: string,
   userId: string
 ): Promise<DataExportRequest[]> {
-  const ref = getExportRequestsRef(clinicId);
-  const q = query(
-    ref,
-    where('userId', '==', userId),
-    orderBy('createdAt', 'desc')
-  );
+  const ref = getExportRequestsRef(clinicId)
+  const q = query(ref, where('userId', '==', userId), orderBy('createdAt', 'desc'))
 
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(exportRequestConverter);
+  const snapshot = await getDocs(q)
+  return snapshot.docs.map(exportRequestConverter)
 }
 
 /**
@@ -132,20 +126,20 @@ export async function updateExportRequestStatus(
   status: DataExportRequest['status'],
   downloadUrl?: string
 ): Promise<void> {
-  const ref = getExportRequestDoc(clinicId, requestId);
+  const ref = getExportRequestDoc(clinicId, requestId)
 
-  const updates: Record<string, unknown> = {
+  const updates = {
     status,
-  };
+  } as UpdateData<DocumentData>
 
   if (status === 'completed' && downloadUrl) {
-    updates.downloadUrl = downloadUrl;
-    updates.completedAt = serverTimestamp();
+    ;(updates as Record<string, unknown>).downloadUrl = downloadUrl
+    ;(updates as Record<string, unknown>).completedAt = serverTimestamp()
     // Link expires in 24 hours
-    updates.downloadExpiresAt = Timestamp.fromDate(
+    ;(updates as Record<string, unknown>).downloadExpiresAt = Timestamp.fromDate(
       new Date(Date.now() + 24 * 60 * 60 * 1000)
-    );
+    )
   }
 
-  await updateDoc(ref, updates);
+  await updateDoc(ref, updates)
 }

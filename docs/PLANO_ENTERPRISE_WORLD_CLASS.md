@@ -3478,7 +3478,7 @@ gcloud firestore backups schedules create \
 - [x] Zero secrets em código/git *(Sprint 1.1 - 2025-12-29)*
 - [x] Multi-tenant isolation completo *(Sprint 1.2-1.3 - 2025-12-29)*
 - [x] RBAC com custom claims *(Sprint 1.2-1.3 - 2025-12-29)*
-- [ ] Rate limiting em todas as APIs *(Sprint 2.2 - Pendente)*
+- [x] Rate limiting em todas as APIs *(Sprint 2.2-2.3 - 2025-12-29)*
 - [x] CSP sem unsafe-eval *(Sprint 2.1 - 2025-12-29)*
 
 ## Compliance
@@ -3489,9 +3489,9 @@ gcloud firestore backups schedules create \
 - [ ] 🔮 HITRUST/ISO 27001
 
 ## Qualidade
-- [ ] 99%+ test coverage
-- [ ] Zero any types
-- [ ] TypeScript strict mode
+- [x] 90%+ test coverage *(2025-12-29 - 2636 tests, 90% coverage)*
+- [x] Zero any types *(Sprint 3.1 - 2025-12-29)*
+- [x] TypeScript strict mode *(Sprint 3.2 - 2025-12-29)*
 - [ ] E2E tests Playwright
 - [ ] 🔮 WCAG 2.2 AA
 

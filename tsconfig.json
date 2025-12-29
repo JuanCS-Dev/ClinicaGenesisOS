@@ -4,17 +4,9 @@
     "experimentalDecorators": true,
     "useDefineForClassFields": false,
     "module": "ESNext",
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
-    "types": [
-      "node",
-      "vite/client",
-      "vite-plugin-pwa/client"
-    ],
+    "types": ["node", "vite/client", "vite-plugin-pwa/client"],
     "moduleResolution": "bundler",
     "isolatedModules": true,
     "moduleDetection": "force",
@@ -22,13 +14,25 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
     "allowImportingTsExtensions": true,
-    "noEmit": true
+    "noEmit": true,
+
+    /* Strict Type-Checking */
+    "strict": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "functions", "dist", "build", "src/**/__tests__/**", "src/**/*.test.ts", "src/**/*.test.tsx", "src/**/*.spec.ts", "src/**/*.spec.tsx"]
+  "exclude": [
+    "node_modules",
+    "functions",
+    "dist",
+    "build",
+    "src/**/__tests__/**",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx"
+  ]
 }

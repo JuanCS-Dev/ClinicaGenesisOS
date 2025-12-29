@@ -15,15 +15,13 @@ import {
   orderBy,
   limit,
   serverTimestamp,
-} from 'firebase/firestore';
-import type {
-  ConsentRecord,
-  ConsentInput,
-  ConsentStatus,
-} from '@/types/lgpd';
-import { getConsentsRef, getConsentDoc } from './collection-refs';
-import { consentConverter } from './converters';
-import { logAuditEvent } from './audit';
+  type UpdateData,
+  type DocumentData,
+} from 'firebase/firestore'
+import type { ConsentRecord, ConsentInput, ConsentStatus } from '@/types/lgpd'
+import { getConsentsRef, getConsentDoc } from './collection-refs'
+import { consentConverter } from './converters'
+import { logAuditEvent } from './audit'
 
 /**
  * Record user consent.
@@ -38,7 +36,7 @@ export async function recordConsent(
   userId: string,
   input: ConsentInput
 ): Promise<string> {
-  const ref = getConsentsRef(clinicId);
+  const ref = getConsentsRef(clinicId)
 
   const record = {
     userId,
@@ -53,9 +51,9 @@ export async function recordConsent(
     expiresAt: null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  };
+  }
 
-  const docRef = await addDoc(ref, record);
+  const docRef = await addDoc(ref, record)
 
   // Log consent action
   await logAuditEvent(clinicId, userId, '', {
@@ -66,9 +64,9 @@ export async function recordConsent(
       purpose: input.purpose,
       dataCategories: input.dataCategories,
     },
-  });
+  })
 
-  return docRef.id;
+  return docRef.id
 }
 
 /**
@@ -78,19 +76,12 @@ export async function recordConsent(
  * @param userId - User/patient ID
  * @returns List of consent records
  */
-export async function getUserConsents(
-  clinicId: string,
-  userId: string
-): Promise<ConsentRecord[]> {
-  const ref = getConsentsRef(clinicId);
-  const q = query(
-    ref,
-    where('userId', '==', userId),
-    orderBy('createdAt', 'desc')
-  );
+export async function getUserConsents(clinicId: string, userId: string): Promise<ConsentRecord[]> {
+  const ref = getConsentsRef(clinicId)
+  const q = query(ref, where('userId', '==', userId), orderBy('createdAt', 'desc'))
 
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(consentConverter);
+  const snapshot = await getDocs(q)
+  return snapshot.docs.map(consentConverter)
 }
 
 /**
@@ -105,20 +96,20 @@ export async function updateConsentStatus(
   consentId: string,
   status: ConsentStatus
 ): Promise<void> {
-  const ref = getConsentDoc(clinicId, consentId);
+  const ref = getConsentDoc(clinicId, consentId)
 
-  const updates: Record<string, unknown> = {
+  const updates = {
     status,
     updatedAt: serverTimestamp(),
-  };
+  } as UpdateData<DocumentData>
 
   if (status === 'granted') {
-    updates.grantedAt = serverTimestamp();
+    ;(updates as Record<string, unknown>).grantedAt = serverTimestamp()
   } else if (status === 'withdrawn') {
-    updates.withdrawnAt = serverTimestamp();
+    ;(updates as Record<string, unknown>).withdrawnAt = serverTimestamp()
   }
 
-  await updateDoc(ref, updates);
+  await updateDoc(ref, updates)
 }
 
 /**
@@ -134,30 +125,30 @@ export async function hasValidConsent(
   userId: string,
   purpose: string
 ): Promise<boolean> {
-  const ref = getConsentsRef(clinicId);
+  const ref = getConsentsRef(clinicId)
   const q = query(
     ref,
     where('userId', '==', userId),
     where('purpose', '==', purpose),
     where('status', '==', 'granted'),
     limit(1)
-  );
+  )
 
-  const snapshot = await getDocs(q);
+  const snapshot = await getDocs(q)
 
   if (snapshot.empty) {
-    return false;
+    return false
   }
 
-  const consent = snapshot.docs[0].data();
+  const consent = snapshot.docs[0].data()
 
   // Check expiration
   if (consent.expiresAt) {
-    const expiresAt = consent.expiresAt.toDate();
+    const expiresAt = consent.expiresAt.toDate()
     if (expiresAt < new Date()) {
-      return false;
+      return false
     }
   }
 
-  return true;
+  return true
 }

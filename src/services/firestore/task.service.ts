@@ -21,6 +21,8 @@ import {
   onSnapshot,
   serverTimestamp,
   Timestamp,
+  type UpdateData,
+  type DocumentData,
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { Task, TaskStatus, TaskPriority, CreateTaskInput, UpdateTaskInput } from '@/types'
@@ -142,12 +144,12 @@ export const taskService = {
   async update(clinicId: string, taskId: string, data: UpdateTaskInput): Promise<void> {
     const docRef = doc(db, 'clinics', clinicId, 'tasks', taskId)
 
-    const updateData: Record<string, unknown> = { ...data }
+    const updateData = { ...data } as UpdateData<DocumentData>
 
     // Remove undefined values
     Object.keys(updateData).forEach(key => {
-      if (updateData[key] === undefined) {
-        delete updateData[key]
+      if ((updateData as Record<string, unknown>)[key] === undefined) {
+        delete (updateData as Record<string, unknown>)[key]
       }
     })
 

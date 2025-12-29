@@ -10,9 +10,9 @@
  * this might be the only way a bedridden patient can see their doctor.
  */
 
-import { useCallback, useRef, useEffect, useState } from 'react';
-import { JitsiMeeting } from '@jitsi/react-sdk';
-import type { IJitsiMeetExternalApi } from '@jitsi/react-sdk/lib/types';
+import { useCallback, useRef, useEffect, useState } from 'react'
+import { JitsiMeeting } from '@jitsi/react-sdk'
+import type { IJitsiMeetExternalApi } from '@jitsi/react-sdk/lib/types'
 import {
   PhoneOff,
   AlertCircle,
@@ -22,12 +22,12 @@ import {
   Copy,
   Check,
   Clock,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import type { VideoRoomProps } from '@/types';
-import { ConsultationTimer } from './ConsultationTimer';
-import { RecordingBadge } from './RecordingBadge';
-import { DEFAULT_JITSI_CONFIG } from '@/types';
+} from 'lucide-react'
+import { toast } from 'sonner'
+import type { VideoRoomProps } from '@/types'
+import { ConsultationTimer } from './ConsultationTimer'
+import { RecordingBadge } from './RecordingBadge'
+import { DEFAULT_JITSI_CONFIG } from '@/types'
 
 /**
  * GoogleMeetInterface - Interface for Google Meet sessions.
@@ -39,38 +39,38 @@ function GoogleMeetInterface({
   isProfessional,
   onCallEnd,
 }: VideoRoomProps) {
-  const [hasJoined, setHasJoined] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [hasJoined, setHasJoined] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const handleJoinMeet = useCallback(() => {
     if (!session.meetLink) {
-      toast.error('Link do Meet nao disponivel');
-      return;
+      toast.error('Link do Meet nao disponivel')
+      return
     }
 
-    window.open(session.meetLink, '_blank', 'noopener,noreferrer');
-    setHasJoined(true);
-    toast.success('Abrindo Google Meet...');
-  }, [session.meetLink]);
+    window.open(session.meetLink, '_blank', 'noopener,noreferrer')
+    setHasJoined(true)
+    toast.success('Abrindo Google Meet...')
+  }, [session.meetLink])
 
   const handleCopyLink = useCallback(async () => {
-    if (!session.meetLink) return;
+    if (!session.meetLink) return
 
     try {
-      await navigator.clipboard.writeText(session.meetLink);
-      setCopied(true);
-      toast.success('Link copiado!');
-      setTimeout(() => setCopied(false), 3000);
+      await navigator.clipboard.writeText(session.meetLink)
+      setCopied(true)
+      toast.success('Link copiado!')
+      setTimeout(() => setCopied(false), 3000)
     } catch {
-      toast.error('Erro ao copiar link');
+      toast.error('Erro ao copiar link')
     }
-  }, [session.meetLink]);
+  }, [session.meetLink])
 
   const handleEndSession = useCallback(() => {
-    onCallEnd(session);
-  }, [session, onCallEnd]);
+    onCallEnd(session)
+  }, [session, onCallEnd])
 
-  const scheduledDate = new Date(session.scheduledAt);
+  const scheduledDate = new Date(session.scheduledAt)
 
   return (
     <div className="flex flex-col h-full min-h-[500px] bg-genesis-surface rounded-2xl border border-genesis-border overflow-hidden">
@@ -86,9 +86,7 @@ function GoogleMeetInterface({
           </div>
         </div>
 
-        {session.startedAt && (
-          <ConsultationTimer startTime={session.startedAt} />
-        )}
+        {session.startedAt && <ConsultationTimer startTime={session.startedAt} />}
       </div>
 
       {/* Main Content */}
@@ -99,15 +97,11 @@ function GoogleMeetInterface({
             <div className="grid grid-cols-2 gap-4 w-full max-w-md mb-8">
               <div className="bg-genesis-soft rounded-xl p-4 text-center">
                 <p className="text-xs text-genesis-muted mb-1">Profissional</p>
-                <p className="font-medium text-genesis-dark truncate">
-                  {session.professionalName}
-                </p>
+                <p className="font-medium text-genesis-dark truncate">{session.professionalName}</p>
               </div>
               <div className="bg-genesis-soft rounded-xl p-4 text-center">
                 <p className="text-xs text-genesis-muted mb-1">Paciente</p>
-                <p className="font-medium text-genesis-dark truncate">
-                  {session.patientName}
-                </p>
+                <p className="font-medium text-genesis-dark truncate">{session.patientName}</p>
               </div>
             </div>
 
@@ -194,7 +188,7 @@ function GoogleMeetInterface({
         </p>
       </div>
     </div>
-  );
+  )
 }
 
 /**
@@ -215,19 +209,19 @@ function JitsiInterface({
   onParticipantJoin,
   onParticipantLeave,
 }: VideoRoomProps) {
-  const apiRef = useRef<IJitsiMeetExternalApi | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [connectionError, setConnectionError] = useState<string | null>(null);
-  const [participantCount, setParticipantCount] = useState(0);
+  const apiRef = useRef<IJitsiMeetExternalApi | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [connectionError, setConnectionError] = useState<string | null>(null)
+  const [participantCount, setParticipantCount] = useState(0)
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (apiRef.current) {
-        apiRef.current.dispose();
+        apiRef.current.dispose()
       }
-    };
-  }, []);
+    }
+  }, [])
 
   /**
    * Handle Jitsi API ready event.
@@ -235,64 +229,64 @@ function JitsiInterface({
    */
   const handleApiReady = useCallback(
     (api: IJitsiMeetExternalApi) => {
-      apiRef.current = api;
-      setIsLoading(false);
-      setConnectionError(null);
+      apiRef.current = api
+      setIsLoading(false)
+      setConnectionError(null)
 
       // Track participants
       api.addListener('participantJoined', (participant: { id: string; displayName: string }) => {
-        setParticipantCount((prev) => prev + 1);
+        setParticipantCount(prev => prev + 1)
         if (onParticipantJoin) {
           onParticipantJoin({
             id: participant.id,
             displayName: participant.displayName,
             role: 'patient', // Will be determined properly by context
             joinedAt: new Date().toISOString(),
-          });
+          })
         }
-      });
+      })
 
       api.addListener('participantLeft', (participant: { id: string }) => {
-        setParticipantCount((prev) => Math.max(0, prev - 1));
+        setParticipantCount(prev => Math.max(0, prev - 1))
         if (onParticipantLeave) {
           onParticipantLeave({
             id: participant.id,
             displayName: 'Unknown',
             role: 'patient',
             leftAt: new Date().toISOString(),
-          });
+          })
         }
-      });
+      })
 
       // Handle call end
       api.addListener('videoConferenceLeft', () => {
-        onCallEnd(session);
-      });
+        onCallEnd(session)
+      })
 
       // Handle connection errors
       api.addListener('errorOccurred', (error: { error: string }) => {
-        console.error('Jitsi error:', error);
-        setConnectionError('Erro de conexão. Por favor, verifique sua internet.');
-      });
+        console.error('Jitsi error:', error)
+        setConnectionError('Erro de conexão. Por favor, verifique sua internet.')
+      })
     },
     [session, onCallEnd, onParticipantJoin, onParticipantLeave]
-  );
+  )
 
   /**
    * Handle ready to close event.
    */
   const handleReadyToClose = useCallback(() => {
-    onCallEnd(session);
-  }, [session, onCallEnd]);
+    onCallEnd(session)
+  }, [session, onCallEnd])
 
   /**
    * End the call programmatically.
    */
   const handleEndCall = useCallback(() => {
     if (apiRef.current) {
-      apiRef.current.executeCommand('hangup');
+      apiRef.current.executeCommand('hangup')
     }
-  }, []);
+  }, [])
 
   // Show error state
   if (connectionError) {
@@ -308,7 +302,7 @@ function JitsiInterface({
           Tentar Novamente
         </button>
       </div>
-    );
+    )
   }
 
   return (
@@ -318,9 +312,7 @@ function JitsiInterface({
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-10">
           <Loader2 className="w-12 h-12 text-genesis-primary animate-spin mb-4" />
           <p className="text-white text-lg">Conectando à teleconsulta...</p>
-          <p className="text-genesis-subtle text-sm mt-2">
-            Preparando ambiente seguro de vídeo
-          </p>
+          <p className="text-genesis-subtle text-sm mt-2">Preparando ambiente seguro de vídeo</p>
         </div>
       )}
 
@@ -328,9 +320,7 @@ function JitsiInterface({
       <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-gradient-to-b from-black/70 to-transparent">
         <div className="flex items-center gap-4">
           {/* Timer */}
-          {session.startedAt && (
-            <ConsultationTimer startTime={session.startedAt} />
-          )}
+          {session.startedAt && <ConsultationTimer startTime={session.startedAt} />}
 
           {/* Recording indicator */}
           {session.recordingEnabled && <RecordingBadge />}
@@ -338,9 +328,7 @@ function JitsiInterface({
 
         {/* Patient/Doctor info */}
         <div className="text-white text-sm">
-          <span className="text-genesis-subtle">
-            {isProfessional ? 'Paciente: ' : 'Dr(a). '}
-          </span>
+          <span className="text-genesis-subtle">{isProfessional ? 'Paciente: ' : 'Dr(a). '}</span>
           <span className="font-medium">
             {isProfessional ? session.patientName : session.professionalName}
           </span>
@@ -390,14 +378,14 @@ function JitsiInterface({
         }}
         userInfo={{
           displayName,
-          email: undefined,
+          email: '',
         }}
         onApiReady={handleApiReady}
         onReadyToClose={handleReadyToClose}
-        getIFrameRef={(iframeRef) => {
+        getIFrameRef={iframeRef => {
           if (iframeRef) {
-            iframeRef.style.height = '100%';
-            iframeRef.style.width = '100%';
+            iframeRef.style.height = '100%'
+            iframeRef.style.width = '100%'
           }
         }}
       />
@@ -423,7 +411,7 @@ function JitsiInterface({
         </div>
       )}
     </div>
-  );
+  )
 }
 
 /**
@@ -441,13 +429,13 @@ function JitsiInterface({
  * @param onParticipantLeave - Optional callback when someone leaves
  */
 export function VideoRoom(props: VideoRoomProps) {
-  const { session } = props;
+  const { session } = props
 
   // Use Google Meet if meetLink is available (primary)
   // Fall back to Jitsi if only roomName exists (legacy)
   if (session.meetLink) {
-    return <GoogleMeetInterface {...props} />;
+    return <GoogleMeetInterface {...props} />
   }
 
-  return <JitsiInterface {...props} />;
+  return <JitsiInterface {...props} />
 }

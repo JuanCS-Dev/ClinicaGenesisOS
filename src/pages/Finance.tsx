@@ -281,7 +281,9 @@ export const Finance: React.FC = () => {
                       boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)',
                     }}
                     cursor={{ stroke: '#E5E5EA', strokeWidth: 1 }}
-                    formatter={(value: number) => [`R$ ${value.toLocaleString('pt-BR')}`, '']}
+                    formatter={value =>
+                      value !== undefined ? [`R$ ${value.toLocaleString('pt-BR')}`, ''] : ['', '']
+                    }
                   />
                   <Area
                     type="monotone"

@@ -20,14 +20,16 @@ import {
   onSnapshot,
   serverTimestamp,
   limit,
-} from 'firebase/firestore';
+  type UpdateData,
+  type DocumentData,
+} from 'firebase/firestore'
 import type {
   Prescription,
   PrescriptionStatus,
   CreatePrescriptionInput,
   UpdatePrescriptionInput,
   PrescriptionLogEntry,
-} from '@/types';
+} from '@/types'
 import {
   getPrescriptionCollection,
   getLogsCollection,
@@ -38,7 +40,7 @@ import {
   toLogEntry,
   determinePrescriptionType,
   statusToEventType,
-} from './prescription.utils';
+} from './prescription.utils'
 
 /**
  * Digital Prescription service for Firestore operations.
@@ -54,47 +56,47 @@ export const prescriptionService = {
   async getAll(
     clinicId: string,
     options?: {
-      patientId?: string;
-      professionalId?: string;
-      status?: PrescriptionStatus;
-      limitCount?: number;
+      patientId?: string
+      professionalId?: string
+      status?: PrescriptionStatus
+      limitCount?: number
     }
   ): Promise<Prescription[]> {
-    const prescriptionsRef = getPrescriptionCollection(clinicId);
-    let q = query(prescriptionsRef, orderBy('prescribedAt', 'desc'));
+    const prescriptionsRef = getPrescriptionCollection(clinicId)
+    let q = query(prescriptionsRef, orderBy('prescribedAt', 'desc'))
 
     if (options?.patientId) {
-      q = query(q, where('patientId', '==', options.patientId));
+      q = query(q, where('patientId', '==', options.patientId))
     }
     if (options?.professionalId) {
-      q = query(q, where('professionalId', '==', options.professionalId));
+      q = query(q, where('professionalId', '==', options.professionalId))
     }
     if (options?.status) {
-      q = query(q, where('status', '==', options.status));
+      q = query(q, where('status', '==', options.status))
     }
     if (options?.limitCount) {
-      q = query(q, limit(options.limitCount));
+      q = query(q, limit(options.limitCount))
     }
 
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((docSnap) => toPrescription(docSnap.id, docSnap.data()));
+    const querySnapshot = await getDocs(q)
+    return querySnapshot.docs.map(docSnap => toPrescription(docSnap.id, docSnap.data()))
   },
 
   /**
    * Get prescriptions for a specific patient.
    */
   async getByPatient(clinicId: string, patientId: string): Promise<Prescription[]> {
-    return this.getAll(clinicId, { patientId });
+    return this.getAll(clinicId, { patientId })
   },
 
   /**
    * Get a prescription by ID.
    */
   async getById(clinicId: string, prescriptionId: string): Promise<Prescription | null> {
-    const docRef = getPrescriptionDoc(clinicId, prescriptionId);
-    const docSnap = await getDoc(docRef);
-    if (!docSnap.exists()) return null;
-    return toPrescription(docSnap.id, docSnap.data());
+    const docRef = getPrescriptionDoc(clinicId, prescriptionId)
+    const docSnap = await getDoc(docRef)
+    if (!docSnap.exists()) return null
+    return toPrescription(docSnap.id, docSnap.data())
   },
 
   /**
@@ -104,12 +106,12 @@ export const prescriptionService = {
     clinicId: string,
     validationCode: string
   ): Promise<Prescription | null> {
-    const prescriptionsRef = getPrescriptionCollection(clinicId);
-    const q = query(prescriptionsRef, where('validationCode', '==', validationCode), limit(1));
-    const querySnapshot = await getDocs(q);
-    if (querySnapshot.empty) return null;
-    const docSnap = querySnapshot.docs[0];
-    return toPrescription(docSnap.id, docSnap.data());
+    const prescriptionsRef = getPrescriptionCollection(clinicId)
+    const q = query(prescriptionsRef, where('validationCode', '==', validationCode), limit(1))
+    const querySnapshot = await getDocs(q)
+    if (querySnapshot.empty) return null
+    const docSnap = querySnapshot.docs[0]
+    return toPrescription(docSnap.id, docSnap.data())
   },
 
   /**
@@ -120,11 +122,11 @@ export const prescriptionService = {
     data: CreatePrescriptionInput,
     professional: { id: string; name: string; crm: string; crmState: string }
   ): Promise<string> {
-    const prescriptionsRef = getPrescriptionCollection(clinicId);
-    const prescribedAt = new Date().toISOString();
-    const type = data.type || determinePrescriptionType(data.medications);
-    const expiresAt = calculateExpirationDate(prescribedAt, type);
-    const validationCode = generateValidationCode();
+    const prescriptionsRef = getPrescriptionCollection(clinicId)
+    const prescribedAt = new Date().toISOString()
+    const type = data.type || determinePrescriptionType(data.medications)
+    const expiresAt = calculateExpirationDate(prescribedAt, type)
+    const validationCode = generateValidationCode()
 
     const prescriptionData = {
       clinicId,
@@ -145,9 +147,9 @@ export const prescriptionService = {
       validationCode,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-    };
+    }
 
-    const docRef = await addDoc(prescriptionsRef, prescriptionData);
+    const docRef = await addDoc(prescriptionsRef, prescriptionData)
 
     await this.addLog(clinicId, docRef.id, {
       prescriptionId: docRef.id,
@@ -155,9 +157,9 @@ export const prescriptionService = {
       userId: professional.id,
       userName: professional.name,
       details: { medicationCount: data.medications.length },
-    });
+    })
 
-    return docRef.id;
+    return docRef.id
   },
 
   /**
@@ -170,14 +172,14 @@ export const prescriptionService = {
     userId: string,
     userName: string
   ): Promise<void> {
-    const prescription = await this.getById(clinicId, prescriptionId);
-    if (!prescription) throw new Error('Prescription not found');
+    const prescription = await this.getById(clinicId, prescriptionId)
+    if (!prescription) throw new Error('Prescription not found')
     if (prescription.status !== 'draft') {
-      throw new Error('Only draft prescriptions can be updated');
+      throw new Error('Only draft prescriptions can be updated')
     }
 
-    const docRef = getPrescriptionDoc(clinicId, prescriptionId);
-    await updateDoc(docRef, { ...data, updatedAt: serverTimestamp() });
+    const docRef = getPrescriptionDoc(clinicId, prescriptionId)
+    await updateDoc(docRef, { ...data, updatedAt: serverTimestamp() })
 
     await this.addLog(clinicId, prescriptionId, {
       prescriptionId,
@@ -185,7 +187,7 @@ export const prescriptionService = {
       userId,
       userName,
       details: { fields: Object.keys(data) },
-    });
+    })
   },
 
   /**
@@ -199,24 +201,24 @@ export const prescriptionService = {
     userName: string,
     additionalData?: Partial<Prescription>
   ): Promise<void> {
-    const docRef = getPrescriptionDoc(clinicId, prescriptionId);
-    const updateData: Record<string, unknown> = {
+    const docRef = getPrescriptionDoc(clinicId, prescriptionId)
+    const updateData = {
       status,
       updatedAt: serverTimestamp(),
       ...additionalData,
-    };
+    } as UpdateData<DocumentData>
 
     if (status === 'sent' && !additionalData?.sentAt) {
-      updateData.sentAt = new Date().toISOString();
+      ;(updateData as Record<string, unknown>).sentAt = new Date().toISOString()
     }
     if (status === 'viewed' && !additionalData?.viewedAt) {
-      updateData.viewedAt = new Date().toISOString();
+      ;(updateData as Record<string, unknown>).viewedAt = new Date().toISOString()
     }
     if (status === 'filled' && !additionalData?.filledAt) {
-      updateData.filledAt = new Date().toISOString();
+      ;(updateData as Record<string, unknown>).filledAt = new Date().toISOString()
     }
 
-    await updateDoc(docRef, updateData);
+    await updateDoc(docRef, updateData)
 
     await this.addLog(clinicId, prescriptionId, {
       prescriptionId,
@@ -224,7 +226,7 @@ export const prescriptionService = {
       userId,
       userName,
       details: additionalData,
-    });
+    })
   },
 
   /**
@@ -237,12 +239,12 @@ export const prescriptionService = {
     userId: string,
     userName: string
   ): Promise<void> {
-    const prescription = await this.getById(clinicId, prescriptionId);
-    if (!prescription) throw new Error('Prescription not found');
+    const prescription = await this.getById(clinicId, prescriptionId)
+    if (!prescription) throw new Error('Prescription not found')
     if (prescription.status !== 'draft' && prescription.status !== 'pending_signature') {
-      throw new Error('Prescription cannot be signed in current status');
+      throw new Error('Prescription cannot be signed in current status')
     }
-    await this.updateStatus(clinicId, prescriptionId, 'signed', userId, userName, { signature });
+    await this.updateStatus(clinicId, prescriptionId, 'signed', userId, userName, { signature })
   },
 
   /**
@@ -255,30 +257,30 @@ export const prescriptionService = {
     userId: string,
     userName: string
   ): Promise<void> {
-    const prescription = await this.getById(clinicId, prescriptionId);
-    if (!prescription) throw new Error('Prescription not found');
+    const prescription = await this.getById(clinicId, prescriptionId)
+    if (!prescription) throw new Error('Prescription not found')
     if (prescription.status !== 'signed') {
-      throw new Error('Only signed prescriptions can be sent');
+      throw new Error('Only signed prescriptions can be sent')
     }
 
-    await this.updateStatus(clinicId, prescriptionId, 'sent', userId, userName);
+    await this.updateStatus(clinicId, prescriptionId, 'sent', userId, userName)
     await this.addLog(clinicId, prescriptionId, {
       prescriptionId,
       eventType: 'sent',
       userId,
       userName,
       details: { method },
-    });
+    })
   },
 
   /**
    * Mark prescription as viewed by patient.
    */
   async markAsViewed(clinicId: string, prescriptionId: string): Promise<void> {
-    const prescription = await this.getById(clinicId, prescriptionId);
-    if (!prescription) throw new Error('Prescription not found');
+    const prescription = await this.getById(clinicId, prescriptionId)
+    if (!prescription) throw new Error('Prescription not found')
     if (prescription.status === 'sent') {
-      await this.updateStatus(clinicId, prescriptionId, 'viewed', 'patient', 'Paciente');
+      await this.updateStatus(clinicId, prescriptionId, 'viewed', 'patient', 'Paciente')
     }
   },
 
@@ -290,14 +292,14 @@ export const prescriptionService = {
     prescriptionId: string,
     pharmacyName: string
   ): Promise<void> {
-    const prescription = await this.getById(clinicId, prescriptionId);
-    if (!prescription) throw new Error('Prescription not found');
+    const prescription = await this.getById(clinicId, prescriptionId)
+    if (!prescription) throw new Error('Prescription not found')
     if (!['sent', 'viewed'].includes(prescription.status)) {
-      throw new Error('Prescription cannot be marked as filled in current status');
+      throw new Error('Prescription cannot be marked as filled in current status')
     }
     await this.updateStatus(clinicId, prescriptionId, 'filled', 'pharmacy', pharmacyName, {
       filledByPharmacy: pharmacyName,
-    });
+    })
   },
 
   /**
@@ -310,49 +312,49 @@ export const prescriptionService = {
     userId: string,
     userName: string
   ): Promise<void> {
-    const prescription = await this.getById(clinicId, prescriptionId);
-    if (!prescription) throw new Error('Prescription not found');
+    const prescription = await this.getById(clinicId, prescriptionId)
+    if (!prescription) throw new Error('Prescription not found')
     if (prescription.status === 'filled') {
-      throw new Error('Filled prescriptions cannot be canceled');
+      throw new Error('Filled prescriptions cannot be canceled')
     }
 
-    await this.updateStatus(clinicId, prescriptionId, 'canceled', userId, userName);
+    await this.updateStatus(clinicId, prescriptionId, 'canceled', userId, userName)
     await this.addLog(clinicId, prescriptionId, {
       prescriptionId,
       eventType: 'canceled',
       userId,
       userName,
       details: { reason },
-    });
+    })
   },
 
   /**
    * Check and update expired prescriptions.
    */
   async checkExpiredPrescriptions(clinicId: string): Promise<number> {
-    const prescriptionsRef = getPrescriptionCollection(clinicId);
-    const now = new Date().toISOString();
+    const prescriptionsRef = getPrescriptionCollection(clinicId)
+    const now = new Date().toISOString()
     const q = query(
       prescriptionsRef,
       where('status', 'in', ['signed', 'sent', 'viewed']),
       where('expiresAt', '<', now)
-    );
+    )
 
-    const querySnapshot = await getDocs(q);
-    let count = 0;
+    const querySnapshot = await getDocs(q)
+    let count = 0
 
     for (const docSnap of querySnapshot.docs) {
-      const docRef = getPrescriptionDoc(clinicId, docSnap.id);
-      await updateDoc(docRef, { status: 'expired', updatedAt: serverTimestamp() });
+      const docRef = getPrescriptionDoc(clinicId, docSnap.id)
+      await updateDoc(docRef, { status: 'expired', updatedAt: serverTimestamp() })
       await this.addLog(clinicId, docSnap.id, {
         prescriptionId: docSnap.id,
         eventType: 'expired',
         userId: 'system',
         userName: 'Sistema',
-      });
-      count++;
+      })
+      count++
     }
-    return count;
+    return count
   },
 
   /**
@@ -363,19 +365,19 @@ export const prescriptionService = {
     prescriptionId: string,
     log: Omit<PrescriptionLogEntry, 'id' | 'timestamp'>
   ): Promise<string> {
-    const logsRef = getLogsCollection(clinicId, prescriptionId);
-    const docRef = await addDoc(logsRef, { ...log, timestamp: serverTimestamp() });
-    return docRef.id;
+    const logsRef = getLogsCollection(clinicId, prescriptionId)
+    const docRef = await addDoc(logsRef, { ...log, timestamp: serverTimestamp() })
+    return docRef.id
   },
 
   /**
    * Get all logs for a prescription.
    */
   async getLogs(clinicId: string, prescriptionId: string): Promise<PrescriptionLogEntry[]> {
-    const logsRef = getLogsCollection(clinicId, prescriptionId);
-    const q = query(logsRef, orderBy('timestamp', 'asc'));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((docSnap) => toLogEntry(docSnap.id, docSnap.data()));
+    const logsRef = getLogsCollection(clinicId, prescriptionId)
+    const q = query(logsRef, orderBy('timestamp', 'asc'))
+    const querySnapshot = await getDocs(q)
+    return querySnapshot.docs.map(docSnap => toLogEntry(docSnap.id, docSnap.data()))
   },
 
   /**
@@ -386,17 +388,17 @@ export const prescriptionService = {
     prescriptionId: string,
     callback: (prescription: Prescription | null) => void
   ): () => void {
-    const docRef = getPrescriptionDoc(clinicId, prescriptionId);
+    const docRef = getPrescriptionDoc(clinicId, prescriptionId)
     return onSnapshot(
       docRef,
-      (docSnap) => {
-        callback(docSnap.exists() ? toPrescription(docSnap.id, docSnap.data()) : null);
+      docSnap => {
+        callback(docSnap.exists() ? toPrescription(docSnap.id, docSnap.data()) : null)
       },
-      (error) => {
-        console.error('Error subscribing to prescription:', error);
-        callback(null);
+      error => {
+        console.error('Error subscribing to prescription:', error)
+        callback(null)
       }
-    );
+    )
   },
 
   /**
@@ -407,23 +409,23 @@ export const prescriptionService = {
     patientId: string,
     callback: (prescriptions: Prescription[]) => void
   ): () => void {
-    const prescriptionsRef = getPrescriptionCollection(clinicId);
+    const prescriptionsRef = getPrescriptionCollection(clinicId)
     const q = query(
       prescriptionsRef,
       where('patientId', '==', patientId),
       orderBy('prescribedAt', 'desc')
-    );
+    )
 
     return onSnapshot(
       q,
-      (querySnapshot) => {
-        callback(querySnapshot.docs.map((docSnap) => toPrescription(docSnap.id, docSnap.data())));
+      querySnapshot => {
+        callback(querySnapshot.docs.map(docSnap => toPrescription(docSnap.id, docSnap.data())))
       },
-      (error) => {
-        console.error('Error subscribing to patient prescriptions:', error);
-        callback([]);
+      error => {
+        console.error('Error subscribing to patient prescriptions:', error)
+        callback([])
       }
-    );
+    )
   },
 
   /**
@@ -434,29 +436,29 @@ export const prescriptionService = {
     startDate: string,
     endDate: string
   ): Promise<{
-    total: number;
-    byStatus: Record<PrescriptionStatus, number>;
-    byType: Record<string, number>;
-    controlled: number;
+    total: number
+    byStatus: Record<PrescriptionStatus, number>
+    byType: Record<string, number>
+    controlled: number
   }> {
-    const prescriptionsRef = getPrescriptionCollection(clinicId);
+    const prescriptionsRef = getPrescriptionCollection(clinicId)
     const q = query(
       prescriptionsRef,
       where('prescribedAt', '>=', startDate),
       where('prescribedAt', '<=', endDate)
-    );
+    )
 
-    const querySnapshot = await getDocs(q);
-    const prescriptions = querySnapshot.docs.map((d) => toPrescription(d.id, d.data()));
+    const querySnapshot = await getDocs(q)
+    const prescriptions = querySnapshot.docs.map(d => toPrescription(d.id, d.data()))
 
-    const byStatus: Record<string, number> = {};
-    const byType: Record<string, number> = {};
-    let controlled = 0;
+    const byStatus: Record<string, number> = {}
+    const byType: Record<string, number> = {}
+    let controlled = 0
 
     for (const p of prescriptions) {
-      byStatus[p.status] = (byStatus[p.status] || 0) + 1;
-      byType[p.type] = (byType[p.type] || 0) + 1;
-      if (p.type !== 'common') controlled++;
+      byStatus[p.status] = (byStatus[p.status] || 0) + 1
+      byType[p.type] = (byType[p.type] || 0) + 1
+      if (p.type !== 'common') controlled++
     }
 
     return {
@@ -464,6 +466,6 @@ export const prescriptionService = {
       byStatus: byStatus as Record<PrescriptionStatus, number>,
       byType,
       controlled,
-    };
+    }
   },
-};
+}

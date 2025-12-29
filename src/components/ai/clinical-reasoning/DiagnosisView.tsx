@@ -4,17 +4,13 @@
  * Displays differential diagnosis with multi-LLM consensus indicators.
  */
 
-import React, { useState } from 'react';
-import { Brain, ChevronDown, ChevronUp } from 'lucide-react';
-import { ConsensusBadge, ModelComparison } from './ConsensusBadge';
-import { ConfidenceGauge } from './ConfidenceGauge';
-import { ExplanationPanel } from './ExplanationPanel';
-import { EvidenceLinks } from './EvidenceLinks';
-import type {
-  LabAnalysisResult,
-  ConsensusDiagnosis,
-  DifferentialDiagnosis,
-} from '../../../types';
+import React, { useState } from 'react'
+import { Brain, ChevronDown, ChevronUp } from 'lucide-react'
+import { ConsensusBadge, ModelComparison } from './ConsensusBadge'
+import { ConfidenceGauge } from './ConfidenceGauge'
+import { ExplanationPanel } from './ExplanationPanel'
+import { EvidenceLinks } from './EvidenceLinks'
+import type { LabAnalysisResult, ConsensusDiagnosis, DifferentialDiagnosis } from '../../../types'
 
 /**
  * Type guard to check if a diagnosis has consensus information.
@@ -22,24 +18,27 @@ import type {
 function hasConsensusInfo(
   dx: DifferentialDiagnosis | ConsensusDiagnosis
 ): dx is ConsensusDiagnosis {
-  return 'consensusLevel' in dx;
+  return 'consensusLevel' in dx
 }
 
 interface DiagnosisViewProps {
-  result: LabAnalysisResult;
+  result: LabAnalysisResult
 }
 
 /**
  * Diagnosis view with consensus indicators.
  */
 export function DiagnosisView({ result }: DiagnosisViewProps) {
-  const [expandedDx, setExpandedDx] = useState<number | null>(null);
+  const [expandedDx, setExpandedDx] = useState<number | null>(null)
 
   return (
     <div className="space-y-4">
       {/* Consensus Metrics */}
       {result.consensusMetrics && (
-        <div className="p-4 rounded-xl border border-[#E0E7FF]" style={{ background: 'linear-gradient(to right, #EEF2FF, #F5F3FF)' }}>
+        <div
+          className="p-4 rounded-xl border border-[#E0E7FF]"
+          style={{ background: 'linear-gradient(to right, #EEF2FF, #F5F3FF)' }}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-genesis-surface rounded-lg shadow-sm">
@@ -82,13 +81,9 @@ export function DiagnosisView({ result }: DiagnosisViewProps) {
                   {idx + 1}
                 </span>
                 <h4 className="font-semibold text-genesis-dark">{dx.name}</h4>
-                {hasConsensusInfo(dx) && (
-                  <ConsensusBadge level={dx.consensusLevel} size="sm" />
-                )}
+                {hasConsensusInfo(dx) && <ConsensusBadge level={dx.consensusLevel} size="sm" />}
               </div>
-              {dx.icd10 && (
-                <p className="text-xs text-genesis-subtle ml-10">CID-10: {dx.icd10}</p>
-              )}
+              {dx.icd10 && <p className="text-xs text-genesis-subtle ml-10">CID-10: {dx.icd10}</p>}
             </div>
 
             <div className="flex items-center gap-3">
@@ -138,20 +133,14 @@ export function DiagnosisView({ result }: DiagnosisViewProps) {
           {/* Expanded Explanation Panel */}
           {expandedDx === idx && (
             <div className="mt-4 ml-10 pt-4 border-t border-genesis-border-subtle space-y-4 animate-in fade-in slide-in-from-top-2">
-              <ExplanationPanel
-                diagnosis={dx}
-                showReferences
-              />
-              <EvidenceLinks
-                diagnosis={dx.name}
-                icd10={dx.icd10}
-              />
+              <ExplanationPanel diagnosis={dx} showReferences />
+              <EvidenceLinks references={[]} />
             </div>
           )}
         </div>
       ))}
     </div>
-  );
+  )
 }
 
-export default DiagnosisView;
+export default DiagnosisView

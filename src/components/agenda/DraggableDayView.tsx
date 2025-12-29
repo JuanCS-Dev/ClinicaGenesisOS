@@ -4,7 +4,7 @@
  * Day view with drag-and-drop support for rescheduling appointments.
  */
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -15,22 +15,22 @@ import {
   useDraggable,
   type DragEndEvent,
   type DragStartEvent,
-} from '@dnd-kit/core';
-import { format, setHours, setMinutes, isToday, parseISO } from 'date-fns';
-import { AppointmentCard } from './AppointmentCard';
-import type { Appointment } from '@/types';
+} from '@dnd-kit/core'
+import { format, setHours, setMinutes, isToday, parseISO } from 'date-fns'
+import { AppointmentCard } from './AppointmentCard'
+import type { Appointment } from '@/types'
 
 interface DraggableDayViewProps {
   /** The date being displayed */
-  date: Date;
+  date: Date
   /** Appointments to display (already filtered) */
-  appointments: Appointment[];
+  appointments: Appointment[]
   /** Working hours to display (e.g., [8, 9, 10, ...20]) */
-  hours: number[];
+  hours: number[]
   /** Callback when an appointment is rescheduled */
-  onReschedule?: (appointmentId: string, newDate: Date) => Promise<void>;
+  onReschedule?: (appointmentId: string, newDate: Date) => Promise<void>
   /** Callback to start a telemedicine session */
-  onStartTelemedicine?: (appointment: Appointment) => void;
+  onStartTelemedicine?: (appointment: Appointment) => void
 }
 
 /**
@@ -41,11 +41,11 @@ function DroppableHourSlot({
   children,
   isOver,
 }: {
-  hour: number;
-  children: React.ReactNode;
-  isOver: boolean;
+  hour: number
+  children: React.ReactNode
+  isOver: boolean
 }) {
-  const { setNodeRef } = useDroppable({ id: `hour-${hour}` });
+  const { setNodeRef } = useDroppable({ id: `hour-${hour}` })
 
   return (
     <div
@@ -56,7 +56,7 @@ function DroppableHourSlot({
     >
       {children}
     </div>
-  );
+  )
 }
 
 /**
@@ -67,20 +67,20 @@ function DraggableAppointment({
   isDragging,
   onStartTelemedicine,
 }: {
-  appointment: Appointment;
-  isDragging: boolean;
-  onStartTelemedicine?: (appointment: Appointment) => void;
+  appointment: Appointment
+  isDragging: boolean
+  onStartTelemedicine?: (appointment: Appointment) => void
 }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: appointment.id,
     data: appointment,
-  });
+  })
 
   const style = transform
     ? {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
       }
-    : undefined;
+    : undefined
 
   return (
     <div
@@ -90,12 +90,9 @@ function DraggableAppointment({
       {...attributes}
       className={`absolute top-2 left-2 right-4 bottom-2 ${isDragging ? 'opacity-50' : ''}`}
     >
-      <AppointmentCard
-        appointment={appointment}
-        onStartTelemedicine={onStartTelemedicine}
-      />
+      <AppointmentCard appointment={appointment} onStartTelemedicine={onStartTelemedicine} />
     </div>
-  );
+  )
 }
 
 /**
@@ -108,10 +105,10 @@ export function DraggableDayView({
   onReschedule,
   onStartTelemedicine,
 }: DraggableDayViewProps) {
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [overId, setOverId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const [overId, setOverId] = useState<string | null>(null)
 
-  const isCurrentDay = isToday(date);
+  const isCurrentDay = isToday(date)
 
   // Sensor configuration for pointer/touch drag
   const sensors = useSensors(
@@ -120,59 +117,57 @@ export function DraggableDayView({
         distance: 8, // 8px movement before drag starts
       },
     })
-  );
+  )
 
   /**
    * Handle drag start.
    */
   function handleDragStart(event: DragStartEvent) {
-    setActiveId(event.active.id as string);
+    setActiveId(event.active.id as string)
   }
 
   /**
    * Handle drag over (for visual feedback).
    */
-  function handleDragOver(event: { over: { id: string } | null }) {
-    setOverId(event.over?.id?.toString() || null);
+  function handleDragOver(event: { over: { id: string | number } | null }) {
+    setOverId(event.over?.id?.toString() || null)
   }
 
   /**
    * Handle drag end - reschedule the appointment.
    */
   async function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
+    const { active, over } = event
 
-    setActiveId(null);
-    setOverId(null);
+    setActiveId(null)
+    setOverId(null)
 
-    if (!over || !onReschedule) return;
+    if (!over || !onReschedule) return
 
-    const appointmentId = active.id as string;
-    const targetHour = parseInt(over.id.toString().replace('hour-', ''), 10);
+    const appointmentId = active.id as string
+    const targetHour = parseInt(over.id.toString().replace('hour-', ''), 10)
 
-    if (isNaN(targetHour)) return;
+    if (isNaN(targetHour)) return
 
     // Find the appointment being dragged
-    const appointment = appointments.find((a) => a.id === appointmentId);
-    if (!appointment) return;
+    const appointment = appointments.find(a => a.id === appointmentId)
+    if (!appointment) return
 
     // Get current hour of appointment
-    const currentHour = parseISO(appointment.date).getHours();
+    const currentHour = parseISO(appointment.date).getHours()
 
     // Only update if hour changed
-    if (currentHour === targetHour) return;
+    if (currentHour === targetHour) return
 
     // Calculate new date with the target hour
-    const originalDate = parseISO(appointment.date);
-    const newDate = setMinutes(setHours(date, targetHour), originalDate.getMinutes());
+    const originalDate = parseISO(appointment.date)
+    const newDate = setMinutes(setHours(date, targetHour), originalDate.getMinutes())
 
-    await onReschedule(appointmentId, newDate);
+    await onReschedule(appointmentId, newDate)
   }
 
   // Find active appointment for overlay
-  const activeAppointment = activeId
-    ? appointments.find((a) => a.id === activeId)
-    : null;
+  const activeAppointment = activeId ? appointments.find(a => a.id === activeId) : null
 
   return (
     <DndContext
@@ -182,11 +177,11 @@ export function DraggableDayView({
       onDragEnd={handleDragEnd}
     >
       <div className="flex-1 overflow-y-auto relative custom-scrollbar bg-genesis-soft/50">
-        {hours.map((hour) => {
+        {hours.map(hour => {
           const hourAppointments = appointments.filter(
-            (app) => parseISO(app.date).getHours() === hour
-          );
-          const isOverThisHour = overId === `hour-${hour}`;
+            app => parseISO(app.date).getHours() === hour
+          )
+          const isOverThisHour = overId === `hour-${hour}`
 
           return (
             <div
@@ -198,7 +193,7 @@ export function DraggableDayView({
               </div>
 
               <DroppableHourSlot hour={hour} isOver={isOverThisHour}>
-                {hourAppointments.map((app) => (
+                {hourAppointments.map(app => (
                   <React.Fragment key={app.id}>
                     <DraggableAppointment
                       appointment={app}
@@ -209,7 +204,7 @@ export function DraggableDayView({
                 ))}
               </DroppableHourSlot>
             </div>
-          );
+          )
         })}
 
         {/* Current Time Indicator (only shown when viewing today) */}
@@ -237,5 +232,5 @@ export function DraggableDayView({
         )}
       </DragOverlay>
     </DndContext>
-  );
+  )
 }
