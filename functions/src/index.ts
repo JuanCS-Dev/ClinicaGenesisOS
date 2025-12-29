@@ -96,3 +96,8 @@ export { createMeetSession, cancelMeetSession, updateMeetSession } from './calen
 // RBAC - Custom Claims Management (1.2)
 // ============================================
 export { setUserClaims, revokeUserClaims, refreshClaims, onClinicCreated } from './auth/index.js'
+
+// ============================================
+// Rate Limiting Cleanup (2.3)
+// ============================================
+export { cleanupRateLimits } from './middleware/index.js'

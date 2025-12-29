@@ -44,11 +44,11 @@ Este documento detalha o plano de implementação para elevar o Clínica Genesis
 
 | Métrica | Valor | Atualizado |
 |---------|-------|------------|
-| **Score Atual** | 7.2 → **8.1** | 2025-12-29 |
-| **Sprints Concluídos** | 3/7 | 2025-12-29 |
-| **Commits de Segurança** | 3 | 2025-12-29 |
+| **Score Atual** | 7.2 → **8.4** | 2025-12-29 |
+| **Sprints Concluídos** | 4/7 | 2025-12-29 |
+| **Commits de Segurança** | 4 | 2025-12-29 |
 | **Vulnerabilidades P0 Fechadas** | 3/3 | 2025-12-29 |
-| **Vulnerabilidades P1 Fechadas** | 1/2 | 2025-12-29 |
+| **Vulnerabilidades P1 Fechadas** | 2/2 | 2025-12-29 |
 
 ## Sprints Concluídos
 
@@ -158,12 +158,55 @@ vite.config.ts
 
 ---
 
+### ✅ Sprint 2.2-2.3 - Auth Middleware + Rate Limiting (2025-12-29)
+
+**Commit:** `[pending]` - 🔐 Sprint 2.2-2.3: Auth Middleware + Rate Limiting
+
+**Mudanças:**
+- Criado módulo `functions/src/middleware/` com:
+  - `auth.ts` - Middleware de autenticação para v1 e v2 callable functions
+  - `rate-limit.ts` - Rate limiting via Firestore sliding window
+  - `index.ts` - Exports centralizados
+- Middleware aplicado a todas as callable functions:
+  - Payment functions (PIX, Boleto): role `professional+`, rate limit PAYMENT (5/min)
+  - Meet functions: auth required, rate limit CALENDAR (30/min)
+  - TISS Lote functions: role `professional+`, rate limit TISS_BATCH (20/min)
+  - Certificate functions: role `admin+`, rate limit CERTIFICATE (10/min)
+- Cleanup scheduled function: `cleanupRateLimits` (diário 3AM)
+
+**Rate Limits Configurados:**
+| Operation | Max Requests | Window |
+|-----------|--------------|--------|
+| AI_SCRIBE | 10 | 1 min |
+| LAB_ANALYSIS | 5 | 1 min |
+| PAYMENT | 5 | 1 min |
+| CERTIFICATE | 10 | 1 min |
+| TISS_BATCH | 20 | 1 min |
+| CALENDAR | 30 | 1 min |
+| DEFAULT | 60 | 1 min |
+
+**Arquivos modificados:** 11
+```
+functions/src/middleware/auth.ts (NEW)
+functions/src/middleware/rate-limit.ts (NEW)
+functions/src/middleware/index.ts (NEW)
+functions/src/stripe/pix-payment.ts
+functions/src/stripe/boleto-payment.ts
+functions/src/calendar/google-meet.ts
+functions/src/tiss/lote.ts
+functions/src/tiss/sender.ts
+functions/src/tiss/certificate.ts
+functions/src/index.ts
+```
+
+**Vulnerabilidade fechada:** 🟠 P1 - Cloud Functions sem auth
+
+---
+
 ## Próximos Sprints
 
 | Sprint | Status | Prioridade | Descrição |
 |--------|--------|------------|-----------|
-| 2.2 | ⏳ Pendente | P1 | Rate Limiting Cloud Functions |
-| 2.3 | ⏳ Pendente | P1 | Input Validation & Sanitization |
 | 3.1 | ⏳ Pendente | P2 | Eliminar tipos `any` |
 | 3.2 | ⏳ Pendente | P2 | TypeScript strict mode |
 | 4.1 | ⏳ Pendente | P2 | E2E Tests Playwright |

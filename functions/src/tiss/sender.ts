@@ -1,81 +1,58 @@
 /**
- * TISS Sender Module
- *
- * Handles sending signed TISS XML documents to health insurance operators (operadoras)
- * via their WebService endpoints.
- *
+ * TISS Sender - Sends signed XML documents to operadoras via WebService.
  * @module functions/tiss/sender
  */
-
-import * as functions from 'firebase-functions';
-import * as admin from 'firebase-admin';
-import * as https from 'https';
-import * as http from 'http';
+import * as functions from 'firebase-functions'
+import * as admin from 'firebase-admin'
+import * as https from 'https'
+import * as http from 'http'
+import { requireAuthRoleAndClinicV1, checkRateLimitForUser } from '../middleware/index.js'
 import type {
   SendLoteRequest,
   SendLoteResponse,
   WebServiceConfig,
   WebServiceResponse,
   GuiaStatus,
-} from './types';
-import { signXmlDocument, hashXml } from './xml-signer';
-import { getCertificateForSigning } from './certificate';
-import { getLote, updateLoteStatus } from './lote';
+} from './types'
+import { signXmlDocument, hashXml } from './xml-signer'
+import { getCertificateForSigning } from './certificate'
+import { getLote, updateLoteStatus } from './lote'
 
-// =============================================================================
-// CONSTANTS
-// =============================================================================
+const GUIAS_COLLECTION = 'guias'
+const OPERADORAS_COLLECTION = 'operadoras'
+const DEFAULT_TIMEOUT = 30000
 
-const GUIAS_COLLECTION = 'guias';
-const OPERADORAS_COLLECTION = 'operadoras';
-
-/** Default timeout for WebService calls (30 seconds) */
-const DEFAULT_TIMEOUT = 30000;
-
-/** SOAP envelope template */
 const SOAP_ENVELOPE = `<?xml version="1.0" encoding="UTF-8"?>
 <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
   <soap:Header/>
   <soap:Body>
     {{CONTENT}}
   </soap:Body>
-</soap:Envelope>`;
+</soap:Envelope>`
 
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
-
-/**
- * Get WebService configuration for an operadora.
- */
+/** Get WebService configuration for an operadora. */
 async function getWebServiceConfig(
   clinicId: string,
   operadoraId: string
 ): Promise<WebServiceConfig | null> {
-  const db = admin.firestore();
-  const operadorasRef = db
-    .collection('clinics')
-    .doc(clinicId)
-    .collection(OPERADORAS_COLLECTION);
+  const db = admin.firestore()
+  const operadorasRef = db.collection('clinics').doc(clinicId).collection(OPERADORAS_COLLECTION)
 
-  const query = await operadorasRef
-    .where('registroANS', '==', operadoraId)
-    .limit(1)
-    .get();
+  const query = await operadorasRef.where('registroANS', '==', operadoraId).limit(1).get()
 
   if (query.empty) {
-    return null;
+    return null
   }
 
-  const operadora = query.docs[0].data();
-  return operadora.webService as WebServiceConfig | null;
+  const operadora = query.docs[0].data()
+  return operadora.webService as WebServiceConfig | null
 }
 
 /**
  * Build SOAP envelope for TISS submission.
  */
 function buildSoapEnvelope(tissXml: string): string {
-  return SOAP_ENVELOPE.replace('{{CONTENT}}', tissXml);
+  return SOAP_ENVELOPE.replace('{{CONTENT}}', tissXml)
 }
 
 /**
@@ -85,21 +62,19 @@ function parseSoapResponse(responseXml: string): WebServiceResponse {
   // Look for protocol number in response
   const protocoloMatch = responseXml.match(
     /<(?:ans:|tiss:|)numeroProtocolo>([^<]+)<\/(?:ans:|tiss:|)numeroProtocolo>/
-  );
+  )
 
   // Look for error messages
   const errorMatch = responseXml.match(
     /<(?:ans:|tiss:|)mensagem>([^<]+)<\/(?:ans:|tiss:|)mensagem>/
-  );
+  )
 
-  const codigoMatch = responseXml.match(
-    /<(?:ans:|tiss:|)codigo>([^<]+)<\/(?:ans:|tiss:|)codigo>/
-  );
+  const codigoMatch = responseXml.match(/<(?:ans:|tiss:|)codigo>([^<]+)<\/(?:ans:|tiss:|)codigo>/)
 
   // Check for SOAP Fault
   const faultMatch = responseXml.match(
     /<soap:Fault>[\s\S]*?<faultstring>([^<]+)<\/faultstring>[\s\S]*?<\/soap:Fault>/
-  );
+  )
 
   if (faultMatch) {
     return {
@@ -107,7 +82,7 @@ function parseSoapResponse(responseXml: string): WebServiceResponse {
       mensagem: faultMatch[1],
       xmlResposta: responseXml,
       errors: [{ codigo: 'SOAP_FAULT', mensagem: faultMatch[1] }],
-    };
+    }
   }
 
   if (protocoloMatch) {
@@ -116,7 +91,7 @@ function parseSoapResponse(responseXml: string): WebServiceResponse {
       protocolo: protocoloMatch[1],
       mensagem: errorMatch?.[1] || 'Lote recebido com sucesso',
       xmlResposta: responseXml,
-    };
+    }
   }
 
   // If no protocol, check if there's an error
@@ -131,7 +106,7 @@ function parseSoapResponse(responseXml: string): WebServiceResponse {
           mensagem: errorMatch?.[1] || 'Erro desconhecido',
         },
       ],
-    };
+    }
   }
 
   // Couldn't parse response
@@ -140,7 +115,7 @@ function parseSoapResponse(responseXml: string): WebServiceResponse {
     mensagem: 'Resposta da operadora não reconhecida',
     xmlResposta: responseXml,
     errors: [{ codigo: 'PARSE_ERROR', mensagem: 'Formato de resposta desconhecido' }],
-  };
+  }
 }
 
 /**
@@ -153,21 +128,21 @@ async function sendHttpRequest(
   pfxPassword?: string
 ): Promise<{ statusCode: number; body: string }> {
   return new Promise((resolve, reject) => {
-    const url = new URL(config.url);
-    const isHttps = url.protocol === 'https:';
+    const url = new URL(config.url)
+    const isHttps = url.protocol === 'https:'
 
     const headers: Record<string, string | number> = {
       'Content-Type': 'application/soap+xml; charset=utf-8',
       'Content-Length': Buffer.byteLength(soapXml, 'utf8'),
-      'SOAPAction': 'tissLoteGuias',
-    };
+      SOAPAction: 'tissLoteGuias',
+    }
 
     // Add authentication based on type
     if (config.authType === 'basic' && config.username && config.password) {
-      const auth = Buffer.from(`${config.username}:${config.password}`).toString('base64');
-      headers['Authorization'] = `Basic ${auth}`;
+      const auth = Buffer.from(`${config.username}:${config.password}`).toString('base64')
+      headers['Authorization'] = `Basic ${auth}`
     } else if (config.authType === 'token' && config.token) {
-      headers['Authorization'] = `Bearer ${config.token}`;
+      headers['Authorization'] = `Bearer ${config.token}`
     }
 
     const options: https.RequestOptions = {
@@ -177,35 +152,35 @@ async function sendHttpRequest(
       method: 'POST',
       timeout: config.timeout || DEFAULT_TIMEOUT,
       headers,
-    };
+    }
 
     // For certificate auth, add client certificate
     if (config.authType === 'certificate' && pfxBase64 && pfxPassword) {
-      (options as https.RequestOptions).pfx = Buffer.from(pfxBase64, 'base64');
-      (options as https.RequestOptions).passphrase = pfxPassword;
+      ;(options as https.RequestOptions).pfx = Buffer.from(pfxBase64, 'base64')
+      ;(options as https.RequestOptions).passphrase = pfxPassword
     }
 
-    const protocol = isHttps ? https : http;
-    const req = protocol.request(options, (res) => {
-      let body = '';
-      res.on('data', (chunk) => (body += chunk));
+    const protocol = isHttps ? https : http
+    const req = protocol.request(options, res => {
+      let body = ''
+      res.on('data', chunk => (body += chunk))
       res.on('end', () => {
-        resolve({ statusCode: res.statusCode || 500, body });
-      });
-    });
+        resolve({ statusCode: res.statusCode || 500, body })
+      })
+    })
 
-    req.on('error', (error) => {
-      reject(new Error(`WebService connection failed: ${error.message}`));
-    });
+    req.on('error', error => {
+      reject(new Error(`WebService connection failed: ${error.message}`))
+    })
 
     req.on('timeout', () => {
-      req.destroy();
-      reject(new Error('WebService request timed out'));
-    });
+      req.destroy()
+      reject(new Error('WebService request timed out'))
+    })
 
-    req.write(soapXml);
-    req.end();
-  });
+    req.write(soapXml)
+    req.end()
+  })
 }
 
 /**
@@ -218,14 +193,11 @@ async function updateGuiaStatuses(
   loteId: string,
   protocolo?: string
 ): Promise<void> {
-  const db = admin.firestore();
-  const batch = db.batch();
-  const now = new Date().toISOString();
+  const db = admin.firestore()
+  const batch = db.batch()
+  const now = new Date().toISOString()
 
-  const guiasRef = db
-    .collection('clinics')
-    .doc(clinicId)
-    .collection(GUIAS_COLLECTION);
+  const guiasRef = db.collection('clinics').doc(clinicId).collection(GUIAS_COLLECTION)
 
   for (const guiaId of guiaIds) {
     batch.update(guiasRef.doc(guiaId), {
@@ -234,10 +206,10 @@ async function updateGuiaStatuses(
       protocoloOperadora: protocolo,
       dataEnvio: now,
       updatedAt: now,
-    });
+    })
   }
 
-  await batch.commit();
+  await batch.commit()
 }
 
 // =============================================================================
@@ -261,32 +233,37 @@ export const sendLote = functions
       request: SendLoteRequest,
       context: functions.https.CallableContext
     ): Promise<SendLoteResponse> => {
-      // Verify authentication
-      if (!context.auth) {
-        throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
-      }
+      const { clinicId, loteId } = request
 
-      const { clinicId, loteId } = request;
-
-      // Validate input
+      // Validate input first
       if (!clinicId || !loteId) {
         return {
           success: false,
           error: 'Missing required fields: clinicId, loteId',
-        };
+        }
       }
+
+      // Validate auth, role (professional+), and clinic access
+      const authContext = requireAuthRoleAndClinicV1(context, clinicId, [
+        'owner',
+        'admin',
+        'professional',
+      ])
+
+      // Rate limiting for TISS operations
+      await checkRateLimitForUser(authContext.userId, 'TISS_BATCH')
 
       functions.logger.info('Sending lote', {
         clinicId,
         loteId,
-        userId: context.auth.uid,
-      });
+        userId: authContext.userId,
+      })
 
       try {
         // Get lote
-        const lote = await getLote(clinicId, loteId);
+        const lote = await getLote(clinicId, loteId)
         if (!lote) {
-          return { success: false, error: 'Lote não encontrado' };
+          return { success: false, error: 'Lote não encontrado' }
         }
 
         // Validate lote status
@@ -294,7 +271,7 @@ export const sendLote = functions
           return {
             success: false,
             error: `Lote já foi enviado (status: ${lote.status})`,
-          };
+          }
         }
 
         // Check if lote has XML content
@@ -302,57 +279,52 @@ export const sendLote = functions
           return {
             success: false,
             error: 'Lote não possui XML gerado. Gere o XML primeiro.',
-          };
+          }
         }
 
         // Update status to sending
-        await updateLoteStatus(clinicId, loteId, 'enviando');
+        await updateLoteStatus(clinicId, loteId, 'enviando')
 
         // Get WebService config
-        const wsConfig = await getWebServiceConfig(clinicId, lote.registroANS);
+        const wsConfig = await getWebServiceConfig(clinicId, lote.registroANS)
         if (!wsConfig) {
           await updateLoteStatus(clinicId, loteId, 'erro', {
             erros: [{ codigo: 'NO_WEBSERVICE', mensagem: 'WebService não configurado' }],
-          });
+          })
           return {
             success: false,
             error: 'WebService da operadora não configurado',
-          };
+          }
         }
 
         // Get certificate for signing (if not already signed)
-        let signedXml = lote.xmlContent;
+        let signedXml = lote.xmlContent
         if (!lote.xmlContent.includes('<Signature')) {
-          const certData = await getCertificateForSigning(clinicId);
-          signedXml = signXmlDocument(lote.xmlContent, certData.pfxBase64, certData.password);
+          const certData = await getCertificateForSigning(clinicId)
+          signedXml = signXmlDocument(lote.xmlContent, certData.pfxBase64, certData.password)
         }
 
         // Build SOAP envelope
-        const soapXml = buildSoapEnvelope(signedXml);
+        const soapXml = buildSoapEnvelope(signedXml)
 
         // Get certificate for mTLS if needed
-        let pfxBase64: string | undefined;
-        let pfxPassword: string | undefined;
+        let pfxBase64: string | undefined
+        let pfxPassword: string | undefined
 
         if (wsConfig.authType === 'certificate') {
-          const certData = await getCertificateForSigning(clinicId);
-          pfxBase64 = certData.pfxBase64;
-          pfxPassword = certData.password;
+          const certData = await getCertificateForSigning(clinicId)
+          pfxBase64 = certData.pfxBase64
+          pfxPassword = certData.password
         }
 
         // Send to WebService
-        const httpResponse = await sendHttpRequest(
-          wsConfig,
-          soapXml,
-          pfxBase64,
-          pfxPassword
-        );
+        const httpResponse = await sendHttpRequest(wsConfig, soapXml, pfxBase64, pfxPassword)
 
         // Parse response
-        const wsResponse = parseSoapResponse(httpResponse.body);
-        wsResponse.httpStatus = httpResponse.statusCode;
+        const wsResponse = parseSoapResponse(httpResponse.body)
+        wsResponse.httpStatus = httpResponse.statusCode
 
-        const now = new Date().toISOString();
+        const now = new Date().toISOString()
 
         if (wsResponse.success && wsResponse.protocolo) {
           // Success - update lote and guias
@@ -361,21 +333,15 @@ export const sendLote = functions
             dataEnvio: now,
             xmlContent: signedXml,
             xmlHash: hashXml(signedXml),
-          });
+          })
 
-          await updateGuiaStatuses(
-            clinicId,
-            lote.guiaIds,
-            'enviada',
-            loteId,
-            wsResponse.protocolo
-          );
+          await updateGuiaStatuses(clinicId, lote.guiaIds, 'enviada', loteId, wsResponse.protocolo)
 
           functions.logger.info('Lote sent successfully', {
             clinicId,
             loteId,
             protocolo: wsResponse.protocolo,
-          });
+          })
 
           return {
             success: true,
@@ -383,37 +349,37 @@ export const sendLote = functions
             dataEnvio: now,
             xmlEnviado: signedXml,
             xmlResposta: wsResponse.xmlResposta,
-          };
+          }
         } else {
           // Error - update lote status
           await updateLoteStatus(clinicId, loteId, 'erro', {
-            erros: wsResponse.errors?.map((e) => ({
+            erros: wsResponse.errors?.map(e => ({
               codigo: e.codigo,
               mensagem: e.mensagem,
             })),
-          });
+          })
 
           functions.logger.error('Lote submission failed', {
             clinicId,
             loteId,
             errors: wsResponse.errors,
-          });
+          })
 
           return {
             success: false,
             error: wsResponse.mensagem,
             errorCode: wsResponse.errors?.[0]?.codigo,
             xmlResposta: wsResponse.xmlResposta,
-          };
+          }
         }
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Unknown error';
+        const message = error instanceof Error ? error.message : 'Unknown error'
 
         // Update lote status on error
         try {
           await updateLoteStatus(clinicId, loteId, 'erro', {
             erros: [{ codigo: 'SEND_ERROR', mensagem: message }],
-          });
+          })
         } catch {
           // Ignore status update errors
         }
@@ -422,37 +388,37 @@ export const sendLote = functions
           clinicId,
           loteId,
           error: message,
-        });
+        })
 
         // Provide user-friendly error messages
         if (message.includes('certificate')) {
           return {
             success: false,
             error: 'Erro no certificado digital. Verifique se está configurado corretamente.',
-          };
+          }
         }
 
         if (message.includes('timeout')) {
           return {
             success: false,
             error: 'Timeout na conexão com a operadora. Tente novamente.',
-          };
+          }
         }
 
         if (message.includes('connection')) {
           return {
             success: false,
             error: 'Falha na conexão com a operadora. Verifique a URL do WebService.',
-          };
+          }
         }
 
         return {
           success: false,
           error: message,
-        };
+        }
       }
     }
-  );
+  )
 
 /**
  * Retry sending a failed lote.
@@ -462,16 +428,26 @@ export const retrySendLote = functions.https.onCall(
     request: SendLoteRequest,
     context: functions.https.CallableContext
   ): Promise<SendLoteResponse> => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+    const { clinicId, loteId } = request
+
+    if (!clinicId || !loteId) {
+      return { success: false, error: 'Missing clinicId or loteId' }
     }
 
-    const { clinicId, loteId } = request;
+    // Validate auth, role (professional+), and clinic access
+    const authContext = requireAuthRoleAndClinicV1(context, clinicId, [
+      'owner',
+      'admin',
+      'professional',
+    ])
+
+    // Rate limiting
+    await checkRateLimitForUser(authContext.userId, 'TISS_BATCH')
 
     // Get lote
-    const lote = await getLote(clinicId, loteId);
+    const lote = await getLote(clinicId, loteId)
     if (!lote) {
-      return { success: false, error: 'Lote não encontrado' };
+      return { success: false, error: 'Lote não encontrado' }
     }
 
     // Only allow retry for error status
@@ -479,15 +455,15 @@ export const retrySendLote = functions.https.onCall(
       return {
         success: false,
         error: `Só é possível reenviar lotes com erro (status atual: ${lote.status})`,
-      };
+      }
     }
 
     // Reset status and call sendLote
     await updateLoteStatus(clinicId, loteId, 'pronto', {
       erros: [],
-    });
+    })
 
     // Use sendLote logic
-    return sendLote.run(request, context);
+    return sendLote.run(request, context)
   }
-);
+)

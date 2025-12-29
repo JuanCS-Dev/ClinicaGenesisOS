@@ -22,6 +22,7 @@ import {
   GOOGLE_CALENDAR_SECRETS,
   validateSecret,
 } from '../config/secrets.js'
+import { requireAuthV1, checkRateLimitForUser } from '../middleware/index.js'
 
 // OAuth scope for Calendar API (events only)
 const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.events'
@@ -164,10 +165,11 @@ function validateInput(data: CreateMeetSessionInput): void {
 export const createMeetSession = functions
   .runWith({ secrets: [...GOOGLE_CALENDAR_SECRETS] })
   .https.onCall(async (data: CreateMeetSessionInput, context): Promise<CreateMeetSessionOutput> => {
-    // Require authentication
-    if (!context.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'Usuario nao autenticado')
-    }
+    // Validate auth and get user info (clinicId validated via claims)
+    const authContext = requireAuthV1(context)
+
+    // Rate limiting for calendar operations
+    await checkRateLimitForUser(authContext.userId, 'CALENDAR')
 
     // Validate input
     validateInput(data)
@@ -321,10 +323,11 @@ export interface CancelMeetSessionInput {
 export const cancelMeetSession = functions
   .runWith({ secrets: [...GOOGLE_CALENDAR_SECRETS] })
   .https.onCall(async (data: CancelMeetSessionInput, context): Promise<{ success: boolean }> => {
-    // Require authentication
-    if (!context.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'Usuario nao autenticado')
-    }
+    // Validate auth and get user info
+    const authContext = requireAuthV1(context)
+
+    // Rate limiting
+    await checkRateLimitForUser(authContext.userId, 'CALENDAR')
 
     const { calendarEventId, reason } = data
 
@@ -387,10 +390,11 @@ export const updateMeetSession = functions
       data: UpdateMeetSessionInput,
       context
     ): Promise<{ success: boolean; newStartTime: string; newEndTime: string }> => {
-      // Require authentication
-      if (!context.auth) {
-        throw new functions.https.HttpsError('unauthenticated', 'Usuario nao autenticado')
-      }
+      // Validate auth and get user info
+      const authContext = requireAuthV1(context)
+
+      // Rate limiting
+      await checkRateLimitForUser(authContext.userId, 'CALENDAR')
 
       const { calendarEventId, newScheduledAt, newDurationMinutes = 30 } = data
 

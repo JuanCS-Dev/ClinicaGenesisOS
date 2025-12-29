@@ -20,6 +20,7 @@ import {
   isStripeConfigured,
 } from './config.js'
 import { STRIPE_SECRET_KEY } from '../config/secrets.js'
+import { requireAuthRoleAndClinic, checkRateLimitForUser } from '../middleware/index.js'
 import type {
   CreatePaymentInput,
   PaymentIntentResponse,
@@ -45,21 +46,26 @@ export const createPixPayment = onCall<{
     secrets: [STRIPE_SECRET_KEY],
   },
   async request => {
-    // Validate authentication
-    if (!request.auth) {
-      throw new HttpsError('unauthenticated', 'User must be authenticated')
+    const { clinicId, input } = request.data
+
+    // Validate required fields first
+    if (!clinicId) {
+      throw new HttpsError('invalid-argument', 'clinicId is required')
     }
+
+    // Validate auth, role (professional+), and clinic access
+    const authRequest = requireAuthRoleAndClinic(request, clinicId, [
+      'owner',
+      'admin',
+      'professional',
+    ])
+
+    // Rate limiting for payment operations
+    await checkRateLimitForUser(authRequest.userId, 'PAYMENT')
 
     // Validate Stripe configuration
     if (!isStripeConfigured()) {
       throw new HttpsError('failed-precondition', 'Stripe not configured. Contact support.')
-    }
-
-    const { clinicId, input } = request.data
-
-    // Validate required fields
-    if (!clinicId) {
-      throw new HttpsError('invalid-argument', 'clinicId is required')
     }
 
     if (!input?.amount) {
@@ -105,7 +111,7 @@ export const createPixPayment = onCall<{
         patientName: input.patientName || '',
         appointmentId: input.appointmentId || '',
         transactionId: input.transactionId || '',
-        createdBy: request.auth.uid,
+        createdBy: authRequest.userId,
       },
       payment_method_options: {
         pix: {
@@ -146,7 +152,7 @@ export const createPixPayment = onCall<{
       pixData,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
-      createdBy: request.auth.uid,
+      createdBy: authRequest.userId,
     }
 
     const docRef = await db
@@ -190,15 +196,21 @@ export const cancelPixPayment = onCall<{
     secrets: [STRIPE_SECRET_KEY],
   },
   async request => {
-    if (!request.auth) {
-      throw new HttpsError('unauthenticated', 'User must be authenticated')
-    }
-
     const { clinicId, paymentId } = request.data
 
     if (!clinicId || !paymentId) {
       throw new HttpsError('invalid-argument', 'clinicId and paymentId are required')
     }
+
+    // Validate auth, role (professional+), and clinic access
+    const authRequest = requireAuthRoleAndClinic(request, clinicId, [
+      'owner',
+      'admin',
+      'professional',
+    ])
+
+    // Rate limiting
+    await checkRateLimitForUser(authRequest.userId, 'PAYMENT')
 
     const stripe = getStripeClient()
     const db = getFirestore()
@@ -237,6 +249,7 @@ export const cancelPixPayment = onCall<{
 
 /**
  * Refunds a completed PIX payment.
+ * Requires admin+ role.
  */
 export const refundPixPayment = onCall<{
   clinicId: string
@@ -250,15 +263,17 @@ export const refundPixPayment = onCall<{
     secrets: [STRIPE_SECRET_KEY],
   },
   async request => {
-    if (!request.auth) {
-      throw new HttpsError('unauthenticated', 'User must be authenticated')
-    }
-
     const { clinicId, paymentId, amount } = request.data
 
     if (!clinicId || !paymentId) {
       throw new HttpsError('invalid-argument', 'clinicId and paymentId are required')
     }
+
+    // Validate auth, role (admin+ for refunds), and clinic access
+    const authRequest = requireAuthRoleAndClinic(request, clinicId, ['owner', 'admin'])
+
+    // Rate limiting
+    await checkRateLimitForUser(authRequest.userId, 'PAYMENT')
 
     const stripe = getStripeClient()
     const db = getFirestore()
