@@ -4,44 +4,68 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ========================================
-    // HELPER FUNCTIONS
+    // HELPER FUNCTIONS - SECURE RBAC
     // ========================================
 
     /**
-     * Check if the request is from an authenticated user.
+     * Check if request is from authenticated user.
      */
     function isAuthenticated() {
       return request.auth != null;
     }
 
     /**
-     * Check if the authenticated user owns the document.
+     * Get clinic ID from custom claims.
+     * More secure than reading user document (can't be spoofed).
      */
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+    function getClinicId() {
+      return request.auth.token.clinicId;
     }
 
     /**
-     * Get the user profile document for the authenticated user.
+     * Get user role from custom claims.
      */
-    function getUserProfile() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    function getUserRole() {
+      return request.auth.token.role;
     }
 
     /**
-     * Check if the authenticated user belongs to the specified clinic.
-     * Reads the user's profile to get their clinicId.
+     * Check if user belongs to the specified clinic.
+     * Uses custom claims for security.
      */
     function belongsToClinic(clinicId) {
-      return isAuthenticated() && getUserProfile().clinicId == clinicId;
+      return isAuthenticated() && getClinicId() == clinicId;
     }
 
     /**
-     * Check if the authenticated user is the owner of the specified clinic.
+     * Check if user is clinic owner.
      */
     function isClinicOwner(clinicId) {
-      return isAuthenticated() &&
-        get(/databases/$(database)/documents/clinics/$(clinicId)).data.ownerId == request.auth.uid;
+      return belongsToClinic(clinicId) && getUserRole() == 'owner';
+    }
+
+    /**
+     * Check if user is clinic admin (owner or admin).
+     */
+    function isClinicAdmin(clinicId) {
+      return belongsToClinic(clinicId) && getUserRole() in ['owner', 'admin'];
+    }
+
+    /**
+     * Check if user has one of the specified roles.
+     * @param clinicId - Clinic to check membership
+     * @param roles - List of allowed roles
+     */
+    function hasRole(clinicId, roles) {
+      return belongsToClinic(clinicId) && getUserRole() in roles;
+    }
+
+    /**
+     * Check if user can access clinical data (medical records).
+     * Restricted to clinical staff only.
+     */
+    function isClinicalStaff(clinicId) {
+      return hasRole(clinicId, ['owner', 'admin', 'professional']);
     }
 
     // ========================================
@@ -49,15 +73,19 @@ service cloud.firestore {
     // ========================================
 
     /**
-     * User profiles are stored in /users/{userId}
-     * Each user can only read/write their own profile.
-     * Other authenticated users can read profiles (for clinic collaboration).
+     * User profiles: /users/{userId}
+     * - User can read own profile
+     * - Users can read profiles from same clinic (for collaboration)
+     * - Only own user can write their profile
      */
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
+      allow read: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        (getClinicId() != null && getClinicId() == resource.data.clinicId)
+      );
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && request.auth.uid == userId;
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
     // ========================================
@@ -65,12 +93,24 @@ service cloud.firestore {
     // ========================================
 
     /**
-     * Patient portal profiles are stored in /patientPortalUsers/{userId}
-     * Each patient can only read/write their own profile.
-     * Used for magic link (passwordless) authentication.
+     * Patient portal profiles: /patientPortalUsers/{userId}
+     * Separate from staff users, used for patient self-service.
      */
     match /patientPortalUsers/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // ========================================
+    // PHONE INDEX (for WhatsApp lookups)
+    // ========================================
+
+    /**
+     * Phone index: /phoneIndex/{phone}
+     * Read-only for authenticated users, write by Cloud Functions.
+     */
+    match /phoneIndex/{phone} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Cloud Functions only
     }
 
     // ========================================
@@ -78,10 +118,10 @@ service cloud.firestore {
     // ========================================
 
     /**
-     * Clinics are stored in /clinics/{clinicId}
-     * - Any authenticated user can create a clinic (becomes owner)
-     * - Only clinic members can read clinic data
-     * - Only clinic owner can update/delete
+     * Clinics: /clinics/{clinicId}
+     * - Any authenticated user can create (becomes owner via trigger)
+     * - Only members can read
+     * - Only owner can update/delete
      */
     match /clinics/{clinicId} {
       allow read: if belongsToClinic(clinicId);
@@ -90,85 +130,105 @@ service cloud.firestore {
       allow delete: if isClinicOwner(clinicId);
 
       // ========================================
-      // PATIENTS (Clinic Subcollection)
+      // PATIENTS
       // ========================================
 
       /**
-       * Patients are stored in /clinics/{clinicId}/patients/{patientId}
-       * Only clinic members can access patient data.
+       * Patients: /clinics/{clinicId}/patients/{patientId}
+       * - All staff can read
+       * - All staff can create/update (receptionists need to register)
+       * - Only owner can delete (prefer soft delete)
        */
       match /patients/{patientId} {
-        allow read, write: if belongsToClinic(clinicId);
+        allow read: if hasRole(clinicId, ['owner', 'admin', 'professional', 'receptionist']);
+        allow create: if hasRole(clinicId, ['owner', 'admin', 'professional', 'receptionist']);
+        allow update: if hasRole(clinicId, ['owner', 'admin', 'professional', 'receptionist']);
+        allow delete: if isClinicOwner(clinicId);
       }
 
       // ========================================
-      // APPOINTMENTS (Clinic Subcollection)
+      // MEDICAL RECORDS - RESTRICTED
       // ========================================
 
       /**
-       * Appointments are stored in /clinics/{clinicId}/appointments/{appointmentId}
-       * Only clinic members can access appointment data.
-       */
-      match /appointments/{appointmentId} {
-        allow read, write: if belongsToClinic(clinicId);
-      }
-
-      // ========================================
-      // MEDICAL RECORDS (Clinic Subcollection)
-      // ========================================
-
-      /**
-       * Medical records are stored in /clinics/{clinicId}/records/{recordId}
-       * Only clinic members can access medical records.
-       * Note: Records are polymorphic (SOAP, Prescription, etc.)
+       * Medical records: /clinics/{clinicId}/records/{recordId}
+       * HIPAA/LGPD compliant:
+       * - Only clinical staff can read (no receptionists)
+       * - Only professionals can create/update
+       * - NEVER delete (compliance requirement)
        */
       match /records/{recordId} {
-        allow read, write: if belongsToClinic(clinicId);
+        allow read: if isClinicalStaff(clinicId);
+        allow create: if hasRole(clinicId, ['owner', 'professional']);
+        allow update: if hasRole(clinicId, ['owner', 'professional']);
+        allow delete: if false; // Never delete medical records
       }
 
       // ========================================
-      // AI SCRIBE SESSIONS (Clinic Subcollection)
+      // APPOINTMENTS
       // ========================================
 
       /**
-       * AI Scribe sessions track audio processing status.
-       * Created by frontend, updated by Cloud Function.
+       * Appointments: /clinics/{clinicId}/appointments/{appointmentId}
+       * - All staff can read and manage
+       * - Only admins can delete
+       */
+      match /appointments/{appointmentId} {
+        allow read: if hasRole(clinicId, ['owner', 'admin', 'professional', 'receptionist']);
+        allow create: if hasRole(clinicId, ['owner', 'admin', 'professional', 'receptionist']);
+        allow update: if hasRole(clinicId, ['owner', 'admin', 'professional', 'receptionist']);
+        allow delete: if isClinicAdmin(clinicId);
+      }
+
+      // ========================================
+      // AI SCRIBE SESSIONS - IMMUTABLE
+      // ========================================
+
+      /**
+       * AI Scribe sessions: /clinics/{clinicId}/aiScribeSessions/{sessionId}
+       * Audit trail - immutable after creation.
        */
       match /aiScribeSessions/{sessionId} {
-        allow read, write: if belongsToClinic(clinicId);
+        allow read: if isClinicalStaff(clinicId);
+        allow create: if hasRole(clinicId, ['owner', 'professional']);
+        allow update, delete: if false; // Immutable for audit
       }
 
       // ========================================
-      // LAB ANALYSIS SESSIONS (Clinic Subcollection)
+      // LAB ANALYSIS SESSIONS - IMMUTABLE
       // ========================================
 
       /**
-       * Lab analysis sessions for Clinical Reasoning Engine.
-       * Created by frontend, processed by Cloud Function.
+       * Lab analysis: /clinics/{clinicId}/labAnalysisSessions/{sessionId}
+       * Clinical Reasoning Engine results - immutable.
        */
       match /labAnalysisSessions/{sessionId} {
-        allow read, write: if belongsToClinic(clinicId);
+        allow read: if isClinicalStaff(clinicId);
+        allow create: if hasRole(clinicId, ['owner', 'professional']);
+        allow update, delete: if false; // Immutable for audit
       }
 
       // ========================================
-      // AI ANALYSIS LOGS (Clinic Subcollection)
+      // AI ANALYSIS LOGS - APPEND ONLY
       // ========================================
 
       /**
-       * Audit logs for AI analysis operations.
-       * Read-only for clinic members, write by Cloud Functions.
+       * AI audit logs: /clinics/{clinicId}/aiAnalysisLogs/{logId}
+       * Read-only for clinic, write by Cloud Functions only.
        */
       match /aiAnalysisLogs/{logId} {
         allow read: if belongsToClinic(clinicId);
-        allow write: if false; // Only Cloud Functions can write
+        allow write: if false; // Cloud Functions only
       }
 
       // ========================================
-      // SETTINGS (Clinic Subcollection)
+      // SETTINGS
       // ========================================
 
       /**
-       * Clinic settings and integrations configuration.
+       * Clinic settings: /clinics/{clinicId}/settings/{settingId}
+       * - All members can read
+       * - Only owner can write
        */
       match /settings/{settingId} {
         allow read: if belongsToClinic(clinicId);
@@ -176,58 +236,162 @@ service cloud.firestore {
       }
 
       // ========================================
-      // TRANSACTIONS (Clinic Subcollection)
+      // TRANSACTIONS - FINANCIAL
       // ========================================
 
       /**
-       * Financial transactions for the clinic.
+       * Financial transactions: /clinics/{clinicId}/transactions/{transactionId}
+       * Restricted to admin+ for privacy.
        */
       match /transactions/{transactionId} {
-        allow read, write: if belongsToClinic(clinicId);
+        allow read: if isClinicAdmin(clinicId);
+        allow create: if isClinicAdmin(clinicId);
+        allow update: if isClinicAdmin(clinicId);
+        allow delete: if isClinicOwner(clinicId);
       }
 
       // ========================================
-      // CONSENTS (Clinic Subcollection)
+      // PAYMENTS - PIX/BOLETO
       // ========================================
 
       /**
-       * Patient consent records.
+       * Payments: /clinics/{clinicId}/payments/{paymentId}
+       * Created by Cloud Functions, read by admin+.
+       */
+      match /payments/{paymentId} {
+        allow read: if isClinicAdmin(clinicId);
+        allow create: if false; // Cloud Functions only
+        allow update: if false; // Cloud Functions only
+        allow delete: if false; // Never delete payment records
+      }
+
+      // ========================================
+      // CONSENTS - LGPD
+      // ========================================
+
+      /**
+       * Patient consents: /clinics/{clinicId}/consents/{consentId}
+       * LGPD compliant - immutable after creation.
        */
       match /consents/{consentId} {
-        allow read, write: if belongsToClinic(clinicId);
+        allow read: if belongsToClinic(clinicId);
+        allow create: if hasRole(clinicId, ['owner', 'admin', 'professional', 'receptionist']);
+        allow update, delete: if false; // Consents are immutable
       }
 
       // ========================================
-      // OPERADORAS (Clinic Subcollection)
+      // TISS - OPERADORAS
       // ========================================
 
       /**
-       * Health insurance operators.
+       * Health insurance operators: /clinics/{clinicId}/operadoras/{operadoraId}
        */
       match /operadoras/{operadoraId} {
-        allow read, write: if belongsToClinic(clinicId);
+        allow read: if belongsToClinic(clinicId);
+        allow write: if isClinicAdmin(clinicId);
       }
 
       // ========================================
-      // GUIAS (Clinic Subcollection)
+      // TISS - GUIAS
       // ========================================
 
       /**
-       * TISS authorization guides.
+       * Authorization guides: /clinics/{clinicId}/guias/{guiaId}
        */
       match /guias/{guiaId} {
-        allow read, write: if belongsToClinic(clinicId);
+        allow read: if belongsToClinic(clinicId);
+        allow create: if hasRole(clinicId, ['owner', 'admin', 'professional']);
+        allow update: if hasRole(clinicId, ['owner', 'admin', 'professional']);
+        allow delete: if isClinicOwner(clinicId);
       }
 
       // ========================================
-      // GLOSAS (Clinic Subcollection)
+      // TISS - GLOSAS
       // ========================================
 
       /**
-       * Insurance claim denials/disputes.
+       * Insurance claim denials: /clinics/{clinicId}/glosas/{glosaId}
        */
       match /glosas/{glosaId} {
-        allow read, write: if belongsToClinic(clinicId);
+        allow read: if belongsToClinic(clinicId);
+        allow write: if isClinicAdmin(clinicId);
+      }
+
+      // ========================================
+      // TISS - LOTES
+      // ========================================
+
+      /**
+       * TISS batches: /clinics/{clinicId}/lotes/{loteId}
+       */
+      match /lotes/{loteId} {
+        allow read: if belongsToClinic(clinicId);
+        allow write: if isClinicAdmin(clinicId);
+      }
+
+      // ========================================
+      // TISS - CERTIFICATES
+      // ========================================
+
+      /**
+       * Digital certificates: /clinics/{clinicId}/certificates/{certId}
+       * Owner only - sensitive encryption data.
+       */
+      match /certificates/{certId} {
+        allow read: if isClinicOwner(clinicId);
+        allow write: if isClinicOwner(clinicId);
+      }
+
+      // ========================================
+      // COMPANION SESSIONS
+      // ========================================
+
+      /**
+       * AI Companion chat sessions: /clinics/{clinicId}/companionSessions/{sessionId}
+       * Write by Cloud Functions, read by clinical staff.
+       */
+      match /companionSessions/{sessionId} {
+        allow read: if isClinicalStaff(clinicId);
+        allow write: if false; // Cloud Functions only
+      }
+
+      // ========================================
+      // COMPANION HANDOFFS
+      // ========================================
+
+      /**
+       * Companion to human handoffs: /clinics/{clinicId}/companionHandoffs/{handoffId}
+       */
+      match /companionHandoffs/{handoffId} {
+        allow read: if hasRole(clinicId, ['owner', 'admin', 'professional', 'receptionist']);
+        allow write: if false; // Cloud Functions only
+      }
+
+      // ========================================
+      // TELEMEDICINE SESSIONS
+      // ========================================
+
+      /**
+       * Telemedicine/teleconsultation sessions.
+       */
+      match /telemedicineSessions/{sessionId} {
+        allow read: if belongsToClinic(clinicId);
+        allow create: if hasRole(clinicId, ['owner', 'admin', 'professional', 'receptionist']);
+        allow update: if hasRole(clinicId, ['owner', 'admin', 'professional', 'receptionist']);
+        allow delete: if isClinicAdmin(clinicId);
+      }
+
+      // ========================================
+      // AUDIT LOGS - READ ONLY
+      // ========================================
+
+      /**
+       * Audit logs: /clinics/{clinicId}/auditLogs/{logId}
+       * Append-only by Cloud Functions.
+       */
+      match /auditLogs/{logId} {
+        allow read: if belongsToClinic(clinicId);
+        allow write: if false; // Cloud Functions only
       }
     }
   }

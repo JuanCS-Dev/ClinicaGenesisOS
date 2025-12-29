@@ -14,8 +14,10 @@
     "typecheck": "tsc --noEmit",
     "audit:mocks": "bash scripts/audit-mocks.sh",
     "test": "vitest",
+    "test:run": "vitest run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
+    "test:rules": "firebase emulators:exec --only firestore 'vitest run src/__tests__/security/'",
     "firebase:emulators": "firebase emulators:start",
     "firebase:deploy": "npm run build && firebase deploy",
     "firebase:deploy:hosting": "npm run build && firebase deploy --only hosting",
@@ -63,6 +65,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "@firebase/rules-unit-testing": "^5.0.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",

@@ -90,8 +90,9 @@ export {
 // ============================================
 // Google Calendar + Meet (Teleconsultation)
 // ============================================
-export {
-  createMeetSession,
-  cancelMeetSession,
-  updateMeetSession,
-} from './calendar/index.js'
+export { createMeetSession, cancelMeetSession, updateMeetSession } from './calendar/index.js'
+
+// ============================================
+// RBAC - Custom Claims Management (1.2)
+// ============================================
+export { setUserClaims, revokeUserClaims, refreshClaims, onClinicCreated } from './auth/index.js'
