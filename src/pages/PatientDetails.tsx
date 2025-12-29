@@ -1,3 +1,13 @@
+/**
+ * PatientDetails Page
+ * ===================
+ *
+ * Main patient record view with medical history, timeline, and clinical AI.
+ * Supports multiple specialties via plugin system.
+ *
+ * @module pages/PatientDetails
+ */
+
 import React, { useState, useMemo, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { usePatient } from '../hooks/usePatient'
@@ -6,27 +16,12 @@ import { usePatientAppointments } from '../hooks/useAppointments'
 import { useClinicContext } from '../contexts/ClinicContext'
 import { PLUGINS, MedicineEditor, NutritionEditor, PsychologyEditor } from '../plugins'
 import { Timeline } from '../components/patient/Timeline'
-import { AttachmentList } from '../components/records/AttachmentUpload'
+import { HistoryItem } from '../components/patient/HistoryItem'
+import { TabButton } from '../components/ui/TabButton'
 import { ClinicalReasoningPanel } from '../components/ai/clinical-reasoning'
 import { PrescriptionModal } from '../components/prescription'
-import {
-  Calendar,
-  FileText,
-  History,
-  Edit2,
-  Stethoscope,
-  Pill,
-  Activity,
-  Brain,
-  FlaskConical,
-  Loader2,
-  Paperclip,
-  Sparkles,
-  Receipt,
-} from 'lucide-react'
+import { Calendar, FileText, History, Edit2, Loader2, Sparkles, Receipt } from 'lucide-react'
 import type { PatientContext } from '../types'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
 import {
   SpecialtyType,
   RecordType,
@@ -34,139 +29,91 @@ import {
   TimelineEventType,
   CreateRecordInput,
   EditorRecordData,
-  MedicalRecord,
-  SoapRecord,
   PrescriptionRecord,
   ExamRequestRecord,
   AnthropometryRecord,
+  SoapRecord,
   PsychoSessionRecord,
 } from '../types'
 
-interface TabButtonProps {
-  active: boolean
-  onClick: () => void
-  icon: React.ComponentType<{ className?: string }>
-  label: string
-  colorClass?: string
+// =============================================================================
+// HELPERS
+// =============================================================================
+
+/**
+ * Generate timeline events from records and appointments.
+ */
+function generateTimelineEvents(
+  records: ReturnType<typeof useRecords>['records'],
+  appointments: ReturnType<typeof usePatientAppointments>['appointments']
+): TimelineEvent[] {
+  const events: TimelineEvent[] = []
+
+  // Add Records
+  records.forEach(r => {
+    let type = TimelineEventType.CONSULTATION
+    let title = 'Registro Clínico'
+    let desc = ''
+
+    if (r.type === RecordType.PRESCRIPTION) {
+      const prescRecord = r as PrescriptionRecord
+      type = TimelineEventType.PRESCRIPTION
+      title = 'Receita Emitida'
+      desc = `${prescRecord.medications.length} medicamentos prescritos.`
+    } else if (r.type === RecordType.EXAM_REQUEST) {
+      const examRecord = r as ExamRequestRecord
+      type = TimelineEventType.EXAM
+      title = 'Exames Solicitados'
+      desc = examRecord.exams.join(', ')
+    } else if (r.type === RecordType.ANTHROPOMETRY) {
+      const anthroRecord = r as AnthropometryRecord
+      type = TimelineEventType.EXAM
+      title = 'Avaliação Física'
+      desc = `Peso: ${anthroRecord.weight}kg - IMC: ${anthroRecord.imc}`
+    } else if (r.type === RecordType.SOAP) {
+      const soapRecord = r as SoapRecord
+      type = TimelineEventType.CONSULTATION
+      title = 'Evolução'
+      desc = soapRecord.subjective || 'Registro de consulta.'
+    } else if (r.type === RecordType.PSYCHO_SESSION) {
+      const psychoRecord = r as PsychoSessionRecord
+      type = TimelineEventType.CONSULTATION
+      title = 'Evolução'
+      desc = psychoRecord.summary || 'Registro de consulta.'
+    } else {
+      type = TimelineEventType.CONSULTATION
+      title = 'Evolução'
+      desc = 'Registro de consulta.'
+    }
+
+    events.push({
+      id: r.id,
+      date: new Date(r.date),
+      type,
+      title,
+      description: desc,
+    })
+  })
+
+  // Add past Appointments
+  appointments.forEach(a => {
+    if (new Date(a.date) < new Date()) {
+      events.push({
+        id: a.id,
+        date: new Date(a.date),
+        type: TimelineEventType.CONSULTATION,
+        title: a.procedure,
+        description: `Consulta realizada com ${a.professional}. Status: ${a.status}`,
+      })
+    }
+  })
+
+  return events.sort((a, b) => b.date.getTime() - a.date.getTime())
 }
 
-const TabButton = ({
-  active,
-  onClick,
-  icon: Icon,
-  label,
-  colorClass = 'text-genesis-primary',
-}: TabButtonProps) => (
-  <button
-    onClick={onClick}
-    className={`
-      relative flex items-center justify-center gap-2 px-6 py-2 text-[13px] font-semibold transition-all duration-300 rounded-lg flex-1 md:flex-none
-      ${
-        active
-          ? `bg-genesis-surface text-genesis-dark shadow-sm ring-1 ring-black/5`
-          : 'text-genesis-medium hover:text-genesis-dark hover:bg-black/5'
-      }
-    `}
-  >
-    <Icon className={`w-4 h-4 transition-colors ${active ? colorClass : 'text-genesis-subtle'}`} />
-    {label}
-  </button>
-)
-
-interface HistoryItemProps {
-  record: MedicalRecord
-  active?: boolean
-}
-
-const HistoryItem = ({ record, active }: HistoryItemProps) => {
-  let title = ''
-  let content = ''
-  let Icon = FileText
-
-  switch (record.type) {
-    case RecordType.SOAP: {
-      const soapRecord = record as SoapRecord
-      title = 'Evolução Médica'
-      content = soapRecord.subjective || 'Sem detalhes subjetivos.'
-      Icon = Stethoscope
-      break
-    }
-    case RecordType.PRESCRIPTION: {
-      const prescRecord = record as PrescriptionRecord
-      title = 'Prescrição Médica'
-      const medsCount = prescRecord.medications?.length || 0
-      content = `${medsCount} medicamentos prescritos: ${prescRecord.medications.map(m => m.name).join(', ')}`
-      Icon = Pill
-      break
-    }
-    case RecordType.EXAM_REQUEST: {
-      const examRecord = record as ExamRequestRecord
-      title = 'Solicitação de Exames'
-      const examCount = examRecord.exams?.length || 0
-      content = `${examCount} exames solicitados: ${examRecord.exams.join(', ')}`
-      Icon = FlaskConical
-      break
-    }
-    case RecordType.ANTHROPOMETRY: {
-      const anthroRecord = record as AnthropometryRecord
-      title = 'Antropometria'
-      content = `Peso: ${anthroRecord.weight}kg, IMC: ${anthroRecord.imc}`
-      Icon = Activity
-      break
-    }
-    case RecordType.PSYCHO_SESSION: {
-      const psychoRecord = record as PsychoSessionRecord
-      title = 'Sessão de Terapia'
-      content = psychoRecord.summary
-      Icon = Brain
-      break
-    }
-    default:
-      title = 'Registro'
-      content = 'Detalhes do registro...'
-  }
-
-  const hasAttachments = record.attachments && record.attachments.length > 0
-
-  return (
-    <div
-      className={`p-4 rounded-xl cursor-pointer transition-all duration-200 group border ${active ? 'bg-genesis-surface shadow-md border-genesis-border-subtle ring-1 ring-black/5' : 'border-transparent hover:bg-genesis-surface/50 hover:border-genesis-border-subtle'}`}
-    >
-      <div className="flex justify-between items-start mb-1.5">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-genesis-medium uppercase tracking-wider bg-genesis-soft px-2 py-0.5 rounded-md">
-            {format(new Date(record.date), 'dd MMM yy', { locale: ptBR })}
-          </span>
-          {hasAttachments && record.attachments && (
-            <span className="flex items-center gap-0.5 text-[10px] text-genesis-subtle">
-              <Paperclip className="w-3 h-3" />
-              {record.attachments.length}
-            </span>
-          )}
-        </div>
-        {active && (
-          <div className="w-1.5 h-1.5 rounded-full bg-genesis-primary shadow-[0_0_8px_rgba(0,122,255,0.5)]" />
-        )}
-      </div>
-      <div className="flex items-center gap-2 mb-1">
-        <Icon className="w-3.5 h-3.5 text-genesis-medium/80" />
-        <h4
-          className={`text-sm font-semibold ${active ? 'text-genesis-dark' : 'text-genesis-medium group-hover:text-genesis-dark'}`}
-        >
-          {title}
-        </h4>
-      </div>
-      <p className="text-[11px] text-genesis-medium line-clamp-2 leading-relaxed opacity-90 pl-5.5">
-        {content}
-      </p>
-      {hasAttachments && active && record.attachments && (
-        <div className="mt-2 pl-5.5">
-          <AttachmentList attachments={record.attachments} />
-        </div>
-      )}
-    </div>
-  )
-}
+// =============================================================================
+// COMPONENT
+// =============================================================================
 
 export const PatientDetails: React.FC = () => {
   const { id } = useParams()
@@ -180,12 +127,11 @@ export const PatientDetails: React.FC = () => {
     'prontuario'
   )
   const [showPrescriptionModal, setShowPrescriptionModal] = useState(false)
+  const [activePluginId, setActivePluginId] = useState<SpecialtyType>(
+    userProfile?.specialty || 'medicina'
+  )
 
-  // Handle prescription save
-  const handlePrescriptionSave = useCallback(() => {
-    setShowPrescriptionModal(false)
-    // Prescription is saved via the modal, records will refresh
-  }, [])
+  const activePlugin = PLUGINS[activePluginId]
 
   // Build patient context for Clinical AI
   const patientContext: PatientContext = useMemo(
@@ -200,12 +146,32 @@ export const PatientDetails: React.FC = () => {
     [patient]
   )
 
-  // Plugin State - default to user's specialty or medicina
-  const [activePluginId, setActivePluginId] = useState<SpecialtyType>(
-    userProfile?.specialty || 'medicina'
-  )
-  const activePlugin = PLUGINS[activePluginId]
+  const handlePrescriptionSave = useCallback(() => {
+    setShowPrescriptionModal(false)
+  }, [])
 
+  const handleSaveRecord = useCallback(
+    async (data: EditorRecordData) => {
+      if (!id) return
+      try {
+        await addRecord({
+          patientId: id,
+          specialty: activePluginId,
+          ...data,
+        } as CreateRecordInput)
+      } catch (error) {
+        console.error('Error saving record:', error)
+      }
+    },
+    [id, activePluginId, addRecord]
+  )
+
+  const timelineEvents = useMemo(
+    () => generateTimelineEvents(records, appointments),
+    [records, appointments]
+  )
+
+  // Loading state
   if (patientLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -214,6 +180,7 @@ export const PatientDetails: React.FC = () => {
     )
   }
 
+  // Not found state
   if (!patient) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -221,88 +188,6 @@ export const PatientDetails: React.FC = () => {
       </div>
     )
   }
-
-  const handleSaveRecord = async (data: EditorRecordData) => {
-    if (!id) return
-    try {
-      await addRecord({
-        patientId: id,
-        specialty: activePluginId,
-        ...data,
-      } as CreateRecordInput)
-    } catch (error) {
-      console.error('Error saving record:', error)
-    }
-  }
-
-  // --- GENERATE TIMELINE EVENTS FROM STORE DATA ---
-  const generateTimelineEvents = (): TimelineEvent[] => {
-    const events: TimelineEvent[] = []
-
-    // 1. Add Records
-    records.forEach(r => {
-      let type = TimelineEventType.CONSULTATION
-      let title = 'Registro Clínico'
-      let desc = ''
-
-      if (r.type === RecordType.PRESCRIPTION) {
-        const prescRecord = r as PrescriptionRecord
-        type = TimelineEventType.PRESCRIPTION
-        title = 'Receita Emitida'
-        desc = `${prescRecord.medications.length} medicamentos prescritos.`
-      } else if (r.type === RecordType.EXAM_REQUEST) {
-        const examRecord = r as ExamRequestRecord
-        type = TimelineEventType.EXAM
-        title = 'Exames Solicitados'
-        desc = examRecord.exams.join(', ')
-      } else if (r.type === RecordType.ANTHROPOMETRY) {
-        const anthroRecord = r as AnthropometryRecord
-        type = TimelineEventType.EXAM
-        title = 'Avaliação Física'
-        desc = `Peso: ${anthroRecord.weight}kg - IMC: ${anthroRecord.imc}`
-      } else if (r.type === RecordType.SOAP) {
-        const soapRecord = r as SoapRecord
-        type = TimelineEventType.CONSULTATION
-        title = 'Evolução'
-        desc = soapRecord.subjective || 'Registro de consulta.'
-      } else if (r.type === RecordType.PSYCHO_SESSION) {
-        const psychoRecord = r as PsychoSessionRecord
-        type = TimelineEventType.CONSULTATION
-        title = 'Evolução'
-        desc = psychoRecord.summary || 'Registro de consulta.'
-      } else {
-        type = TimelineEventType.CONSULTATION
-        title = 'Evolução'
-        desc = 'Registro de consulta.'
-      }
-
-      events.push({
-        id: r.id,
-        date: new Date(r.date),
-        type,
-        title,
-        description: desc,
-      })
-    })
-
-    // 2. Add Appointments
-    appointments.forEach(a => {
-      if (new Date(a.date) < new Date()) {
-        // Only past appointments in timeline typically
-        events.push({
-          id: a.id,
-          date: new Date(a.date),
-          type: TimelineEventType.CONSULTATION,
-          title: a.procedure,
-          description: `Consulta realizada com ${a.professional}. Status: ${a.status}`,
-        })
-      }
-    })
-
-    return events.sort((a, b) => b.date.getTime() - a.date.getTime())
-  }
-
-  const timelineEvents = generateTimelineEvents()
 
   return (
     <div className="space-y-6 animate-enter pb-8">
@@ -384,7 +269,7 @@ export const PatientDetails: React.FC = () => {
         </div>
       </div>
 
-      {/* Plugin Selector (The "Genesis" Modular Part) */}
+      {/* Plugin Selector */}
       <div className="flex gap-4 items-center">
         <span className="text-[10px] font-bold uppercase tracking-widest text-genesis-medium">
           Especialidade Ativa:
@@ -447,11 +332,7 @@ export const PatientDetails: React.FC = () => {
                       Nenhum registro encontrado.
                     </p>
                   ) : (
-                    records.map(r => (
-                      <React.Fragment key={r.id}>
-                        <HistoryItem record={r} />
-                      </React.Fragment>
-                    ))
+                    records.map(r => <HistoryItem key={r.id} record={r} />)
                   )}
                 </div>
               </div>
@@ -475,7 +356,6 @@ export const PatientDetails: React.FC = () => {
                 </div>
 
                 <div className="flex-1 p-10 overflow-y-auto custom-scrollbar">
-                  {/* Render the specific plugin UI */}
                   {activePluginId === 'medicina' && <MedicineEditor onSave={handleSaveRecord} />}
                   {activePluginId === 'nutricao' && <NutritionEditor onSave={handleSaveRecord} />}
                   {activePluginId === 'psicologia' && (
