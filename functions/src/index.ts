@@ -98,6 +98,16 @@ export { createMeetSession, cancelMeetSession, updateMeetSession } from './calen
 export { setUserClaims, revokeUserClaims, refreshClaims, onClinicCreated } from './auth/index.js'
 
 // ============================================
+// SSO/SAML Configuration (5.2)
+// ============================================
+export {
+  getClinicSSOConfig,
+  getSSOConfigByDomain,
+  configureSAMLProvider,
+  disableSSO,
+} from './auth/index.js'
+
+// ============================================
 // Rate Limiting Cleanup (2.3)
 // ============================================
 export { cleanupRateLimits } from './middleware/index.js'

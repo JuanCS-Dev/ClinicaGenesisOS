@@ -1,41 +1,84 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Activity, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
-import { useAuthContext } from '../../contexts/AuthContext';
+import React, { useState, useCallback } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Activity, Mail, Lock, Eye, EyeOff, AlertCircle, Building2 } from 'lucide-react'
+import { useAuthContext } from '../../contexts/AuthContext'
+import { getSSOConfigByDomain, signInWithSAML, type SSOConfig } from '@/services/auth'
 
 export const Login: React.FC = () => {
-  const navigate = useNavigate();
-  const { signIn, signInWithGoogle, loading, error, clearError } = useAuthContext();
+  const navigate = useNavigate()
+  const { signIn, signInWithGoogle, loading, error, clearError } = useAuthContext()
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [ssoConfig, setSsoConfig] = useState<SSOConfig | null>(null)
+  const [ssoLoading, setSsoLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    clearError();
-    setIsSubmitting(true);
+    e.preventDefault()
+    clearError()
+    setIsSubmitting(true)
 
     try {
-      await signIn(email, password);
-      navigate('/dashboard');
+      await signIn(email, password)
+      navigate('/dashboard')
     } catch (err) {
-      console.error('Login failed:', err);
+      console.error('Login failed:', err)
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const handleGoogleSignIn = async () => {
-    clearError();
+    clearError()
     try {
-      await signInWithGoogle();
-      navigate('/dashboard');
+      await signInWithGoogle()
+      navigate('/dashboard')
     } catch (err) {
-      console.error('Google sign-in failed:', err);
+      console.error('Google sign-in failed:', err)
     }
-  };
+  }
+
+  // Detect SSO when email domain changes
+  const checkSSOForDomain = useCallback(async (emailValue: string) => {
+    const domain = emailValue.split('@')[1]
+    if (!domain || domain.length < 3) {
+      setSsoConfig(null)
+      return
+    }
+
+    setSsoLoading(true)
+    try {
+      const config = await getSSOConfigByDomain(domain)
+      setSsoConfig(config)
+    } catch {
+      setSsoConfig(null)
+    } finally {
+      setSsoLoading(false)
+    }
+  }, [])
+
+  const handleEmailBlur = () => {
+    if (email) {
+      checkSSOForDomain(email)
+    }
+  }
+
+  const handleSSOLogin = async () => {
+    if (!ssoConfig?.providerId) return
+
+    clearError()
+    setIsSubmitting(true)
+    try {
+      await signInWithSAML(ssoConfig.providerId)
+      navigate('/dashboard')
+    } catch (err) {
+      console.error('SSO login failed:', err)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-genesis-soft via-white to-blue-50 flex">
@@ -52,12 +95,14 @@ export const Login: React.FC = () => {
 
           <div className="space-y-6">
             <h1 className="text-4xl font-bold leading-tight">
-              Gestão clínica<br />
+              Gestão clínica
+              <br />
               <span className="text-genesis-primary">inteligente</span> e<br />
               humanizada.
             </h1>
             <p className="text-white/60 text-lg max-w-md">
-              Simplifique sua rotina, encante seus pacientes e foque no que realmente importa: cuidar de pessoas.
+              Simplifique sua rotina, encante seus pacientes e foque no que realmente importa:
+              cuidar de pessoas.
             </p>
           </div>
 
@@ -105,13 +150,54 @@ export const Login: React.FC = () => {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
+                  onBlur={handleEmailBlur}
                   placeholder="seu@email.com"
                   required
                   className="w-full pl-12 pr-4 py-3 bg-genesis-surface border border-genesis-border rounded-xl text-genesis-dark placeholder-genesis-medium/50 focus:outline-none focus:ring-2 focus:ring-genesis-primary/20 focus:border-genesis-primary transition-all"
                 />
               </div>
             </div>
+
+            {/* SSO Detection Banner */}
+            {ssoConfig?.enabled && (
+              <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-xl space-y-3">
+                <div className="flex items-center gap-2 text-indigo-700">
+                  <Building2 className="w-5 h-5" />
+                  <span className="font-medium">SSO Corporativo Detectado</span>
+                </div>
+                <p className="text-sm text-indigo-600">
+                  Sua organização usa login único. Clique abaixo para entrar com{' '}
+                  <strong>{ssoConfig.providerName || 'SSO'}</strong>.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleSSOLogin}
+                  disabled={isSubmitting || ssoLoading}
+                  className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <Building2 className="w-5 h-5" />
+                  {isSubmitting
+                    ? 'Entrando...'
+                    : `Entrar com ${ssoConfig.providerName || 'SSO Corporativo'}`}
+                </button>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-indigo-200" />
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="px-2 bg-indigo-50 text-indigo-400">ou use email/senha</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {ssoLoading && (
+              <div className="flex items-center justify-center py-2 text-sm text-genesis-muted">
+                <div className="w-4 h-4 border-2 border-genesis-primary border-t-transparent rounded-full animate-spin mr-2" />
+                Verificando SSO...
+              </div>
+            )}
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -131,7 +217,7 @@ export const Login: React.FC = () => {
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
                   className="w-full pl-12 pr-12 py-3 bg-genesis-surface border border-genesis-border rounded-xl text-genesis-dark placeholder-genesis-medium/50 focus:outline-none focus:ring-2 focus:ring-genesis-primary/20 focus:border-genesis-primary transition-all"
@@ -195,12 +281,15 @@ export const Login: React.FC = () => {
 
           <p className="text-center text-sm text-genesis-medium">
             Não tem uma conta?{' '}
-            <Link to="/register" className="font-semibold text-genesis-primary hover:text-blue-600 transition-colors">
+            <Link
+              to="/register"
+              className="font-semibold text-genesis-primary hover:text-blue-600 transition-colors"
+            >
               Criar conta
             </Link>
           </p>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
